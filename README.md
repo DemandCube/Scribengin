@@ -4,8 +4,12 @@ Pronounced Scribe Engine
 
 Scribengin is a high-performance persistent event/loggin transport that registers data under defined schemas in a variety of end systems
 
-Out of the box includes:
-- Integration with Hive and HCat
+Reads data from
+- Kafka
+- AWS Kinesis
+
+Writes data to:
+- HDFS, Hbase and Hive with HCat Integration
 
 Additonal:
 - Monitoring with Ganglia
