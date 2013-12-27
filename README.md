@@ -57,3 +57,7 @@ Contributors
 =====
 - [Steve Morin](https://github.com/smorin)
 - [Juan Manuel Clavijo](https://github.com/PROM3TH3U5)
+
+Related Project
+----
+- [Heka] (http://heka-docs.readthedocs.org/en/latest/)
