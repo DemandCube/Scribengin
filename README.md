@@ -26,15 +26,23 @@ Community
 
 The Problem
 ======
-The core problem is how to log data from a rest call and log it in high-performance way that 
-allows for the delivery of messages to Kafka even when the connection is down.
+The core problem is how to reliably and at scale have a distributed application write data to multiple destination data systems.  This requires the ability to todo data mapping, partitioning with optional filtering to the destination system.
+
 
 Potential Implementation Strategies
 ======
+
+Poc
+- Storm
+- Spark-streaming
+- Yarn
+  - Local Mode (Single Node No Yarn)
+  - Distributed Standalone Cluster (No-Yarn)
+  - Hadoop Distributed (Yarn)
+
 There is a question of how to implement quaranteed delivery of logs to end systems.  
 - Storm to HCat
 - Storm to HBase
-- Storm to Presto
 - Create Framework to pick other destination sources
 
 
