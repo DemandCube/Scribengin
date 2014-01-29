@@ -45,6 +45,12 @@ There is a question of how to implement quaranteed delivery of logs to end syste
 - Storm to HBase
 - Create Framework to pick other destination sources
 
+Architecture
+======
+![Scribengin Fully Distributed Mode in Yarn](diagrams/fully_distributed_yarn_v1.png?raw=true "A Highlevel Diagram of Fully Distributed in Yarn")
+![Scribengin Fully Distributed Mode Standalone](diagrams/fully_distributed_standalone_v1.png?raw=true "A Highlevel Diagram of Fully Distributed")
+![Scribengin Pseudo Distributed Mode](diagrams/fully_distributed_standalone_v1.png?raw=true "A Highlevel Diagram of Pseudo Distributed")
+![Scribengin Standalone Mode](diagrams/standalone_v1.png?raw=true "A Highlevel Diagram of Standalone Mode")
 
 Milestones
 ======
