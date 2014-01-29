@@ -49,7 +49,7 @@ Architecture
 ======
 ![Scribengin Fully Distributed Mode in Yarn](diagrams/fully_distributed_yarn_v1.png?raw=true "A Highlevel Diagram of Fully Distributed in Yarn")
 ![Scribengin Fully Distributed Mode Standalone](diagrams/fully_distributed_standalone_v1.png?raw=true "A Highlevel Diagram of Fully Distributed")
-![Scribengin Pseudo Distributed Mode](diagrams/fully_distributed_standalone_v1.png?raw=true "A Highlevel Diagram of Pseudo Distributed")
+![Scribengin Pseudo Distributed Mode](diagrams/pseudo_distributed_standalone_v1.png?raw=true "A Highlevel Diagram of Pseudo Distributed")
 ![Scribengin Standalone Mode](diagrams/standalone_v1.png?raw=true "A Highlevel Diagram of Standalone Mode")
 
 Milestones
