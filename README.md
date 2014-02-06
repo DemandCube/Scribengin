@@ -16,7 +16,7 @@ Additonal:
 - Heart Alerting with Nagios
 
 
-This is part of [NeverwinterDP](https://github.com/DemandCube/NeverwinterDP)
+This is part of [NeverwinterDP the Data Pipeline for Hadoop](https://github.com/DemandCube/NeverwinterDP)
 
 Community
 ====
