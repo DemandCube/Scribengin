@@ -71,15 +71,21 @@ Milestones
 - [ ] Scribengin/Ambari Monitoring/Ganglia
 - [ ] Scribengin/Ambari Notification/Nagios
 
+
 Contributors
 =====
 - [Steve Morin](https://github.com/smorin)
-- [Juan Manuel Clavijo](https://github.com/PROM3TH3U5)
 
 Related Project
 ----
 - [Heka] (http://heka-docs.readthedocs.org/en/latest/)
 - 
+
+Research
+----
+- [Peterson's Algorithm](http://en.wikipedia.org/wiki/Peterson's_algorithm)
+- [Google's Chubby](http://research.google.com/archive/chubby.html)
+- [Distributed Lock Manager](http://en.wikipedia.org/wiki/Distributed_lock_manager)
 
 Keep your fork updated
 ====
