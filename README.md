@@ -87,6 +87,9 @@ Research
 - [Google's Chubby](http://research.google.com/archive/chubby.html)
 - [Distributed Lock Manager](http://en.wikipedia.org/wiki/Distributed_lock_manager)
 
+Yarn Documentation
+- [Slides about Yarn](http://www.slideshare.net/hortonworks/apache-hadoop-yarn-enabling-nex/)
+
 Keep your fork updated
 ====
 [Github Fork a Repo Help](https://help.github.com/articles/fork-a-repo)
