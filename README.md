@@ -23,6 +23,10 @@ Community
 - [Mailing List](https://groups.google.com/forum/#!forum/scribengin)
 - IRC channel #Scribengin on irc.freenode.net
 
+## Contributing
+
+See the [NeverwinterDP Guide to Contributing] (https://github.com/DemandCube/NeverwinterDP#how-to-contribute)
+
 
 The Problem
 ======
