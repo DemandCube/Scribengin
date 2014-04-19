@@ -40,6 +40,11 @@ Definitions
 - **Sink** - is a destination system that is being written to (HDFS, Hbase, Hive e.g.)
 - A **Tributary** - is a portion or partition of data from a **Flow**
 
+Yarn
+=====
+
+See the [NeverwinterDP Guide to Yarn] (https://github.com/DemandCube/NeverwinterDP#Yarn)
+
 
 Potential Implementation Strategies
 ======
