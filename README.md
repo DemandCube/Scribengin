@@ -2,14 +2,14 @@ Scribengin
 ==========
 Pronounced Scribe Engine  
 
-Scribengin is a high-performance persistent event/loggin transport that registers data under defined schemas in a variety of end systems
+Scribengin is a highly reliable (HA) and performant event/logging transport that registers data under defined schemas in a variety of end systems.  Scribengin enables you to have multiple flows of data from a source to a sink. Scribengin will tolerate system failures of individual nodes and will do a complete recovery in the case of complete system failure.
 
-Reads data from
+Reads data from sources:
 - Kafka
 - AWS Kinesis
 
-Writes data to:
-- HDFS, Hbase and Hive with HCat Integration
+Writes data to sinks:
+- HDFS, Hbase, Hive with HCat Integration and Elastic Search
 
 Additonal:
 - Monitoring with Ganglia
@@ -31,6 +31,14 @@ See the [NeverwinterDP Guide to Contributing] (https://github.com/DemandCube/Nev
 The Problem
 ======
 The core problem is how to reliably and at scale have a distributed application write data to multiple destination data systems.  This requires the ability to todo data mapping, partitioning with optional filtering to the destination system.
+
+Definitions
+======
+
+- A **Flow** - is data being moved from a single source to a single sink
+- **Source** - is a system that is being read to get data from (Kafka, Kinesis e.g.)
+- **Sink** - is a destination system that is being written to (HDFS, Hbase, Hive e.g.)
+- A **Tributary** - is a portion or partition of data from a **Flow**
 
 
 Potential Implementation Strategies
