@@ -22,6 +22,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/kafka/kafka_2/8/2/0.8.1/kafka_2.8.2-0.8.1.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/com/beust/jcommander/1.30/jcommander-1.30.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-common/2.3.0/hadoop-common-2.3.0.jar"/>

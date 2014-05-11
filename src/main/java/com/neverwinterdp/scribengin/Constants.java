@@ -8,4 +8,7 @@ public class Constants {
   public static final String OPT_HDFSJAR = "hdfsjar";
   public static final String OPT_COMMAND = "command";
   public static final String OPT_APPLICATION_MASTER_CLASS_NAME = "am_class_name";
+  public static final String OPT_KAFKA_TOPIC = "topic";
+  public static final String OPT_KAFKA_SEED_BROKERS = "kafka_seed_brokers";
+  public static final String OPT_KAFKA_PORT = "kafka_port";
 }
