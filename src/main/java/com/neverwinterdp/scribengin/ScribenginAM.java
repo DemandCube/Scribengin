@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ import kafka.javaapi.consumer.SimpleConsumer;
 import com.beust.jcommander.Parameter;
 
 
-public class ScribenginAM {
+public class ScribenginAM extends AbstractApplicationMaster {
 
   //@Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC})
   //private String topic;
@@ -29,6 +30,7 @@ public class ScribenginAM {
   // parsed cli arguments to member variables, this is the best I can come up with right now
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
   private List<String> topicList;
+
   // {topic(String) : { partition(integer) : PartitionMetaData }}
   private Map<String, Map<Integer, PartitionMetadata> > topicMetadataMap;
 
@@ -42,6 +44,25 @@ public class ScribenginAM {
     for (String topic : topicList) {
       getMetaData(kafkaSeedBrokers, port, topic);
     }
+  }
+
+  @Override
+  protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
+    // TODO: construnct the list of actual commands for containers to execute.
+    // A container should be able to read from more than one partition.
+    List<String> r = new ArrayList<String>();
+    for ( Map.Entry<String, Map<Integer, PartitionMetadata> > entry : topicMetadataMap.entrySet() ) {
+      String t = entry.getKey();
+      System.out.println("topic : " + t);
+
+      for ( Map.Entry<Integer, PartitionMetadata> innerEntry: entry.getValue().entrySet()) {
+        Integer partition = innerEntry.getKey();
+        PartitionMetadata meta = innerEntry.getValue();
+        System.out.println("\tpartition: " + partition);
+        System.out.println("\t\t leader: " + meta.leader());
+      }
+    }
+    return r;
   }
 
   //TODO: pass the following to each container
