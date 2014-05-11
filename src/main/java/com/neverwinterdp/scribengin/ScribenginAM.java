@@ -11,6 +11,7 @@ import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.consumer.SimpleConsumer;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 
@@ -20,16 +21,16 @@ public class ScribenginAM extends AbstractApplicationMaster {
   //private String topic;
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
-  private List<String> kafkaSeedBrokers;
+    private List<String> kafkaSeedBrokers;
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_PORT, "--" + Constants.OPT_KAFKA_PORT})
-  private int port;
+    private int port;
 
   // TODO: This is not ideal.
   // topic is repeated in topicList and topicMetadatMap. However, with jcommander automatically parses and store
   // parsed cli arguments to member variables, this is the best I can come up with right now
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
-  private List<String> topicList;
+    private List<String> topicList;
 
   // {topic(String) : { partition(integer) : PartitionMetaData }}
   private Map<String, Map<Integer, PartitionMetadata> > topicMetadataMap;
@@ -105,5 +106,19 @@ public class ScribenginAM extends AbstractApplicationMaster {
     }
 
     m.put(id, p);
+  }
+
+  public static void main(String[] args) {
+    AbstractApplicationMaster am = new ScribenginAM();
+    new JCommander(am, args);
+    am.init(args);
+
+    try {
+      am.run();
+    } catch (Exception e) {
+      System.out.println("am.run throws: " + e);
+      e.printStackTrace();
+      System.exit(0);
+    }
   }
 }

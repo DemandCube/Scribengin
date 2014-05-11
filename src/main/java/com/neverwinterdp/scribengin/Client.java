@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -42,20 +44,29 @@ public class Client {
   private Configuration conf;
 
   @Parameter(names = {"-" + Constants.OPT_APPNAME, "--" + Constants.OPT_APPNAME})
-  private String appname;
+    private String appname;
   @Parameter(names = {"-" + Constants.OPT_COMMAND, "--" + Constants.OPT_COMMAND})
-  private String command;
+    private String command;
   @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_MEM, "--" + Constants.OPT_APPLICATION_MASTER_MEM})
-  private int applicationMasterMem;
+    private int applicationMasterMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_MEM, "--" + Constants.OPT_CONTAINER_MEM})
-  private int containerMem;
+    private int containerMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
-  private int containerCount;
+    private int containerCount;
 
   @Parameter(names = {"-" + Constants.OPT_HDFSJAR, "--" + Constants.OPT_HDFSJAR})
-  private String hdfsJar;
+    private String hdfsJar;
   @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME, "--" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME})
-  private String applicationMasterClassName;
+    private String applicationMasterClassName;
+
+  @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
+    private List<String> topicList;
+
+  @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
+    private List<String> kafkaSeedBrokers;
+
+  @Parameter(names = {"-" + Constants.OPT_KAFKA_PORT, "--" + Constants.OPT_KAFKA_PORT})
+    private int port;
 
   public Client() throws Exception{
     this.conf = new YarnConfiguration();
@@ -127,6 +138,9 @@ public class Client {
     sb.append("--").append(Constants.OPT_CONTAINER_MEM).append(" ").append(this.containerMem).append(" ");
     sb.append("--").append(Constants.OPT_CONTAINER_COUNT).append(" ").append(this.containerCount).append(" ");
     sb.append("--").append(Constants.OPT_COMMAND).append(" '").append(StringEscapeUtils.escapeJava(this.command)).append("' ");
+    sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ").append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
+    sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
+    sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ").append(StringUtils.join(this.topicList, " ")).append(" ");
 
     sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout").append(" ");
     sb.append("2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr");
