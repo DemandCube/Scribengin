@@ -42,6 +42,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
   }
 
   public void init(String[] args) {
+    super.init(args);
+    LOG.info("calling init");
     for (String topic : topicList) {
       getMetaData(kafkaSeedBrokers, port, topic);
     }
@@ -54,13 +56,13 @@ public class ScribenginAM extends AbstractApplicationMaster {
     List<String> r = new ArrayList<String>();
     for ( Map.Entry<String, Map<Integer, PartitionMetadata> > entry : topicMetadataMap.entrySet() ) {
       String t = entry.getKey();
-      System.out.println("topic : " + t);
+      LOG.info("topic : " + t);
 
       for ( Map.Entry<Integer, PartitionMetadata> innerEntry: entry.getValue().entrySet()) {
         Integer partition = innerEntry.getKey();
         PartitionMetadata meta = innerEntry.getValue();
-        System.out.println("\tpartition: " + partition);
-        System.out.println("\t\t leader: " + meta.leader());
+        LOG.info("\tpartition: " + partition);
+        LOG.info("\t\t leader: " + meta.leader());
       }
     }
     return r;
@@ -73,7 +75,11 @@ public class ScribenginAM extends AbstractApplicationMaster {
   //
 
   private void getMetaData(List<String> seedBrokerList, int port, String topic) {
+    LOG.info("inside getMetaData"); //xxx
+    LOG.info("seedBrokerList size: " + seedBrokerList); //xxx
+
     for (String seed: seedBrokerList) {
+      LOG.info("making a simple consumer"); //xxx
       SimpleConsumer consumer = new SimpleConsumer(
           seed,
           port,
@@ -86,8 +92,14 @@ public class ScribenginAM extends AbstractApplicationMaster {
       TopicMetadataRequest req = new TopicMetadataRequest(topicList);
       kafka.javaapi.TopicMetadataResponse resp = consumer.send(req);
       List<TopicMetadata> metaDataList = resp.topicsMetadata();
+      LOG.info("metaDataList: " + metaDataList); //xxxx
+
       for (TopicMetadata m: metaDataList) {
+        LOG.info("inside the metadatalist loop"); //xxx
+        LOG.info("m partitionsMetadata: " + m.partitionsMetadata()); //xxx
+        // QUESTION: If there's no established leader yet, ie. no data in kafka, it will return an empty list.
         for (PartitionMetadata part : m.partitionsMetadata()) {
+          LOG.info("inside the partitionmetadata loop"); //xxx
           storeMetadata(topic, part);
         }
       }
@@ -99,8 +111,10 @@ public class ScribenginAM extends AbstractApplicationMaster {
     Map<Integer, PartitionMetadata> m;
 
     if (topicMetadataMap.containsKey(id)) {
+      LOG.info("already crreated a partitionMap. Just retrieve it."); //xxx
       m = topicMetadataMap.get(topic);
     } else {
+      LOG.info("making a new partitionMap"); //xxx
       m = new HashMap<Integer, PartitionMetadata>();
       topicMetadataMap.put(topic, m);
     }
@@ -112,6 +126,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
     AbstractApplicationMaster am = new ScribenginAM();
     new JCommander(am, args);
     am.init(args);
+
+    LOG.info("calling main");
 
     try {
       am.run();
