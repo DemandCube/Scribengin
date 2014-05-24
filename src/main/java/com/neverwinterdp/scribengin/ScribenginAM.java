@@ -13,12 +13,14 @@ import kafka.javaapi.consumer.SimpleConsumer;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 
 public class ScribenginAM extends AbstractApplicationMaster {
+  // hadoop jar target/scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.Client -am_mem 300 -container_mem 300 --container_cnt 4 --hdfsjar /scribengin-uber-0.0.1-SNAPSHOT.jar --app_name scribe --command "echo" --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" -topic "scribe" -kafka_seed_brokers "10.0.2.15" -kafka_port 9092
 
-  //@Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC})
-  //private String topic;
+  private static final Logger LOG = Logger.getLogger(ScribenginAM.class.getName());
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
     private List<String> kafkaSeedBrokers;
@@ -97,7 +99,6 @@ public class ScribenginAM extends AbstractApplicationMaster {
       for (TopicMetadata m: metaDataList) {
         LOG.info("inside the metadatalist loop"); //xxx
         LOG.info("m partitionsMetadata: " + m.partitionsMetadata()); //xxx
-        // QUESTION: If there's no established leader yet, ie. no data in kafka, it will return an empty list.
         for (PartitionMetadata part : m.partitionsMetadata()) {
           LOG.info("inside the partitionmetadata loop"); //xxx
           storeMetadata(topic, part);
