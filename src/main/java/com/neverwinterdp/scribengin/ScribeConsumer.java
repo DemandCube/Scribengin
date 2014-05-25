@@ -1,13 +1,19 @@
 package com.neverwinterdp.scribengin;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kafka.api.FetchRequest;
+import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
+import kafka.common.ErrorMapping;
 import kafka.common.TopicAndPartition;
+import kafka.javaapi.FetchResponse;
 import kafka.javaapi.OffsetRequest;
 import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
+import kafka.message.MessageAndOffset;
 
 import org.apache.log4j.Logger;
 
@@ -52,7 +58,9 @@ public class ScribeConsumer {
     sb.append(topic);
     sb.append("_");
     sb.append(partition);
-    return sb.toString();
+    String r = sb.toString();
+    System.out.println("client name: " + r); //xxx
+    return r;
   }
 
   private long getLastOffset(String topic, int partition, long startTime) {
@@ -68,7 +76,23 @@ public class ScribeConsumer {
     OffsetResponse resp = consumer.getOffsetsBefore(req);
 
     if (resp.hasError()) {
-      LOG.error("Error when fetching offset: " + resp.errorCode(topic, partition));
+      System.out.println("error when fetching offset: " + resp.errorCode(topic, partition)); //xxx
+      // In case you wonder what the error code really means.
+      // System.out.println("OffsetOutOfRangeCode()" + ErrorMapping.OffsetOutOfRangeCode());
+      // System.out.println("BrokerNotAvailableCode()" + ErrorMapping.BrokerNotAvailableCode());
+      // System.out.println("InvalidFetchSizeCode()" + ErrorMapping.InvalidFetchSizeCode());
+      // System.out.println("InvalidMessageCode()" + ErrorMapping.InvalidMessageCode());
+      // System.out.println("LeaderNotAvailableCode()" + ErrorMapping.LeaderNotAvailableCode());
+      // System.out.println("MessageSizeTooLargeCode()" + ErrorMapping.MessageSizeTooLargeCode());
+      // System.out.println("NotLeaderForPartitionCode()" + ErrorMapping.NotLeaderForPartitionCode());
+      // System.out.println("OffsetMetadataTooLargeCode()" + ErrorMapping.OffsetMetadataTooLargeCode());
+      // System.out.println("ReplicaNotAvailableCode()" + ErrorMapping.ReplicaNotAvailableCode());
+      // System.out.println("RequestTimedOutCode()" + ErrorMapping.RequestTimedOutCode());
+      // System.out.println("StaleControllerEpochCode()" + ErrorMapping.StaleControllerEpochCode());
+      // System.out.println("UnknownCode()" + ErrorMapping.UnknownCode());
+      // System.out.println("UnknownTopicOrPartitionCode()" + ErrorMapping.UnknownTopicOrPartitionCode());
+
+      //LOG.error("error when fetching offset: " + resp.errorcode(topic, partition));
       return 0;
     }
 
@@ -78,10 +102,58 @@ public class ScribeConsumer {
   public void run() {
     long offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     System.out.println("offset: " + offset); //xxx
+
+    while (true) {
+      FetchRequest req = new FetchRequestBuilder()
+        .clientId(getClientName())
+        .addFetch(topic, partition, offset, 100000)
+        .build();
+
+      FetchResponse resp = consumer.fetch(req);
+
+      if (resp.hasError()) {
+        //TODO: if we got an invalid offset, reset it by asking for the last element.
+        // otherwise, find a new leader from the replica
+        System.out.println("has error");  //xxx
+
+        short code = resp.errorCode(topic, partition);
+        System.out.println("Reason: " + code);
+        if (code == ErrorMapping.OffsetOutOfRangeCode())  {
+          // We asked for an invalid offset. For simple case ask for the last element to reset
+          System.out.println("inside errormap");
+          offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+          continue;
+        }
+      }
+
+      long msgReadCnt = 0;
+      for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
+        long currentOffset = messageAndOffset.offset();
+        if (currentOffset < offset) {
+          System.out.println("Found an old offset: " + currentOffset + "Expecting: " + offset);
+          continue;
+        }
+        offset = messageAndOffset.nextOffset();
+        ByteBuffer payload = messageAndOffset.message().payload();
+
+        byte[] bytes = new byte[payload.limit()];
+        payload.get(bytes);
+
+        System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+        msgReadCnt++;
+      }// for
+
+      if (msgReadCnt == 0) {
+        try {
+          System.out.println("Nothing to read, so go to sleep.");
+          Thread.sleep(1000); //Didn't read anything, so go to sleep for awhile.
+        } catch(InterruptedException e) {
+        }
+      }
+    }
   }
 
   public static void main(String[] args) {
-    System.out.println("wtf");//xxx
     ScribeConsumer sc = new ScribeConsumer();
     JCommander jc = new JCommander(sc);
     jc.addConverterFactory(new CustomConvertFactory());
