@@ -86,7 +86,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
           seed,
           port,
           10000,   // timeout
-          64*1024, // bufgerSize
+          64*1024, // bufferSize
           "metaLookup"  // clientId
           );
       List <String> topicList = Collections.singletonList(topic);

@@ -11,4 +11,9 @@ public class Constants {
   public static final String OPT_KAFKA_TOPIC = "topic";
   public static final String OPT_KAFKA_SEED_BROKERS = "kafka_seed_brokers";
   public static final String OPT_KAFKA_PORT = "kafka_port";
+
+  public static final String OPT_LEADER = "leader";
+  public static final String OPT_PARTITION = "partition";
+  public static final String OPT_REPLICA = "replica";
 }
+
