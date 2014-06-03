@@ -12,13 +12,13 @@ import com.neverwinterdp.server.service.AbstractService;
 public class ScribenginClusterService extends AbstractService {
   KafkaMessageConsumerConnector consumer ;
   
-  @Inject(optional=true) @Named("kafka.zookeeper-urls")
+  @Inject(optional=true) @Named("zookeeper-urls")
   private String zookeeperUrls = "127.0.0.1:2181";
   
   private String[]   topic = {} ;
 
   @Inject
-  public void setTopics(@Named("scribengin.consume-topics") String topics) {
+  public void setTopics(@Named("consume-topics") String topics) {
     this.topic = topics.split(",") ;
   }
   

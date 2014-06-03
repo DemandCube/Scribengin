@@ -9,12 +9,13 @@ import org.junit.Test;
 import com.neverwinterdp.message.Message;
 import com.neverwinterdp.message.SampleEvent;
 import com.neverwinterdp.queuengin.kafka.KafkaMessageProducer;
-import com.neverwinterdp.queuengin.kafka.cluster.KafkaServiceModule;
-import com.neverwinterdp.queuengin.kafka.cluster.ZookeeperServiceModule;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.cluster.ClusterClient;
 import com.neverwinterdp.server.cluster.ClusterMember;
 import com.neverwinterdp.server.cluster.hazelcast.HazelcastClusterClient;
+import com.neverwinterdp.server.module.KafkaModule;
+import com.neverwinterdp.server.module.ZookeeperModule;
+import com.neverwinterdp.server.shell.Shell;
 import com.neverwinterdp.util.FileUtil;
 /**
  * @author Tuan Nguyen
@@ -30,52 +31,28 @@ public class ScribenginClusterUnitTest {
   static String TOPIC_NAME = "scribengin" ;
   
   static protected Server      zkServer, kafkaServer, scribenginServer ;
-  static protected ClusterClient client ;
+  static protected Shell shell  ;
 
   @BeforeClass
   static public void setup() throws Exception {
-    FileUtil.removeIfExist("build/cluster", false);
-    Properties zkServerProps = new Properties() ;
-    zkServerProps.put("server.group", "NeverwinterDP") ;
-    zkServerProps.put("server.cluster-framework", "hazelcast") ;
-    zkServerProps.put("server.roles", "master") ;
-    zkServerProps.put("server.service-module", ZookeeperServiceModule.class.getName()) ;
-    //zkServerProps.put("zookeeper.config-path", "") ;
-    zkServer = Server.create(zkServerProps);
+    zkServer = Server.create("-Pserver.name=zookeeper", "-Pserver.roles=zookeeper") ;
+    kafkaServer = Server.create("-Pserver.name=kafka", "-Pserver.roles=kafka") ;
+    scribenginServer = Server.create("-Pserver.name=scribengin", "-Pserver.roles=scribngin") ;
     
-    Properties kafkaServerProps = new Properties() ;
-    kafkaServerProps.put("server.group", "NeverwinterDP") ;
-    kafkaServerProps.put("server.cluster-framework", "hazelcast") ;
-    kafkaServerProps.put("server.roles", "master") ;
-    kafkaServerProps.put("server.service-module", KafkaServiceModule.class.getName()) ;
-    kafkaServerProps.put("kafka.zookeeper-urls", "127.0.0.1:2181") ;
-    //kafkaServerProps.put("kafka.consumer-report.topics", TOPIC_NAME) ;
-    kafkaServer = Server.create(kafkaServerProps);
-    
-    Properties scribenginServerProps = new Properties() ;
-    scribenginServerProps.put("server.group", "NeverwinterDP") ;
-    scribenginServerProps.put("server.cluster-framework", "hazelcast") ;
-    scribenginServerProps.put("server.roles", "master") ;
-    scribenginServerProps.put("server.service-module", ScribenginServiceModule.class.getName()) ;
-    scribenginServerProps.put("kafka.zookeeper-urls", "127.0.0.1:2181") ;
-    scribenginServerProps.put("scribengin.consume-topics", TOPIC_NAME) ;
-    scribenginServer = Server.create(scribenginServerProps);
-    
-    ClusterMember member = zkServer.getClusterService().getMember() ;
-    String connectUrl = member.getIpAddress() + ":" + member.getPort() ;
-    client = new HazelcastClusterClient(connectUrl) ;
+    shell = new Shell() ;
+    shell.getShellContext().connect();
   }
 
   @AfterClass
   static public void teardown() throws Exception {
-    client.shutdown(); 
-    scribenginServer.exit(0);
-    kafkaServer.exit(0);
-    zkServer.exit(0) ;
+    scribenginServer.destroy();
+    kafkaServer.destroy();
+    zkServer.destroy();
   }
   
   @Test
   public void testSendMessage() throws Exception {
+    install() ;
     int numOfMessages = 50 ;
     KafkaMessageProducer producer = new KafkaMessageProducer("127.0.0.1:9092") ;
     for(int i = 0 ; i < numOfMessages; i++) {
@@ -84,5 +61,40 @@ public class ScribenginClusterUnitTest {
       producer.send(TOPIC_NAME,  jsonMessage) ;
     }
     Thread.sleep(2000) ;
+    producer.close();
+    uninstall() ;
+  }
+  
+  private void install() throws InterruptedException {
+    String installScript =
+        "module install " + 
+        " -Pmodule.data.drop=true" +
+        " --member-role zookeeper --autostart Zookeeper \n" +
+        
+        "module install " +
+        " -Pmodule.data.drop=true" +
+        " -Pkafka.zookeeper-urls=127.0.0.1:2181" +
+//        " -Pkafka.consumer-report.topics=" + TOPIC_NAME +
+        "  --member-role kafka --autostart Kafka \n" +
+        
+        "module install " +
+        " -Pmodule.data.drop=true" +
+        " -Pzookeeper-urls=127.0.0.1:2181" + 
+        " -Pconsume-topics=" + TOPIC_NAME +
+        " --member-role scribengin --autostart Scribengin \n" ;
+    shell.executeScript(installScript);
+    Thread.sleep(1000);
+  }
+  
+  void uninstall() {
+    Properties scribenginServerProps = new Properties() ;
+    scribenginServerProps.put("kafka.zookeeper-urls", "127.0.0.1:2181") ;
+    scribenginServerProps.put("scribengin.consume-topics", TOPIC_NAME) ;
+
+    String uninstallScript = 
+        "module uninstall --member-role scribengin --timeout 20000 Scribengin \n" +
+        "module uninstall --member-role kafkar --timeout 20000 Kafka \n" +
+        "module uninstall --member-role zookeeper --timeout 20000 Zookeeper";
+    shell.executeScript(uninstallScript);
   }
 }
