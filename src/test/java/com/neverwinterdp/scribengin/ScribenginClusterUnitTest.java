@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin;
 
+import java.util.Properties;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -7,13 +9,13 @@ import org.junit.Test;
 import com.neverwinterdp.message.Message;
 import com.neverwinterdp.message.SampleEvent;
 import com.neverwinterdp.queuengin.kafka.KafkaMessageProducer;
-import com.neverwinterdp.queuengin.kafka.cluster.KafkaClusterService;
-import com.neverwinterdp.queuengin.kafka.cluster.ZookeeperClusterService;
 import com.neverwinterdp.server.Server;
-import com.neverwinterdp.server.ServerBuilder;
 import com.neverwinterdp.server.cluster.ClusterClient;
 import com.neverwinterdp.server.cluster.ClusterMember;
 import com.neverwinterdp.server.cluster.hazelcast.HazelcastClusterClient;
+import com.neverwinterdp.server.module.KafkaModule;
+import com.neverwinterdp.server.module.ZookeeperModule;
+import com.neverwinterdp.server.shell.Shell;
 import com.neverwinterdp.util.FileUtil;
 /**
  * @author Tuan Nguyen
@@ -29,40 +31,28 @@ public class ScribenginClusterUnitTest {
   static String TOPIC_NAME = "scribengin" ;
   
   static protected Server      zkServer, kafkaServer, scribenginServer ;
-  static protected ClusterClient client ;
+  static protected Shell shell  ;
 
   @BeforeClass
   static public void setup() throws Exception {
-    FileUtil.removeIfExist("build/cluster", false);
-    ServerBuilder zkBuilder = new ServerBuilder() ;
-    zkBuilder.addService(ZookeeperClusterService.class) ;
-    zkServer = zkBuilder.build();
+    zkServer = Server.create("-Pserver.name=zookeeper", "-Pserver.roles=zookeeper") ;
+    kafkaServer = Server.create("-Pserver.name=kafka", "-Pserver.roles=kafka") ;
+    scribenginServer = Server.create("-Pserver.name=scribengin", "-Pserver.roles=scribngin") ;
     
-    
-    ServerBuilder kafkaBuilder = new ServerBuilder() ;
-    kafkaBuilder.addService(KafkaClusterService.class) ;
-    kafkaServer = kafkaBuilder.build();
-    
-    ServerBuilder scribenginBuilder = new ServerBuilder() ;
-    scribenginBuilder.
-      addService(ScribenginClusterService.class).
-      setParameter("zookeeperUrls", "127.0.0.1:2181").
-      setParameter("topic", TOPIC_NAME) ;
-    scribenginServer = scribenginBuilder.build();
-    
-    ClusterMember member = zkServer.getCluster().getMember() ;
-    String connectUrl = member.getIpAddress() + ":" + member.getPort() ;
-    client = new HazelcastClusterClient(connectUrl) ;
+    shell = new Shell() ;
+    shell.getShellContext().connect();
   }
 
   @AfterClass
   static public void teardown() throws Exception {
-    client.shutdown(); 
-    zkServer.exit(0) ;
+    scribenginServer.destroy();
+    kafkaServer.destroy();
+    zkServer.destroy();
   }
   
   @Test
   public void testSendMessage() throws Exception {
+    install() ;
     int numOfMessages = 50 ;
     KafkaMessageProducer producer = new KafkaMessageProducer("127.0.0.1:9092") ;
     for(int i = 0 ; i < numOfMessages; i++) {
@@ -71,5 +61,40 @@ public class ScribenginClusterUnitTest {
       producer.send(TOPIC_NAME,  jsonMessage) ;
     }
     Thread.sleep(2000) ;
+    producer.close();
+    uninstall() ;
+  }
+  
+  private void install() throws InterruptedException {
+    String installScript =
+        "module install " + 
+        " -Pmodule.data.drop=true" +
+        " --member-role zookeeper --autostart Zookeeper \n" +
+        
+        "module install " +
+        " -Pmodule.data.drop=true" +
+        " -Pkafka.zookeeper-urls=127.0.0.1:2181" +
+//        " -Pkafka.consumer-report.topics=" + TOPIC_NAME +
+        "  --member-role kafka --autostart Kafka \n" +
+        
+        "module install " +
+        " -Pmodule.data.drop=true" +
+        " -Pzookeeper-urls=127.0.0.1:2181" + 
+        " -Pconsume-topics=" + TOPIC_NAME +
+        " --member-role scribengin --autostart Scribengin \n" ;
+    shell.executeScript(installScript);
+    Thread.sleep(1000);
+  }
+  
+  void uninstall() {
+    Properties scribenginServerProps = new Properties() ;
+    scribenginServerProps.put("kafka.zookeeper-urls", "127.0.0.1:2181") ;
+    scribenginServerProps.put("scribengin.consume-topics", TOPIC_NAME) ;
+
+    String uninstallScript = 
+        "module uninstall --member-role scribengin --timeout 20000 Scribengin \n" +
+        "module uninstall --member-role kafkar --timeout 20000 Kafka \n" +
+        "module uninstall --member-role zookeeper --timeout 20000 Zookeeper";
+    shell.executeScript(uninstallScript);
   }
 }

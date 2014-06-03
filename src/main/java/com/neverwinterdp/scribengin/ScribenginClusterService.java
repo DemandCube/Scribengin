@@ -1,9 +1,9 @@
 package com.neverwinterdp.scribengin;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.neverwinterdp.queuengin.ReportMessageConsumerHandler;
 import com.neverwinterdp.queuengin.kafka.KafkaMessageConsumerConnector;
-import com.neverwinterdp.server.Server;
-import com.neverwinterdp.server.config.ServiceConfig;
 import com.neverwinterdp.server.service.AbstractService;
 /**
  * @author Tuan Nguyen
@@ -12,19 +12,23 @@ import com.neverwinterdp.server.service.AbstractService;
 public class ScribenginClusterService extends AbstractService {
   KafkaMessageConsumerConnector consumer ;
   
-  public void onInit(Server server) {
-    super.onInit(server);
+  @Inject(optional=true) @Named("zookeeper-urls")
+  private String zookeeperUrls = "127.0.0.1:2181";
+  
+  private String[]   topic = {} ;
+
+  @Inject
+  public void setTopics(@Named("consume-topics") String topics) {
+    this.topic = topics.split(",") ;
   }
   
   public void start() throws Exception {
-    ServiceConfig config = getServiceConfig() ;
-    String topic = config.getParameter("topic", null);
-    if(topic == null) throw new Exception("Topic is not specified!") ; 
-    String consumerGroup = config.getParameter("consumerGroup", "consumer." + topic) ;
-    String zkUrls = config.getParameter("zookeeperUrls", "127.0.0.1:2181") ;
+    String consumerGroup = "ScribenginClusterService" ;
     ReportMessageConsumerHandler handler = new ReportMessageConsumerHandler() ;
-    consumer = new KafkaMessageConsumerConnector(consumerGroup, zkUrls) ;
-    consumer.consume(topic, handler, 1) ;
+    consumer = new KafkaMessageConsumerConnector(consumerGroup, zookeeperUrls) ;
+    for(String selTopic : topic) {
+      consumer.consume(selTopic, handler, 1) ;
+    }
   }
 
   public void stop() {

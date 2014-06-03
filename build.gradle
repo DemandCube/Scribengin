@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse' 
 apply plugin: 'maven' 
 
-archivesBaseName = 'sparkngin'
+archivesBaseName = 'scribengin'
 
 eclipse {
   classpath {
@@ -16,12 +16,6 @@ group = 'com.neverwinterdp'
 sourceCompatibility = 1.7
 version = '1.0-SNAPSHOT'
 configurations.compile.transitive = true
-
-project.ext {
-  kafkaVersion = "0.8.1.1"
-  zookeeperVersion = "3.4.6"
-  jettyVersion = "9.2.0.M0"
-}
 
 repositories {
   mavenLocal()
