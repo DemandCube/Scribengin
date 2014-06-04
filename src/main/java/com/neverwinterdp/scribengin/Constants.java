@@ -15,5 +15,6 @@ public class Constants {
   public static final String OPT_LEADER = "leader";
   public static final String OPT_PARTITION = "partition";
   public static final String OPT_REPLICA = "replica";
+  public static final String OPT_CHECK_POINT_TIMER = "checkpoint_interval";
 }
 

@@ -3,6 +3,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
@@ -21,6 +23,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 public class ScribeConsumer {
+  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
@@ -35,21 +38,39 @@ public class ScribeConsumer {
   @Parameter(names = {"-"+Constants.OPT_REPLICA, "--"+Constants.OPT_REPLICA}, variableArity = true)
   private List<String> replicaBrokerList;
 
+  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_TIMER, "--"+Constants.OPT_CHECK_POINT_TIMER}, description="Check point interval in milliseconds")
+  private long commitCheckPointInterval; // ms
+
   private SimpleConsumer consumer;
+  private Timer checkPointIntervalTimer;
 
   public ScribeConsumer() {
+    checkPointIntervalTimer = new Timer();
   }
 
   public void init() {
-    //System.out.println("leaderHostPort:" + leaderHostPort); //xxx
-    //System.out.println("host: " + leaderHostPort.getHost()); //xxx
-    //System.out.println("port: " + leaderHostPort.getPort()); //xxx
     consumer = new SimpleConsumer(
         leaderHostPort.getHost(),
         leaderHostPort.getPort(),
         10000,   // timeout
         64*1024, // buffersize
         getClientName());
+
+    scheduleCommitTimer();
+  }
+
+  private void scheduleCommitTimer() {
+    checkPointIntervalTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        commit();
+      }
+    }, commitCheckPointInterval);
+  }
+
+  private void commit() {
+    System.out.println(">> committing");
+    scheduleCommitTimer();
   }
 
   private String getClientName() {
@@ -101,9 +122,10 @@ public class ScribeConsumer {
 
   public void run() {
     long offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
-    System.out.println("offset: " + offset); //xxx
+    System.out.println(">> offset: " + offset); //xxx
 
     while (true) {
+      System.out.println(">> offset: " + offset); //xxx
       FetchRequest req = new FetchRequestBuilder()
         .clientId(getClientName())
         .addFetch(topic, partition, offset, 100000)
@@ -162,6 +184,5 @@ public class ScribeConsumer {
     sc.init();
     sc.run();
   }
-
 
 }
