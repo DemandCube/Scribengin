@@ -10,13 +10,9 @@ import com.neverwinterdp.message.Message;
 import com.neverwinterdp.message.SampleEvent;
 import com.neverwinterdp.queuengin.kafka.KafkaMessageProducer;
 import com.neverwinterdp.server.Server;
-import com.neverwinterdp.server.cluster.ClusterClient;
-import com.neverwinterdp.server.cluster.ClusterMember;
-import com.neverwinterdp.server.cluster.hazelcast.HazelcastClusterClient;
-import com.neverwinterdp.server.module.KafkaModule;
-import com.neverwinterdp.server.module.ZookeeperModule;
 import com.neverwinterdp.server.shell.Shell;
-import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.util.monitor.ApplicationMonitor;
+import com.neverwinterdp.util.monitor.ComponentMonitor;
 /**
  * @author Tuan Nguyen
  * @email  tuan08@gmail.com
@@ -28,7 +24,7 @@ public class ScribenginClusterUnitTest {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
-  static String TOPIC_NAME = "scribengin" ;
+  static String TOPIC_NAME = "metrics.consumer" ;
   
   static protected Server      zkServer, kafkaServer, scribenginServer ;
   static protected Shell shell  ;
@@ -54,7 +50,9 @@ public class ScribenginClusterUnitTest {
   public void testSendMessage() throws Exception {
     install() ;
     int numOfMessages = 50 ;
-    KafkaMessageProducer producer = new KafkaMessageProducer("127.0.0.1:9092") ;
+    ApplicationMonitor appMonitor = new ApplicationMonitor() ;
+    ComponentMonitor monitor = appMonitor.createComponentMonitor(KafkaMessageProducer.class) ;
+    KafkaMessageProducer producer = new KafkaMessageProducer(monitor,"127.0.0.1:9092") ;
     for(int i = 0 ; i < numOfMessages; i++) {
       SampleEvent event = new SampleEvent("event-" + i, "event " + i) ;
       Message jsonMessage = new Message("m" + i, event, false) ;
@@ -74,7 +72,6 @@ public class ScribenginClusterUnitTest {
         "module install " +
         " -Pmodule.data.drop=true" +
         " -Pkafka.zookeeper-urls=127.0.0.1:2181" +
-//        " -Pkafka.consumer-report.topics=" + TOPIC_NAME +
         "  --member-role kafka --autostart Kafka \n" +
         
         "module install " +
@@ -93,7 +90,7 @@ public class ScribenginClusterUnitTest {
 
     String uninstallScript = 
         "module uninstall --member-role scribengin --timeout 20000 Scribengin \n" +
-        "module uninstall --member-role kafkar --timeout 20000 Kafka \n" +
+        "module uninstall --member-role kafka --timeout 20000 Kafka \n" +
         "module uninstall --member-role zookeeper --timeout 20000 Zookeeper";
     shell.executeScript(uninstallScript);
   }
