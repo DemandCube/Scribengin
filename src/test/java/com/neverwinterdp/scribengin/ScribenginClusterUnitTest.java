@@ -67,18 +67,18 @@ public class ScribenginClusterUnitTest {
     String installScript =
         "module install " + 
         " -Pmodule.data.drop=true" +
-        " --member-role zookeeper --autostart Zookeeper \n" +
+        " --member-role zookeeper --autostart --module Zookeeper \n" +
         
         "module install " +
         " -Pmodule.data.drop=true" +
         " -Pkafka.zookeeper-urls=127.0.0.1:2181" +
-        "  --member-role kafka --autostart Kafka \n" +
+        "  --member-role kafka --autostart --module Kafka \n" +
         
         "module install " +
         " -Pmodule.data.drop=true" +
         " -Pzookeeper-urls=127.0.0.1:2181" + 
         " -Pconsume-topics=" + TOPIC_NAME +
-        " --member-role scribengin --autostart Scribengin \n" ;
+        " --member-role scribengin --autostart --module Scribengin \n" ;
     shell.executeScript(installScript);
     Thread.sleep(1000);
   }
@@ -89,9 +89,9 @@ public class ScribenginClusterUnitTest {
     scribenginServerProps.put("scribengin.consume-topics", TOPIC_NAME) ;
 
     String uninstallScript = 
-        "module uninstall --member-role scribengin --timeout 20000 Scribengin \n" +
-        "module uninstall --member-role kafka --timeout 20000 Kafka \n" +
-        "module uninstall --member-role zookeeper --timeout 20000 Zookeeper";
+        "module uninstall --member-role scribengin --timeout 20000 --module Scribengin \n" +
+        "module uninstall --member-role kafka --timeout 20000 --module Kafka \n" +
+        "module uninstall --member-role zookeeper --timeout 20000 --module Zookeeper";
     shell.executeScript(uninstallScript);
   }
 }
