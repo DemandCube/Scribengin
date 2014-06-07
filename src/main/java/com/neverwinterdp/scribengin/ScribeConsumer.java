@@ -1,4 +1,7 @@
 package com.neverwinterdp.scribengin;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +20,23 @@ import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
 public class ScribeConsumer {
+  // Random comments:
+  // Unique define a partition. Client name + topic name + offset
   // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100
+  // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
+  // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
+  // checkout EtlMultiOutputCommitter in Camus
+
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
@@ -69,6 +82,7 @@ public class ScribeConsumer {
   }
 
   private void commit() {
+    //TODO: move from tmp to the actual partition.
     System.out.println(">> committing");
     scheduleCommitTimer();
   }
@@ -120,7 +134,7 @@ public class ScribeConsumer {
     return resp.offsets(topic, partition)[0];
   }
 
-  public void run() {
+  public void run() throws IOException {
     long offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     System.out.println(">> offset: " + offset); //xxx
 
@@ -149,6 +163,9 @@ public class ScribeConsumer {
       }
 
       long msgReadCnt = 0;
+
+      StringRecordWriter writer = new StringRecordWriter("/tmp/scribe_data");
+
       for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
         long currentOffset = messageAndOffset.offset();
         if (currentOffset < offset) {
@@ -162,8 +179,12 @@ public class ScribeConsumer {
         payload.get(bytes);
 
         System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+        //TODO: Write to HDFS /tmp partition
+        writer.write(bytes);
+
         msgReadCnt++;
       }// for
+      writer.close();
 
       if (msgReadCnt == 0) {
         try {
@@ -175,7 +196,7 @@ public class ScribeConsumer {
     }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     ScribeConsumer sc = new ScribeConsumer();
     JCommander jc = new JCommander(sc);
     jc.addConverterFactory(new CustomConvertFactory());
