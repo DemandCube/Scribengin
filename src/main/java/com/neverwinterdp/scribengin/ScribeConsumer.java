@@ -32,7 +32,7 @@ import com.beust.jcommander.Parameter;
 public class ScribeConsumer {
   // Random comments:
   // Unique define a partition. Client name + topic name + offset
-  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100
+  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100 --partition 1
   // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
   // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
   // checkout EtlMultiOutputCommitter in Camus
@@ -61,7 +61,7 @@ public class ScribeConsumer {
     checkPointIntervalTimer = new Timer();
   }
 
-  public void init() {
+  public void init() throws IOException {
     consumer = new SimpleConsumer(
         leaderHostPort.getHost(),
         leaderHostPort.getPort(),
@@ -83,7 +83,17 @@ public class ScribeConsumer {
 
   private void commit() {
     //TODO: move from tmp to the actual partition.
+    // TODO: synchronize with the writing code in run()
     System.out.println(">> committing");
+
+    //Close out the old writer
+    //writer.close();
+    //try {
+      //writer = new StringRecordWriter("/tmp/scribe_data");
+    //} catch (IOException e) {
+      ////exit early.
+    //}
+
     scheduleCommitTimer();
   }
 
@@ -165,7 +175,6 @@ public class ScribeConsumer {
       long msgReadCnt = 0;
 
       StringRecordWriter writer = new StringRecordWriter("/tmp/scribe_data");
-
       for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
         long currentOffset = messageAndOffset.offset();
         if (currentOffset < offset) {
@@ -179,7 +188,7 @@ public class ScribeConsumer {
         payload.get(bytes);
 
         System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
-        //TODO: Write to HDFS /tmp partition
+        // Write to HDFS /tmp partition
         writer.write(bytes);
 
         msgReadCnt++;

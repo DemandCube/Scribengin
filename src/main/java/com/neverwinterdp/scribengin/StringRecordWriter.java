@@ -21,61 +21,41 @@ public class StringRecordWriter {
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
 
     fs = FileSystem.get(URI.create(uri), conf);
-    Path path = new Path(uri); //TODO: hardcode
+    Path path = new Path(uri);
 
     //boolean flag = Boolean.getBoolean(fs.getConf().get("dfs.support.append"));
-    //System.out.println("dfs.support.append is set to: " + flag); //xxx
+    //System.out.println("dfs.support.append is set to: " + flag);
 
     if (fs.exists(path)) {
       System.out.println("File " + uri + " already exists");
       os = fs.append(path);
-      PrintWriter writer = new PrintWriter(os);
-      writer.append("appended content\n");
-      writer.close();
-      fs.close();
+      //os.writeChars("appended content\n");
+      //os.close();
+      //fs.close();
     } else {
       System.out.println("File " + uri + " not found. So create one");
       os = fs.create(path);
-      os.writeChars("hello world2\n");
-      os.close();
-      fs.close();
+      //os.writeChars("hello world2\n");
+      //os.close();
+      //fs.close();
     }
-
-    // just write to it and see what happens
-
-    //try {
-      //System.out.println(" ?>>>>>>>>>>>> " + uri);
-      //fs = FileSystem.get( URI.create(uri), conf );
-      //System.out.println("here0");
-    //} catch (Exception e) {
-      ////e.printStackTrace();
-      //try {
-        //fs = FileSystem.get( URI.create("/tmp/scribe_data"), conf );
-        //System.out.println("here1");
-      //} catch (Exception e1) {
-        ////e1.printStackTrace();
-        //fs = FileSystem.get( URI.create("hdfs://localhost:9092"), conf );
-        //System.out.println("here2");
-      //}
-    //}
-
-    //os = fs.append(new Path(uri));
   }
 
   public void write(byte[] bytes) throws IOException {
-    //os.write(bytes);
-    //br.write(bytes, 0, bytes.length);
+    os.writeChars(new String(bytes).concat("\n"));
   }
 
   public void close() {
     try {
       os.close();
     } catch (IOException e) {
+      //TODO: log
     }
 
     try {
       fs.close();
     } catch (IOException e) {
+      // TODO: log
     }
   }
 }
