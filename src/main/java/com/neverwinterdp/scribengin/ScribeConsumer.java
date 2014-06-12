@@ -81,7 +81,7 @@ public class ScribeConsumer {
     }, commitCheckPointInterval);
   }
 
-  private void commit() {
+  private synchronized void commit() {
     //TODO: move from tmp to the actual partition.
     // TODO: synchronize with the writing code in run()
     System.out.println(">> committing");
@@ -175,24 +175,26 @@ public class ScribeConsumer {
       long msgReadCnt = 0;
 
       StringRecordWriter writer = new StringRecordWriter("/tmp/scribe_data");
-      for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
-        long currentOffset = messageAndOffset.offset();
-        if (currentOffset < offset) {
-          System.out.println("Found an old offset: " + currentOffset + "Expecting: " + offset);
-          continue;
-        }
-        offset = messageAndOffset.nextOffset();
-        ByteBuffer payload = messageAndOffset.message().payload();
+      synchronized(this) {
+        for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
+          long currentOffset = messageAndOffset.offset();
+          if (currentOffset < offset) {
+            System.out.println("Found an old offset: " + currentOffset + "Expecting: " + offset);
+            continue;
+          }
+          offset = messageAndOffset.nextOffset();
+          ByteBuffer payload = messageAndOffset.message().payload();
 
-        byte[] bytes = new byte[payload.limit()];
-        payload.get(bytes);
+          byte[] bytes = new byte[payload.limit()];
+          payload.get(bytes);
 
-        System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
-        // Write to HDFS /tmp partition
-        writer.write(bytes);
+          System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+          // Write to HDFS /tmp partition
+          writer.write(bytes);
 
-        msgReadCnt++;
-      }// for
+          msgReadCnt++;
+        }// for
+      }
       writer.close();
 
       if (msgReadCnt == 0) {
