@@ -32,11 +32,13 @@ import com.beust.jcommander.Parameter;
 public class ScribeConsumer {
   // Random comments:
   // Unique define a partition. Client name + topic name + offset
-  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100 --partition 1
+  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100 --partition 0
   // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
   // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
   // checkout EtlMultiOutputCommitter in Camus
 
+  private static final String PRE_COMMIT_PATH = "/tmp";
+  private static final String TMP_SCRIBE_DATA = PRE_COMMIT_PATH + "/scribe_data"; //TODO: get rid of the hardcoded value
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
@@ -47,6 +49,8 @@ public class ScribeConsumer {
 
   @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION})
   private int partition;
+  private long offset;
+  private boolean hasOffsetBeenCommitted = true;
 
   @Parameter(names = {"-"+Constants.OPT_REPLICA, "--"+Constants.OPT_REPLICA}, variableArity = true)
   private List<String> replicaBrokerList;
@@ -83,16 +87,18 @@ public class ScribeConsumer {
 
   private synchronized void commit() {
     //TODO: move from tmp to the actual partition.
-    // TODO: synchronize with the writing code in run()
     System.out.println(">> committing");
 
-    //Close out the old writer
-    //writer.close();
-    //try {
-      //writer = new StringRecordWriter("/tmp/scribe_data");
-    //} catch (IOException e) {
-      ////exit early.
-    //}
+    if (!hasOffsetBeenCommitted) {
+      try {
+        OffsetCommitter committer = new OffsetCommitter(getCommitLogAbsPath());
+        committer.commitOffset(offset);
+        committer.close();
+        hasOffsetBeenCommitted = true;
+      } catch (IOException e) {
+        // TODO : LOG this error
+      }
+    }
 
     scheduleCommitTimer();
   }
@@ -106,6 +112,10 @@ public class ScribeConsumer {
     String r = sb.toString();
     System.out.println("client name: " + r); //xxx
     return r;
+  }
+
+  private String getCommitLogAbsPath() {
+    return PRE_COMMIT_PATH + "/" + getClientName() + ".log";
   }
 
   private long getLastOffset(String topic, int partition, long startTime) {
@@ -145,7 +155,7 @@ public class ScribeConsumer {
   }
 
   public void run() throws IOException {
-    long offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+    offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     System.out.println(">> offset: " + offset); //xxx
 
     while (true) {
@@ -174,7 +184,7 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
-      StringRecordWriter writer = new StringRecordWriter("/tmp/scribe_data");
+      StringRecordWriter writer = new StringRecordWriter(TMP_SCRIBE_DATA);
       synchronized(this) {
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
@@ -191,6 +201,7 @@ public class ScribeConsumer {
           System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
+          hasOffsetBeenCommitted = false;
 
           msgReadCnt++;
         }// for
