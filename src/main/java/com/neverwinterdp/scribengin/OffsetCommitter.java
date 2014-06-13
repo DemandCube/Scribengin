@@ -30,8 +30,7 @@ public class OffsetCommitter {
   }
 
   public void commitOffset(long offset) throws IOException {
-    os.writeLong(offset);
-    os.writeChars("\n");
+    os.writeChars(Long.toString(offset).concat("\n"));
   }
 
   public void close() {
