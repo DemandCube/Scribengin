@@ -1,10 +1,8 @@
 package com.neverwinterdp.scribengin;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-
 import java.net.URI;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,7 +34,8 @@ public class StringRecordWriter {
   }
 
   public void write(byte[] bytes) throws IOException {
-    os.writeChars(new String(bytes).concat("\n"));
+    os.write(bytes);
+    os.write('\n');
   }
 
   public void close() {

@@ -110,7 +110,6 @@ public class ScribeConsumer {
     sb.append("_");
     sb.append(partition);
     String r = sb.toString();
-    System.out.println("client name: " + r); //xxx
     return r;
   }
 
@@ -118,7 +117,7 @@ public class ScribeConsumer {
     return PRE_COMMIT_PATH + "/" + getClientName() + ".log";
   }
 
-  private long getLastOffset(String topic, int partition, long startTime) {
+  private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
     TopicAndPartition tp = new TopicAndPartition(topic, partition);
 
     Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<TopicAndPartition, PartitionOffsetRequestInfo>();
@@ -154,8 +153,39 @@ public class ScribeConsumer {
     return resp.offsets(topic, partition)[0];
   }
 
+  private long getLatestOffsetFromCommitLog() {
+    long r = -1;
+    try {
+      OffsetReader offsetReader = new OffsetReader(getCommitLogAbsPath());
+      r = offsetReader.readLatestOffset();
+      offsetReader.close();
+      return r;
+    } catch (IOException e) {
+      //TODO: LOG
+    }
+    return r;
+  }
+
+  private long getLatestOffset(String topic, int partition, long startTime) {
+    long offsetFromCommitLog = getLatestOffsetFromCommitLog();
+    System.out.println(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
+    long offsetFromKafka = getLatestOffsetFromKafka(topic, partition, startTime);
+    long r;
+    if (offsetFromCommitLog == -1) {
+      r = offsetFromKafka;
+    } else if (offsetFromCommitLog < offsetFromKafka) {
+      r = offsetFromCommitLog;
+    } else if (offsetFromCommitLog == offsetFromKafka) {
+      r = offsetFromKafka;
+    } else { // offsetFromCommitLog > offsetFromKafka
+      // TODO: log.warn. Someone is screwing with kafka's offset
+      r = offsetFromKafka;
+    }
+    return r;
+  }
+
   public void run() throws IOException {
-    offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+    offset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     System.out.println(">> offset: " + offset); //xxx
 
     while (true) {
@@ -177,7 +207,7 @@ public class ScribeConsumer {
         if (code == ErrorMapping.OffsetOutOfRangeCode())  {
           // We asked for an invalid offset. For simple case ask for the last element to reset
           System.out.println("inside errormap");
-          offset = getLastOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+          offset = getLatestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.LatestTime());
           continue;
         }
       }
@@ -210,7 +240,6 @@ public class ScribeConsumer {
 
       if (msgReadCnt == 0) {
         try {
-          System.out.println("Nothing to read, so go to sleep.");
           Thread.sleep(1000); //Didn't read anything, so go to sleep for awhile.
         } catch(InterruptedException e) {
         }
