@@ -27,9 +27,6 @@ public class StringRecordWriter {
       os = fs.append(path);
     } else {
       os = fs.create(path);
-      //os.writeChars("hello world2\n");
-      //os.close();
-      //fs.close();
     }
   }
 
