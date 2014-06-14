@@ -34,7 +34,6 @@ public class AppTest
   }
 
   public void testPlaceHolder() {
-
   }
 
   //public void testPythonStreamingAM_container1_2container()

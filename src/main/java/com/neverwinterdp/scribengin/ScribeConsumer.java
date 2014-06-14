@@ -50,7 +50,7 @@ public class ScribeConsumer {
   @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION})
   private int partition;
   private long offset;
-  private boolean hasOffsetBeenCommitted = true;
+  private boolean hasBeenCommitted = true;
 
   @Parameter(names = {"-"+Constants.OPT_REPLICA, "--"+Constants.OPT_REPLICA}, variableArity = true)
   private List<String> replicaBrokerList;
@@ -89,12 +89,12 @@ public class ScribeConsumer {
     //TODO: move from tmp to the actual partition.
     System.out.println(">> committing");
 
-    if (!hasOffsetBeenCommitted) {
+    if (!hasBeenCommitted) {
       try {
         OffsetCommitter committer = new OffsetCommitter(getCommitLogAbsPath());
         committer.commitOffset(offset);
         committer.close();
-        hasOffsetBeenCommitted = true;
+        hasBeenCommitted = true;
       } catch (IOException e) {
         // TODO : LOG this error
       }
@@ -166,6 +166,10 @@ public class ScribeConsumer {
     return r;
   }
 
+  //private long getLatestOffsetFromCommittedData() {
+
+  //}
+
   private long getLatestOffset(String topic, int partition, long startTime) {
     long offsetFromCommitLog = getLatestOffsetFromCommitLog();
     System.out.println(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
@@ -231,7 +235,7 @@ public class ScribeConsumer {
           System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
-          hasOffsetBeenCommitted = false;
+          hasBeenCommitted = false;
 
           msgReadCnt++;
         }// for
