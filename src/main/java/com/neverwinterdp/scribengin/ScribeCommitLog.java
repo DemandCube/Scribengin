@@ -42,9 +42,7 @@ public class ScribeCommitLog {
       fs = FileSystem.get(URI.create(uri), conf);
     } else {
       // local
-      fs = new LocalFileSystem();
-      System.out.println(fs);//xxx
-      fs.initialize(URI.create(uri), new Configuration());
+      // It's unit test's responsiblility to set fs.
     }
   }
 

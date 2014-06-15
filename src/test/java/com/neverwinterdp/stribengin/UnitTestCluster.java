@@ -11,6 +11,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 
 public class UnitTestCluster {
+  private static MiniDFSCluster hdfsCluster;
 
   protected static MiniYARNCluster createMiniYARNCluster(int numOfNodeManagers) throws Exception {
     return createMiniYARNCluster(new YarnConfiguration(), numOfNodeManagers) ;
@@ -31,21 +32,24 @@ public class UnitTestCluster {
   }
 
   protected static MiniDFSCluster createMiniDFSCluster(Configuration conf, String dir, int numDataNodes) throws IOException {
-    File baseDir = new File(dir).getAbsoluteFile();
-    FileUtil.fullyDelete(baseDir);
-    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
-    MiniDFSCluster hdfsCluster =
+    if (UnitTestCluster.hdfsCluster == null) {
+      File baseDir = new File(dir).getAbsoluteFile();
+      FileUtil.fullyDelete(baseDir);
+      conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
+      MiniDFSCluster hdfsCluster =
         new MiniDFSCluster.Builder(conf).
         numDataNodes(numDataNodes).
         build();
-    hdfsCluster.waitClusterUp();
-    //String hdfsURI = "hdfs://localhost:" + hdfsCluster.getNameNodePort() + "/";
-    //System.out.println("hdfs uri: " + hdfsURI) ;
-    //FileSystem fs = hdfsCluster.getFileSystem();
-    //Assert.assertTrue("Not a HDFS: "+ fs.getUri(), fs instanceof DistributedFileSystem);
-    //final DistributedFileSystem dfs = (DistributedFileSystem)fs;
-    //dfs.copyFromLocalFile(false, false, new Path("target/hadoop-samples-1.0.jar"), new Path("/tmp/hadoop-samples-1.0.jar"));
-    return hdfsCluster ;
+      hdfsCluster.waitClusterUp();
+      //String hdfsURI = "hdfs://localhost:" + hdfsCluster.getNameNodePort() + "/";
+      //System.out.println("hdfs uri: " + hdfsURI) ;
+      //FileSystem fs = hdfsCluster.getFileSystem();
+      //Assert.assertTrue("Not a HDFS: "+ fs.getUri(), fs instanceof DistributedFileSystem);
+      //final DistributedFileSystem dfs = (DistributedFileSystem)fs;
+      //dfs.copyFromLocalFile(false, false, new Path("target/hadoop-samples-1.0.jar"), new Path("/tmp/hadoop-samples-1.0.jar"));
+      UnitTestCluster.hdfsCluster = hdfsCluster;
+    }
+    return UnitTestCluster.hdfsCluster;
   }
 }
 
