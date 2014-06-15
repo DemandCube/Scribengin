@@ -92,7 +92,7 @@ public class ScribeCommitLog {
     }
 
     List<ScribeLogEntry> recentLogEntryList = (List<ScribeLogEntry>)(List<?>)Arrays.asList(buffer.toArray());
-    recentLogIter = recentLogEntryList.listIterator();
+    recentLogIter = recentLogEntryList.listIterator(recentLogEntryList.size());
   }
 
   public ScribeLogEntry getLatestEntry() {

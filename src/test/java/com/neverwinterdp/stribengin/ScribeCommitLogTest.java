@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 import com.neverwinterdp.scribengin.ScribeCommitLog;
+import com.neverwinterdp.scribengin.ScribeLogEntry;
 
 public class ScribeCommitLogTest extends TestCase {
   private static final Log log =
@@ -30,19 +31,30 @@ public class ScribeCommitLogTest extends TestCase {
     return new TestSuite( ScribeCommitLogTest.class );
   }
 
-  public void testRecord()
+  private ScribeCommitLog createCommitLog() throws IOException ,NoSuchFieldException, IllegalAccessException
   {
-    try {
       MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster("/tmp/miniCluster", 1);
-
       FileSystem fs = miniCluster.getFileSystem();
-      ScribeCommitLog log = new ScribeCommitLog("/tmp/scribeTestCommit.log", true);
+      ScribeCommitLog log = new ScribeCommitLog("/scribeTestCommit.log", true);
 
       Field field = ScribeCommitLog.class.getDeclaredField("fs");
       field.setAccessible(true);
       field.set(log, fs);
+      return log;
+  }
 
-      log.record(11, 22, "/src/path/data.111", "/dest/path/data.222");
+  public void testRecord()
+  {
+    try {
+      ScribeCommitLog log = createCommitLog();
+      log.record(11, 22, "/src/path/data.111", "/dest/path/data.222"); //fs is close
+
+      log = createCommitLog();
+      log.readLastTwoEntries();
+
+      ScribeLogEntry e = log.getLatestEntry();
+      System.out.println(">>>> " + e.getDestPath());
+
 
     } catch (IOException e) {
       e.printStackTrace();
