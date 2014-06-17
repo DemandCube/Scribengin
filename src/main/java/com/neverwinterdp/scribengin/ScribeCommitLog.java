@@ -14,11 +14,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 
 
 public class ScribeCommitLog {
+  private static final Logger log =
+    Logger.getLogger(ScribeCommitLog.class);
+
   private FileSystem fs;
   //private List recentLogEntryList;
   private ListIterator<ScribeLogEntry> recentLogIter;
@@ -95,6 +98,7 @@ public class ScribeCommitLog {
     recentLogIter = recentLogEntryList.listIterator(recentLogEntryList.size());
   }
 
+  // return null, if there's no more entry in the log
   public ScribeLogEntry getLatestEntry() {
     ScribeLogEntry r = null;
     if (recentLogIter.hasPrevious()) {
