@@ -1,8 +1,7 @@
 package com.neverwinterdp.scribengin;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URI;
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,6 @@ import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
@@ -36,10 +31,15 @@ public class ScribeConsumer {
   // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
   // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
   // checkout EtlMultiOutputCommitter in Camus
+  // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
-  private static final String PRE_COMMIT_PATH = "/tmp";
-  private static final String TMP_SCRIBE_DATA = PRE_COMMIT_PATH + "/scribe_data"; //TODO: get rid of the hardcoded value
+  private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
+  private static final String COMMIT_PATH_PREFIX = "";
+
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
+
+  private String currTmpDataPath;
+  private String currDataPath;
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
@@ -49,8 +49,8 @@ public class ScribeConsumer {
 
   @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION})
   private int partition;
-  private long offset;
-  private boolean hasBeenCommitted = true;
+  private long lastCommittedOffset;
+  private long offset; // offset is on a per line basis. starts on the last valid offset
 
   @Parameter(names = {"-"+Constants.OPT_REPLICA, "--"+Constants.OPT_REPLICA}, variableArity = true)
   private List<String> replicaBrokerList;
@@ -89,13 +89,26 @@ public class ScribeConsumer {
     //TODO: move from tmp to the actual partition.
     System.out.println(">> committing");
 
-    if (!hasBeenCommitted) {
+    if (lastCommittedOffset != offset) {
+      //Commit
+
       try {
-        OffsetCommitter committer = new OffsetCommitter(getCommitLogAbsPath());
-        committer.commitOffset(offset);
-        committer.close();
-        hasBeenCommitted = true;
+        long startOffset = lastCommittedOffset + 1;
+        long endOffset = offset;
+        System.out.println("\tstartOffset : " + String.valueOf(startOffset)); //xxx
+        System.out.println("\tendOffset   : " + String.valueOf(endOffset)); //xxx
+        System.out.println("\ttmpDataPath : " + currTmpDataPath); //xxx
+        System.out.println("\tDataPath    : " + currDataPath); //xxx
+
+        ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
+        log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+
+        // TODO: move data file
+        lastCommittedOffset = offset;
+        generateTmpAndDestDataPaths();
       } catch (IOException e) {
+        // TODO : LOG this error
+      } catch (NoSuchAlgorithmException e) {
         // TODO : LOG this error
       }
     }
@@ -114,7 +127,24 @@ public class ScribeConsumer {
   }
 
   private String getCommitLogAbsPath() {
-    return PRE_COMMIT_PATH + "/" + getClientName() + ".log";
+    return PRE_COMMIT_PATH_PREFIX + "/" + getClientName() + ".log";
+  }
+
+  private void generateTmpAndDestDataPaths() {
+    StringBuilder sb = new StringBuilder();
+    long ts = System.currentTimeMillis()/1000L;
+    sb.append(PRE_COMMIT_PATH_PREFIX)
+      .append("/scribe.data")
+      .append(".")
+      .append(ts);
+    this.currTmpDataPath = sb.toString();
+
+    sb = new StringBuilder();
+    sb.append(COMMIT_PATH_PREFIX)
+      .append("/scribe.data")
+      .append(".")
+      .append(ts);
+    this.currDataPath = sb.toString();
   }
 
   private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
@@ -166,10 +196,6 @@ public class ScribeConsumer {
     return r;
   }
 
-  //private long getLatestOffsetFromCommittedData() {
-
-  //}
-
   private long getLatestOffset(String topic, int partition, long startTime) {
     long offsetFromCommitLog = getLatestOffsetFromCommitLog();
     System.out.println(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
@@ -189,8 +215,10 @@ public class ScribeConsumer {
   }
 
   public void run() throws IOException {
-    offset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
-    System.out.println(">> offset: " + offset); //xxx
+    generateTmpAndDestDataPaths();
+    lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+    offset = lastCommittedOffset;
+    System.out.println(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
 
     while (true) {
       System.out.println(">> offset: " + offset); //xxx
@@ -218,7 +246,7 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
-      StringRecordWriter writer = new StringRecordWriter(TMP_SCRIBE_DATA);
+      StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
       synchronized(this) {
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
@@ -235,7 +263,6 @@ public class ScribeConsumer {
           System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
-          hasBeenCommitted = false;
 
           msgReadCnt++;
         }// for
