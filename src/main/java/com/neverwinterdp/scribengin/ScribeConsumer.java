@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin;
 import java.io.IOException;
+
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -19,6 +21,9 @@ import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
@@ -34,7 +39,7 @@ public class ScribeConsumer {
   // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
   private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
-  private static final String COMMIT_PATH_PREFIX = "";
+  private static final String COMMIT_PATH_PREFIX = "/user/kxae";
 
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
@@ -59,6 +64,7 @@ public class ScribeConsumer {
   private long commitCheckPointInterval; // ms
 
   private SimpleConsumer consumer;
+  //private FileSystem fs;
   private Timer checkPointIntervalTimer;
 
   public ScribeConsumer() {
@@ -85,6 +91,29 @@ public class ScribeConsumer {
     }, commitCheckPointInterval);
   }
 
+  private void commitData(String src, String dest) {
+    FileSystem fs = null;
+    try {
+      Configuration conf = new Configuration();
+      conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
+      conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+      fs = FileSystem.get(URI.create(COMMIT_PATH_PREFIX), conf);
+      fs.rename(new Path(src), new Path(dest));
+    } catch (IOException e) {
+      //TODO : LOG
+      e.printStackTrace();
+    } finally {
+      if (fs != null) {
+        try {
+          fs.close();
+        } catch (IOException e) {
+          //TODO : LOG
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+
   private synchronized void commit() {
     //TODO: move from tmp to the actual partition.
     System.out.println(">> committing");
@@ -93,6 +122,8 @@ public class ScribeConsumer {
       //Commit
 
       try {
+        // First record the to-be taken action in the WAL.
+        // Then, mv the tmp data file to it's location.
         long startOffset = lastCommittedOffset + 1;
         long endOffset = offset;
         System.out.println("\tstartOffset : " + String.valueOf(startOffset)); //xxx
@@ -102,14 +133,16 @@ public class ScribeConsumer {
 
         ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
         log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+        commitData(currTmpDataPath, currDataPath);
 
-        // TODO: move data file
         lastCommittedOffset = offset;
         generateTmpAndDestDataPaths();
       } catch (IOException e) {
         // TODO : LOG this error
+        e.printStackTrace();
       } catch (NoSuchAlgorithmException e) {
         // TODO : LOG this error
+        e.printStackTrace();
       }
     }
 
@@ -185,14 +218,14 @@ public class ScribeConsumer {
 
   private long getLatestOffsetFromCommitLog() {
     long r = -1;
-    try {
-      OffsetReader offsetReader = new OffsetReader(getCommitLogAbsPath());
-      r = offsetReader.readLatestOffset();
-      offsetReader.close();
-      return r;
-    } catch (IOException e) {
-      //TODO: LOG
-    }
+    //try {
+      //OffsetReader offsetReader = new OffsetReader(getCommitLogAbsPath());
+      //r = offsetReader.readLatestOffset();
+      //offsetReader.close();
+      //return r;
+    //} catch (IOException e) {
+      ////TODO: LOG
+    //}
     return r;
   }
 
