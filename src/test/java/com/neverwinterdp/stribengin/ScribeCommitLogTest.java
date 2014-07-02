@@ -10,6 +10,7 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -162,8 +163,113 @@ public class ScribeCommitLogTest extends TestCase {
     }
   }
 
-  public void testLastTwoEntries__ThreeEntry()
+  public void testLastTwoEntries__invalidChecksum__TwoEntries()
   {
+    try {
+      ScribeCommitLog log = createCommitLog();
+      log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
+      log = createCommitLog();
+      //log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
 
+      ScribeLogEntry badEntry = new ScribeLogEntry(23, 33, "/src/path/data.1", "/dest/path/data.1");
+      Field field = ScribeLogEntry.class.getDeclaredField("checksum");
+      field.setAccessible(true);
+      byte[] badCheckSum = "DEADBEEF".getBytes();
+      field.set(badEntry, badCheckSum);
+
+      FSDataOutputStream os;
+      Field fsField = ScribeCommitLog.class.getDeclaredField("fs");
+      fsField.setAccessible(true);
+      FileSystem fs;
+      fs = (FileSystem) fsField.get(log);
+      if (fs.exists(new Path(COMMIT_LOG_PATH))) {
+        os = fs.append(new Path(COMMIT_LOG_PATH));
+      } else {
+        os = fs.create(new Path(COMMIT_LOG_PATH));
+      }
+
+      String jsonStr = ScribeLogEntry.toJson(badEntry);
+
+      os.write(jsonStr.getBytes());
+      os.write('\n');
+
+      try {
+        os.close();
+      } catch (IOException e) {
+      }
+
+      log = createCommitLog();
+      log.readLastTwoEntries();
+
+      ScribeLogEntry logEntry = log.getLatestEntry();
+      assert(logEntry.getEndOffset() == 33);
+      assert(logEntry.isCheckSumValid() == false);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    } finally {
+      deleteCommitLog();
+    }
+  }
+
+  public void testLastTwoEntries__invalidChecksum__badJson()
+  {
+    try {
+      ScribeCommitLog log = createCommitLog();
+      log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
+      log = createCommitLog();
+      //log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
+
+      ScribeLogEntry badEntry = new ScribeLogEntry(23, 33, "/src/path/data.1", "/dest/path/data.1");
+      Field field = ScribeLogEntry.class.getDeclaredField("checksum");
+      field.setAccessible(true);
+      byte[] badCheckSum = "DEADBEEF".getBytes();
+      field.set(badEntry, badCheckSum);
+
+      FSDataOutputStream os;
+      Field fsField = ScribeCommitLog.class.getDeclaredField("fs");
+      fsField.setAccessible(true);
+      FileSystem fs;
+      fs = (FileSystem) fsField.get(log);
+      if (fs.exists(new Path(COMMIT_LOG_PATH))) {
+        os = fs.append(new Path(COMMIT_LOG_PATH));
+      } else {
+        os = fs.create(new Path(COMMIT_LOG_PATH));
+      }
+
+      String jsonStr = ScribeLogEntry.toJson(badEntry);
+
+      jsonStr += "make it a bad json";
+      os.write(jsonStr.getBytes());
+
+      try {
+        os.close();
+      } catch (IOException e) {
+      }
+
+      log = createCommitLog();
+      log.readLastTwoEntries();
+
+      ScribeLogEntry logEntry = log.getLatestEntry();
+      assert(logEntry.isCheckSumValid() == false);
+      assert(logEntry.getSrcPath() == null);
+      assert(logEntry.getDestPath() == null);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    } finally {
+      deleteCommitLog();
+    }
   }
 }

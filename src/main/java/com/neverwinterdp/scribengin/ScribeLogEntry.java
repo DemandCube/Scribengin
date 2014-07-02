@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 public class ScribeLogEntry {
   private long startOffset;
@@ -13,6 +14,9 @@ public class ScribeLogEntry {
   private String srcPath;
   private String destPath;
   private byte[] checksum;
+
+  public ScribeLogEntry() {
+  }
 
   public ScribeLogEntry(long startOffset, long endOffset, String srcPath, String destPath) throws NoSuchAlgorithmException {
     this.startOffset = startOffset;
@@ -22,7 +26,10 @@ public class ScribeLogEntry {
     this.generateCheckSum();
   }
 
+  // Return null if the private fields aren't properly instantiated.
   private byte[] calcCheckSum() throws NoSuchAlgorithmException {
+    if ( srcPath == null || destPath == null)
+      return null;
     MessageDigest md = MessageDigest.getInstance("MD5");
     md.update(ByteBuffer.allocate(8).putLong(startOffset).array()); //startOffset
     md.update(ByteBuffer.allocate(8).putLong(endOffset).array()); //endOffset
@@ -39,12 +46,23 @@ public class ScribeLogEntry {
     return (new Gson()).toJson(entry);
   }
 
-  public static ScribeLogEntry fromJson(String jsonStr) throws NoSuchAlgorithmException {
-    ScribeLogEntry entry = (new Gson()).fromJson(jsonStr, ScribeLogEntry.class);
-    if (Arrays.equals(entry.calcCheckSum(), entry.checksum)) {
-      return entry;
+  public static ScribeLogEntry fromJson(String jsonStr) {
+    ScribeLogEntry r;
+    try {
+      r = (new Gson()).fromJson(jsonStr, ScribeLogEntry.class);
+    } catch(JsonSyntaxException e) {
+      r = new ScribeLogEntry();
     }
-    return null;
+    return r;
+  }
+
+  public boolean isCheckSumValid() throws NoSuchAlgorithmException{
+    byte[] calculatedChecksum = calcCheckSum();
+    if (calculatedChecksum == null) {
+      return false;
+    } else {
+      return Arrays.equals(calculatedChecksum, checksum);
+    }
   }
 
   public long getStartOffset() {

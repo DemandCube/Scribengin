@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin;
 import java.io.IOException;
-
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -22,6 +20,7 @@ import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
@@ -91,13 +90,19 @@ public class ScribeConsumer {
     }, commitCheckPointInterval);
   }
 
+  private FileSystem getFS() throws IOException {
+    Configuration conf = new Configuration();
+    conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
+    conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+    FileSystem fs = FileSystem.get(conf);
+    //fs = FileSystem.get(URI.create(COMMIT_PATH_PREFIX), conf);
+    return fs;
+  }
+
   private void commitData(String src, String dest) {
     FileSystem fs = null;
     try {
-      Configuration conf = new Configuration();
-      conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
-      conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
-      fs = FileSystem.get(URI.create(COMMIT_PATH_PREFIX), conf);
+      fs = getFS();
       fs.rename(new Path(src), new Path(dest));
     } catch (IOException e) {
       //TODO : LOG
@@ -180,6 +185,15 @@ public class ScribeConsumer {
     this.currDataPath = sb.toString();
   }
 
+  private String getTmpDataPathPattern() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(PRE_COMMIT_PATH_PREFIX)
+      .append("/scribe.data")
+      .append(".")
+      .append("*");
+    return sb.toString();
+  }
+
   private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
     TopicAndPartition tp = new TopicAndPartition(topic, partition);
 
@@ -217,15 +231,39 @@ public class ScribeConsumer {
   }
 
   private long getLatestOffsetFromCommitLog() {
+    // Here's where we do recovery.
     long r = -1;
-    //try {
-      //OffsetReader offsetReader = new OffsetReader(getCommitLogAbsPath());
-      //r = offsetReader.readLatestOffset();
-      //offsetReader.close();
-      //return r;
-    //} catch (IOException e) {
-      ////TODO: LOG
-    //}
+
+    try {
+      ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
+      log.readLastTwoEntries();
+      ScribeLogEntry entry = log.getLatestEntry();
+
+      FileSystem fs = getFS();
+      if (entry.isCheckSumValid()) {
+        String tmpDataFilePath = entry.getSrcPath();
+
+
+      } else {
+        // Corrupted log file
+        // Clean up. Delete the tmp data file if present.
+        FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
+        for(int i = 0; i < fileStatusArry.length; i++) {
+          FileStatus fileStatus = fileStatusArry[i];
+          fs.delete( fileStatus.getPath() );
+        }
+
+        // Read the next log entry.
+        entry = log.getLatestEntry();
+        r = entry.getEndOffset();
+      }
+    } catch (IOException e) {
+      //TODO: log.warn
+      e.printStackTrace();
+    } catch (NoSuchAlgorithmException e) {
+      //TODO: log.warn
+      e.printStackTrace();
+    }
     return r;
   }
 
@@ -308,7 +346,7 @@ public class ScribeConsumer {
         } catch(InterruptedException e) {
         }
       }
-    }
+    } // while
   }
 
   public static void main(String[] args) throws IOException {
