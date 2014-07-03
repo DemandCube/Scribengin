@@ -230,36 +230,58 @@ public class ScribeConsumer {
     return resp.offsets(topic, partition)[0];
   }
 
-  //private ScribeLogEntry DeleteUncommitedDataAndFetchLastCommit() {
-    //FileSystem fs = getFS();
+  private void DeleteUncommittedData() throws IOException
+  {
+    FileSystem fs = getFS();
 
-    //// Corrupted log file
-    //// Clean up. Delete the tmp data file if present.
-    //FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
-    //for(int i = 0; i < fileStatusArry.length; i++) {
-      //FileStatus fileStatus = fileStatusArry[i];
-      //fs.delete( fileStatus.getPath() );
-    //}
+    // Corrupted log file
+    // Clean up. Delete the tmp data file if present.
+    FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
+    for(int i = 0; i < fileStatusArry.length; i++) {
+      FileStatus fileStatus = fileStatusArry[i];
+      fs.delete( fileStatus.getPath() );
+    }
+    fs.close();
+  }
 
-    //// Read the next log entry.
-    //entry = log.getLatestEntry();
-    //r = entry.getEndOffset();
-
-  //}
+  private ScribeLogEntry getLatestValidEntry(ScribeCommitLog log) {
+    ScribeLogEntry entry = null;
+    try {
+      do {
+        entry = log.getLatestEntry();
+      } while (entry != null && !entry.isCheckSumValid());
+    } catch (NoSuchAlgorithmException ex) {
+      //TODO log
+    }
+    return entry;
+  }
 
   private long getLatestOffsetFromCommitLog() {
     // Here's where we do recovery.
     long r = -1;
 
+    ScribeLogEntry entry = null;
     try {
       ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
-      log.readLastTwoEntries();
-      ScribeLogEntry entry = log.getLatestEntry();
+      log.read();
+      entry = log.getLatestEntry();
 
       if (entry.isCheckSumValid()) {
+        FileSystem fs = getFS();
         String tmpDataFilePath = entry.getSrcPath();
+
+        if (fs.exists(new Path(tmpDataFilePath))) {
+          // mv to the dest
+          commitData(tmpDataFilePath, entry.getDestPath());
+        } else {
+          // Data has been committed
+          // Or, it never got around to write to the log.
+          // Delete tmp data file just in case.
+          DeleteUncommittedData();
+        }
       } else {
-        //entry = DeleteUncommitedDataAndFetchLastCommit();
+        DeleteUncommittedData();
+        entry = getLatestValidEntry(log);
       }
     } catch (IOException e) {
       //TODO: log.warn
@@ -267,6 +289,10 @@ public class ScribeConsumer {
     } catch (NoSuchAlgorithmException e) {
       //TODO: log.warn
       e.printStackTrace();
+    }
+
+    if (entry != null) {
+      r = entry.getEndOffset();
     }
     return r;
   }
