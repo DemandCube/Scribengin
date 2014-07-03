@@ -258,6 +258,11 @@ public class ScribeCommitLogTest extends TestCase {
       assert(logEntry.getSrcPath() == null);
       assert(logEntry.getDestPath() == null);
 
+      logEntry = log.getLatestEntry(); // read the next entry
+      assert(logEntry.isCheckSumValid() == true);
+      assert(logEntry.getStartOffset() == 11);
+      assert(logEntry.getEndOffset() == 22);
+
     } catch (IOException e) {
       e.printStackTrace();
       assert(false);
