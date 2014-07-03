@@ -1,6 +1,5 @@
 package com.neverwinterdp.scribengin;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,6 +8,7 @@ import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -79,8 +79,9 @@ public class ScribeCommitLog {
 
   public void read() throws IOException
   {
+    ArrayList<ScribeLogEntry> logEntryList = new ArrayList<ScribeLogEntry>();
+
     if (fs.exists(path)) {
-      ArrayList<ScribeLogEntry> logEntryList = new ArrayList<ScribeLogEntry>();
       FileStatus status = fs.getFileStatus(path);
       long fptr = status.getLen() - 1;
 
@@ -93,10 +94,11 @@ public class ScribeCommitLog {
       while (fptr >= 0) {
         in.seek(fptr);
         byte b = in.readByte();
-        System.out.println(">> b: " + b);//xxx
         if (b != '\n') {
           buffer.write(b);
-        } else {
+        }
+
+        if (b == '\n' || fptr == 0) {
           if ( buffer.size() > 0 ) {
             // read from the back of the file, so we'll have to reverse the string.
             String jsonStr = new StringBuffer(buffer.toString()).reverse().toString();
@@ -139,6 +141,9 @@ public class ScribeCommitLog {
 
       fsClose();
     }
+
+    Collections.reverse( logEntryList );
+    recentLogIter = logEntryList.listIterator( logEntryList.size() );
   }
 
   public void readLastTwoEntries() throws IOException, NoSuchAlgorithmException

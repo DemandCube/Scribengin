@@ -285,9 +285,12 @@ public class ScribeCommitLogTest extends TestCase {
       log = createCommitLog();
       log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
       log = createCommitLog();
+      //log.record(34, 44, "/src/path/data.2", "/dest/path/data.2"); //fs is close
+      //log = createCommitLog();
       log.read();
       ScribeLogEntry logEntry = log.getLatestEntry();
-      assert(logEntry.isCheckSumValid() == false);
+      System.out.println(">> tojson: " + ScribeLogEntry.toJson(logEntry)); //xxx
+      assert(logEntry.isCheckSumValid() == true);
       assert(logEntry.getStartOffset() == 23);
       assert(logEntry.getEndOffset() == 33);
 
