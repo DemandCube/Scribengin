@@ -146,32 +146,6 @@ public class ScribeCommitLog {
     recentLogIter = logEntryList.listIterator( logEntryList.size() );
   }
 
-  public void readLastTwoEntries() throws IOException, NoSuchAlgorithmException
-  {
-    CircularFifoBuffer buffer = new CircularFifoBuffer(2);
-
-    if (fs.exists(path)) {
-      String currJsonStr;
-      FSDataInputStream in = fs.open(path);
-
-      BufferedReader br = new BufferedReader(new InputStreamReader(in));
-      while ((currJsonStr = br.readLine()) != null) {
-        ScribeLogEntry e = ScribeLogEntry.fromJson(currJsonStr);
-        buffer.add(e);
-      }// while
-
-      try{
-        in.close();
-      } catch(IOException e) {
-        //TODO: log
-      }
-      fsClose();
-    }
-
-    List<ScribeLogEntry> recentLogEntryList = (List<ScribeLogEntry>)(List<?>)Arrays.asList(buffer.toArray());
-    recentLogIter = recentLogEntryList.listIterator(recentLogEntryList.size());
-  }
-
   // return null, if there's no more entry in the log
   public ScribeLogEntry getLatestEntry() {
     ScribeLogEntry r = null;
