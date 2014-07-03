@@ -262,14 +262,51 @@ public class ScribeCommitLogTest extends TestCase {
 
     } catch (IOException e) {
       e.printStackTrace();
+      assert(false);
     } catch (NoSuchFieldException e) {
       e.printStackTrace();
+      assert(false);
     } catch (IllegalAccessException e) {
       e.printStackTrace();
+      assert(false);
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
+      assert(false);
     } finally {
       deleteCommitLog();
     }
   }
+
+  public void testRead()
+  {
+    try {
+      ScribeCommitLog log = createCommitLog();
+      log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
+      log = createCommitLog();
+      log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
+      log = createCommitLog();
+      log.read();
+      ScribeLogEntry logEntry = log.getLatestEntry();
+      assert(logEntry.isCheckSumValid() == false);
+      assert(logEntry.getStartOffset() == 23);
+      assert(logEntry.getEndOffset() == 33);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+      assert(false);
+    } finally {
+      deleteCommitLog();
+    }
+
+  }
+
 }

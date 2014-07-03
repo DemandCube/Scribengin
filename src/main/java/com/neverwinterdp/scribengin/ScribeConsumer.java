@@ -230,6 +230,23 @@ public class ScribeConsumer {
     return resp.offsets(topic, partition)[0];
   }
 
+  //private ScribeLogEntry DeleteUncommitedDataAndFetchLastCommit() {
+    //FileSystem fs = getFS();
+
+    //// Corrupted log file
+    //// Clean up. Delete the tmp data file if present.
+    //FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
+    //for(int i = 0; i < fileStatusArry.length; i++) {
+      //FileStatus fileStatus = fileStatusArry[i];
+      //fs.delete( fileStatus.getPath() );
+    //}
+
+    //// Read the next log entry.
+    //entry = log.getLatestEntry();
+    //r = entry.getEndOffset();
+
+  //}
+
   private long getLatestOffsetFromCommitLog() {
     // Here's where we do recovery.
     long r = -1;
@@ -239,23 +256,10 @@ public class ScribeConsumer {
       log.readLastTwoEntries();
       ScribeLogEntry entry = log.getLatestEntry();
 
-      FileSystem fs = getFS();
       if (entry.isCheckSumValid()) {
         String tmpDataFilePath = entry.getSrcPath();
-
-
       } else {
-        // Corrupted log file
-        // Clean up. Delete the tmp data file if present.
-        FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
-        for(int i = 0; i < fileStatusArry.length; i++) {
-          FileStatus fileStatus = fileStatusArry[i];
-          fs.delete( fileStatus.getPath() );
-        }
-
-        // Read the next log entry.
-        entry = log.getLatestEntry();
-        r = entry.getEndOffset();
+        //entry = DeleteUncommitedDataAndFetchLastCommit();
       }
     } catch (IOException e) {
       //TODO: log.warn

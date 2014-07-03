@@ -1,10 +1,13 @@
 package com.neverwinterdp.scribengin;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
@@ -13,12 +16,14 @@ import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 
 public class ScribeCommitLog {
+  private static final int NUM_CORRECT_RECORDS = 3;
   private static final Logger log =
     Logger.getLogger(ScribeCommitLog.class);
 
@@ -70,6 +75,70 @@ public class ScribeCommitLog {
       //TODO: log
     }
     fsClose();
+  }
+
+  public void read() throws IOException
+  {
+    if (fs.exists(path)) {
+      ArrayList<ScribeLogEntry> logEntryList = new ArrayList<ScribeLogEntry>();
+      FileStatus status = fs.getFileStatus(path);
+      long fptr = status.getLen() - 1;
+
+      FSDataInputStream in = fs.open(path);
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+
+      int correctEntryCnt = 0;
+      System.out.println(">>fptr : " + fptr); //xxx
+      while (fptr >= 0) {
+        in.seek(fptr);
+        byte b = in.readByte();
+        System.out.println(">> b: " + b);//xxx
+        if (b != '\n') {
+          buffer.write(b);
+        } else {
+          if ( buffer.size() > 0 ) {
+            // read from the back of the file, so we'll have to reverse the string.
+            String jsonStr = new StringBuffer(buffer.toString()).reverse().toString();
+            buffer.reset();
+            //TODO: log the jsonStr's content
+            System.out.println(">> jsonStr: " + jsonStr); //xxx
+
+            ScribeLogEntry e = ScribeLogEntry.fromJson(jsonStr);
+
+            logEntryList.add(e);
+
+            try {
+              if (e.isCheckSumValid()) {
+                correctEntryCnt++;
+              }
+            } catch (NoSuchAlgorithmException ex) {
+              //TODO: log
+            }
+
+            if (correctEntryCnt == NUM_CORRECT_RECORDS) {
+              break;
+            }
+          }
+        }
+        fptr--;
+      } //while
+
+      // Check to see if the last character is '\n'
+      // If not, make sure to write an extra '\n' to the log file
+      in.seek(status.getLen() - 1);
+      if (in.readByte() != '\n') {
+         FSDataOutputStream os = fs.append(path);
+         os.write('\n');
+         try {
+           os.close();
+         } catch (IOException e) {
+           //TODO: log
+         }
+      }
+
+      fsClose();
+    }
   }
 
   public void readLastTwoEntries() throws IOException, NoSuchAlgorithmException
