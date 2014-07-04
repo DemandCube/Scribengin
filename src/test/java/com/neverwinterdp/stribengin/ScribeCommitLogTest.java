@@ -215,48 +215,24 @@ public class ScribeCommitLogTest extends TestCase {
     }
   }
 
-  public void testInvalidChecksum__badJson()
+  private void _testInvalidChecksumImp( boolean withNewline )
   {
     try {
       ScribeCommitLog log = createCommitLog();
       log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
       log = createCommitLog();
-      //log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
 
-      ScribeLogEntry badEntry = new ScribeLogEntry(23, 33, "/src/path/data.1", "/dest/path/data.1");
-      Field field = ScribeLogEntry.class.getDeclaredField("checksum");
-      field.setAccessible(true);
-      byte[] badCheckSum = "DEADBEEF".getBytes();
-      field.set(badEntry, badCheckSum);
+      ScribeCommitLogTestFactory.instance().addCorruptedEntry(
+          log, 23, 33,
+          "/src/path/data.2", "/dest/path/data.2", true);
 
-      FSDataOutputStream os;
-      Field fsField = ScribeCommitLog.class.getDeclaredField("fs");
-      fsField.setAccessible(true);
-      FileSystem fs;
-      fs = (FileSystem) fsField.get(log);
-      if (fs.exists(new Path(COMMIT_LOG_PATH))) {
-        os = fs.append(new Path(COMMIT_LOG_PATH));
-      } else {
-        os = fs.create(new Path(COMMIT_LOG_PATH));
-      }
-
-      String jsonStr = ScribeLogEntry.toJson(badEntry);
-
-      jsonStr += "make it a bad json";
-      os.write(jsonStr.getBytes());
-
-      try {
-        os.close();
-      } catch (IOException e) {
-      }
-
-      log = createCommitLog();
       log.read();
 
       ScribeLogEntry logEntry = log.getLatestEntry();
       assert(logEntry.isCheckSumValid() == false);
-      assert(logEntry.getSrcPath() == null);
-      assert(logEntry.getDestPath() == null);
+      assert(logEntry.getSrcPath().equals("/src/path/data.2"));
+
+      assert(logEntry.getDestPath().equals("/dest/path/data.2"));
 
       logEntry = log.getLatestEntry(); // read the next entry
       assert(logEntry.isCheckSumValid() == true);
@@ -278,6 +254,16 @@ public class ScribeCommitLogTest extends TestCase {
     } finally {
       deleteCommitLog();
     }
+
   }
 
+  public void testInvalidChecksum__with_newline()
+  {
+    _testInvalidChecksumImp(true);
+  }
+
+  public void testInvalidChecksum__without_newline()
+  {
+    _testInvalidChecksumImp(false);
+  }
 }
