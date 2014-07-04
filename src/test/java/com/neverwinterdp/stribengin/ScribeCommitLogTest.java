@@ -8,21 +8,15 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeLogEntry;
 
 public class ScribeCommitLogTest extends TestCase {
-  private static final Log log =
-    LogFactory.getLog(ScribeCommitLogTest.class);
 
-  private static String MINI_CLUSTER_PATH = "/tmp/miniCluster";
   private static String COMMIT_LOG_PATH = "/scribeTestCommit.log";
 
   public ScribeCommitLogTest(String name)
@@ -35,36 +29,13 @@ public class ScribeCommitLogTest extends TestCase {
     return new TestSuite( ScribeCommitLogTest.class );
   }
 
-  private ScribeCommitLog createCommitLog() throws IOException ,NoSuchFieldException, IllegalAccessException
-  {
-    MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-    FileSystem fs = miniCluster.getFileSystem();
-    ScribeCommitLog log = new ScribeCommitLog(COMMIT_LOG_PATH, true);
-
-    Field field = ScribeCommitLog.class.getDeclaredField("fs");
-    field.setAccessible(true);
-    field.set(log, fs);
-    return log;
-  }
-
-  private void deleteCommitLog()
-  {
-    try {
-      MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-      FileSystem fs = miniCluster.getFileSystem();
-      fs.delete(new Path(COMMIT_LOG_PATH), false);
-    } catch (IOException e) {
-
-    }
-  }
-
   public void testRecord()
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(11, 22, "/src/path/data.111", "/dest/path/data.222"); //fs is close
 
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.read();
 
       ScribeLogEntry entry = log.getLatestEntry();
@@ -79,14 +50,14 @@ public class ScribeCommitLogTest extends TestCase {
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
   }
 
   public void testZeroEntry()
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.read();
       ScribeLogEntry entry = log.getLatestEntry();
       assert( entry == null);
@@ -97,17 +68,17 @@ public class ScribeCommitLogTest extends TestCase {
     } catch (IllegalAccessException e) {
       e.printStackTrace();
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
   }
 
   public void testOneEntry()
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
 
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.read();
 
       ScribeLogEntry entry = log.getLatestEntry();
@@ -126,19 +97,19 @@ public class ScribeCommitLogTest extends TestCase {
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
   }
 
   public void testTwoEntry()
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
 
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.read();
 
       ScribeLogEntry entry = log.getLatestEntry();
@@ -157,16 +128,16 @@ public class ScribeCommitLogTest extends TestCase {
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
   }
 
   public void testInvalidChecksum__TwoEntries()
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       //log.record(23, 33, "/src/path/data.2", "/dest/path/data.2"); //fs is close
 
       ScribeLogEntry badEntry = new ScribeLogEntry(23, 33, "/src/path/data.1", "/dest/path/data.1");
@@ -196,7 +167,7 @@ public class ScribeCommitLogTest extends TestCase {
       } catch (IOException e) {
       }
 
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.read();
 
       ScribeLogEntry logEntry = log.getLatestEntry();
@@ -211,16 +182,16 @@ public class ScribeCommitLogTest extends TestCase {
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
   }
 
   private void _testInvalidChecksumImp( boolean withNewline )
   {
     try {
-      ScribeCommitLog log = createCommitLog();
+      ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
       log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
-      log = createCommitLog();
+      log = ScribeCommitLogTestFactory.instance().createCommitLog();
 
       ScribeCommitLogTestFactory.instance().addCorruptedEntry(
           log, 23, 33,
@@ -252,7 +223,7 @@ public class ScribeCommitLogTest extends TestCase {
       e.printStackTrace();
       assert(false);
     } finally {
-      deleteCommitLog();
+      ScribeCommitLogTestFactory.instance().deleteCommitLog();
     }
 
   }

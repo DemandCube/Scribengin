@@ -44,7 +44,7 @@ public class ScribeCommitLogTestFactory {
     return log;
   }
 
-  public static void deleteCommitLog()
+  public void deleteCommitLog()
   {
     try {
       MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);

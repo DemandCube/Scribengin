@@ -55,7 +55,7 @@ public class ScribeConsumerTest extends TestCase {
 
   public void testGetLatestOffsetFromCommitLog__corrupted_log_file() throws IOException
   {
-    //ScribeConsumer sc = new ScribeConsumer();
+    ScribeConsumer sc = new ScribeConsumer();
     //FileSystem fs = getMiniCluster();
 
     //// add some dummy data file in the tmp directory
