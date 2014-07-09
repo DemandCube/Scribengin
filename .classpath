@@ -30,5 +30,8 @@
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-yarn-client/2.2.0/hadoop-yarn-client-2.2.0.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-minicluster/2.2.0/hadoop-minicluster-2.2.0.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/powermock/powermock-module-junit3/${powermock.version}/powermock-module-junit3-${powermock.version}.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/powermock/powermock-api-mockito/${powermock.version}/powermock-api-mockito-${powermock.version}.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

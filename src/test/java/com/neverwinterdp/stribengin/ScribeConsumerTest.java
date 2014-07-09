@@ -2,17 +2,28 @@ package com.neverwinterdp.stribengin;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
+import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeConsumer;
 
+
+//@RunWith(PowerMockRunner.class)
+@PrepareForTest({ FileSystem.class})
 public class ScribeConsumerTest extends TestCase {
   private static String MINI_CLUSTER_PATH = "/tmp/miniCluster";
 
@@ -53,18 +64,36 @@ public class ScribeConsumerTest extends TestCase {
     return r;
   }
 
-  public void testGetLatestOffsetFromCommitLog__corrupted_log_file() throws IOException
+
+  public void testGetLatestOffsetFromCommitLog__corrupted_log_file()
+    throws IOException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, Exception
   {
+    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
+    log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
+
+    // create a log with bad checksum
+    log = ScribeCommitLogTestFactory.instance().createCommitLog();
+    ScribeCommitLogTestFactory.instance().addCorruptedEntry(
+        log, 23, 33,
+        "/src/path/data.2", "/dest/path/data.2", true);
+
+    PowerMockito.mockStatic(FileSystem.class);
+    //FileSystem mockfs = getMiniCluster();
+    PowerMockito.when(FileSystem.get(Mockito.any(Configuration.class))).thenReturn(getMiniCluster());
+
     ScribeConsumer sc = new ScribeConsumer();
-    //FileSystem fs = getMiniCluster();
+    //ScribeConsumer mockSc = PowerMockito.spy(sc);
 
-    //// add some dummy data file in the tmp directory
-    //String preCommitDir = getPreCommitDirStr(sc);
-    //fs.create(new Path(preCommitDir + "/scribe.data.1"));
-    //fs.close();
+    // add some dummy data file in the tmp directory
+    String preCommitDir = getPreCommitDirStr(sc);
+    FileSystem fs = getMiniCluster();
+    fs.create(new Path(preCommitDir + "/scribe.data.1"));
+    fs.close();
 
-    //create a log with bad checksum
-
+    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog", (Class<?>)null);
+    mthd.setAccessible(true);
+    Integer offset = (Integer) mthd.invoke(sc);
+    System.out.println(">> offset: " + offset);
   }
 
 }
