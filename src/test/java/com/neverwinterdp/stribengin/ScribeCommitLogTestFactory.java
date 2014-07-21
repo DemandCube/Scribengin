@@ -11,10 +11,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
+import com.neverwinterdp.scribengin.AbstractScribeCommitLogFactory;
 import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeLogEntry;
 
-public class ScribeCommitLogTestFactory {
+public class ScribeCommitLogTestFactory extends AbstractScribeCommitLogFactory {
   private static final Log log =
     LogFactory.getLog(ScribeCommitLogTestFactory.class);
 
@@ -32,15 +33,24 @@ public class ScribeCommitLogTestFactory {
     return inst;
   }
 
-  public ScribeCommitLog createCommitLog() throws IOException ,NoSuchFieldException, IllegalAccessException
+  public ScribeCommitLog build() throws IOException
   {
-    MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-    FileSystem fs = miniCluster.getFileSystem();
-    ScribeCommitLog log = new ScribeCommitLog(COMMIT_LOG_PATH, true);
+    ScribeCommitLog log = null;
+    try {
+      MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
+      FileSystem fs = miniCluster.getFileSystem();
+      log = new ScribeCommitLog(COMMIT_LOG_PATH, true);
 
-    Field field = ScribeCommitLog.class.getDeclaredField("fs");
-    field.setAccessible(true);
-    field.set(log, fs);
+      Field field = ScribeCommitLog.class.getDeclaredField("fs");
+      field.setAccessible(true);
+      field.set(log, fs);
+    } catch (NoSuchFieldException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+      assert(false);
+    }
     return log;
   }
 

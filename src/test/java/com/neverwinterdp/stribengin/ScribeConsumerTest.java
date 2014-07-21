@@ -6,36 +6,36 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeConsumer;
+//import junit.framework.Test;
+//import junit.framework.TestCase;
+//import junit.framework.TestSuite;
 
 
 //@RunWith(PowerMockRunner.class)
-@PrepareForTest({ FileSystem.class})
-public class ScribeConsumerTest extends TestCase {
+//@PrepareForTest({ ScribeCommitLog.class })
+public class ScribeConsumerTest {
   private static String MINI_CLUSTER_PATH = "/tmp/miniCluster";
 
-  public ScribeConsumerTest(String name)
-  {
-    super(name);
-  }
+  //public ScribeConsumerTest(String name)
+  //{
+    //super(name);
+  //}
 
-  public static Test suite()
-  {
-    return new TestSuite( ScribeConsumerTest.class );
-  }
+  //public static Test suite()
+  //{
+    //return new TestSuite( ScribeConsumerTest.class );
+  //}
 
   private FileSystem getMiniCluster() {
     FileSystem fs = null;
@@ -65,34 +65,49 @@ public class ScribeConsumerTest extends TestCase {
   }
 
 
+  //@Ignore
+  @Test
   public void testGetLatestOffsetFromCommitLog__corrupted_log_file()
     throws IOException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, Exception
   {
-    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().createCommitLog();
+    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().build();
+
     log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
 
     // create a log with bad checksum
-    log = ScribeCommitLogTestFactory.instance().createCommitLog();
+    log = ScribeCommitLogTestFactory.instance().build();
     ScribeCommitLogTestFactory.instance().addCorruptedEntry(
         log, 23, 33,
         "/src/path/data.2", "/dest/path/data.2", true);
 
-    PowerMockito.mockStatic(FileSystem.class);
-    //FileSystem mockfs = getMiniCluster();
-    PowerMockito.when(FileSystem.get(Mockito.any(Configuration.class))).thenReturn(getMiniCluster());
+    //PowerMockito.
+
+    //FileSystem fs2 = getMiniCluster();
+    //PowerMockito.when(FileSystem.get(Mockito.any(Configuration.class))).thenReturn(fs2);
+    //ScribeConsumer testConsumer = PowerMockito.spy(new ScribeConsumer());
+    //PowerMockito.doReturn(getMiniCluster()).when(testConsumer, "getFS");
+
 
     ScribeConsumer sc = new ScribeConsumer();
-    //ScribeConsumer mockSc = PowerMockito.spy(sc);
+    sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
 
-    // add some dummy data file in the tmp directory
-    String preCommitDir = getPreCommitDirStr(sc);
-    FileSystem fs = getMiniCluster();
-    fs.create(new Path(preCommitDir + "/scribe.data.1"));
-    fs.close();
+    ////ScribeConsumer mockSc = PowerMockito.spy(sc);
 
-    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog", (Class<?>)null);
+    //// add some dummy data file in the tmp directory
+    //String preCommitDir = getPreCommitDirStr(sc);
+    //FileSystem fs = getMiniCluster();
+    //fs.create(new Path(preCommitDir + "/scribe.data.1"));
+    //fs.close();
+
+    //Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog", (Class<?>)null);
+    //ScribeCommitLog testLog = ScribeCommitLogTestFactory.instance().build();
+    //PowerMockito.whenNew(ScribeCommitLog.class).withArguments(Mockito.anyString()).thenReturn(testLog);
+    //Mockito.spy(new ScribeCommitLog(Mockito.any(String.class)));
+
+
+    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog");
     mthd.setAccessible(true);
-    Integer offset = (Integer) mthd.invoke(sc);
+    long offset =  (Long) mthd.invoke(sc);
     System.out.println(">> offset: " + offset);
   }
 

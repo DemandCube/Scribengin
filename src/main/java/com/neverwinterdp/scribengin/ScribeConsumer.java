@@ -44,6 +44,7 @@ public class ScribeConsumer {
 
   private String currTmpDataPath;
   private String currDataPath;
+  private AbstractScribeCommitLogFactory scribeCommitLogFactory;
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
@@ -68,6 +69,10 @@ public class ScribeConsumer {
 
   public ScribeConsumer() {
     checkPointIntervalTimer = new Timer();
+  }
+
+  public void setScribeCommitLogFactory(AbstractScribeCommitLogFactory factory) {
+    scribeCommitLogFactory = factory;
   }
 
   public void init() throws IOException {
@@ -95,7 +100,6 @@ public class ScribeConsumer {
     conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
     FileSystem fs = FileSystem.get(conf);
-    //fs = FileSystem.get(URI.create(COMMIT_PATH_PREFIX), conf);
     return fs;
   }
 
@@ -136,7 +140,7 @@ public class ScribeConsumer {
         System.out.println("\ttmpDataPath : " + currTmpDataPath); //xxx
         System.out.println("\tDataPath    : " + currDataPath); //xxx
 
-        ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
+        ScribeCommitLog log = scribeCommitLogFactory.build();
         log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
         commitData(currTmpDataPath, currDataPath);
 
@@ -262,7 +266,9 @@ public class ScribeConsumer {
 
     ScribeLogEntry entry = null;
     try {
-      ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
+      ScribeCommitLog log = scribeCommitLogFactory.build();
+
+      //ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
       log.read();
       entry = log.getLatestEntry();
 
@@ -294,6 +300,7 @@ public class ScribeConsumer {
     if (entry != null) {
       r = entry.getEndOffset();
     }
+
     return r;
   }
 
@@ -385,6 +392,7 @@ public class ScribeConsumer {
     jc.addConverterFactory(new CustomConvertFactory());
     jc.parse(args);
 
+    sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
     sc.init();
     sc.run();
   }
