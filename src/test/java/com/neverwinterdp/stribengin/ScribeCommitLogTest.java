@@ -8,7 +8,7 @@ import java.security.NoSuchAlgorithmException;
 //import junit.framework.TestCase;
 //import junit.framework.TestSuite;
 import org.junit.Test;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -21,7 +21,7 @@ public class ScribeCommitLogTest {
 
   private static String COMMIT_LOG_PATH = "/scribeTestCommit.log";
 
-  @Ignore
+  //@Ignore
   @Test
   public void testRecord()
   {
@@ -44,7 +44,7 @@ public class ScribeCommitLogTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testZeroEntry()
   {
@@ -60,7 +60,7 @@ public class ScribeCommitLogTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testOneEntry()
   {
@@ -87,7 +87,7 @@ public class ScribeCommitLogTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testTwoEntry()
   {
@@ -116,7 +116,7 @@ public class ScribeCommitLogTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testInvalidChecksum__TwoEntries()
   {
@@ -208,14 +208,14 @@ public class ScribeCommitLogTest {
 
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testInvalidChecksum__with_newline()
   {
     _testInvalidChecksumImp(true);
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testInvalidChecksum__without_newline()
   {

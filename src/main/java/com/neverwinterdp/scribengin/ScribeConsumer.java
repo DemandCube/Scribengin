@@ -45,6 +45,7 @@ public class ScribeConsumer {
   private String currTmpDataPath;
   private String currDataPath;
   private AbstractScribeCommitLogFactory scribeCommitLogFactory;
+  private AbstractFileSystemFactory fileSystemFactory;
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
@@ -75,6 +76,10 @@ public class ScribeConsumer {
     scribeCommitLogFactory = factory;
   }
 
+  public void setFileSystemFactory(AbstractFileSystemFactory factory) {
+    fileSystemFactory = factory;
+  }
+
   public void init() throws IOException {
     consumer = new SimpleConsumer(
         leaderHostPort.getHost(),
@@ -95,18 +100,10 @@ public class ScribeConsumer {
     }, commitCheckPointInterval);
   }
 
-  private FileSystem getFS() throws IOException {
-    Configuration conf = new Configuration();
-    conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
-    conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
-    FileSystem fs = FileSystem.get(conf);
-    return fs;
-  }
-
   private void commitData(String src, String dest) {
     FileSystem fs = null;
     try {
-      fs = getFS();
+      fs = fileSystemFactory.build();
       fs.rename(new Path(src), new Path(dest));
     } catch (IOException e) {
       //TODO : LOG
@@ -236,7 +233,7 @@ public class ScribeConsumer {
 
   private void DeleteUncommittedData() throws IOException
   {
-    FileSystem fs = getFS();
+    FileSystem fs = fileSystemFactory.build();
 
     // Corrupted log file
     // Clean up. Delete the tmp data file if present.
@@ -273,7 +270,8 @@ public class ScribeConsumer {
       entry = log.getLatestEntry();
 
       if (entry.isCheckSumValid()) {
-        FileSystem fs = getFS();
+        FileSystem fs = fileSystemFactory.build();
+
         String tmpDataFilePath = entry.getSrcPath();
 
         if (fs.exists(new Path(tmpDataFilePath))) {
@@ -393,6 +391,7 @@ public class ScribeConsumer {
     jc.parse(args);
 
     sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
+    sc.setFileSystemFactory(FileSystemFactory.instance());
     sc.init();
     sc.run();
   }

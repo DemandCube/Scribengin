@@ -7,13 +7,8 @@ import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeConsumer;
@@ -40,8 +35,7 @@ public class ScribeConsumerTest {
   private FileSystem getMiniCluster() {
     FileSystem fs = null;
     try {
-      MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-      fs = miniCluster.getFileSystem();
+      fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
     } catch (IOException e) {
       assert(false); //wtf?
     }
@@ -90,6 +84,7 @@ public class ScribeConsumerTest {
 
     ScribeConsumer sc = new ScribeConsumer();
     sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
+    sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
 
     ////ScribeConsumer mockSc = PowerMockito.spy(sc);
 

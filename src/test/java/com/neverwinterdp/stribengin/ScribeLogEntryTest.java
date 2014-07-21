@@ -3,16 +3,13 @@ package com.neverwinterdp.stribengin;
 import java.security.NoSuchAlgorithmException;
 
 import com.neverwinterdp.scribengin.ScribeLogEntry;
-//import junit.framework.Test;
-//import junit.framework.TestCase;
-//import junit.framework.TestSuite;
 import org.junit.Assert;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.junit.Test;
 
 public class ScribeLogEntryTest {
 
-  @Ignore
+  //@Ignore
   @Test
   public void testToJson()
   {
@@ -26,7 +23,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testFromJson()
   {
@@ -43,7 +40,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-  @Ignore
+  //@Ignore
   @Test
   public void testFromJsonWithBadChecksum()
   {

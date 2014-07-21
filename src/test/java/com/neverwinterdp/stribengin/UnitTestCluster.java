@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -10,14 +11,33 @@ import org.apache.hadoop.yarn.server.MiniYARNCluster;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 
-public class UnitTestCluster {
-  private static MiniDFSCluster hdfsCluster;
+import com.neverwinterdp.scribengin.AbstractFileSystemFactory;
 
-  protected static MiniYARNCluster createMiniYARNCluster(int numOfNodeManagers) throws Exception {
+public class UnitTestCluster extends AbstractFileSystemFactory {
+  private static UnitTestCluster inst = null;
+  private MiniDFSCluster hdfsCluster = null;
+  private String clusterPath = null;
+  private UnitTestCluster (String clusterPath) {
+    this.clusterPath = clusterPath;
+  }
+
+  public static UnitTestCluster instance(String clusterPath) {
+    if (inst == null)
+      inst = new UnitTestCluster(clusterPath);
+    return inst;
+  }
+
+  public FileSystem build() throws IOException {
+    MiniDFSCluster miniCluster = createMiniDFSCluster(clusterPath, 1);
+    FileSystem r = miniCluster.getFileSystem();
+    return r;
+  }
+
+  protected MiniYARNCluster createMiniYARNCluster(int numOfNodeManagers) throws Exception {
     return createMiniYARNCluster(new YarnConfiguration(), numOfNodeManagers) ;
   }
 
-  protected static MiniYARNCluster createMiniYARNCluster(Configuration yarnConf, int numOfNodeManagers) throws Exception {
+  protected MiniYARNCluster createMiniYARNCluster(Configuration yarnConf, int numOfNodeManagers) throws Exception {
     yarnConf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 64);
     yarnConf.setClass(YarnConfiguration.RM_SCHEDULER, FifoScheduler.class, ResourceScheduler.class);
     MiniYARNCluster miniYarnCluster = new MiniYARNCluster("yarn", numOfNodeManagers, 1, 1);
@@ -27,29 +47,23 @@ public class UnitTestCluster {
     return miniYarnCluster ;
   }
 
-  protected static MiniDFSCluster createMiniDFSCluster(String dir, int numDataNodes) throws IOException {
+  private MiniDFSCluster createMiniDFSCluster(String dir, int numDataNodes) throws IOException {
     return createMiniDFSCluster(new Configuration(), dir, numDataNodes) ;
   }
 
-  protected static MiniDFSCluster createMiniDFSCluster(Configuration conf, String dir, int numDataNodes) throws IOException {
-    if (UnitTestCluster.hdfsCluster == null) {
+  private MiniDFSCluster createMiniDFSCluster(Configuration conf, String dir, int numDataNodes) throws IOException {
+    if (this.hdfsCluster == null) {
       File baseDir = new File(dir).getAbsoluteFile();
       FileUtil.fullyDelete(baseDir);
       conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
-      MiniDFSCluster hdfsCluster =
+      MiniDFSCluster _hdfsCluster =
         new MiniDFSCluster.Builder(conf).
         numDataNodes(numDataNodes).
         build();
-      hdfsCluster.waitClusterUp();
-      //String hdfsURI = "hdfs://localhost:" + hdfsCluster.getNameNodePort() + "/";
-      //System.out.println("hdfs uri: " + hdfsURI) ;
-      //FileSystem fs = hdfsCluster.getFileSystem();
-      //Assert.assertTrue("Not a HDFS: "+ fs.getUri(), fs instanceof DistributedFileSystem);
-      //final DistributedFileSystem dfs = (DistributedFileSystem)fs;
-      //dfs.copyFromLocalFile(false, false, new Path("target/hadoop-samples-1.0.jar"), new Path("/tmp/hadoop-samples-1.0.jar"));
-      UnitTestCluster.hdfsCluster = hdfsCluster;
+      _hdfsCluster.waitClusterUp();
+      this.hdfsCluster = _hdfsCluster;
     }
-    return UnitTestCluster.hdfsCluster;
+    return this.hdfsCluster;
   }
 }
 

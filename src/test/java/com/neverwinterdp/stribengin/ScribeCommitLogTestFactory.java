@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 import com.neverwinterdp.scribengin.AbstractScribeCommitLogFactory;
 import com.neverwinterdp.scribengin.ScribeCommitLog;
@@ -37,8 +36,7 @@ public class ScribeCommitLogTestFactory extends AbstractScribeCommitLogFactory {
   {
     ScribeCommitLog log = null;
     try {
-      MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-      FileSystem fs = miniCluster.getFileSystem();
+      FileSystem fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
       log = new ScribeCommitLog(COMMIT_LOG_PATH, true);
 
       Field field = ScribeCommitLog.class.getDeclaredField("fs");
@@ -57,8 +55,7 @@ public class ScribeCommitLogTestFactory extends AbstractScribeCommitLogFactory {
   public void deleteCommitLog()
   {
     try {
-      MiniDFSCluster miniCluster = UnitTestCluster.createMiniDFSCluster(MINI_CLUSTER_PATH, 1);
-      FileSystem fs = miniCluster.getFileSystem();
+      FileSystem fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
       fs.delete(new Path(COMMIT_LOG_PATH), false);
     } catch (IOException e) {
 
