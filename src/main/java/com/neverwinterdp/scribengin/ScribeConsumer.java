@@ -265,7 +265,6 @@ public class ScribeConsumer {
     try {
       ScribeCommitLog log = scribeCommitLogFactory.build();
 
-      //ScribeCommitLog log = new ScribeCommitLog(getCommitLogAbsPath());
       log.read();
       entry = log.getLatestEntry();
 

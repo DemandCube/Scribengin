@@ -6,15 +6,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
-import org.junit.Ignore;
+import org.apache.hadoop.fs.Path;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribeCommitLog;
 import com.neverwinterdp.scribengin.ScribeConsumer;
-//import junit.framework.Test;
-//import junit.framework.TestCase;
-//import junit.framework.TestSuite;
 
 
 //@RunWith(PowerMockRunner.class)
@@ -74,36 +73,105 @@ public class ScribeConsumerTest {
         log, 23, 33,
         "/src/path/data.2", "/dest/path/data.2", true);
 
-    //PowerMockito.
+    ScribeConsumer sc = new ScribeConsumer();
+    sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
+    sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
 
-    //FileSystem fs2 = getMiniCluster();
-    //PowerMockito.when(FileSystem.get(Mockito.any(Configuration.class))).thenReturn(fs2);
-    //ScribeConsumer testConsumer = PowerMockito.spy(new ScribeConsumer());
-    //PowerMockito.doReturn(getMiniCluster()).when(testConsumer, "getFS");
+    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog");
+    mthd.setAccessible(true);
+    long offset =  (Long) mthd.invoke(sc);
+    Assert.assertTrue(offset==22);
+  }
 
+  @Test
+  public void testGetLatestOffsetFromCommitLog__data_has_been_committed()
+    throws IOException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, Exception
+  {
+    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().build();
+
+    log.record(11, 22, "/src/path/data.1", "/dest/path/data.1"); //fs is close
+    ScribeConsumer sc = new ScribeConsumer();
+    sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
+    sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
+
+    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog");
+    mthd.setAccessible(true);
+    long offset =  (Long) mthd.invoke(sc);
+    Assert.assertTrue(offset==22);
+  }
+
+  @Test
+  public void testGetLatestOffsetFromCommitLog__tmpDataFile_does_not_match_log()
+    throws IOException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, Exception
+  {
+    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().build();
+
+    log.record(11, 22, "/tmp/scribe.data.1", "/dest/path/data.1"); //fs is close
+    FileSystem fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
+
+    String mismatchedPath = "/tmp/scribe.data.mismatched";
+    FSDataOutputStream os = fs.create(new Path(mismatchedPath));
+    os.write("dummy data".getBytes());
+    os.write('\n');
+    try {
+      os.close();
+    } catch (IOException e) {
+      assert(false);
+    }
+
+    Assert.assertTrue(fs.exists(new Path(mismatchedPath)));
 
     ScribeConsumer sc = new ScribeConsumer();
     sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
     sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
 
-    ////ScribeConsumer mockSc = PowerMockito.spy(sc);
+    Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog");
+    mthd.setAccessible(true);
+    long offset =  (Long) mthd.invoke(sc);
+    Assert.assertTrue(offset==22);
 
-    //// add some dummy data file in the tmp directory
-    //String preCommitDir = getPreCommitDirStr(sc);
-    //FileSystem fs = getMiniCluster();
-    //fs.create(new Path(preCommitDir + "/scribe.data.1"));
-    //fs.close();
+    // make sure that the data file is cleaned up
+    fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
+    Assert.assertFalse(fs.exists(new Path(mismatchedPath)));
+  }
 
-    //Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog", (Class<?>)null);
-    //ScribeCommitLog testLog = ScribeCommitLogTestFactory.instance().build();
-    //PowerMockito.whenNew(ScribeCommitLog.class).withArguments(Mockito.anyString()).thenReturn(testLog);
-    //Mockito.spy(new ScribeCommitLog(Mockito.any(String.class)));
+  @Test
+  public void testGetLatestOffsetFromCommitLog__commit_uncommitted_tmp_data()
+    throws IOException, NoSuchFieldException, IllegalAccessException, NoSuchAlgorithmException, NoSuchMethodException, InvocationTargetException, Exception
+  {
+    ScribeCommitLog log = ScribeCommitLogTestFactory.instance().build();
 
+    String uncommittedDataPath = "/tmp/scribe.data.1";
+    String committedDataPath = "/tmp/scribe.data.1.committed";
+    log.record(11, 22, uncommittedDataPath, committedDataPath); //fs is close
+    FileSystem fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
+
+    FSDataOutputStream os = fs.create(new Path(uncommittedDataPath));
+    os.write("dummy data".getBytes());
+    os.write('\n');
+    try {
+      os.close();
+    } catch (IOException e) {
+      assert(false);
+    }
+
+    Assert.assertTrue(fs.exists(new Path(uncommittedDataPath)));
+
+    ScribeConsumer sc = new ScribeConsumer();
+    sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
+    sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
 
     Method mthd = ScribeConsumer.class.getDeclaredMethod("getLatestOffsetFromCommitLog");
     mthd.setAccessible(true);
     long offset =  (Long) mthd.invoke(sc);
-    System.out.println(">> offset: " + offset);
+    Assert.assertTrue(offset==22);
+
+    //make sure that the data file is moved
+    fs = UnitTestCluster.instance(MINI_CLUSTER_PATH).build();
+    Assert.assertFalse(fs.exists(new Path(uncommittedDataPath)));
+    Assert.assertTrue(fs.exists(new Path(committedDataPath)));
   }
 
+
 }
+
