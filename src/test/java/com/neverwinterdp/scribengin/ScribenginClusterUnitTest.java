@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin;
 
-import java.util.Properties;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -84,10 +82,6 @@ public class ScribenginClusterUnitTest {
   }
   
   void uninstall() {
-    Properties scribenginServerProps = new Properties() ;
-    scribenginServerProps.put("kafka.zookeeper-urls", "127.0.0.1:2181") ;
-    scribenginServerProps.put("scribengin.consume-topics", TOPIC_NAME) ;
-
     String uninstallScript = 
         "module uninstall --member-role scribengin --timeout 20000 --module Scribengin \n" +
         "module uninstall --member-role kafka --timeout 20000 --module Kafka \n" +
