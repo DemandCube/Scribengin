@@ -29,7 +29,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
     private int port;
 
   // TODO: This is not ideal.
-  // topic is repeated in topicList and topicMetadatMap. However, with jcommander automatically parses and store
+  // topic is repeated in topicList and topicMetadataMap. However, with jcommander automatically parses and store
   // parsed cli arguments to member variables, this is the best I can come up with right now
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
     private List<String> topicList;
