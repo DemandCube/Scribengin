@@ -65,12 +65,13 @@ public class ScribenginClusterUnitTest {
     String installScript =
         "module install " + 
         " -Pmodule.data.drop=true" +
+        " -Pzk:clientPort=2181 " +
         " --member-role zookeeper --autostart --module Zookeeper \n" +
         
         "module install " +
         " -Pmodule.data.drop=true" +
-        " -Pkafka.zookeeper-urls=127.0.0.1:2181" +
-        "  --member-role kafka --autostart --module Kafka \n" +
+        " -Pkafka:port=9092 -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
+        " --member-role kafka --autostart --module Kafka \n" +
         
         "module install " +
         " -Pmodule.data.drop=true" +
