@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/kafka/kafka_2/8/2/0.8.1/kafka_2.8.2-0.8.1.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/beust/jcommander/1.30/jcommander-1.30.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/junit/junit/4.11/junit-4.11.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-client/2.2.0/hadoop-client-2.2.0.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-common/2.2.0/hadoop-common-2.2.0.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-yarn-client/2.2.0/hadoop-yarn-client-2.2.0.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/hadoop/hadoop-minicluster/2.2.0/hadoop-minicluster-2.2.0.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/powermock/powermock-module-junit4/${powermock.version}/powermock-module-junit4-${powermock.version}.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/powermock/powermock-api-mockito/${powermock.version}/powermock-api-mockito-${powermock.version}.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
