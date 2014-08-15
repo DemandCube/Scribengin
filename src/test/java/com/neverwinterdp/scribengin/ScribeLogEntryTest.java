@@ -1,4 +1,4 @@
-package com.neverwinterdp.stribengin;
+package com.neverwinterdp.scribengin;
 
 import java.security.NoSuchAlgorithmException;
 
