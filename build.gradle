@@ -4,11 +4,16 @@ apply plugin: 'maven'
 
 archivesBaseName = 'scribengin'
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}
+
 eclipse {
   classpath {
     downloadSources=true
   }
 }
+
 
 eclipse.classpath.defaultOutputDir = file( 'build/classes' )
 
