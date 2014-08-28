@@ -21,5 +21,10 @@ public class HostPort {
   public int getPort() {
     return port;
   }
-}
 
+  @Override
+  public String toString() {
+    return "HostPort [host=" + host + ", port=" + port + "]";
+  }
+
+}
