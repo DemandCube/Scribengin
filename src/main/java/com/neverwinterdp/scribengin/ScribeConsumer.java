@@ -46,8 +46,7 @@ public class ScribeConsumer {
 
   //TODO externalize these
   private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
-  private static final String COMMIT_PATH_PREFIX = "/home/vagrant/hdfs";
-
+  
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
   private String currTmpDataPath;
@@ -65,6 +64,9 @@ public class ScribeConsumer {
 
   @Parameter(names = {"-" + Constants.OPT_PARTITION, "--" + Constants.OPT_PARTITION})
   private int partition;
+  
+  @Parameter(names = {"-" + Constants.COMMIT_PATH, "--" + Constants.COMMIT_PATH},  description = "commit path", required = true)
+  private  String COMMIT_PATH;
   private long lastCommittedOffset;
   private long offset; // offset is on a per line basis. starts on the last valid offset
 
@@ -194,7 +196,7 @@ public class ScribeConsumer {
     this.currTmpDataPath = sb.toString();
 
     sb = new StringBuilder();
-    sb.append(COMMIT_PATH_PREFIX)
+    sb.append(COMMIT_PATH)
         .append("/scribe.data")
         .append(".")
         .append(ts);
