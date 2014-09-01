@@ -20,7 +20,7 @@ for kfka_version in $OFFICIAL_RELEASES; do
     echo "curl -o $TARGET_DIR/$kafka_download_file https://archive.apache.org/dist/kafka/$kfka_version/$kafka_download_file"
     curl -o $PWD/$TARGET_DIR/$kafka_download_file https://archive.apache.org/dist/kafka/$kfka_version/$kafka_download_file
     tar xvzf $PWD/$TARGET_DIR/$kafka_download_file -C $PWD/$TARGET_DIR/$kfka_version
-    echo "mv $PWD/$TARGET_DIR/$kfka_version/$scala_kafka_version $PWD/$TARGET_DIR/$kfka_version/kafka-bin"
+    mv $PWD/$TARGET_DIR/$kfka_version/$scala_kafka_version $PWD/$TARGET_DIR/$kfka_version/kafka-bin
   else
     echo "skip $kafka_version"
   fi
