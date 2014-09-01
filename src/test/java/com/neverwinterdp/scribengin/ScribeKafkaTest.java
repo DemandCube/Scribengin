@@ -13,7 +13,7 @@ public class ScribeKafkaTest {
   @BeforeClass
   public static void setup() throws IOException, InterruptedException {
     System.out.println("calling setup..."); //xxx
-    Process p = Runtime.getRuntime().exec("script/bootstrap_kafka.sh");
+    Process p = Runtime.getRuntime().exec("script/bootstrap_kafka.sh servers");
     p.waitFor();
     BufferedReader reader =
       new BufferedReader(new InputStreamReader(p.getInputStream()));
