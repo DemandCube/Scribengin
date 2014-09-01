@@ -16,5 +16,6 @@ public class Constants {
   public static final String OPT_PARTITION = "partition";
   public static final String OPT_REPLICA = "replica";
   public static final String OPT_CHECK_POINT_TIMER = "checkpoint_interval";
+  public static final String COMMIT_PATH = "commit_path";
 }
 
