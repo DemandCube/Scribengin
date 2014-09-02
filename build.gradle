@@ -31,6 +31,8 @@ repositories {
 dependencies {
   compile group: 'org.apache.kafka', name: 'kafka_2.10', version:'0.8.1.1'
   compile group: 'com.beust', name: 'jcommander', version:'1.30'
+  compile group: 'commons-io', name: 'commons-io', version: '2.4'
+
   compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'2.2.0'
   compile group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.2.0'
   compile group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version:'2.2.0'
