@@ -8,12 +8,10 @@ import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 
 public class ZookeeperFixture extends Fixture {
-  private String host;
-  private int port;
   private Process proc;
   private String version;
-  private static final String TEMPLATED_PROPERTIES_FILE = "servers/%s/resources/zookeeper.properties";
-  private static final String KAFKA_RUN_CLASS_SH = "servers/%s/kafka-bin/bin/kafka-run-class.sh";
+  private static final String PROPERTIES_FILENAME = "/zookeeper.properties";
+  private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources" + PROPERTIES_FILENAME;
   private static final String JAVA_MAIN = "org.apache.zookeeper.server.quorum.QuorumPeerMain";
   private static final String WAIT_FOR_REGEX = ".*?in standalone mode.*?";
 
@@ -31,15 +29,15 @@ public class ZookeeperFixture extends Fixture {
     context.put("port", Integer.toString(this.port));
 
     this.renderConfig(
-      String.format(TEMPLATED_PROPERTIES_FILE, this.version),
-      this.tmpDir.getAbsolutePath() + "/zookeeper.properties",
+      String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
+      this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME,
       context
     );
 
     ProcessBuilder pb = new ProcessBuilder(
       String.format(KAFKA_RUN_CLASS_SH, this.version),  //"servers/0.8.1/kafka-bin/bin/kafka-run-class.sh",
       JAVA_MAIN,                                        // "org.apache.zookeeper.server.quorum.QuorumPeerMain",
-      tmpDir.getAbsolutePath() + "/zookeeper.properties"
+      tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
     );
     this.proc =  pb.start();
 
@@ -52,7 +50,6 @@ public class ZookeeperFixture extends Fixture {
       }
     }
   }
-
 
   public void stop() throws IOException {
     // Destroy the running process

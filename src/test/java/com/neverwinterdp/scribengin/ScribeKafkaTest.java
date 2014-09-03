@@ -11,6 +11,7 @@ import org.junit.Test;
 
 public class ScribeKafkaTest {
   private static ZookeeperFixture zookeeper;
+  private static KafkaFixture kf;
 
   @BeforeClass
   public static void setup() throws IOException, InterruptedException {
@@ -27,6 +28,11 @@ public class ScribeKafkaTest {
 
     zookeeper = new ZookeeperFixture("0.8.1", "127.0.0.1", 2323);
     zookeeper.start();
+
+    kf = new KafkaFixture("0.8.1", "127.0.0.1", 9876,
+      zookeeper.getHost(),
+      zookeeper.getPort());
+    kf.start();
   }
 
 

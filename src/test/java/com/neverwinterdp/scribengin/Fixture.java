@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Fixture {
+  protected String host;
+  protected int port;
+  protected static final String KAFKA_RUN_CLASS_SH = "servers/%s/kafka-bin/bin/kafka-run-class.sh";
   protected File tmpDir;
 
   public Fixture() throws IOException {
@@ -46,6 +49,14 @@ public class Fixture {
 
     out.close();
     br.close();
+  }
+
+  public String getHost() {
+    return this.host;
+  }
+
+  public int getPort() {
+    return this.port;
   }
 
 }
