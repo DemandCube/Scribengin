@@ -12,9 +12,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.mortbay.log.Log;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.neverwinterdp.scribengin.configuration.DynamicConfigurator;
 import com.neverwinterdp.scribengin.utils.PropertyUtils;
 import com.neverwinterdp.scribengin.utils.ScribenginUtils;
@@ -39,7 +42,16 @@ public class Scribengin {
   private DynamicConfigurator configurator;
   private ScribenginContext scribenginContext;
   private int numThreads;
-
+  
+  @Inject @Named("scribengin:ExampleParam2")
+  private String exampleParam = "DEFAULT!?!?!" ;
+  
+  
+  public Scribengin(){
+    logger.info("SCRIBENGIN IS STARTING!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    logger.info(exampleParam);
+  }
+  
   /**
    * @param args
    */
