@@ -10,6 +10,5 @@ import com.neverwinterdp.server.module.ServiceModule;
 public class ScribenginModule extends ServiceModule {
   protected void configure(Map<String, String> properties) {  
     bindService(ScribenginClusterService.class) ;
-    bind("ScribenginClusterServiceInstance", new ScribenginClusterService()); ;
   }
 }

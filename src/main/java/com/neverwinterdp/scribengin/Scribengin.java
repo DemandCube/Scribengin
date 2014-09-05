@@ -43,13 +43,18 @@ public class Scribengin {
   private ScribenginContext scribenginContext;
   private int numThreads;
   
-  @Inject @Named("scribengin:ExampleParam2")
-  private String exampleParam = "DEFAULT!?!?!" ;
-  
+  @Inject @Named("scribengin:example")
+  private String exampleParam;
   
   public Scribengin(){
+    this("DEFAULT?!?!?!");
+  }
+  
+  public Scribengin(String newParam){
+    this.exampleParam = newParam;
     logger.info("SCRIBENGIN IS STARTING!!!!!!!!!!!!!!!!!!!!!!!!!!");
     logger.info(exampleParam);
+    System.err.println("WTF??"+newParam);
   }
   
   /**

@@ -23,7 +23,7 @@ public class ScribenginClusterServiceUnitTest {
     String installScript =
         "module install " + 
         " -Pmodule.data.drop=true" +
-        " -Pscribengin:ExampleParam2=hellohellohello! " +
+        " -Pscribengin:example=\"overridingdefaultvalue!\" " +
         " --member-role scribengin --autostart --module Scribengin \n";
     shell.executeScript(installScript);
   }

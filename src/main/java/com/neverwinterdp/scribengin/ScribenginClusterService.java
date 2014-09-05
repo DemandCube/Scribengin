@@ -19,19 +19,24 @@ public class ScribenginClusterService extends AbstractService {
                    LoggerFactory factory, 
                    ModuleProperties moduleProperties,
                    ScribenginClusterServiceInfo serviceInfo) throws Exception {
+    
     this.loggerFactory = factory ;
     logger = factory.getLogger(ScribenginClusterService.class) ;
     this.serviceInfo = serviceInfo ;
     if(moduleProperties.isDataDrop()) cleanup() ;
   }
-
+  
+  
   public void stop() {
     //Need a way to kill the server thread
   }
-
+  
+  /**
+   * TODO: serviceInfo is returning null at the moment, need to fix injection
+   */
   @Override
   public void start() throws Exception {
-    server = new Scribengin();
+    server = new Scribengin(this.serviceInfo.getExample());
     
     //main() needs to start as a thread or as a daemon
     //server.main(null);
