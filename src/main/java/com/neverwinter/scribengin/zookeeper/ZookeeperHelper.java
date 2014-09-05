@@ -17,11 +17,11 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.data.Stat;
 
 import com.google.common.collect.Multimap;
-import com.neverwinter.scribengin.ConfigurationCommand;
-import com.neverwinter.scribengin.HostPort;
-import com.neverwinter.scribengin.Partition;
-import com.neverwinter.scribengin.PartitionState;
-import com.neverwinter.scribengin.utils.Utils;
+import com.neverwinter.scribengin.utils.ConfigurationCommand;
+import com.neverwinter.scribengin.utils.HostPort;
+import com.neverwinter.scribengin.utils.Partition;
+import com.neverwinter.scribengin.utils.PartitionState;
+import com.neverwinter.scribengin.utils.ScribenginUtils;
 
 public class ZookeeperHelper {
 
@@ -61,7 +61,7 @@ public class ZookeeperHelper {
       throws Exception {
     String leader = "";
 
-    com.neverwinter.scribengin.PartitionState partitionState = getPartionState(topic, partion);
+    com.neverwinter.scribengin.utils.PartitionState partitionState = getPartionState(topic, partion);
     int leaderId = partitionState.getLeader();
     byte[] bytes = {};
 
@@ -77,7 +77,7 @@ public class ZookeeperHelper {
       logger.error(nne.getMessage(), nne);
       return leader;
     }
-    Partition part = Utils.toClass(bytes, Partition.class);
+    Partition part = ScribenginUtils.toClass(bytes, Partition.class);
     logger.debug("leader " + part);
 
     return leader.concat(part.getHost()).concat(":")
@@ -101,7 +101,7 @@ public class ZookeeperHelper {
       // nonodeexception
       try {
         partitions = zkClient.getData().forPath(brokerInfoLocation + b);
-        Partition part = Utils.toClass(partitions, Partition.class);
+        Partition part = ScribenginUtils.toClass(partitions, Partition.class);
         broker.append(part.getHost());
         broker.append(":");
         broker.append(part.getPort());
@@ -122,7 +122,7 @@ public class ZookeeperHelper {
 
     byte[] data = zkClient.getData().forPath(path);
 
-    return Utils.toMap(data);
+    return ScribenginUtils.toMap(data);
 
   }
 
@@ -175,7 +175,7 @@ public class ZookeeperHelper {
         .forPath(
             topicInfoLocation + topic + "/partitions/" + partion
                 + "/state");
-    PartitionState partitionState = Utils.toClass(bytes,
+    PartitionState partitionState = ScribenginUtils.toClass(bytes,
         PartitionState.class);
     return partitionState;
   }
@@ -204,7 +204,7 @@ public class ZookeeperHelper {
       ZookeeperHelper helper = new ZookeeperHelper("192.168.33.33:2181");
 
       System.err.println(helper.checkPathExists(config));
-      System.err.println(helper.writeData(config, Utils.toJson(command).getBytes()));
+      System.err.println(helper.writeData(config, ScribenginUtils.toJson(command).getBytes()));
 
     } catch (Exception e) {
       e.printStackTrace();

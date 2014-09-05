@@ -11,7 +11,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 
-// Do we have a similar one in noverwinter-comons?
+// Do we have a similar one in neverwinter-comons?
 public class PropertyUtils {
 
   private static final Logger logger = Logger.getLogger(PropertyUtils.class);
