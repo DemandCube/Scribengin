@@ -8,39 +8,78 @@
  */
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'findbugs'
+//apply plugin: 'findbugs'
 apply plugin:'application'
-mainClassName = "com.neverwinter.scribengin.impl.ScribenginMain"
+apply plugin: 'jacoco'
+
+mainClassName = "com.neverwinterdp.scribengin.Scribengin"
 
 repositories {
     mavenCentral()
 }
 
+archivesBaseName = 'scribengin'
 
-run {    
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}
+
+eclipse {
+  project {
+    name = 'Scribengin'
+  }
+
+  classpath {
+    downloadSources=true
+  }
+}
+
+group = 'com.neverwinterdp'
+sourceCompatibility = 1.7
+version = '1.0-SNAPSHOT'
+configurations.compile.transitive = true
+
+//run {    
     /* Can pass all the properties: */
-    systemProperties = System.getProperties()
+//    systemProperties = System.getProperties()
+//}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+jacoco {
+    toolVersion = "0.6.2.201302030002"
+    reportsDir = file("$buildDir/JacocoReportDir")
 }
 
 dependencies {
-    // The production code uses the SLF4J logging API at compile time
-	compile 'com.fasterxml.jackson.core:jackson-core:2.2.2'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.2.2'
-    compile 'org.slf4j:slf4j-api:1.7.5'
-	compile 'org.apache.curator:curator-framework:2.6.0'
-	compile 'org.apache.curator:curator-recipes:2.6.0'
-	compile 'org.apache.curator:curator-test:2.6.0'
-	compile 'org.apache.zookeeper:zookeeper:3.4.0'
-	compile 'org.apache.kafka:kafka_2.10:0.8.1.1'
-    compile group: 'com.google.inject', name: 'guice', version: '3.0'
-	compile 'com.codahale.metrics:metrics-core:3.0.2'
-	compile 'commons-chain:commons-chain:1.2'
-	compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'2.2.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.2.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version:'2.2.0'
-    compile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version:'2.2.0'
+  compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.netty', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.zookeeper', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+  
+  // The production code uses the SLF4J logging API at compile time
+  compile 'com.fasterxml.jackson.core:jackson-core:2.2.2'
+  compile 'com.fasterxml.jackson.core:jackson-databind:2.2.2'
+  compile 'org.slf4j:slf4j-api:1.7.5'
+  compile 'org.apache.curator:curator-framework:2.6.0'
+  compile 'org.apache.curator:curator-recipes:2.6.0'
+  compile 'org.apache.curator:curator-test:2.6.0'
+  compile 'org.apache.zookeeper:zookeeper:3.4.0'
+  compile 'org.apache.kafka:kafka_2.10:0.8.1.1'
+  compile group: 'com.google.inject', name: 'guice', version: '3.0'
+  compile 'com.codahale.metrics:metrics-core:3.0.2'
+  compile 'commons-chain:commons-chain:1.2'
+  compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'2.2.0'
+  compile group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.2.0'
+  compile group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version:'2.2.0'
+  compile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version:'2.2.0'
 
-    testCompile "junit:junit:4.11"
+  testCompile "junit:junit:4.11"
 }
 
 test {
@@ -50,10 +89,10 @@ outputs.upToDateWhen { false }
     }
 }
 
-tasks.withType(FindBugs) {
-    ignoreFailures = true
-    reports {
-        html { enabled = true }
-        xml.enabled = !html.enabled
-    }
-}
+//tasks.withType(FindBugs) {
+//    ignoreFailures = true
+//    reports {
+//        html { enabled = true }
+//        xml.enabled = !html.enabled
+//    }
+//}
