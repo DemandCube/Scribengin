@@ -39,6 +39,7 @@ public class StringRecordWriter {
       os = fs.create(path);
     }
     os.write(bytes);
+    os.write("\n".getBytes());
     os.flush();
     //os.write('\n');
   }

@@ -28,6 +28,11 @@ public class MiniDfsClusterBuilder {
     baseDir = new File("./hdfs/" + testName).getAbsoluteFile();
     FileUtil.fullyDelete(baseDir);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
+    //conf.set("dfs.client.block.write.replace-datanode-on-failure.policy","ALWAYS");
+    conf.set("dfs.support.append", "true");
+    //conf.set("dfs.replication", "12");
+    //conf.set("dfs.client.block.write.replace-datanode-on-failure.enable","false");
+    
     MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
     try {
       hdfsCluster = builder.build();

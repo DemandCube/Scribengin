@@ -12,8 +12,8 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribenginContext;
@@ -28,15 +28,16 @@ public class HDFSWriterUnitTest {
   private static String hadoopConnection;
   private static String hdfsPath="test";
   
-  @Before
-  public void setup() throws Exception {
+  
+  @BeforeClass
+  public static void setup() throws Exception {
     hadoopServer = new MiniDfsClusterBuilder();
     hadoopConnection = hadoopServer.build("test");
     System.out.println("Hadoop test server at: "+hadoopConnection);
   }
   
-  @After
-  public void teardown() {
+  @AfterClass
+  public static void teardown() {
     hadoopServer.destroy();
   }
   
@@ -48,7 +49,7 @@ public class HDFSWriterUnitTest {
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
     con.setProps(p);
-    doTest(con, "NeverwinterDP is snazzy");
+    doTest(con, "flubber");
   }
   
   @Test
@@ -61,7 +62,7 @@ public class HDFSWriterUnitTest {
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
     con.setProps(p);
-    doTest(con, "NeverwinterDP is cool");
+    doTest(con, "snazzy");
   }
   
   
@@ -86,11 +87,16 @@ public class HDFSWriterUnitTest {
     
     //Read in what was just written
     String readLine="";
+    String tempLine="";
     try {
       FileSystem fs = FileSystem.get(URI.create(hadoopConnection+hdfsPath), new Configuration());
       Path path = new Path(hadoopConnection+hdfsPath);
       BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
-      readLine=br.readLine();
+      while((tempLine = br.readLine() ) != null){
+        readLine=tempLine;
+        System.err.println(readLine);
+      }
+      //readLine=br.readLine();
     } catch (IOException e) {
       e.printStackTrace();
       assertTrue("Could not read from HDFS", false);
