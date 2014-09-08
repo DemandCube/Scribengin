@@ -21,7 +21,7 @@ public class MiniDfsClusterBuilder {
   }
   
   /**
-   * @param testName
+   * @param testName Path of file to write to
    * @return Link to connect to
    */
   public String build(String testName){
