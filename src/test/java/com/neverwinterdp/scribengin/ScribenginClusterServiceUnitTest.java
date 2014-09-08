@@ -38,10 +38,10 @@ public class ScribenginClusterServiceUnitTest {
   }
   
   @Test
-  public void test(){
+  public void testScribengin(){
     //Do some stuff to test the server here...
     try {
-      Thread.sleep(6000);
+      Thread.sleep(3000);
     } catch (InterruptedException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

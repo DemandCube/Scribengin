@@ -8,24 +8,49 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-// TODO singleton it
+/**
+ * Singleton class
+ */
 public class StringRecordWriter {
-  private FSDataOutputStream os;
-  private FileSystem fs;
+  private static volatile StringRecordWriter singleton = null;
+  private static FSDataOutputStream os;
+  private static FileSystem fs;
 
-  public StringRecordWriter(String uri) throws IOException {
+  public static StringRecordWriter getInstance(String uri){
+    if(singleton==null){
+      //Thread safe
+      synchronized (StringRecordWriter.class) {
+        // Double check
+        if (singleton == null) {
+          singleton = new StringRecordWriter(uri);
+        }
+      }
+    }
+    return singleton;
+  }
+  
+  
+  private StringRecordWriter(String uri) {
     Configuration conf = new Configuration();
     conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
 
-    fs = FileSystem.get(URI.create(uri), conf);
+    try {
+      fs = FileSystem.get(URI.create(uri), conf);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     Path path = new Path(uri);
 
-
-    if (fs.exists(path)) {
-      os = fs.append(path);
-    } else {
-      os = fs.create(path);
+    try {
+      if (fs.exists(path)) {
+        os = fs.append(path);
+      } else {
+        os = fs.create(path);
+      }
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
   }
 

@@ -18,14 +18,13 @@ public class HDFSWriter implements Writer<byte[]> {
   private static final Logger logger = Logger.getLogger(HDFSWriter.class);
   private ScribenginContext scribenginContext;
   private StringRecordWriter writer;
-  private String uri;
 
 
   @Override
   public void write(byte[] data) throws IOException {
     logger.info("write.");
-    uri = scribenginContext.getHDFSPath();
-    writer = new StringRecordWriter(uri);
+    //writer = new StringRecordWriter(scribenginContext.getHDFSPath());
+    writer = StringRecordWriter.getInstance(scribenginContext.getHDFSPath());
     writer.write(data);
     writer.close();
   }

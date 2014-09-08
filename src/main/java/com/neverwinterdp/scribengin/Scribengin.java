@@ -33,9 +33,10 @@ import com.neverwinterdp.scribengin.zookeeper.ZookeeperClusterMember;
  */
 // dynamic configuration
 // cluster member on a separate thread
-// TODO when deregisterd from cluster stop flow master.
+/**
+ *  TODO when deregisterd from cluster stop flow master.
+ */
 public class Scribengin {
-
   private static final Logger logger = Logger.getLogger(Scribengin.class);
   public static Properties props;
   private ExecutorService executorService;
@@ -44,10 +45,8 @@ public class Scribengin {
   private ScribenginContext scribenginContext;
   private int numThreads;
   private String propertyFilePath;
-  
-  
-  //private Scribengin scribenginRunner;
   private ThreadFactory threadFactory;
+  
   
   public Scribengin(){
     this("src/main/resources/server.properties");
@@ -55,11 +54,16 @@ public class Scribengin {
   
   public Scribengin(String propFilePath){
     this.propertyFilePath = propFilePath;
+    props = PropertyUtils.getPropertyFile(this.propertyFilePath);
+    logger.debug("Properties " + props);
+  }
+  
+  public Scribengin(Properties p){
+    props.putAll(p);
+    logger.debug("Properties " + props);
   }
   
   public void init() throws Exception{
-    props = PropertyUtils.getPropertyFile(this.propertyFilePath);
-    logger.debug("Properties " + props);
     this.numThreads = Integer.parseInt(props.getProperty("num.threads"));
     this.threadFactory = new ThreadFactoryBuilder().setNameFormat("Scribengin-tributary-%d").build();
     this.executorService = Executors.newFixedThreadPool(this.numThreads + 2, threadFactory);
@@ -128,7 +132,7 @@ public class Scribengin {
     logger.debug("zkPath " + zkPath);
     ZookeeperClusterMember server = new ZookeeperClusterMember(
         zkConnectString, zkPath, "newone");
-
+    
     executorService.execute(server);
     return server.state() == Service.State.RUNNING;
 
@@ -144,9 +148,7 @@ public class Scribengin {
   }
   
   
-  /**
-   * @param args
-   */
+  
   public static void main(String[] args) throws Exception {
     Scribengin x = new Scribengin();
     x.init();
