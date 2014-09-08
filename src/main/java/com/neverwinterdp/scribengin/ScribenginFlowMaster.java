@@ -35,7 +35,7 @@ public class ScribenginFlowMaster extends ChainBase implements Runnable {
     addCommand(new KafkaReader());
     addCommand(new KafKaToHDFSConverter());
     addCommand(new ThreadBuffer(new CyclicBarrier(parties, new ThreadBuffer().new Updater())));
-    addCommand(new HDFSWriter());
+    addCommand(new HDFSWriter(scribenginContext));
     addCommand(new ZkFinalizer());
     context = scribenginContext;
     context.setMemberId(memberId);
