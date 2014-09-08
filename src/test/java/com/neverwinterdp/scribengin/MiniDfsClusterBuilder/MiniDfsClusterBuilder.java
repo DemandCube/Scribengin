@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 
 public class MiniDfsClusterBuilder {
+  File baseDir;
   Configuration conf;
   MiniDFSCluster hdfsCluster;
   public MiniDfsClusterBuilder(){
@@ -24,7 +25,7 @@ public class MiniDfsClusterBuilder {
    * @return Link to connect to
    */
   public String build(String testName){
-    File baseDir = new File("./target/hdfs/" + testName).getAbsoluteFile();
+    baseDir = new File("./hdfs/" + testName).getAbsoluteFile();
     FileUtil.fullyDelete(baseDir);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
     MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
@@ -39,5 +40,6 @@ public class MiniDfsClusterBuilder {
   
   public void destroy(){
     hdfsCluster.shutdown();
+    FileUtil.fullyDelete(baseDir);
   }
 }

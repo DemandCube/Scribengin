@@ -11,26 +11,32 @@ import com.neverwinterdp.scribengin.writer.helpers.StringRecordWriter;
 
 // TODO factor in buffering
 // TODO make it quick
-
-@SuppressWarnings("unchecked")
 public class HDFSWriter implements Writer<byte[]> {
 
   private static final Logger logger = Logger.getLogger(HDFSWriter.class);
   private ScribenginContext scribenginContext;
   private StringRecordWriter writer;
 
-  public HDFSWriter(ScribenginContext scribenginContext){
+  public HDFSWriter(ScribenginContext con){
     super();
-    writer = new StringRecordWriter(scribenginContext.get("hadoop.configFiles").toString().split(","));
+    scribenginContext = con;
+    if(con.getProps().containsKey("hadoop.configFiles")){
+      writer = new StringRecordWriter(scribenginContext.getProps().get("hadoop.configFiles").toString().split(","));
+    }
+    else{
+      writer = new StringRecordWriter();
+    }
+    
   }
   
   @Override
   public void write(byte[] data) throws IOException {
-    logger.info("write.");
+    logger.info("WRITE");
     writer.write(scribenginContext.getHDFSPath(),data);
     writer.close();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean execute(Context context) throws Exception {
     scribenginContext = (ScribenginContext) context;

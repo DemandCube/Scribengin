@@ -8,13 +8,16 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-// TODO singleton it
+
 public class StringRecordWriter {
   private FSDataOutputStream os;
   private FileSystem fs;
   private Configuration conf;
 
-  public StringRecordWriter() throws IOException {
+  public StringRecordWriter() {
+    //If these files don't exist, no error occurs.
+    //These will just be the default for if this is 
+    //running on the hadoop master
     this(new String[]{"/etc/hadoop/conf/hdfs-site.xml", 
                       "/etc/hadoop/conf/core-site.xml"});
   }
@@ -35,22 +38,22 @@ public class StringRecordWriter {
     } else {
       os = fs.create(path);
     }
-    
     os.write(bytes);
-    os.write('\n');
+    os.flush();
+    //os.write('\n');
   }
 
   public void close() {
     try {
       os.close();
     } catch (IOException e) {
-      //TODO: log
+      e.printStackTrace();
     }
 
     try {
       fs.close();
     } catch (IOException e) {
-      // TODO: log
+      e.printStackTrace();
     }
   }
 }
