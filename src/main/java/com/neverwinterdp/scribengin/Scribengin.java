@@ -3,6 +3,10 @@
  */
 package com.neverwinterdp.scribengin;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,12 +16,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.mortbay.log.Log;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.neverwinterdp.scribengin.configuration.DynamicConfigurator;
 import com.neverwinterdp.scribengin.utils.PropertyUtils;
 import com.neverwinterdp.scribengin.utils.ScribenginUtils;
@@ -42,35 +43,26 @@ public class Scribengin {
   private DynamicConfigurator configurator;
   private ScribenginContext scribenginContext;
   private int numThreads;
+  private String propertyFilePath;
   
-  @Inject @Named("scribengin:example")
-  private String exampleParam;
   
   //private Scribengin scribenginRunner;
   private ThreadFactory threadFactory;
   
   public Scribengin(){
-    this("DEFAULT?!?!?!");
+    this("src/main/resources/server.properties");
   }
   
-  public Scribengin(String newParam){
-    this.exampleParam = newParam;
-    logger.info("SCRIBENGIN IS STARTING!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    logger.info(exampleParam);
-    System.err.println("WTF??"+newParam);
+  public Scribengin(String propFilePath){
+    this.propertyFilePath = propFilePath;
   }
   
-  public void init(){
-    props = PropertyUtils.getPropertyFile("server.properties");
-
+  public void init() throws Exception{
+    props = PropertyUtils.getPropertyFile(this.propertyFilePath);
     logger.debug("Properties " + props);
-
     this.numThreads = Integer.parseInt(props.getProperty("num.threads"));
-
-    threadFactory = new ThreadFactoryBuilder().setNameFormat("Scribengin-tributary-%d").build();
+    this.threadFactory = new ThreadFactoryBuilder().setNameFormat("Scribengin-tributary-%d").build();
     this.executorService = Executors.newFixedThreadPool(this.numThreads + 2, threadFactory);
-
-    
   }
   
   public void start(){
@@ -78,12 +70,13 @@ public class Scribengin {
     try {
       startDynamicConfigurator();
     } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error("Could not startDynamicConfigurator");
+      logger.error(e.getStackTrace());
     }
 
     this.scribenginContext = this.configurator.getContext();
     this.scribenginContext.setProps(props);
+    
     //TODO externalize
     this.scribenginContext.setHDFSPath("/tmp/hdfs/path");
 
@@ -92,14 +85,13 @@ public class Scribengin {
     try {
       bully();
     } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      logger.error("Could not start bully");
+      logger.error(e.getStackTrace());
     }
-    
   }
   
   public void stop(){
-    executorService.shutdown();
+    this.executorService.shutdown();
   }
   
 
@@ -143,7 +135,6 @@ public class Scribengin {
   }
 
   private void startFlowMaster() {
-
     int threadsToWaitOn = Integer.parseInt(props.getProperty("num.barrier.threads"));
     for (int i = 0; i <= numThreads; i++) {
       flowMaster = new ScribenginFlowMaster(scribenginContext, threadsToWaitOn, i);

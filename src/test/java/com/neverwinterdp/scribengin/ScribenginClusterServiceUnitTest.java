@@ -23,7 +23,7 @@ public class ScribenginClusterServiceUnitTest {
     String installScript =
         "module install " + 
         " -Pmodule.data.drop=true" +
-        " -Pscribengin:example=\"overridingdefaultvalue!\" " +
+        " -Pscribengin:serverproperties=src/main/resources/server.properties" +
         " --member-role scribengin --autostart --module Scribengin \n";
     shell.executeScript(installScript);
   }
@@ -41,7 +41,7 @@ public class ScribenginClusterServiceUnitTest {
   public void test(){
     //Do some stuff to test the server here...
     try {
-      Thread.sleep(2000);
+      Thread.sleep(6000);
     } catch (InterruptedException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();

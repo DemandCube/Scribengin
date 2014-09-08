@@ -5,10 +5,8 @@ import com.google.inject.name.Named;
 import com.neverwinterdp.server.service.ServiceInfo;
 
 public class ScribenginClusterServiceInfo extends ServiceInfo{
+  @Inject @Named("scribengin:serverproperties")
+  private String serverProps = "server.properties";
   
-  @Inject(optional = true) @Named("scribengin:example")
-  private String example = "";
-  
-  //public int getPort() { return port; }
-  public String getExample(){return example; }
+  public String getServerPropertyFile(){return serverProps; }
 }
