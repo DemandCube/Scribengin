@@ -46,7 +46,6 @@ public class HDFSWriterUnitTest {
     Properties p = new Properties();
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
-    //Properties, only property
     con.setProps(p);
     doTest(con, "NeverwinterDP is snazzy");
   }
@@ -55,11 +54,11 @@ public class HDFSWriterUnitTest {
   public void testHDFSWriter(){
     ScribenginContext con = new ScribenginContext();
     Properties p = new Properties();
+    //Create this property to trigger other constructor
     p.put("hadoop.configFiles", "/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml");
     
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
-    //Properties, only property
     con.setProps(p);
     doTest(con, "NeverwinterDP is cool");
   }
@@ -100,6 +99,4 @@ public class HDFSWriterUnitTest {
     }
     assertEquals(s,readLine);
   }
-  
-  
 }
