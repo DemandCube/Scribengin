@@ -44,6 +44,7 @@ public class HDFSWriterUnitTest {
   public void testHDFSWriterDefaultConstructor(){
     ScribenginContext con = new ScribenginContext();
     Properties p = new Properties();
+    
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
     con.setProps(p);
@@ -67,13 +68,10 @@ public class HDFSWriterUnitTest {
   
   public void doTest(ScribenginContext con, String s){
     byte[] b = s.getBytes();
-    
     Properties p = new Properties();
-    //p.put("hadoop.configFiles", "/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml");
     
     //Where it gets written
     con.setHDFSPath(hadoopConnection+hdfsPath);
-    //Properties, only property
     con.setProps(p);
     
     HDFSWriter w = new HDFSWriter(con);
@@ -97,6 +95,8 @@ public class HDFSWriterUnitTest {
       e.printStackTrace();
       assertTrue("Could not read from HDFS", false);
     }
+    
+    //Assert what's read is what was written
     assertEquals(s,readLine);
   }
 }
