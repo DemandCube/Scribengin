@@ -46,6 +46,9 @@ public class Scribengin {
   @Inject @Named("scribengin:example")
   private String exampleParam;
   
+  //private Scribengin scribenginRunner;
+  private ThreadFactory threadFactory;
+  
   public Scribengin(){
     this("DEFAULT?!?!?!");
   }
@@ -57,39 +60,48 @@ public class Scribengin {
     System.err.println("WTF??"+newParam);
   }
   
-  /**
-   * @param args
-   */
-  public static void main(String[] args) throws Exception {
-
-    // BasicConfigurator.configure();
-
-    Scribengin scribenginRunner = new Scribengin();
+  public void init(){
     props = PropertyUtils.getPropertyFile("server.properties");
 
     logger.debug("Properties " + props);
 
-    scribenginRunner.numThreads = Integer.parseInt(props.getProperty("num.threads"));
+    this.numThreads = Integer.parseInt(props.getProperty("num.threads"));
 
-    ThreadFactory threadFactory =
-        new ThreadFactoryBuilder().setNameFormat("Scribengin-tributary-%d").build();
-    scribenginRunner.executorService =
-        Executors.newFixedThreadPool(scribenginRunner.numThreads + 2, threadFactory);
+    threadFactory = new ThreadFactoryBuilder().setNameFormat("Scribengin-tributary-%d").build();
+    this.executorService = Executors.newFixedThreadPool(this.numThreads + 2, threadFactory);
 
-    scribenginRunner.startClusterRegistration();
-    scribenginRunner.startDynamicConfigurator();
-
-    scribenginRunner.scribenginContext = scribenginRunner.configurator.getContext();
-    scribenginRunner.scribenginContext.setProps(props);
-    //TODO externalize
-    scribenginRunner.scribenginContext.setHDFSPath("/tmp/hdfs/path");
-
-    scribenginRunner.startFlowMaster();
-
-    scribenginRunner.bully();
-    scribenginRunner.executorService.shutdown();
-
+    
   }
+  
+  public void start(){
+    startClusterRegistration();
+    try {
+      startDynamicConfigurator();
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    this.scribenginContext = this.configurator.getContext();
+    this.scribenginContext.setProps(props);
+    //TODO externalize
+    this.scribenginContext.setHDFSPath("/tmp/hdfs/path");
+
+    startFlowMaster();
+
+    try {
+      bully();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    
+  }
+  
+  public void stop(){
+    executorService.shutdown();
+  }
+  
 
   private void startDynamicConfigurator() throws Exception {
     String zkConnectString = ScribenginUtils.getZookeeperServers(props);
@@ -138,5 +150,17 @@ public class Scribengin {
       flowMaster.setRunning(true);
       executorService.execute(flowMaster);
     }
+  }
+  
+  
+  /**
+   * @param args
+   */
+  public static void main(String[] args) throws Exception {
+    Scribengin x = new Scribengin();
+    x.init();
+    x.start();
+    Thread.sleep(5000);
+    x.stop();
   }
 }
