@@ -20,19 +20,18 @@ public class HDFSWriter implements Writer<byte[]> {
   public HDFSWriter(ScribenginContext con){
     super();
     scribenginContext = con;
-    if(con.getProps().containsKey("hadoop.configFiles")){
-      writer = new StringRecordWriter(scribenginContext.getProps().get("hadoop.configFiles").toString().split(","));
+    if( scribenginContext.getProps().containsKey("hadoop.configFiles") ) {   
+      writer = new StringRecordWriter(scribenginContext.getHDFSPath(),scribenginContext.getProps().get("hadoop.configFiles").toString().split(","));
     }
     else{
-      writer = new StringRecordWriter();
+      writer = new StringRecordWriter(scribenginContext.getHDFSPath());
     }
-    
   }
   
   @Override
   public void write(byte[] data) throws IOException {
     logger.info("WRITE");
-    writer.write(scribenginContext.getHDFSPath(),data);
+    writer.write(data);
     writer.close();
   }
 

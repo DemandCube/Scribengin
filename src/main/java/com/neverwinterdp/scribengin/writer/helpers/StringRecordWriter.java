@@ -8,30 +8,35 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import com.neverwinterdp.scribengin.ScribenginContext;
+
 
 public class StringRecordWriter {
   private FSDataOutputStream os;
   private FileSystem fs;
   private Configuration conf;
-
-  public StringRecordWriter() {
+  private String hdfsPath;
+  
+  public StringRecordWriter(String hdfsPath, String[] resources) {
+    this.hdfsPath = hdfsPath;
     //If these files don't exist, no error occurs.
     //These will just be the default for if this is 
     //running on the hadoop master
-    this(new String[]{"/etc/hadoop/conf/hdfs-site.xml", 
-                      "/etc/hadoop/conf/core-site.xml"});
-  }
-  
-  public StringRecordWriter(String[] resources){
     conf = new Configuration();
     for(int i=0; i<resources.length; i++){
       conf.addResource(resources[i]);
     }
   }
+  
+  public StringRecordWriter(String hdfsPath){
+    this(hdfsPath, new String[]{"/etc/hadoop/conf/hdfs-site.xml", 
+                  "/etc/hadoop/conf/core-site.xml"});
+    
+  }
 
-  public void write(String uri, byte[] bytes) throws IOException {
-    fs = FileSystem.get(URI.create(uri), conf);
-    Path path = new Path(uri);
+  public void write(byte[] bytes) throws IOException {
+    fs = FileSystem.get(URI.create(this.hdfsPath), conf);
+    Path path = new Path(this.hdfsPath);
     
     if (fs.exists(path)) {
       os = fs.append(path);
@@ -39,7 +44,6 @@ public class StringRecordWriter {
       os = fs.create(path);
     }
     os.write(bytes);
-    os.write("\n".getBytes());
     os.flush();
     //os.write('\n');
   }

@@ -26,13 +26,13 @@ public class HDFSWriterUnitTest {
   
   private static MiniDfsClusterBuilder hadoopServer;
   private static String hadoopConnection;
-  private static String hdfsPath="test";
+  //private static String hdfsPath="test";
   
   
   @BeforeClass
   public static void setup() throws Exception {
     hadoopServer = new MiniDfsClusterBuilder();
-    hadoopConnection = hadoopServer.build("test");
+    hadoopConnection = hadoopServer.build();
     System.out.println("Hadoop test server at: "+hadoopConnection);
   }
   
@@ -42,50 +42,76 @@ public class HDFSWriterUnitTest {
   }
   
   @Test
-  public void testHDFSWriterDefaultConstructor(){
-    ScribenginContext con = new ScribenginContext();
-    Properties p = new Properties();
+  public void testHDFSWriterAppend(){
+    String testString = "flubbery";
+    byte[] testStringBytes = testString.getBytes();
+    
+    String hdfsPath = "testAppend";
+    
+    ScribenginContext context = new ScribenginContext();
+    Properties props = new Properties();
     
     //Where it gets written
-    con.setHDFSPath(hadoopConnection+hdfsPath);
-    con.setProps(p);
-    doTest(con, "flubber");
-  }
-  
-  @Test
-  public void testHDFSWriter(){
-    ScribenginContext con = new ScribenginContext();
-    Properties p = new Properties();
-    //Create this property to trigger other constructor
-    p.put("hadoop.configFiles", "/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml");
+    context.setHDFSPath(hadoopConnection+hdfsPath);
+    context.setProps(props);
     
-    //Where it gets written
-    con.setHDFSPath(hadoopConnection+hdfsPath);
-    con.setProps(p);
-    doTest(con, "snazzy");
-  }
-  
-  
-  
-  public void doTest(ScribenginContext con, String s){
-    byte[] b = s.getBytes();
-    Properties p = new Properties();
-    
-    //Where it gets written
-    con.setHDFSPath(hadoopConnection+hdfsPath);
-    con.setProps(p);
-    
-    HDFSWriter w = new HDFSWriter(con);
+    HDFSWriter writer = new HDFSWriter(context);
     
     //Write to HDFS
     try {
-      w.write(b);
+      writer.write(testStringBytes);
+    } catch (IOException e) {
+      e.printStackTrace();
+      assertTrue("Write to HDFS failed",false);
+    }
+    //Append to same file
+    try {
+      writer.write(testStringBytes);
+    } catch (IOException e) {
+      e.printStackTrace();
+      assertTrue("Append to existing HDFS file failed",false);
+    }
+    
+    assertEquals(testString+testString,getFileHDFS(hdfsPath));
+  }
+
+  
+  @Test
+  public void testHDFSWriter(){
+    String testString = "snazzy";
+    byte[] testStringBytes = testString.getBytes();
+    
+    String hdfsPath = "testWrite";
+    
+    ScribenginContext context = new ScribenginContext();
+    Properties props = new Properties();
+    //Create this property to trigger other constructor
+    props.put("hadoop.configFiles", "/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml");
+    
+    //Where it gets written
+    context.setHDFSPath(hadoopConnection+hdfsPath);
+    context.setProps(props);
+    
+    HDFSWriter writer = new HDFSWriter(context);
+    
+    //Write to HDFS
+    try {
+      writer.write(testStringBytes);
     } catch (IOException e) {
       e.printStackTrace();
       assertTrue("Write to HDFS failed",false);
     }
     
-    //Read in what was just written
+    assertEquals(testString, getFileHDFS(hdfsPath));
+  }
+  
+  
+  /**
+   * Read in file, return whole file as a string
+   * @param hdfsPath Path of HDFS file to read
+   * @return whole file as a string
+   */
+  private String getFileHDFS(String hdfsPath) {
     String readLine="";
     String tempLine="";
     try {
@@ -93,16 +119,14 @@ public class HDFSWriterUnitTest {
       Path path = new Path(hadoopConnection+hdfsPath);
       BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
       while((tempLine = br.readLine() ) != null){
-        readLine=tempLine;
-        System.err.println(readLine);
+        readLine+=tempLine;
       }
-      //readLine=br.readLine();
     } catch (IOException e) {
       e.printStackTrace();
       assertTrue("Could not read from HDFS", false);
     }
-    
-    //Assert what's read is what was written
-    assertEquals(s,readLine);
+    return readLine;
   }
+  
+  
 }

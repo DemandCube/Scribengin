@@ -17,24 +17,23 @@ public class MiniDfsClusterBuilder {
   }
   
   public String build(){
-    return this.build("test");
+    return this.build("test",3);
   }
   
   /**
    * @param testName Path of file to write to
+   * @param numNodes number of nodes to emulate
    * @return Link to connect to
    */
-  public String build(String testName){
+  public String build(String testName, int numNodes){
     baseDir = new File("./hdfs/" + testName).getAbsoluteFile();
     FileUtil.fullyDelete(baseDir);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
-    //conf.set("dfs.client.block.write.replace-datanode-on-failure.policy","ALWAYS");
     conf.set("dfs.support.append", "true");
-    //conf.set("dfs.replication", "12");
-    //conf.set("dfs.client.block.write.replace-datanode-on-failure.enable","false");
     
     MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(conf);
     try {
+      builder.numDataNodes(numNodes);
       hdfsCluster = builder.build();
     } catch (IOException e) {
       // TODO Auto-generated catch block
