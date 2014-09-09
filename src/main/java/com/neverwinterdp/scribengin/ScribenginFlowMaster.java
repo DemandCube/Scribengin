@@ -1,11 +1,8 @@
 package com.neverwinterdp.scribengin;
 
-import java.util.concurrent.CyclicBarrier;
-
 import org.apache.commons.chain.impl.ChainBase;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.buffers.ThreadBuffer;
 import com.neverwinterdp.scribengin.converters.KafKaToHDFSConverter;
 import com.neverwinterdp.scribengin.finalizers.ZkFinalizer;
 import com.neverwinterdp.scribengin.readers.KafkaReader;
@@ -34,7 +31,7 @@ public class ScribenginFlowMaster extends ChainBase implements Runnable {
     logger.debug("SCR " + scribenginContext.getProps());
     addCommand(new KafkaReader());
     addCommand(new KafKaToHDFSConverter());
-    addCommand(new ThreadBuffer(new CyclicBarrier(parties, new ThreadBuffer().new Updater())));
+   // addCommand(new ThreadBuffer(new CyclicBarrier(parties, new ThreadBuffer().new Updater())));
     addCommand(new HDFSWriter(scribenginContext));
     addCommand(new ZkFinalizer());
     context = scribenginContext;

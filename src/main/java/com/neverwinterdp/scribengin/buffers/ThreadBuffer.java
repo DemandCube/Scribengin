@@ -62,14 +62,15 @@ public class ThreadBuffer implements Buffer<Integer> {
     if (barrier.await() != 0) {
       return Chain.PROCESSING_COMPLETE;
     } else {
-      buffer(integer);
-      logger.debug("Queue " + queue);
-      context.putAll(scribenginContext);
-      scribenginContext.clear();
-      queue.clear();
-      return Chain.CONTINUE_PROCESSING;
+      synchronized (queue) {
+        buffer(integer);
+        logger.debug("Queue " + queue);
+        context.putAll(scribenginContext);
+        scribenginContext.clear();
+        queue.clear();
+        return Chain.CONTINUE_PROCESSING;
+      }
     }
-
   }
 
   @Override

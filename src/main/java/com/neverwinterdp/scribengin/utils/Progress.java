@@ -29,4 +29,9 @@ public class Progress {
   public void setTimestamp(String timestamp) {
     this.timestamp = timestamp;
   }
+
+  @Override
+  public String toString() {
+    return "Progress [id=" + id + ", offset=" + offset + ", timestamp=" + timestamp + "]";
+  }
 }

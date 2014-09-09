@@ -94,7 +94,7 @@ public class ScribenginUtils {
       json = ow.writeValueAsString(command);
     } catch (JsonProcessingException e) {
     }
-
+    logger.info("JSON " + json);
     return json;
   }
 }

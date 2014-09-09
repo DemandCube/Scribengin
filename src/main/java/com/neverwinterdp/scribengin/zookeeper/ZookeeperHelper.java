@@ -134,7 +134,7 @@ public class ZookeeperHelper {
   public int writeData(String path, byte[] data) throws Exception {
     //TODO exit if data is not a json obj
 
-    logger.info("writeData. path: " + path + " data: " + Arrays.toString(data));
+ //   logger.info("writeData. path: " + path + " data: " + Arrays.toString(data));
     if (zkClient.checkExists().forPath(path) == null) {
 
       String created =

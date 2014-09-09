@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.converters;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
@@ -23,12 +24,14 @@ public class KafKaToHDFSConverter implements
 
   @Override
   public byte[] convert(ByteBufferMessageSet byteBufferMessageSet) {
-    logger.debug("Trying to convert");
+    logger.info("Trying to convert");
     byte[] bytes = null;
     for (MessageAndOffset messageAndOffset : byteBufferMessageSet) {
       ByteBuffer payload = messageAndOffset.message().payload();
+     
       bytes = new byte[payload.limit()];
       payload.get(bytes);
+  //    logger.info("Offset " + messageAndOffset.offset()  +" payload " + new String(bytes, Charset.defaultCharset()));
     }
     return bytes;
   }

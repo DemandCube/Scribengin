@@ -21,6 +21,8 @@ public class ZkFinalizer implements Finalizer {
   private ScribenginContext scribenginContext;
   private Properties props;
 
+  //get offset from context
+  //write to zk
   @Override
   public boolean execute(Context context) throws Exception {
     scribenginContext = (ScribenginContext) context;
@@ -43,7 +45,7 @@ public class ZkFinalizer implements Finalizer {
     progress.setId(scribenginContext.getMemberId());
     progress.setOffset((Integer) scribenginContext.get(ScribenginContext.KAFKA_OFFSET));
     progress.setTimestamp(getNow());
-
+    logger.info("Progress " + progress);
     scribenginContext.getZkHelper().updateProgress(zkProgressPath,
         ScribenginUtils.toJson(progress).getBytes());
   }
@@ -54,4 +56,3 @@ public class ZkFinalizer implements Finalizer {
     return sd.format(new Date());
   }
 }
-
