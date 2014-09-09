@@ -11,12 +11,35 @@ import com.neverwinterdp.scribengin.writer.helpers.StringRecordWriter;
 
 // TODO factor in buffering
 // TODO make it quick
+/**
+ * Writes to HDFS.  Only ever writes to a single file
+ * @author Richard Duarte
+ * <pre>
+ * {@code
+ * ScribenginContext context = ....
+ * ...
+ * 
+ * HDFSWriter writer = new HDFSWriter(context);
+ * try {
+ *   writer.write(testStringBytes);
+ * }
+ * catch(IOException e) {
+ *   System.err.println("Could not write to HDFS");
+ * }
+ * </pre>
+ */
 public class HDFSWriter implements Writer<byte[]> {
 
   private static final Logger logger = Logger.getLogger(HDFSWriter.class);
   private ScribenginContext scribenginContext;
   private StringRecordWriter writer;
 
+  /**
+   * Constructor
+   * @param con ScribenginContext - <pre>expects context to contain string at getHDFSPath(), 
+   * and a list of comma separated values of Hadoop resource files at scribenginContext.getProps().get("hadoop.configFiles") 
+   * (i.e. hadoop.configFiles = /etc/hadoop/conf/hdfs-site.xml, /etc/hadoop/conf/core-site.xml )</pre>
+   */
   public HDFSWriter(ScribenginContext con){
     super();
     scribenginContext = con;
@@ -28,11 +51,14 @@ public class HDFSWriter implements Writer<byte[]> {
     }
   }
   
+  /**
+   * Writes to HDFS
+   * @param data to write to 
+   */
   @Override
   public void write(byte[] data) throws IOException {
     logger.info("WRITE");
     writer.write(data);
-    writer.close();
   }
 
   @SuppressWarnings("unchecked")

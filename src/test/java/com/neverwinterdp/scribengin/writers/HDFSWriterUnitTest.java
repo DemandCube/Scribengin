@@ -19,6 +19,10 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginContext;
 import com.neverwinterdp.scribengin.MiniDfsClusterBuilder.MiniDfsClusterBuilder;
 
+/**
+ * Makes sure HDFSWriter can write and append successfully to HDFS
+ * @author Richard Duarte
+ */
 public class HDFSWriterUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/main/resources/log4j.properties") ;
@@ -26,7 +30,6 @@ public class HDFSWriterUnitTest {
   
   private static MiniDfsClusterBuilder hadoopServer;
   private static String hadoopConnection;
-  //private static String hdfsPath="test";
   
   
   @BeforeClass
@@ -41,6 +44,9 @@ public class HDFSWriterUnitTest {
     hadoopServer.destroy();
   }
   
+  /**
+   * Creates new writer, creates file and writes to it, then appends to that file. 
+   */
   @Test
   public void testHDFSWriterAppend(){
     String testString = "flubbery";
@@ -76,6 +82,9 @@ public class HDFSWriterUnitTest {
   }
 
   
+  /**
+   * Creates new writer, writes to HDFS, confirms string is correct
+   */
   @Test
   public void testHDFSWriter(){
     String testString = "snazzy";
