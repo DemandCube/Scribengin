@@ -11,14 +11,13 @@ import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
 
-import com.neverwinterdp.scribengin.kafka.KafkaClusterBuilder;
+import com.neverwinterdp.scribengin.kafka.ScribenginClusterBuilder;
 //For whatever %$#@%$#ing reason the test fails if I don't use teh queuengin one.  
 //WTF is the difference?
 //I hate everything.
 //TODO: Fix this import
 //import com.neverwinterdp.scribengin.kafka.SimplePartitioner;
 import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
-import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 
 /**
@@ -29,25 +28,19 @@ public class ScribenginClusterUnitTest {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
-  static protected KafkaClusterBuilder clusterBuilder;
-  static protected Server scribenginServer ;
+  static protected ScribenginClusterBuilder clusterBuilder;
   static protected Shell shell  ;
 
   @BeforeClass
   static public void setup() throws Exception {
-    clusterBuilder = new KafkaClusterBuilder() ;
+    clusterBuilder = new ScribenginClusterBuilder() ;
     clusterBuilder.install();
-    scribenginServer = Server.create("-Pserver.name=scribengin", "-Pserver.roles=scribengin");
-    shell = clusterBuilder.getShell() ;
-    installScribengin();
   }
 
   @AfterClass
   static public void teardown() throws Exception {
     clusterBuilder.uninstall();
     clusterBuilder.destroy();
-    uninstallScribengin();
-    scribenginServer.destroy();
   }
   
   private static void createKafkaData(){
@@ -62,36 +55,17 @@ public class ScribenginClusterUnitTest {
     
     Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerProps));
     for(int i =0 ; i < numOfMessages; i++) {
-      KeyedMessage<String, String> data = new KeyedMessage<String, String>(KafkaClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
+      KeyedMessage<String, String> data = new KeyedMessage<String, String>(ScribenginClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
       producer.send(data);
     }
     producer.close();
   }
   
-  private static void installScribengin() throws InterruptedException{
-    String scribeInstallScript = 
-        "module install " + 
-        " -Pmodule.data.drop=true" +
-        " -Pscribengin:checkpointinterval=200" +
-        " -Pscribengin:leader=127.0.0.1:2181" +
-        " -Pscribengin:partition=0" +
-        " -Pscribengin:topic="+KafkaClusterBuilder.TOPIC +
-        " --member-role scribengin --autostart --module Scribengin \n"; 
-    
-    shell.executeScript(scribeInstallScript);
-    Thread.sleep(2000);
-  }
   
-  static void uninstallScribengin() {
-    String uninstallScript = 
-        "module uninstall --member-role scribengin --timeout 20000 --module Scribengin \n" ;
-    shell.executeScript(uninstallScript);
-  }
   
   @Test
   public void testScribenginCluster() throws Exception {
     createKafkaData();
     Thread.sleep(1000);
   }
-  
 }
