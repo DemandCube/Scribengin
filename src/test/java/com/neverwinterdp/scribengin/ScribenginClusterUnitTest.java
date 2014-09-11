@@ -12,7 +12,12 @@ import kafka.producer.ProducerConfig;
 
 
 import com.neverwinterdp.scribengin.kafka.KafkaClusterBuilder;
-import com.neverwinterdp.scribengin.kafka.SimplePartitioner;
+//For whatever %$#@%$#ing reason the test fails if I don't use teh queuengin one.  
+//WTF is the difference?
+//I hate everything.
+//TODO: Fix this import
+//import com.neverwinterdp.scribengin.kafka.SimplePartitioner;
+import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 
@@ -32,13 +37,16 @@ public class ScribenginClusterUnitTest {
   static public void setup() throws Exception {
     clusterBuilder = new KafkaClusterBuilder() ;
     clusterBuilder.install();
-    createKafkaData();
+    scribenginServer = Server.create("-Pserver.name=scribengin", "-Pserver.roles=scribengin");
+    shell = clusterBuilder.getShell() ;
+    installScribengin();
   }
 
   @AfterClass
   static public void teardown() throws Exception {
-    uninstallScribengin();
+    clusterBuilder.uninstall();
     clusterBuilder.destroy();
+    uninstallScribengin();
     scribenginServer.destroy();
   }
   
@@ -82,10 +90,8 @@ public class ScribenginClusterUnitTest {
   
   @Test
   public void testScribenginCluster() throws Exception {
-    scribenginServer = Server.create("-Pserver.name=scribengin", "-Pserver.roles=scribengin");
-    shell = new Shell() ;
-    shell.getShellContext().connect();
-    installScribengin();
+    createKafkaData();
+    Thread.sleep(1000);
   }
   
 }
