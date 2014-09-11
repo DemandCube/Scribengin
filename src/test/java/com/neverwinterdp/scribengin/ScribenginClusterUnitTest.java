@@ -11,8 +11,8 @@ import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
 
-import com.neverwinterdp.scribengin.kafkaClusterBuilder.KafkaClusterBuilder;
-import com.neverwinterdp.scribengin.kafkaClusterBuilder.SimplePartitioner;
+import com.neverwinterdp.scribengin.kafka.KafkaClusterBuilder;
+import com.neverwinterdp.scribengin.kafka.SimplePartitioner;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 

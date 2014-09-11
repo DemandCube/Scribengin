@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.kafkaClusterBuilder;
+package com.neverwinterdp.scribengin.kafka;
 
 import kafka.producer.Partitioner;
 import kafka.utils.VerifiableProperties;

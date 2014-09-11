@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.kafkaClusterBuilder;
+package com.neverwinterdp.scribengin.kafka;
 
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
@@ -11,7 +11,7 @@ public class KafkaClusterBuilder {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
-  static String TOPIC = "metrics.consumer" ;
+  public static String TOPIC = "cluster.test" ;
   
   Server  zkServer, kafkaServer ;
   Shell   shell ;
