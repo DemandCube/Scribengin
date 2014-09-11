@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
-import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
+//import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -94,7 +94,7 @@ public class Client {
     YarnClientApplication app = yarnClient.createApplication();
 
     // GetNewApplicationResponse can be used to determined resources available.
-    GetNewApplicationResponse appResponse = app.getNewApplicationResponse();
+    //GetNewApplicationResponse appResponse = app.getNewApplicationResponse();
 
     ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
     ApplicationId appId = appContext.getApplicationId();

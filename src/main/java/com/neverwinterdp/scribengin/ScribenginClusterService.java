@@ -1,41 +1,59 @@
 package com.neverwinterdp.scribengin;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+
+import com.google.inject.Injector;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.neverwinterdp.queuengin.MetricsConsumerHandler;
-import com.neverwinterdp.queuengin.kafka.KafkaMessageConsumerConnector;
 import com.neverwinterdp.server.service.AbstractService;
-import com.neverwinterdp.util.monitor.ApplicationMonitor;
+import com.neverwinterdp.server.module.ModuleProperties;
+import com.neverwinterdp.util.LoggerFactory;
+
 /**
- * @author Tuan Nguyen
- * @email  tuan08@gmail.com
+ * @author Richard Duarte
  */
 public class ScribenginClusterService extends AbstractService {
-  KafkaMessageConsumerConnector consumer ;
-  
+  //private ScribeConsumer sc;
+  private Logger logger ;
+  private ScribenginClusterServiceInfo serviceInfo;
+  Thread t;
   @Inject
-  private ApplicationMonitor appMonitor ;
-  
-  @Inject(optional=true) @Named("zookeeper-urls")
-  private String zookeeperUrls = "127.0.0.1:2181";
-  
-  private String[]   topic = {} ;
-
-  @Inject
-  public void setTopics(@Named("consume-topics") String topics) {
-    this.topic = topics.split(",") ;
+  public void init(Injector container,
+                   LoggerFactory factory, 
+                   ModuleProperties moduleProperties,
+                   ScribenginClusterServiceInfo serviceInfo) throws Exception {
+    //this.loggerFactory = factory ;
+    this.logger = factory.getLogger(ScribenginClusterService.class) ;
+    this.serviceInfo = serviceInfo ;
   }
   
+  
   public void start() throws Exception {
-    String consumerGroup = "ScribenginClusterService" ;
-    MetricsConsumerHandler handler = new MetricsConsumerHandler("Scribengin", appMonitor) ;
-    consumer = new KafkaMessageConsumerConnector(consumerGroup, zookeeperUrls) ;
-    for(String selTopic : topic) {
-      consumer.consume(selTopic, handler, 1) ;
-    }
+    logger.info("Starting Scribengin");
+    final String[] args = {"--topic", this.serviceInfo.getTopic(), 
+                      "--leader", this.serviceInfo.getLeader(),
+                      "--checkpoint_interval", this.serviceInfo.getCheckpointInterval(),
+                      "--partition", this.serviceInfo.getPartition(),
+                    };
+    t = new Thread(){
+      public void run(){
+        try {
+          //TODO: ScribeConsumer should be able to run as a thread on its own
+          ScribeConsumer.main(args);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+    t.start();
+    logger.info("Starting Scribengin Complete");
+    
   }
 
   public void stop() {
-    consumer.close() ;
+    logger.info("Stopping Scribengin");
+    t.interrupt();
+    logger.info("Stopping Scribengin Complete");
   }
 }

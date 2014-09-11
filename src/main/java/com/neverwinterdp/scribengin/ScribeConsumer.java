@@ -19,7 +19,6 @@ import kafka.javaapi.OffsetResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -40,7 +39,7 @@ public class ScribeConsumer {
   private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
   private static final String COMMIT_PATH_PREFIX = "/user/kxae";
 
-  private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
+  private static final Logger log = Logger.getLogger(ScribeConsumer.class.getName());
 
   private String currTmpDataPath;
   private String currDataPath;
@@ -122,7 +121,7 @@ public class ScribeConsumer {
 
   private synchronized void commit() {
     //TODO: move from tmp to the actual partition.
-    System.out.println(">> committing");
+    log.info(">> committing");
 
     if (lastCommittedOffset != offset) {
       //Commit
@@ -132,10 +131,10 @@ public class ScribeConsumer {
         // Then, mv the tmp data file to it's location.
         long startOffset = lastCommittedOffset + 1;
         long endOffset = offset;
-        System.out.println("\tstartOffset : " + String.valueOf(startOffset)); //xxx
-        System.out.println("\tendOffset   : " + String.valueOf(endOffset)); //xxx
-        System.out.println("\ttmpDataPath : " + currTmpDataPath); //xxx
-        System.out.println("\tDataPath    : " + currDataPath); //xxx
+        log.info("\tstartOffset : " + String.valueOf(startOffset)); 
+        log.info("\tendOffset   : " + String.valueOf(endOffset)); 
+        log.info("\ttmpDataPath : " + currTmpDataPath); 
+        log.info("\tDataPath    : " + currDataPath); 
 
         ScribeCommitLog log = scribeCommitLogFactory.build();
         log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
@@ -156,6 +155,8 @@ public class ScribeConsumer {
   }
 
   private String getClientName() {
+    return "scribe_"+topic+"_"+partition;
+    /*
     StringBuilder sb = new StringBuilder();
     sb.append("scribe_");
     sb.append(topic);
@@ -163,36 +164,21 @@ public class ScribeConsumer {
     sb.append(partition);
     String r = sb.toString();
     return r;
+    */
   }
 
-  private String getCommitLogAbsPath() {
+  String getCommitLogAbsPath() {
     return PRE_COMMIT_PATH_PREFIX + "/" + getClientName() + ".log";
   }
 
   private void generateTmpAndDestDataPaths() {
-    StringBuilder sb = new StringBuilder();
     long ts = System.currentTimeMillis()/1000L;
-    sb.append(PRE_COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append(ts);
-    this.currTmpDataPath = sb.toString();
-
-    sb = new StringBuilder();
-    sb.append(COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append(ts);
-    this.currDataPath = sb.toString();
+    this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    this.currDataPath = COMMIT_PATH_PREFIX+"/scribe.data."+ts;
   }
 
   private String getTmpDataPathPattern() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(PRE_COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append("*");
-    return sb.toString();
+    return PRE_COMMIT_PATH_PREFIX+"/scribe.data.*";
   }
 
   private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
@@ -204,11 +190,15 @@ public class ScribeConsumer {
 
     OffsetRequest req = new OffsetRequest(
         requestInfo, kafka.api.OffsetRequest.CurrentVersion(), getClientName());
-
-    OffsetResponse resp = consumer.getOffsetsBefore(req);
-
+    OffsetResponse resp;
+    try{
+      resp = consumer.getOffsetsBefore(req);
+    } catch(Exception e){
+      return 0;
+    }
+    
     if (resp.hasError()) {
-      System.out.println("error when fetching offset: " + resp.errorCode(topic, partition)); //xxx
+      log.error("error when fetching offset: " + resp.errorCode(topic, partition)); //xxx
       // In case you wonder what the error code really means.
       // System.out.println("OffsetOutOfRangeCode()" + ErrorMapping.OffsetOutOfRangeCode());
       // System.out.println("BrokerNotAvailableCode()" + ErrorMapping.BrokerNotAvailableCode());
@@ -264,11 +254,9 @@ public class ScribeConsumer {
     ScribeLogEntry entry = null;
     try {
       ScribeCommitLog log = scribeCommitLogFactory.build();
-
       log.read();
       entry = log.getLatestEntry();
-
-      if (entry.isCheckSumValid()) {
+      if (entry != null && entry.isCheckSumValid()) {
         FileSystem fs = fileSystemFactory.build();
 
         String tmpDataFilePath = entry.getSrcPath();
@@ -292,7 +280,11 @@ public class ScribeConsumer {
     } catch (NoSuchAlgorithmException e) {
       //TODO: log.warn
       e.printStackTrace();
+    } catch (Exception e){
+      //TODO: log.warn
+      e.printStackTrace();
     }
+    
 
     if (entry != null) {
       r = entry.getEndOffset();
@@ -303,7 +295,7 @@ public class ScribeConsumer {
 
   private long getLatestOffset(String topic, int partition, long startTime) {
     long offsetFromCommitLog = getLatestOffsetFromCommitLog();
-    System.out.println(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
+    log.info(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
     long offsetFromKafka = getLatestOffsetFromKafka(topic, partition, startTime);
     long r;
     if (offsetFromCommitLog == -1) {
@@ -323,27 +315,35 @@ public class ScribeConsumer {
     generateTmpAndDestDataPaths();
     lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     offset = lastCommittedOffset;
-    System.out.println(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
+    log.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
 
     while (true) {
-      System.out.println(">> offset: " + offset); //xxx
+      log.info(">> offset: " + offset); //xxx
       FetchRequest req = new FetchRequestBuilder()
         .clientId(getClientName())
         .addFetch(topic, partition, offset, 100000)
         .build();
-
-      FetchResponse resp = consumer.fetch(req);
+      
+      FetchResponse resp=null;
+      try{
+        resp = consumer.fetch(req);
+      } catch(Exception e){
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e1) {}
+        continue;
+      }
 
       if (resp.hasError()) {
         //TODO: if we got an invalid offset, reset it by asking for the last element.
         // otherwise, find a new leader from the replica
-        System.out.println("has error");  //xxx
+        log.error("has error");  //xxx
 
         short code = resp.errorCode(topic, partition);
-        System.out.println("Reason: " + code);
+        log.error("Reason: " + code);
         if (code == ErrorMapping.OffsetOutOfRangeCode())  {
           // We asked for an invalid offset. For simple case ask for the last element to reset
-          System.out.println("inside errormap");
+          log.error("inside errormap");
           offset = getLatestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.LatestTime());
           continue;
         }
@@ -356,7 +356,7 @@ public class ScribeConsumer {
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
           if (currentOffset < offset) {
-            System.out.println("Found an old offset: " + currentOffset + "Expecting: " + offset);
+            log.info("Found an old offset: " + currentOffset + "Expecting: " + offset);
             continue;
           }
           offset = messageAndOffset.nextOffset();
@@ -365,7 +365,7 @@ public class ScribeConsumer {
           byte[] bytes = new byte[payload.limit()];
           payload.get(bytes);
 
-          System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+          log.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
 

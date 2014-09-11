@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class ScribeLogEntryTest {
 
-  //@Ignore
+
   @Test
   public void testToJson()
   {
@@ -23,7 +23,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-  //@Ignore
+
   @Test
   public void testFromJson()
   {
@@ -40,7 +40,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-  //@Ignore
+
   @Test
   public void testFromJsonWithBadChecksum()
   {
