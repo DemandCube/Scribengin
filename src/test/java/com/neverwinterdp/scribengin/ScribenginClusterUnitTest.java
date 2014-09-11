@@ -10,14 +10,7 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-
 import com.neverwinterdp.scribengin.kafka.ScribenginClusterBuilder;
-//For whatever %$#@%$#ing reason the test fails if I don't use teh queuengin one.  
-//WTF is the difference?
-//I hate everything.
-//TODO: Fix this import
-//import com.neverwinterdp.scribengin.kafka.SimplePartitioner;
-import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
 import com.neverwinterdp.server.shell.Shell;
 
 /**
@@ -50,7 +43,6 @@ public class ScribenginClusterUnitTest {
     Properties producerProps = new Properties();
     producerProps.put("metadata.broker.list", "localhost:9092");
     producerProps.put("serializer.class", "kafka.serializer.StringEncoder");
-    producerProps.put("partitioner.class", SimplePartitioner.class.getName());
     producerProps.put("request.required.acks", "1");
     
     Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerProps));
