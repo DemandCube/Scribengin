@@ -24,8 +24,6 @@ public class ScribenginClusterUnitTest {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
-  static String TOPIC_NAME = "cluster.test" ;
-  
   static protected KafkaClusterBuilder clusterBuilder;
   static protected Server scribenginServer ;
   static protected Shell shell  ;
@@ -56,10 +54,12 @@ public class ScribenginClusterUnitTest {
     
     Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerProps));
     for(int i =0 ; i < numOfMessages; i++) {
-      KeyedMessage<String, String> data = new KeyedMessage<String, String>(TOPIC_NAME,"Neverwinter"+Integer.toString(i));
+      KeyedMessage<String, String> data = new KeyedMessage<String, String>(KafkaClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
       producer.send(data);
     }
     producer.close();
+    
+    
   }
   
   private static void installScribengin() throws InterruptedException{
@@ -69,11 +69,12 @@ public class ScribenginClusterUnitTest {
         " -Pscribengin:checkpointinterval=200" +
         " -Pscribengin:leader=127.0.0.1:2181" +
         " -Pscribengin:partition=0" +
-        " -Pscribengin:topic="+TOPIC_NAME +
+        " -Pscribengin:topic="+KafkaClusterBuilder.TOPIC +
         " --member-role scribengin --autostart --module Scribengin \n"; 
         
     shell.executeScript(scribeInstallScript);
-    Thread.sleep(1000);
+    Thread.sleep(5000);
+    
   }
   
   static void uninstallScribengin() {
