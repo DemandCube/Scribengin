@@ -38,8 +38,8 @@ public class ScribenginClusterUnitTest {
   @AfterClass
   static public void teardown() throws Exception {
     uninstallScribengin();
-    scribenginServer.destroy();
     clusterBuilder.destroy();
+    scribenginServer.destroy();
   }
   
   private static void createKafkaData(){
@@ -58,8 +58,6 @@ public class ScribenginClusterUnitTest {
       producer.send(data);
     }
     producer.close();
-    
-    
   }
   
   private static void installScribengin() throws InterruptedException{
@@ -71,10 +69,9 @@ public class ScribenginClusterUnitTest {
         " -Pscribengin:partition=0" +
         " -Pscribengin:topic="+KafkaClusterBuilder.TOPIC +
         " --member-role scribengin --autostart --module Scribengin \n"; 
-        
-    shell.executeScript(scribeInstallScript);
-    Thread.sleep(5000);
     
+    shell.executeScript(scribeInstallScript);
+    Thread.sleep(2000);
   }
   
   static void uninstallScribengin() {
