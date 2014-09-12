@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class ScribeConsumer {
   // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
   private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
-  private static final String COMMIT_PATH_PREFIX = "/user/kxae";
+  private static final String COMMIT_PATH_PREFIX = "/committed";
 
   private static final Logger log = Logger.getLogger(ScribeConsumer.class.getName());
 
@@ -63,6 +64,10 @@ public class ScribeConsumer {
   @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_TIMER, "--"+Constants.OPT_CHECK_POINT_TIMER}, description="Check point interval in milliseconds")
   private long commitCheckPointInterval; // ms
 
+  @Parameter(names = {"-"+Constants.OPT_HDFS_PATH, "--"+Constants.OPT_HDFS_PATH}, description="Location of HDFS")
+  private String hdfsPath="";
+
+  
   private SimpleConsumer consumer;
   //private FileSystem fs;
   private Timer checkPointIntervalTimer;
@@ -101,9 +106,14 @@ public class ScribeConsumer {
 
   private void commitData(String src, String dest) {
     FileSystem fs = null;
+    Path destPath = new Path(dest);
+    
     try {
-      fs = fileSystemFactory.build();
-      fs.rename(new Path(src), new Path(dest));
+      fs = fileSystemFactory.build(URI.create(src));
+      if(!fs.exists(destPath.getParent())){
+        fs.mkdirs(destPath.getParent());
+      }
+      fs.rename(new Path(src), destPath);
     } catch (IOException e) {
       //TODO : LOG
       e.printStackTrace();
@@ -119,13 +129,14 @@ public class ScribeConsumer {
     }
   }
 
+  public String getHdfsPath(){
+    return this.hdfsPath;
+  }
   private synchronized void commit() {
     //TODO: move from tmp to the actual partition.
     log.info(">> committing");
-
     if (lastCommittedOffset != offset) {
       //Commit
-
       try {
         // First record the to-be taken action in the WAL.
         // Then, mv the tmp data file to it's location.
@@ -136,8 +147,9 @@ public class ScribeConsumer {
         log.info("\ttmpDataPath : " + currTmpDataPath); 
         log.info("\tDataPath    : " + currDataPath); 
 
-        ScribeCommitLog log = scribeCommitLogFactory.build();
-        log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+        ScribeCommitLog sclog = scribeCommitLogFactory.build();
+        sclog.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+        log.info("ATOMIC MOVE OF DATA");
         commitData(currTmpDataPath, currDataPath);
 
         lastCommittedOffset = offset;
@@ -173,14 +185,14 @@ public class ScribeConsumer {
 
   private void generateTmpAndDestDataPaths() {
     long ts = System.currentTimeMillis()/1000L;
-    this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX+"/scribe.data."+ts;
-    this.currDataPath = COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    this.currTmpDataPath = this.hdfsPath+PRE_COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    this.currDataPath = this.hdfsPath+COMMIT_PATH_PREFIX+"/scribe.data."+ts;
   }
 
   private String getTmpDataPathPattern() {
     return PRE_COMMIT_PATH_PREFIX+"/scribe.data.*";
   }
-
+  
   private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
     TopicAndPartition tp = new TopicAndPartition(topic, partition);
 
@@ -223,7 +235,7 @@ public class ScribeConsumer {
 
   private void DeleteUncommittedData() throws IOException
   {
-    FileSystem fs = fileSystemFactory.build();
+    FileSystem fs = fileSystemFactory.build(URI.create(this.hdfsPath));
 
     // Corrupted log file
     // Clean up. Delete the tmp data file if present.
@@ -257,14 +269,14 @@ public class ScribeConsumer {
       log.read();
       entry = log.getLatestEntry();
       if (entry != null && entry.isCheckSumValid()) {
-        FileSystem fs = fileSystemFactory.build();
-
-        String tmpDataFilePath = entry.getSrcPath();
-
+        String tmpDataFilePath = entry.getSrcPath(); 
+        FileSystem fs = fileSystemFactory.build(URI.create(tmpDataFilePath));
         if (fs.exists(new Path(tmpDataFilePath))) {
+          System.err.println("EXISTS");
           // mv to the dest
           commitData(tmpDataFilePath, entry.getDestPath());
         } else {
+          System.err.println("DELETE");
           // Data has been committed
           // Or, it never got around to write to the log.
           // Delete tmp data file just in case.
@@ -323,17 +335,8 @@ public class ScribeConsumer {
         .clientId(getClientName())
         .addFetch(topic, partition, offset, 100000)
         .build();
+      FetchResponse resp = consumer.fetch(req);
       
-      FetchResponse resp=null;
-      try{
-        resp = consumer.fetch(req);
-      } catch(Exception e){
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e1) {}
-        continue;
-      }
-
       if (resp.hasError()) {
         //TODO: if we got an invalid offset, reset it by asking for the last element.
         // otherwise, find a new leader from the replica
@@ -361,10 +364,9 @@ public class ScribeConsumer {
           }
           offset = messageAndOffset.nextOffset();
           ByteBuffer payload = messageAndOffset.message().payload();
-
+          
           byte[] bytes = new byte[payload.limit()];
           payload.get(bytes);
-
           log.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
@@ -372,6 +374,7 @@ public class ScribeConsumer {
           msgReadCnt++;
         }// for
       }
+      
       writer.close();
 
       if (msgReadCnt == 0) {
@@ -389,8 +392,13 @@ public class ScribeConsumer {
     jc.addConverterFactory(new CustomConvertFactory());
     jc.parse(args);
 
-    sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
-    sc.setFileSystemFactory(FileSystemFactory.instance());
+    sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getHdfsPath()+sc.getCommitLogAbsPath()));
+    if(sc.getHdfsPath().isEmpty()){
+      sc.setFileSystemFactory(FileSystemFactory.instance());
+    }
+    else{
+      sc.setFileSystemFactory(HDFSFileSystemFactory.instance());
+    }
     sc.init();
     sc.run();
   }

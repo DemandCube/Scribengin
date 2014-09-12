@@ -35,6 +35,7 @@ public class ScribenginClusterService extends AbstractService {
                       "--leader", this.serviceInfo.getLeader(),
                       "--checkpoint_interval", this.serviceInfo.getCheckpointInterval(),
                       "--partition", this.serviceInfo.getPartition(),
+                      "--hdfs_path",this.serviceInfo.getHdfsPath(),
                     };
     t = new Thread(){
       public void run(){

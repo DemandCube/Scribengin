@@ -47,13 +47,15 @@ dependencies {
   compile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.zookeeper', version: '1.0-SNAPSHOT'
-  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+  
   
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
 
   testCompile group: 'junit', name: 'junit', version: '4.11'
   testCompile 'org.apache.kafka:kafka_2.10:0.8.1.1'
+  testCompile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
+  testCompile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
 }
 
 test {
@@ -62,6 +64,8 @@ test {
   testLogging {
     events "passed", "skipped", "failed"
   }
+  ignoreFailures = true
+  testLogging.showStandardStreams = true
 }
 
 task release (dependsOn: 'build') << {

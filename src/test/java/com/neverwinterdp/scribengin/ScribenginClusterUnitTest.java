@@ -1,17 +1,24 @@
 package com.neverwinterdp.scribengin;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
 import com.neverwinterdp.scribengin.kafka.ScribenginClusterBuilder;
-import com.neverwinterdp.server.shell.Shell;
 
 /**
  * @author Richard Duarte
@@ -22,7 +29,6 @@ public class ScribenginClusterUnitTest {
   }
   
   static protected ScribenginClusterBuilder clusterBuilder;
-  static protected Shell shell  ;
 
   @BeforeClass
   static public void setup() throws Exception {
@@ -53,11 +59,33 @@ public class ScribenginClusterUnitTest {
     producer.close();
   }
   
-  
+  /**
+   * Read in file, return whole file as a string
+   * @param hdfsPath Path of HDFS file to read
+   * @return whole file as a string
+   */
+  private String getFileHDFS(String hdfsPath) {
+    String readLine="";
+    String tempLine="";
+    try {
+      FileSystem fs = FileSystem.get(URI.create(hdfsPath), new Configuration());
+      Path path = new Path(hdfsPath);
+      BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
+      while((tempLine = br.readLine() ) != null){
+        readLine+=tempLine;
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+      assertTrue("Could not read from HDFS", false);
+    }
+    return readLine;
+  }
+
   
   @Test
   public void testScribenginCluster() throws Exception {
     createKafkaData();
-    Thread.sleep(1000);
+    Thread.sleep(5000);
+    //getFileHDFS();
   }
 }

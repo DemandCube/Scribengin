@@ -19,10 +19,13 @@ public class ScribenginClusterServiceInfo extends ServiceInfo{
   @Inject @Named("scribengin:topic")
   private String topic = "scribe";
   
+  @Inject @Named("scribengin:hdfsPath")
+  private String hdfsPath = "";
   
   public String getCheckpointInterval(){return checkpointinterval; }
   public String getLeader(){return leader; }
   public String getPartition(){return partition; }
   public String getTopic(){return topic; }
+  public String getHdfsPath(){return hdfsPath; }
   
 }
