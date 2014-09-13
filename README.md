@@ -40,6 +40,17 @@ Definitions
 - **Sink** - is a destination system that is being written to (HDFS, Hbase, Hive e.g.)
 - A **Tributary** - is a portion or partition of data from a **Flow**
 
+Questions
+------
+
+- What is the difference between Storm/Spark and Scribengin?
+  - Storm is a individual event processing framework that can do arbitrary computations.
+  - Spark Streaming is a microbatch processing framework that can do fixed computations defined by the framework.
+  - Scribengin event processing but for enterprise grade moving data from source A to destination B with transactional guarantees in moving that data.  It is also self-healing "auto-recovery" of process failures, basically HA.  Scribengin promises exactly deliver once symantics while other systems don't guarantee that.
+ 
+
+
+
 Yarn
 =====
 
