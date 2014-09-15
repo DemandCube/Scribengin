@@ -17,5 +17,8 @@ public class Constants {
   public static final String OPT_REPLICA = "replica";
   public static final String OPT_CHECK_POINT_TIMER = "checkpoint_interval";
   public static final String OPT_HDFS_PATH = "hdfs_path";
+  
+  public static final String OPT_PRE_COMMIT_PATH_PREFIX="pre_commit_path_prefix";
+  public static final String OPT_COMMIT_PATH_PREFIX="commit_path_prefix";
 }
 

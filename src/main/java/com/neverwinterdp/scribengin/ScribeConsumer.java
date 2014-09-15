@@ -37,8 +37,11 @@ public class ScribeConsumer {
   // checkout EtlMultiOutputCommitter in Camus
   // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
-  private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
-  private static final String COMMIT_PATH_PREFIX = "/committed";
+  @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX})
+  private String PRE_COMMIT_PATH_PREFIX = "/tmp";
+  
+  @Parameter(names = {"-"+Constants.OPT_COMMIT_PATH_PREFIX, "--"+Constants.OPT_COMMIT_PATH_PREFIX})
+  private String COMMIT_PATH_PREFIX = "/committed";
 
   private static final Logger log = Logger.getLogger(ScribeConsumer.class.getName());
 
@@ -331,6 +334,8 @@ public class ScribeConsumer {
 
     while (true) {
       log.info(">> offset: " + offset); //xxx
+      log.info(">> partition: "+ partition);
+      log.info(">> topic: "+ topic);
       FetchRequest req = new FetchRequestBuilder()
         .clientId(getClientName())
         .addFetch(topic, partition, offset, 100000)
@@ -354,8 +359,9 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
-      StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
+      
       synchronized(this) {
+        StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
           if (currentOffset < offset) {
@@ -370,12 +376,11 @@ public class ScribeConsumer {
           log.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
-
           msgReadCnt++;
         }// for
       }
       
-      writer.close();
+      
 
       if (msgReadCnt == 0) {
         try {

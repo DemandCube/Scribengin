@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.kafka;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 import com.neverwinterdp.util.FileUtil;
@@ -62,7 +64,7 @@ public class ScribenginClusterBuilder {
         "module install " +
         " -Pmodule.data.drop=true -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
         " --member-role kafka --autostart --module KafkaConsumer\n"+
-        
+       
         "module install " + 
         " -Pmodule.data.drop=true" +
         " -Pscribengin:checkpointinterval=200" +
@@ -70,6 +72,8 @@ public class ScribenginClusterBuilder {
         " -Pscribengin:partition=0" +
         " -Pscribengin:topic="+TOPIC +
         " -Pscribengin:hdfsPath="+hadoopConnection+
+        " -Pscribengin:preCommitPathPrefix=/tmp"+
+        " -Pscribengin:commitPathPrefix=/committed"+
         " --member-role scribengin --autostart --module Scribengin \n";
       shell.executeScript(installScript);
       Thread.sleep(1000);
