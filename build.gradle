@@ -45,9 +45,9 @@ dependencies {
 
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.yara', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.zookeeper', version: '1.0-SNAPSHOT'
-  testCompile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
   //Queuengin is needed to bring up Kafka in the tests
   //but if testCompile is used, then it doesn't work in Eclipse.
   compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
@@ -91,8 +91,7 @@ def doRelease(String releaseDir) {
     "lib.common", "test-framework", "queuengin",
     "jackson-core-asl", "jackson-mapper-asl",
     "kafka", "scala-library", "zkclient", "zookeeper",
-    "log4j", "slf4j-api", "slf4j-simple", "slf4j-log4j12",
-    "metrics-core", "metrics-annotation"
+    "log4j", "slf4j-api", "slf4j-simple", "slf4j-log4j12"
   ]
 
   println "Copy the dependency library"
