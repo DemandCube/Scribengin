@@ -64,6 +64,7 @@ public class StringRecordWriter {
     }
     os.write(bytes);
     os.flush();
+    this.close();
   }
 
   /**

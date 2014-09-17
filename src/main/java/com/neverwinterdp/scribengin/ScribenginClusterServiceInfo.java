@@ -22,10 +22,18 @@ public class ScribenginClusterServiceInfo extends ServiceInfo{
   @Inject @Named("scribengin:hdfsPath")
   private String hdfsPath = "";
   
+  @Inject @Named("scribengin:preCommitPathPrefix")
+  private String preCommitPathPrefix = "/tmp";
+  
+  @Inject @Named("scribengin:commitPathPrefix")
+  private String commitPathPrefix = "/committed";
+  
   public String getCheckpointInterval(){return checkpointinterval; }
   public String getLeader(){return leader; }
   public String getPartition(){return partition; }
   public String getTopic(){return topic; }
   public String getHdfsPath(){return hdfsPath; }
+  public String getPreCommitPathPrefix(){return preCommitPathPrefix; }
+  public String getCommitPathPrefix(){return commitPathPrefix; }
   
 }

@@ -4,6 +4,8 @@ Pronounced Scribe Engine
 
 Scribengin is a highly reliable (HA) and performant event/logging transport that registers data under defined schemas in a variety of end systems.  Scribengin enables you to have multiple flows of data from a source to a sink. Scribengin will tolerate system failures of individual nodes and will do a complete recovery in the case of complete system failure.
 
+More simply described Scribengin is tool designed for efficiently transferring bulk data between source and destination (sink) systems like Kafka and Apache Hadoop, or Kinesis and structured datastores such as relational databases or key value stores.
+
 Reads data from sources:
 - Kafka
 - AWS Kinesis
