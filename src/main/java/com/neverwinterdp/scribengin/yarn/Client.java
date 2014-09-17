@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.yarn;
 
 import java.io.File;
 import java.io.IOException;

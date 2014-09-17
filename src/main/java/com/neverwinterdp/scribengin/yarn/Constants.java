@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.yarn;
 
 public class Constants {
   public static final String OPT_APPNAME = "app_name";

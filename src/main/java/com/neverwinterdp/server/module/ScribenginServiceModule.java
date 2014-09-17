@@ -2,7 +2,7 @@ package com.neverwinterdp.server.module;
 
 import java.util.Map;
 
-import com.neverwinterdp.scribengin.ScribenginClusterService;
+import com.neverwinterdp.scribengin.cluster.ScribenginClusterService;
 import com.neverwinterdp.server.module.ModuleConfig;
 import com.neverwinterdp.server.module.ServiceModule;
 

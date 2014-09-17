@@ -1,8 +1,9 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.commitlog;
 
 import java.security.NoSuchAlgorithmException;
 
-import com.neverwinterdp.scribengin.ScribeLogEntry;
+import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;
+
 import org.junit.Assert;
 //import org.junit.Ignore;
 import org.junit.Test;

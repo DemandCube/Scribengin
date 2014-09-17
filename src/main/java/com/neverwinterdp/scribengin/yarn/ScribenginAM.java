@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.yarn;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +13,7 @@ import kafka.javaapi.consumer.SimpleConsumer;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 

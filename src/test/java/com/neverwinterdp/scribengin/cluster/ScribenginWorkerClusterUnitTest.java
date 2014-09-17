@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.cluster;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,29 +26,36 @@ import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
 import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
-import com.neverwinterdp.scribengin.kafka.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.kafka.ScribenginWorkerClusterBuilder;
+import com.neverwinterdp.scribengin.kafka.SupportClusterBuilder;
 
 /**
  * @author Richard Duarte
  */
-public class ScribenginClusterUnitTest {
+public class ScribenginWorkerClusterUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
   static int numOfMessages = 100 ;
-  static protected ScribenginClusterBuilder clusterBuilder;
+  static protected ScribenginWorkerClusterBuilder scribenginWorkerClusterBuilder;
+  static protected SupportClusterBuilder supportClusterBuilder;
 
   @BeforeClass
   static public void setup() throws Exception {
-    clusterBuilder = new ScribenginClusterBuilder() ;
-    clusterBuilder.install();
+    supportClusterBuilder = new SupportClusterBuilder();
+    supportClusterBuilder.install();
+    
+    scribenginWorkerClusterBuilder = new ScribenginWorkerClusterBuilder(supportClusterBuilder.getHadoopConnection()) ;
+    scribenginWorkerClusterBuilder.install();
   }
 
   @AfterClass
   static public void teardown() throws Exception {
-    clusterBuilder.uninstall();
-    clusterBuilder.destroy();
+    scribenginWorkerClusterBuilder.uninstall();
+    scribenginWorkerClusterBuilder.destroy();
+    supportClusterBuilder.uninstall();
+    supportClusterBuilder.destroy();
   }
   
   private static void createKafkaData(){
@@ -60,7 +67,7 @@ public class ScribenginClusterUnitTest {
     
     Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerProps));
     for(int i =0 ; i < numOfMessages; i++) {
-      KeyedMessage<String, String> data = new KeyedMessage<String, String>(ScribenginClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
+      KeyedMessage<String, String> data = new KeyedMessage<String, String>(ScribenginWorkerClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
       producer.send(data);
     }
     producer.close();
@@ -103,9 +110,9 @@ public class ScribenginClusterUnitTest {
 
   
   @Test
-  public void testScribenginCluster() throws Exception {
+  public void testScribenginWorkerCluster() throws Exception {
     createKafkaData();
     Thread.sleep(15000);
-    assertHDFSmatchesKafka(clusterBuilder.getHadoopConnection());
+    assertHDFSmatchesKafka(supportClusterBuilder.getHadoopConnection());
   }
 }
