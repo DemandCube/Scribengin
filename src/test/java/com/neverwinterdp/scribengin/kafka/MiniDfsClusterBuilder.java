@@ -71,4 +71,10 @@ public class MiniDfsClusterBuilder {
     hdfsCluster.shutdown();
     FileUtil.fullyDelete(baseDir);
   }
+  
+  public static void main(String main[]) throws InterruptedException{
+    MiniDfsClusterBuilder hadoopServer = new MiniDfsClusterBuilder();
+    System.err.println(hadoopServer.build());
+    Thread.sleep(6000000);
+  }
 }

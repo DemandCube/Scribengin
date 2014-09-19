@@ -89,6 +89,9 @@ public abstract class AbstractApplicationMaster {
     nodeManager.init(conf);
     nodeManager.start();
 
+    appMasterHostname = "hdfs://localhost";
+    appMasterRpcPort = 51484;
+    appMasterTrackingUrl = "hdfs://localhost:51484";
     // Register with RM
     resourceManager.registerApplicationMaster(appMasterHostname, appMasterRpcPort, appMasterTrackingUrl);
 

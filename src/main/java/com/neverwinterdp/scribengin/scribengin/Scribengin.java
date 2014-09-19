@@ -7,9 +7,14 @@ import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.config.ScribeWorkerConfig;
 import com.neverwinterdp.scribengin.scribeworker.ScribeWorker;
+import com.neverwinterdp.scribengin.scribeworker.config.ScribeWorkerConfig;
 
+/**
+ * This class will likely need to be trashed, need to focus on YARN instead
+ * @author Richard Duarte
+ *
+ */
 public class Scribengin {
   
   private class scribeTuple{ 

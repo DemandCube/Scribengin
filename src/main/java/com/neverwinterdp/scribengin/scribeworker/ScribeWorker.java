@@ -29,10 +29,10 @@ import com.neverwinterdp.scribengin.commitlog.AbstractScribeCommitLogFactory;
 import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
 import com.neverwinterdp.scribengin.commitlog.ScribeCommitLogFactory;
 import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;
-import com.neverwinterdp.scribengin.config.ScribeWorkerConfig;
 import com.neverwinterdp.scribengin.filesystem.AbstractFileSystemFactory;
 import com.neverwinterdp.scribengin.filesystem.FileSystemFactory;
 import com.neverwinterdp.scribengin.filesystem.HDFSFileSystemFactory;
+import com.neverwinterdp.scribengin.scribeworker.config.ScribeWorkerConfig;
 import com.neverwinterdp.scribengin.writer.StringRecordWriter;
 
 public class ScribeWorker {
@@ -68,6 +68,9 @@ public class ScribeWorker {
     
     this.checkPointIntervalTimer = new Timer();
   }
+  
+  //Only use this constructor for unit testing
+  ScribeWorker(){}
   
   public Thread.State getState(){
     return workerThread.getState();
@@ -190,6 +193,7 @@ public class ScribeWorker {
   public void runWorkerLoop() throws IOException {
     generateTmpAndDestDataPaths();
     lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+    System.err.println("OFFSET!!! "+lastCommittedOffset);
     offset = lastCommittedOffset;
     log.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
 
@@ -341,11 +345,18 @@ public class ScribeWorker {
 
   private void DeleteUncommittedData() throws IOException
   {
-    FileSystem fs = fileSystemFactory.build(URI.create(this.hdfsPath));
+    FileSystem fs;
+    if(this.hdfsPath != null){
+      fs = fileSystemFactory.build(URI.create(this.hdfsPath));
+    }
+    else{
+      fs = fileSystemFactory.build();
+    }
 
     // Corrupted log file
     // Clean up. Delete the tmp data file if present.
     FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
+    
     for(int i = 0; i < fileStatusArry.length; i++) {
       FileStatus fileStatus = fileStatusArry[i];
       fs.delete( fileStatus.getPath() );

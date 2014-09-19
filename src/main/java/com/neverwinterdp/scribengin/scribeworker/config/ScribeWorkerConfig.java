@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.config;
+package com.neverwinterdp.scribengin.scribeworker.config;
 
 import org.apache.log4j.Logger;
 

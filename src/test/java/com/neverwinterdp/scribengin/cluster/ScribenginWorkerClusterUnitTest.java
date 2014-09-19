@@ -28,6 +28,8 @@ import kafka.producer.ProducerConfig;
 import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
 import com.neverwinterdp.scribengin.kafka.ScribenginWorkerClusterBuilder;
 import com.neverwinterdp.scribengin.kafka.SupportClusterBuilder;
+import com.neverwinterdp.scribengin.scribeworker.ScribeWorker;
+import com.neverwinterdp.scribengin.scribeworker.config.ScribeWorkerConfig;
 
 /**
  * @author Richard Duarte
@@ -46,19 +48,20 @@ public class ScribenginWorkerClusterUnitTest {
     supportClusterBuilder = new SupportClusterBuilder();
     supportClusterBuilder.install();
     
-    scribenginWorkerClusterBuilder = new ScribenginWorkerClusterBuilder(supportClusterBuilder.getHadoopConnection()) ;
-    scribenginWorkerClusterBuilder.install();
+    
   }
 
   @AfterClass
   static public void teardown() throws Exception {
-    scribenginWorkerClusterBuilder.uninstall();
-    scribenginWorkerClusterBuilder.destroy();
-    supportClusterBuilder.uninstall();
-    supportClusterBuilder.destroy();
+    //scribenginWorkerClusterBuilder.uninstall();
+    //scribenginWorkerClusterBuilder.destroy();
+    try{
+      supportClusterBuilder.uninstall();
+      supportClusterBuilder.destroy();
+    } catch(Exception e){}
   }
   
-  private static void createKafkaData(){
+  private static void createKafkaData(int startNum){
     //Write numOfMessages to Kafka
     Properties producerProps = new Properties();
     producerProps.put("metadata.broker.list", "localhost:9092");
@@ -66,7 +69,7 @@ public class ScribenginWorkerClusterUnitTest {
     producerProps.put("request.required.acks", "1");
     
     Producer<String, String> producer = new Producer<String, String>(new ProducerConfig(producerProps));
-    for(int i =0 ; i < numOfMessages; i++) {
+    for(int i =startNum ; i < startNum+numOfMessages; i++) {
       KeyedMessage<String, String> data = new KeyedMessage<String, String>(ScribenginWorkerClusterBuilder.TOPIC,"Neverwinter"+Integer.toString(i));
       producer.send(data);
     }
@@ -78,7 +81,7 @@ public class ScribenginWorkerClusterUnitTest {
    * @param hdfsPath Path of HDFS file to read
    * @return whole file as a string
    */
-  private void assertHDFSmatchesKafka(String hdfsPath) {
+  private void assertHDFSmatchesKafka(int startNum, String hdfsPath) {
     //int count = 0;
     String tempLine="";
     String readLine="";
@@ -101,7 +104,7 @@ public class ScribenginWorkerClusterUnitTest {
     
     //Build string that will match
     String assertionString = "";
-    for(int i=0; i< numOfMessages; i++){
+    for(int i=0; i< startNum+numOfMessages; i++){
       assertionString += "Neverwinter"+Integer.toString(i);
     }
     assertEquals("Data passed into Kafka did not match what was read from HDFS",assertionString,readLine);
@@ -110,9 +113,42 @@ public class ScribenginWorkerClusterUnitTest {
 
   
   @Test
-  public void testScribenginWorkerCluster() throws Exception {
-    createKafkaData();
+  public void testScribenginWorkerResume() throws Exception {
+    //Start ScribeWorker
+    ScribeWorkerConfig c = new ScribeWorkerConfig("localhost",    //kafka address
+                                                  9092,           //kafka port
+                                                  "cluster.test", //topic
+                                                  "/tmp",         //temporary data folder
+                                                  "/committed",   //committed data path
+                                                  0,              //kafka partition
+                                                  supportClusterBuilder.getHadoopConnection(), //hadoop connection
+                                                  100);           //Checking interval
+    ScribeWorker sw = new ScribeWorker(c);
+    sw.start();
+    
+    //Create kafka data
+    createKafkaData(0);
+    //Wait for consumption
     Thread.sleep(15000);
-    assertHDFSmatchesKafka(supportClusterBuilder.getHadoopConnection());
+    //Ensure messages 0-100 were consumed
+    assertHDFSmatchesKafka(0,supportClusterBuilder.getHadoopConnection());
+    
+    //Kill the worker
+    sw.stop();
+    
+    //Create data starting at message 100
+    createKafkaData(100);
+    
+    //Create new worker
+    ScribeWorker sw2 = new ScribeWorker(c);
+    sw2.start();
+    
+    //Wait for data to be consumed
+    Thread.sleep(35000);
+    
+    sw2.stop();
+    
+    //Ensure all the data is there and in the correct order
+    assertHDFSmatchesKafka(100,supportClusterBuilder.getHadoopConnection());
   }
 }

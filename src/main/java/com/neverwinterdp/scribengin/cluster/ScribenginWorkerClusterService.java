@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 
 import com.google.inject.Injector;
 import com.google.inject.Inject;
-import com.neverwinterdp.scribengin.config.ScribeWorkerConfig;
 import com.neverwinterdp.scribengin.scribeworker.ScribeWorker;
+import com.neverwinterdp.scribengin.scribeworker.config.ScribeWorkerConfig;
 import com.neverwinterdp.server.service.AbstractService;
 import com.neverwinterdp.server.module.ModuleProperties;
 import com.neverwinterdp.util.LoggerFactory;
