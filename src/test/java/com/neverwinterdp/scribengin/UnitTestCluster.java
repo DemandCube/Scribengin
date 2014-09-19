@@ -12,7 +12,7 @@ import org.apache.hadoop.yarn.server.MiniYARNCluster;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 
-import com.neverwinterdp.scribengin.AbstractFileSystemFactory;
+import com.neverwinterdp.scribengin.filesystem.AbstractFileSystemFactory;
 
 public class UnitTestCluster extends AbstractFileSystemFactory {
   private static UnitTestCluster inst = null;
