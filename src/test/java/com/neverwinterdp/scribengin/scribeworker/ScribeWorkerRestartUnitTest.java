@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.cluster;
+package com.neverwinterdp.scribengin.scribeworker;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,13 +34,13 @@ import com.neverwinterdp.scribengin.scribeworker.config.ScribeWorkerConfig;
 /**
  * @author Richard Duarte
  */
-public class ScribenginWorkerClusterUnitTest {
+public class ScribeWorkerRestartUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
   static int numOfMessages = 100 ;
-  static protected ScribenginWorkerClusterBuilder scribenginWorkerClusterBuilder;
+  //static protected ScribenginWorkerClusterBuilder scribenginWorkerClusterBuilder;
   static protected SupportClusterBuilder supportClusterBuilder;
 
   @BeforeClass
@@ -111,9 +111,12 @@ public class ScribenginWorkerClusterUnitTest {
     
   }
 
-  
+  /**
+   * Starts a ScribeWorker, Stops it, Commits more data to kafka, and starts a new ScribeWorker
+   * No data should be repeated
+   */
   @Test
-  public void testScribenginWorkerResume() throws Exception {
+  public void testScribenginWorkerRestart() throws Exception {
     //Start ScribeWorker
     ScribeWorkerConfig c = new ScribeWorkerConfig("localhost",    //kafka address
                                                   9092,           //kafka port
