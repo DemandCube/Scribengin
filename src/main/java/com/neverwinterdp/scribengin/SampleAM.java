@@ -32,7 +32,7 @@ public class SampleAM extends AbstractApplicationMaster {
     System.out.println("ApplicationMaster::main"); //xxx
     AbstractApplicationMaster am = new SampleAM();
     new JCommander(am, args);
-    am.init(args);
+    am.init();
 
     try {
       am.run();

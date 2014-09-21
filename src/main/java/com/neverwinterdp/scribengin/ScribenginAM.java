@@ -11,6 +11,7 @@ import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.consumer.SimpleConsumer;
 
+import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
@@ -40,8 +41,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
     topicMetadataMap = new HashMap<String, Map<Integer, PartitionMetadata>>();
   }
 
-  public void init(String[] args) {
-    super.init(args);
+  public void init() {
     LOG.info("calling init");
     for (String topic : topicList) {
       getMetaData(topic);
@@ -50,8 +50,6 @@ public class ScribenginAM extends AbstractApplicationMaster {
 
   @Override
   protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
-    // TODO: construnct the list of actual commands for containers to execute.
-    // A container should be able to read from more than one partition.
     List<String> r = new ArrayList<String>();
     for ( Map.Entry<String, Map<Integer, PartitionMetadata> > entry : topicMetadataMap.entrySet() ) {
       String t = entry.getKey();
@@ -62,7 +60,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
         LOG.info("\tpartition: " + partition);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("java -cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --checkpoint_interval 100 --broker_list ");
+        sb.append(Environment.JAVA_HOME.$()).append("/bin/java").append(" ");
+        sb.append("-cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --checkpoint_interval 100 --broker_list ");
         sb.append(getBrokerListStr());
         sb.append(" --partition ");
         sb.append(Integer.toString(partition));
@@ -131,12 +130,21 @@ public class ScribenginAM extends AbstractApplicationMaster {
 
   public static void main(String[] args) {
     AbstractApplicationMaster am = new ScribenginAM();
-    new JCommander(am, args);
-    am.init(args);
+    LOG.info("Instantiated ScribenginAM.");
+    JCommander jc = new JCommander(am);
+    jc.addConverterFactory(new CustomConvertFactory());
+    LOG.info("About to parse arguments.");
+    LOG.info("args : " + args);
+    LOG.info("jc : " + jc);
+    for (String a : args) {
+      LOG.info(a);
+    }
+    jc.parse(args);
 
     LOG.info("calling main");
 
     try {
+      am.init();
       am.run();
     } catch (Exception e) {
       System.out.println("am.run throws: " + e);

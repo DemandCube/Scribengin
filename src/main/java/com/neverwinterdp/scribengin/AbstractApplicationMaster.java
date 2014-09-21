@@ -71,7 +71,7 @@ public abstract class AbstractApplicationMaster {
     failedCommandList = new ArrayList<String>();
   }
 
-  public void init(String[] args) {
+  public void init() {
     LOG.setLevel(Level.INFO);
     done = false;
   }
