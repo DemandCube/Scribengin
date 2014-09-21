@@ -65,8 +65,6 @@ public class Client {
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
     private List<String> kafkaSeedBrokers;
 
-  @Parameter(names = {"-" + Constants.OPT_KAFKA_PORT, "--" + Constants.OPT_KAFKA_PORT})
-    private int port;
 
   public Client() throws Exception{
     this.conf = new YarnConfiguration();
@@ -79,7 +77,7 @@ public class Client {
     yarnClient.init(conf);
   }
 
-  public void init(String[] args) {
+  public void init() {
     LOG.setLevel(Level.INFO);
     LOG.info("command: " + this.command);
   }
@@ -139,7 +137,7 @@ public class Client {
     sb.append("--").append(Constants.OPT_CONTAINER_COUNT).append(" ").append(this.containerCount).append(" ");
     sb.append("--").append(Constants.OPT_COMMAND).append(" '").append(StringEscapeUtils.escapeJava(this.command)).append("' ");
     sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ").append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
-    sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
+    //sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
     sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ").append(StringUtils.join(this.topicList, " ")).append(" ");
 
     sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout").append(" ");
@@ -223,8 +221,10 @@ public class Client {
     Client c = new Client();
     boolean r = false;
 
-    new JCommander(c, args);
-    c.init(args);
+    JCommander jc = new JCommander(c);
+    jc.parse(args);
+
+    c.init();
     r = c.run();
 
     if (r) {

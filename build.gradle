@@ -4,7 +4,7 @@ apply plugin: 'maven'
 apply plugin: 'application'
 
 archivesBaseName = 'scribengin'
-mainClassName = 'com.neverwinterdp.scribengin.ScribeConsumer'
+mainClassName = 'com.neverwinterdp.scribengin.Client'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
