@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
@@ -17,6 +20,9 @@ import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
+import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
@@ -25,6 +31,7 @@ import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -194,7 +201,15 @@ public abstract class AbstractApplicationMaster {
         }
       }
 
+      FileSystem fs = null;
+      try {
+        fs = FileSystem.get(conf);
+      } catch (IOException e) {
+        LOG.error("Error in instantiating fs. Reason: " + e);
+      }
+
       for (int i = 0; i < containerCnt; i++) {
+
         Container c = containers.get(i);
         String cmdStr = cmdLst.remove(0);
         LOG.error("running cmd: " + cmdStr);
@@ -206,12 +221,18 @@ public abstract class AbstractApplicationMaster {
                 .append(" 1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout")
                 .append(" 2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr")
                 .toString()));
+
         try {
+          // TODO: get rid of the hardcoding of scribengin-1.0-SNAPSHOT.jar
+          ctx.setLocalResources(
+              Collections.singletonMap("scribeconsumer.jar",
+                Util.newYarnAppResource(fs, new Path("/scribengin-1.0-SNAPSHOT.jar"), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION)));
+
           nodeManager.startContainer(c, ctx);
         } catch (YarnException e) {
-          // TODO: what should I do here? reallocated a new container?
+          LOG.error("Error in onContainerAlloacted. Reason: " + e);
         } catch (IOException e) {
-          // TODO: what should I do here? reallocated a new container?
+          LOG.error("Error in onContainerAlloacted. Reason: " + e);
         }
       }
     }

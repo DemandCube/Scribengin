@@ -103,9 +103,11 @@ public class Client {
     ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
 
     LocalResource appMasterJar;
-    appMasterJar = this.setupAppMasterJar(this.hdfsJar);
+    FileSystem fs = FileSystem.get(this.conf);
+
     amContainer.setLocalResources(
-        Collections.singletonMap("master.jar", appMasterJar));
+        Collections.singletonMap("master.jar",
+        Util.newYarnAppResource(fs, new Path(this.hdfsJar), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION) ));
 
     // Set up CLASSPATH for ApplicationMaster
     Map<String, String> appMasterEnv = new HashMap<String, String>();
@@ -189,32 +191,13 @@ public class Client {
     for (String c : conf.getStrings(
           YarnConfiguration.YARN_APPLICATION_CLASSPATH,
           YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
-      classPathEnv.append(File.pathSeparatorChar);
+      classPathEnv.append(File.pathSeparatorChar) ;
       classPathEnv.append(c.trim());
     }
 
     String envStr = classPathEnv.toString();
     LOG.info("env: " + envStr);
     appMasterEnv.put(Environment.CLASSPATH.name(), envStr);
-  }
-
-
-  private LocalResource setupAppMasterJar(FileStatus status, Path jarHdfsPath) throws IOException {
-    LocalResource appMasterJar =  Records.newRecord(LocalResource.class);
-    appMasterJar.setResource(ConverterUtils.getYarnUrlFromPath(jarHdfsPath));
-    appMasterJar.setSize(status.getLen());
-    appMasterJar.setTimestamp(status.getModificationTime());
-    appMasterJar.setType(LocalResourceType.FILE);
-    appMasterJar.setVisibility(LocalResourceVisibility.APPLICATION);
-    return appMasterJar;
-  }
-
-  // Assume that the hdfsPath already exits in HDFS
-  private LocalResource setupAppMasterJar(String hdfsPath) throws IOException {
-    FileSystem fs = FileSystem.get(this.conf);
-    Path dst = new Path(hdfsPath);
-    dst = fs.makeQualified(dst); // must use fully qualified path name. Otherise, nodemanager gets angry.
-    return this.setupAppMasterJar(fs.getFileStatus(dst), dst);
   }
 
   public static void main(String[] args) throws Exception {
