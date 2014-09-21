@@ -76,7 +76,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
     int len = brokerList.size();
     for (int i = 0; i < len; i++) {
       sb.append(brokerList.get(i).toString());
-      if (i < (len + 1))
+      if ((i + 1) < len)
         sb.append(",");
     }
     return sb.toString();
