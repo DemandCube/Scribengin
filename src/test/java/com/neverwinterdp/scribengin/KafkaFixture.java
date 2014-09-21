@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
@@ -17,6 +18,9 @@ public class KafkaFixture extends Fixture {
   private String version;
   private int brokerId;
   private static final String PROPERTIES_FILENAME = "/kafka.properties";
+  private static final String LOG4J_FILENAME = "/log4j.properties";
+  private static final String TEMPLATED_LOG4J_FULLPATH = "servers/%s/resources" + LOG4J_FILENAME;
+
   private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources" + PROPERTIES_FILENAME;
   private static final String JAVA_MAIN = "kafka.Kafka";
   private static final String WAIT_FOR_REGEX = ".*?started.*?";
@@ -58,19 +62,27 @@ public class KafkaFixture extends Fixture {
       context
     );
 
+    this.renderConfig(
+      String.format(TEMPLATED_LOG4J_FULLPATH, this.version),
+      this.tmpDir.getAbsolutePath() + LOG4J_FILENAME,
+      context );
+
     ProcessBuilder pb = new ProcessBuilder(
       String.format(KAFKA_RUN_CLASS_SH, this.version),  //"servers/0.8.1/kafka-bin/bin/kafka-run-class.sh",
       JAVA_MAIN,                                        // "org.apache.zookeeper.server.quorum.QuorumPeerMain",
       tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
     );
+    Map<String, String> env = pb.environment();
+    System.out.println(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
+    env.put("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:" + this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
+
     this.proc =  pb.start();
 
     BufferedReader br = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
     String line = null;
     while ((line = br.readLine()) != null) {
-      System.out.println(line);
       if (line.matches(WAIT_FOR_REGEX)) {
-        //break;
+        break;
       }
     }
 

@@ -36,6 +36,7 @@ public class ZookeeperFixture extends Fixture {
       String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
       this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME,
       context );
+
     this.renderConfig(
       String.format(TEMPLATED_LOG4J_FULLPATH, this.version),
       this.tmpDir.getAbsolutePath() + LOG4J_FILENAME,
@@ -56,7 +57,6 @@ public class ZookeeperFixture extends Fixture {
     String line = null;
     //block until we see the regex string
     while ((line = br.readLine()) != null) {
-      System.out.println(line);
       if (line.matches(WAIT_FOR_REGEX)) {
         break;
       }

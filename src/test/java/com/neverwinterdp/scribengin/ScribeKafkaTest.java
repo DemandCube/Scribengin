@@ -31,21 +31,23 @@ public class ScribeKafkaTest {
     zookeeper.start();
 
     System.out.println("about to start kafka");//xxx
-    //kf1 = new KafkaFixture("0.8.1", "127.0.0.1", 9876,
-      //zookeeper.getHost(),
-      //zookeeper.getPort());
-    //kf2 = new KafkaFixture("0.8.1", "127.0.0.1", 9876,
-      //zookeeper.getHost(),
-      //zookeeper.getPort());
+    kf1 = new KafkaFixture("0.8.1", "127.0.0.1", 19876,
+      zookeeper.getHost(),
+      zookeeper.getPort());
+    kf2 = new KafkaFixture("0.8.1", "127.0.0.1", 19877,
+      zookeeper.getHost(),
+      zookeeper.getPort());
 
-    //kf1.start();
-    //kf2.start();
+    kf1.start();
+    kf2.start();
   }
 
 
   @AfterClass
   public static void teardown() throws IOException {
     System.out.println("calling teardown.."); //xxx
+    kf1.stop();
+    kf2.stop();
     zookeeper.stop();
   }
 
