@@ -373,6 +373,33 @@ public class ScribeConsumer {
     return returnMetaData;
   }
 
+  private HostPort findNewLeader(String oldHost, int oldPort) throws LostLeadershipException {
+    for (int i = 0; i < 3; i++) {
+      boolean goToSleep = false;
+      PartitionMetadata metadata = findLeader(replicaBrokers, topic, partition);
+      if (metadata == null) {
+        goToSleep = true;
+      } else if (metadata.leader() == null) {
+        goToSleep = true;
+      } else if (oldHost.equalsIgnoreCase(metadata.leader().host()) &&
+        oldPort == metadata.leader().port()) {
+        // first time through if the leader hasn't changed give ZooKeeper a second to recover
+        // second time, assume the broker did recover before failover, or it was a non-Broker issue
+        goToSleep = true;
+      } else {
+        return new HostPort(metadata.leader().host(), metadata.leader().port());
+      }
+      if (goToSleep) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+        }
+      }
+    }
+    // Can't recover from a leadership disappearance.
+    throw new LostLeadershipException();
+  }
+
   private void storeReplicaBrokers(PartitionMetadata metadata) {
     replicaBrokers.clear();
     for (Broker replica: metadata.replicas()) {
@@ -380,7 +407,7 @@ public class ScribeConsumer {
     }
   }
 
-  public void run() throws IOException {
+  public void run() throws IOException, LostLeadershipException {
     generateTmpAndDestDataPaths();
     lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
     offset = lastCommittedOffset;
@@ -396,16 +423,27 @@ public class ScribeConsumer {
       FetchResponse resp = consumer.fetch(req);
 
       if (resp.hasError()) {
-        //TODO: if we got an invalid offset, reset it by asking for the last element.
-        // otherwise, find a new leader from the replica
-        System.out.println("has error");  //xxx
-
+        //If we got an invalid offset, reset it by asking for the last element.
+        //For all other errors, assume the worst and find ourselves a new leader from the replica.
         short code = resp.errorCode(topic, partition);
-        System.out.println("Reason: " + code);
+        LOG.info("Encounter error when fetching from consumer. Error Code: " + code);
         if (code == ErrorMapping.OffsetOutOfRangeCode())  {
           // We asked for an invalid offset. For simple case ask for the last element to reset
           System.out.println("inside errormap");
           offset = getLatestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.LatestTime());
+          continue;
+        } else {
+          String oldHost = consumer.host();
+          int oldPort = consumer.port();
+          consumer.close();
+          consumer = null;
+          HostPort newHostPort = findNewLeader(oldHost, oldPort);
+          consumer = new SimpleConsumer(
+            newHostPort.getHost(),
+            newHostPort.getPort(),
+            10000,   // timeout
+            64*1024, // buffersize
+            getClientName());
           continue;
         }
       }
@@ -453,8 +491,13 @@ public class ScribeConsumer {
     sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
     sc.setFileSystemFactory(FileSystemFactory.instance());
     boolean proceed = sc.init();
-    if (proceed)
-      sc.run();
+    if (proceed) {
+      try {
+        sc.run();
+      } catch (LostLeadershipException e) {
+        LOG.fatal("Leader went away. Couldn't find a new leader!");
+      }
+    }
   }
 
 }
