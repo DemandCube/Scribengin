@@ -1,7 +1,9 @@
 package com.neverwinterdp.scribengin;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +18,12 @@ import kafka.common.TopicAndPartition;
 import kafka.javaapi.FetchResponse;
 import kafka.javaapi.OffsetRequest;
 import kafka.javaapi.OffsetResponse;
+import kafka.javaapi.PartitionMetadata;
+import kafka.javaapi.TopicMetadata;
+import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -31,7 +35,7 @@ import com.beust.jcommander.Parameter;
 public class ScribeConsumer {
   // Random comments:
   // Unique define a partition. Client name + topic name + offset
-  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe  --leader 10.0.2.15:9092 --checkpoint_interval 100 --partition 0
+  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer  --broker-lst  HOST1:PORT1,HOST2:PORT2 --checkpoint_interval 100 --partition 0 --topic scribe
   // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
   // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
   // checkout EtlMultiOutputCommitter in Camus
@@ -50,16 +54,13 @@ public class ScribeConsumer {
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
 
-  @Parameter(names = {"-"+Constants.OPT_LEADER, "--"+Constants.OPT_LEADER})
-  private HostPort leaderHostPort; // "host:port"
-
   @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION})
   private int partition;
   private long lastCommittedOffset;
   private long offset; // offset is on a per line basis. starts on the last valid offset
 
-  @Parameter(names = {"-"+Constants.OPT_REPLICA, "--"+Constants.OPT_REPLICA}, variableArity = true)
-  private List<String> replicaBrokerList;
+  @Parameter(names = {"-"+Constants.OPT_BROKER_LIST, "--"+Constants.OPT_BROKER_LIST}, variableArity = true)
+  private List<HostPort> brokerList; // list of (host:port)s
 
   @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_TIMER, "--"+Constants.OPT_CHECK_POINT_TIMER}, description="Check point interval in milliseconds")
   private long commitCheckPointInterval; // ms
@@ -80,15 +81,27 @@ public class ScribeConsumer {
     fileSystemFactory = factory;
   }
 
-  public void init() throws IOException {
+  public boolean init() throws IOException {
+    boolean r = true;
+    PartitionMetadata metadata = findLeader(brokerList, topic, partition);
+    if (metadata == null) {
+      r = false;
+      LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition + ". In fact, meta is null.");
+    }
+    if (metadata.leader() == null) {
+      r = false;
+      LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition);
+    }
+
     consumer = new SimpleConsumer(
-        leaderHostPort.getHost(),
-        leaderHostPort.getPort(),
-        10000,   // timeout
-        64*1024, // buffersize
-        getClientName());
+      metadata.leader().host(),
+      metadata.leader().port(),
+      10000,   // timeout
+      64*1024, // buffersize
+      getClientName());
 
     scheduleCommitTimer();
+    return r;
   }
 
   private void scheduleCommitTimer() {
@@ -121,7 +134,6 @@ public class ScribeConsumer {
   }
 
   private synchronized void commit() {
-    //TODO: move from tmp to the actual partition.
     System.out.println(">> committing");
 
     if (lastCommittedOffset != offset) {
@@ -319,6 +331,40 @@ public class ScribeConsumer {
     return r;
   }
 
+  private PartitionMetadata findLeader(List<HostPort> seedBrokers, String topic, int partition) {
+    PartitionMetadata returnMetaData = null;
+
+    for (HostPort broker: seedBrokers) {
+      SimpleConsumer consumer = null;
+      String seed = broker.getHost();
+      int port = broker.getPort();
+
+      try {
+        consumer = new SimpleConsumer(seed, port, 100000, 64 * 1024, "leaderLookup");
+        List<String> topics = Collections.singletonList(topic);
+        TopicMetadataRequest req = new TopicMetadataRequest(topics);
+        kafka.javaapi.TopicMetadataResponse resp = consumer.send(req);
+
+        List<TopicMetadata> metaData = resp.topicsMetadata();
+        for (TopicMetadata item : metaData) {
+          for (PartitionMetadata part : item.partitionsMetadata()) {
+            if (part.partitionId() == partition) {
+              returnMetaData = part;
+              return  returnMetaData;
+            }
+          }
+        }
+      } catch (Exception e) {
+        LOG.error("Error communicating with Broker " + seed + ":" + port + " while trying to find leader for " + topic
+            + ", " + partition + " | Reason: " + e);
+      } finally {
+        if (consumer != null) consumer.close();
+      }
+    }
+
+    return returnMetaData;
+  }
+
   public void run() throws IOException {
     generateTmpAndDestDataPaths();
     lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
@@ -391,8 +437,9 @@ public class ScribeConsumer {
 
     sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
     sc.setFileSystemFactory(FileSystemFactory.instance());
-    sc.init();
-    sc.run();
+    boolean proceed = sc.init();
+    if (proceed)
+      sc.run();
   }
 
 }
