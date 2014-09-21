@@ -1,8 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
+apply plugin: 'application'
 
 archivesBaseName = 'scribengin'
+mainClassName = 'com.neverwinterdp.scribengin.ScribeConsumer'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
@@ -94,6 +96,24 @@ def doRelease(String releaseDir) {
   copy {
     from "${buildDir}/libs"
     into "${releaseDir}/libs"
+  }
+}
+
+// Create the executable jar and exclude some certificates
+jar {
+  manifest {
+    //attributes "Implementation-Title": "Gradle Quickstart"
+    attributes "Implementation-Version": version
+    attributes "Main-Class" : mainClassName
+  }
+
+  doFirst {
+    from (configurations.runtime.resolve().collect { it.isDirectory() ? it : zipTree(it) }) {
+      exclude 'META-INF/MANIFEST.MF'
+      exclude 'META-INF/*.SF'
+      exclude 'META-INF/*.DSA'
+      exclude 'META-INF/*.RSA'
+    }
   }
 }
 
