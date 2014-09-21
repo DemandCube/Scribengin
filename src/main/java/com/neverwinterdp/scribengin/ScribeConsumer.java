@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +74,7 @@ public class ScribeConsumer {
 
   public ScribeConsumer() {
     checkPointIntervalTimer = new Timer();
+    replicaBrokers = new ArrayList<HostPort>();
   }
 
   public void setScribeCommitLogFactory(AbstractScribeCommitLogFactory factory) {
