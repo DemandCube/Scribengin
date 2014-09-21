@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
+import kafka.cluster.Broker;
 import kafka.common.ErrorMapping;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.FetchResponse;
@@ -50,6 +51,7 @@ public class ScribeConsumer {
   private String currDataPath;
   private AbstractScribeCommitLogFactory scribeCommitLogFactory;
   private AbstractFileSystemFactory fileSystemFactory;
+  private List<HostPort> replicaBrokers; // list of (host:port)s
 
   @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
@@ -93,14 +95,18 @@ public class ScribeConsumer {
       LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition);
     }
 
-    consumer = new SimpleConsumer(
-      metadata.leader().host(),
-      metadata.leader().port(),
-      10000,   // timeout
-      64*1024, // buffersize
-      getClientName());
+    if (r) {
+      storeReplicaBrokers(metadata);
 
-    scheduleCommitTimer();
+      consumer = new SimpleConsumer(
+          metadata.leader().host(),
+          metadata.leader().port(),
+          10000,   // timeout
+          64*1024, // buffersize
+          getClientName());
+
+      scheduleCommitTimer();
+    }
     return r;
   }
 
@@ -363,6 +369,13 @@ public class ScribeConsumer {
     }
 
     return returnMetaData;
+  }
+
+  private void storeReplicaBrokers(PartitionMetadata metadata) {
+    replicaBrokers.clear();
+    for (Broker replica: metadata.replicas()) {
+      replicaBrokers.add(new HostPort(replica.host(), replica.port()));
+    }
   }
 
   public void run() throws IOException {
