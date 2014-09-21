@@ -11,10 +11,10 @@ import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.consumer.SimpleConsumer;
 
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 
 public class ScribenginAM extends AbstractApplicationMaster {
@@ -23,10 +23,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
   private static final Logger LOG = Logger.getLogger(ScribenginAM.class.getName());
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
-    private List<String> kafkaSeedBrokers;
-
-  @Parameter(names = {"-" + Constants.OPT_KAFKA_PORT, "--" + Constants.OPT_KAFKA_PORT})
-    private int port;
+  private List<HostPort> brokerList; // list of (host:port)s
 
   // TODO: This is not ideal.
   // topic is repeated in topicList and topicMetadataMap. However, with jcommander automatically parses and store
@@ -47,7 +44,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
     super.init(args);
     LOG.info("calling init");
     for (String topic : topicList) {
-      getMetaData(kafkaSeedBrokers, port, topic);
+      getMetaData(topic);
     }
   }
 
@@ -62,29 +59,38 @@ public class ScribenginAM extends AbstractApplicationMaster {
 
       for ( Map.Entry<Integer, PartitionMetadata> innerEntry: entry.getValue().entrySet()) {
         Integer partition = innerEntry.getKey();
-        PartitionMetadata meta = innerEntry.getValue();
         LOG.info("\tpartition: " + partition);
-        LOG.info("\t\t leader: " + meta.leader());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("java -cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --checkpoint_interval 100 --broker_list ");
+        sb.append(getBrokerListStr());
+        sb.append(" --partition ");
+        sb.append(Integer.toString(partition));
+        r.add(sb.toString());
       }
     }
     return r;
   }
 
-  //TODO: pass the following to each container
-  // 1) partition number
-  // 2) topic name
-  // 3) replica host
-  //
+  private String getBrokerListStr() {
+    StringBuilder sb = new StringBuilder();
+    int len = brokerList.size();
+    for (int i = 0; i < len; i++) {
+      sb.append(brokerList.get(i).toString());
+      if (i < (len + 1))
+        sb.append(",");
+    }
+    return sb.toString();
+  }
 
-  private void getMetaData(List<String> seedBrokerList, int port, String topic) {
+  private void getMetaData(String topic) {
     LOG.info("inside getMetaData"); //xxx
-    LOG.info("seedBrokerList size: " + seedBrokerList); //xxx
+    LOG.info("seedBrokerList" + this.brokerList); //xxx
 
-    for (String seed: seedBrokerList) {
-      LOG.info("making a simple consumer"); //xxx
+    for (HostPort seed: brokerList) {
       SimpleConsumer consumer = new SimpleConsumer(
-          seed,
-          port,
+          seed.getHost(),
+          seed.getPort(),
           10000,   // timeout
           64*1024, // bufferSize
           "metaLookup"  // clientId

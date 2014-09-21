@@ -106,7 +106,7 @@ public class Client {
     LocalResource appMasterJar;
     appMasterJar = this.setupAppMasterJar(this.hdfsJar);
     amContainer.setLocalResources(
-        Collections.singletonMap("ae_master.jar", appMasterJar));
+        Collections.singletonMap("master.jar", appMasterJar));
 
     // Set up CLASSPATH for ApplicationMaster
     Map<String, String> appMasterEnv = new HashMap<String, String>();

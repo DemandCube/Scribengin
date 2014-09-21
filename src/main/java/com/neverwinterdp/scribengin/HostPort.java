@@ -21,5 +21,13 @@ public class HostPort {
   public int getPort() {
     return port;
   }
+
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(host);
+    sb.append(":");
+    sb.append(port);
+    return sb.toString();
+  }
 }
 

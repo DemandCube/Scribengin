@@ -37,7 +37,7 @@ import com.beust.jcommander.Parameter;
 public class ScribeConsumer {
   // Random comments:
   // Unique define a partition. Client name + topic name + offset
-  // java -cp scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer  --broker-lst  HOST1:PORT1,HOST2:PORT2 --checkpoint_interval 100 --partition 0 --topic scribe
+  // java -cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --broker_list HOST1:PORT,HOST2:PORT2 --checkpoint_interval 100 --partition 0
   // checkout src/main/java/com/neverwinterdp/scribengin/ScribeConsumer.java
   // checkout org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter
   // checkout EtlMultiOutputCommitter in Camus
