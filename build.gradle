@@ -39,12 +39,6 @@ dependencies {
   compile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version:'2.2.0'
   compile group: 'com.google.code.gson', name: 'gson', version:'2.2.4'
 
-  //compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
-  //compile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
-  //compile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
-  //compile group: 'com.neverwinterdp', name: 'commons.zookeeper', version: '1.0-SNAPSHOT'
-  //compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
-
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
 
