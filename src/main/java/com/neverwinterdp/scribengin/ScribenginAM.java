@@ -20,7 +20,9 @@ import com.beust.jcommander.Parameter;
 
 public class ScribenginAM extends AbstractApplicationMaster {
   // /hadoop/yarn/local is where the local dir is on the local filesystem.
-  // hadoop jar target/scribengin-uber-0.0.1-SNAPSHOT.jar com.neverwinterdp.scribengin.Client -am_mem 300 -container_mem 300 --container_cnt 4 --hdfsjar /scribengin-uber-0.0.1-SNAPSHOT.jar --app_name scribe --command "echo" --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" -topic "scribe" -kafka_seed_brokers "10.0.2.15" -kafka_port 9092
+  // yarn application -kill [application id]
+  // copy the jar file to hdfs. I copy scribengin-1.0-SNAPSHOT.jar to hdfs's /
+  // hadoop jar target/scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.Client -am_mem 300 -container_mem 300 --container_cnt 4 --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name scribe --command "echo" --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" -topic "scribe" -kafka_seed_brokers "10.0.2.15" -kafka_port 9092
 
   private static final Logger LOG = Logger.getLogger(ScribenginAM.class.getName());
 
