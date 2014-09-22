@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -11,7 +12,7 @@ import org.apache.hadoop.yarn.server.MiniYARNCluster;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 
-import com.neverwinterdp.scribengin.AbstractFileSystemFactory;
+import com.neverwinterdp.scribengin.filesystem.AbstractFileSystemFactory;
 
 public class UnitTestCluster extends AbstractFileSystemFactory {
   private static UnitTestCluster inst = null;
@@ -64,6 +65,11 @@ public class UnitTestCluster extends AbstractFileSystemFactory {
       this.hdfsCluster = _hdfsCluster;
     }
     return this.hdfsCluster;
+  }
+
+  @Override
+  public FileSystem build(URI uri) throws IOException {
+    return this.build();
   }
 }
 
