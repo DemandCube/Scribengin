@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -32,7 +33,18 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import com.neverwinterdp.scribengin.commitlog.AbstractScribeCommitLogFactory;
+import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
+import com.neverwinterdp.scribengin.commitlog.ScribeCommitLogFactory;
+import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;
+import com.neverwinterdp.scribengin.filesystem.AbstractFileSystemFactory;
+import com.neverwinterdp.scribengin.filesystem.FileSystemFactory;
+import com.neverwinterdp.scribengin.filesystem.HDFSFileSystemFactory;
+import com.neverwinterdp.scribengin.hostport.CustomConvertFactory;
+import com.neverwinterdp.scribengin.hostport.HostPort;
+import com.neverwinterdp.scribengin.utilities.LostLeadershipException;
+import com.neverwinterdp.scribengin.utilities.StringRecordWriter;
 
 public class ScribeConsumer {
   // Random comments:
@@ -43,8 +55,8 @@ public class ScribeConsumer {
   // checkout EtlMultiOutputCommitter in Camus
   // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
-  private static final String PRE_COMMIT_PATH_PREFIX = "/tmp";
-  private static final String COMMIT_PATH_PREFIX = "/user/kxae";
+  private String PRE_COMMIT_PATH_PREFIX;
+  private String COMMIT_PATH_PREFIX;
 
   private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
 
@@ -54,20 +66,17 @@ public class ScribeConsumer {
   private AbstractFileSystemFactory fileSystemFactory;
   private List<HostPort> replicaBrokers; // list of (host:port)s
 
-  @Parameter(names = {"-"+Constants.OPT_KAFKA_TOPIC, "--"+Constants.OPT_KAFKA_TOPIC})
   private String topic;
-
-  @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION})
   private int partition;
   private long lastCommittedOffset;
   private long offset; // offset is on a per line basis. starts on the last valid offset
-
-  @Parameter(names = {"-"+Constants.OPT_BROKER_LIST, "--"+Constants.OPT_BROKER_LIST}, variableArity = true)
   private List<HostPort> brokerList; // list of (host:port)s
-
-  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_TIMER, "--"+Constants.OPT_CHECK_POINT_TIMER}, description="Check point interval in milliseconds")
   private long commitCheckPointInterval; // ms
-
+  private String hdfsPath = null;
+  private Thread serverThread;
+  
+  private boolean cleanStart = false;
+  
   private SimpleConsumer consumer;
   //private FileSystem fs;
   private Timer checkPointIntervalTimer;
@@ -75,6 +84,21 @@ public class ScribeConsumer {
   public ScribeConsumer() {
     checkPointIntervalTimer = new Timer();
     replicaBrokers = new ArrayList<HostPort>();
+  }
+  
+  public ScribeConsumer(String preCommitPathPrefix, String commitPathPrefix, String topic, int partition, List<HostPort> brokerList, long commitCheckPointInterval){
+    this();
+    this.PRE_COMMIT_PATH_PREFIX = preCommitPathPrefix;
+    this.COMMIT_PATH_PREFIX = commitPathPrefix;
+    this.topic = topic;
+    this.partition = partition;
+    this.brokerList = brokerList;
+    this.commitCheckPointInterval = commitCheckPointInterval;
+  }
+  
+  public ScribeConsumer(String preCommitPathPrefix, String commitPathPrefix, String topic, int partition, List<HostPort> brokerList, long commitCheckPointInterval, String hdfsPath){
+    this(preCommitPathPrefix, commitPathPrefix, topic, partition, brokerList, commitCheckPointInterval);
+    this.hdfsPath = hdfsPath;
   }
 
   public void setScribeCommitLogFactory(AbstractScribeCommitLogFactory factory) {
@@ -85,14 +109,25 @@ public class ScribeConsumer {
     fileSystemFactory = factory;
   }
 
-  public boolean init() throws IOException {
+  public void init() throws IOException {
+    if(this.hdfsPath == null){
+      setScribeCommitLogFactory(ScribeCommitLogFactory.instance(getCommitLogAbsPath()));
+      setFileSystemFactory(FileSystemFactory.instance());
+    }
+    else{
+      setScribeCommitLogFactory(ScribeCommitLogFactory.instance(this.hdfsPath+getCommitLogAbsPath()));
+      setFileSystemFactory(HDFSFileSystemFactory.instance());
+    }
+  }
+  
+  private boolean connectToTopic(){
     boolean r = true;
     PartitionMetadata metadata = findLeader(brokerList, topic, partition);
     if (metadata == null) {
       r = false;
       LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition + ". In fact, meta is null.");
     }
-    if (metadata.leader() == null) {
+    if (metadata != null && metadata.leader() == null) {
       r = false;
       LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition);
     }
@@ -111,7 +146,33 @@ public class ScribeConsumer {
     }
     return r;
   }
-
+  
+  public void start(){
+    serverThread = new Thread() {
+        public void run() {
+          try{
+            runServerLoop();
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+      };
+    serverThread.start();
+  }
+  
+  public void stop(){
+    try{
+      checkPointIntervalTimer.cancel();
+    } catch(Exception e){
+      e.printStackTrace();
+    }
+    try{
+      serverThread.interrupt();
+    } catch(Exception e){
+      e.printStackTrace();
+    }
+  }
+  
   private void scheduleCommitTimer() {
     checkPointIntervalTimer.schedule(new TimerTask() {
       @Override
@@ -123,9 +184,14 @@ public class ScribeConsumer {
 
   private void commitData(String src, String dest) {
     FileSystem fs = null;
+    Path destPath = new Path(dest);
+    
     try {
-      fs = fileSystemFactory.build();
-      fs.rename(new Path(src), new Path(dest));
+      fs = fileSystemFactory.build(URI.create(src));
+      if(!fs.exists(destPath.getParent())){
+        fs.mkdirs(destPath.getParent());
+      }
+      fs.rename(new Path(src), destPath);
     } catch (IOException e) {
       //TODO : LOG
       e.printStackTrace();
@@ -142,8 +208,8 @@ public class ScribeConsumer {
   }
 
   private synchronized void commit() {
-    System.out.println(">> committing");
-
+    LOG.info(">> committing");
+    
     if (lastCommittedOffset != offset) {
       //Commit
 
@@ -152,10 +218,10 @@ public class ScribeConsumer {
         // Then, mv the tmp data file to it's location.
         long startOffset = lastCommittedOffset + 1;
         long endOffset = offset;
-        System.out.println("\tstartOffset : " + String.valueOf(startOffset)); //xxx
-        System.out.println("\tendOffset   : " + String.valueOf(endOffset)); //xxx
-        System.out.println("\ttmpDataPath : " + currTmpDataPath); //xxx
-        System.out.println("\tDataPath    : " + currDataPath); //xxx
+        LOG.info("\tstartOffset : " + String.valueOf(startOffset)); //xxx
+        LOG.info("\tendOffset   : " + String.valueOf(endOffset)); //xxx
+        LOG.info("\ttmpDataPath : " + currTmpDataPath); //xxx
+        LOG.info("\tDataPath    : " + currDataPath); //xxx
 
         ScribeCommitLog log = scribeCommitLogFactory.build();
         log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
@@ -176,13 +242,7 @@ public class ScribeConsumer {
   }
 
   private String getClientName() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("scribe_");
-    sb.append(topic);
-    sb.append("_");
-    sb.append(partition);
-    String r = sb.toString();
-    return r;
+    return "scribe_"+topic+"_"+partition;
   }
 
   private String getCommitLogAbsPath() {
@@ -190,29 +250,19 @@ public class ScribeConsumer {
   }
 
   private void generateTmpAndDestDataPaths() {
-    StringBuilder sb = new StringBuilder();
     long ts = System.currentTimeMillis()/1000L;
-    sb.append(PRE_COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append(ts);
-    this.currTmpDataPath = sb.toString();
-
-    sb = new StringBuilder();
-    sb.append(COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append(ts);
-    this.currDataPath = sb.toString();
+    
+    this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    this.currDataPath = COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    
+    if(this.hdfsPath != null){
+      this.currTmpDataPath = this.hdfsPath+this.currTmpDataPath;
+      this.currDataPath = this.hdfsPath+this.currDataPath;
+    }
   }
 
   private String getTmpDataPathPattern() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(PRE_COMMIT_PATH_PREFIX)
-      .append("/scribe.data")
-      .append(".")
-      .append("*");
-    return sb.toString();
+    return PRE_COMMIT_PATH_PREFIX+"/scribe.data.*";
   }
 
   private long getLatestOffsetFromKafka(String topic, int partition, long startTime) {
@@ -228,7 +278,7 @@ public class ScribeConsumer {
     OffsetResponse resp = consumer.getOffsetsBefore(req);
 
     if (resp.hasError()) {
-      System.out.println("error when fetching offset: " + resp.errorCode(topic, partition)); //xxx
+      LOG.error("error when fetching offset: " + resp.errorCode(topic, partition)); //xxx
       // In case you wonder what the error code really means.
       // System.out.println("OffsetOutOfRangeCode()" + ErrorMapping.OffsetOutOfRangeCode());
       // System.out.println("BrokerNotAvailableCode()" + ErrorMapping.BrokerNotAvailableCode());
@@ -253,8 +303,13 @@ public class ScribeConsumer {
 
   private void DeleteUncommittedData() throws IOException
   {
-    FileSystem fs = fileSystemFactory.build();
-
+    FileSystem fs;
+    if(this.hdfsPath != null){
+      fs = fileSystemFactory.build(URI.create(this.hdfsPath));
+    }
+    else{
+      fs = fileSystemFactory.build();
+    }
     // Corrupted log file
     // Clean up. Delete the tmp data file if present.
     FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
@@ -288,11 +343,10 @@ public class ScribeConsumer {
       log.read();
       entry = log.getLatestEntry();
 
-      if (entry.isCheckSumValid()) {
-        FileSystem fs = fileSystemFactory.build();
-
+      if (entry != null && entry.isCheckSumValid()) {
         String tmpDataFilePath = entry.getSrcPath();
-
+        FileSystem fs = fileSystemFactory.build(URI.create(tmpDataFilePath));
+        
         if (fs.exists(new Path(tmpDataFilePath))) {
           // mv to the dest
           commitData(tmpDataFilePath, entry.getDestPath());
@@ -323,7 +377,7 @@ public class ScribeConsumer {
 
   private long getLatestOffset(String topic, int partition, long startTime) {
     long offsetFromCommitLog = getLatestOffsetFromCommitLog();
-    System.out.println(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
+    LOG.info(" getLatestOffsetFromCommitLog >>>> " + offsetFromCommitLog); //xxx
     long offsetFromKafka = getLatestOffsetFromKafka(topic, partition, startTime);
     long r;
     if (offsetFromCommitLog == -1) {
@@ -346,7 +400,6 @@ public class ScribeConsumer {
       SimpleConsumer consumer = null;
       String seed = broker.getHost();
       int port = broker.getPort();
-
       try {
         consumer = new SimpleConsumer(seed, port, 100000, 64 * 1024, "leaderLookup");
         List<String> topics = Collections.singletonList(topic);
@@ -407,14 +460,32 @@ public class ScribeConsumer {
     }
   }
 
-  public void run() throws IOException, LostLeadershipException {
+  public void runServerLoop() throws IOException, LostLeadershipException, InterruptedException {
+    int retry = 0;
+    int retryLimit = 10;
+    while(!connectToTopic()){
+      LOG.error("Could not connect to topic...");
+      Thread.sleep(1000);
+      retry++;
+      if(retry > retryLimit){
+        return; 
+      }
+    }
+    
     generateTmpAndDestDataPaths();
     lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
-    offset = lastCommittedOffset;
-    System.out.println(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
-
+    if(cleanStart){
+      lastCommittedOffset = 0;
+      offset =  0;
+    }
+    else{
+      lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+      offset = lastCommittedOffset;
+    }
+    LOG.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
+    
     while (true) {
-      System.out.println(">> offset: " + offset); //xxx
+      LOG.info(">> offset: " + offset); //xxx
       FetchRequest req = new FetchRequestBuilder()
         .clientId(getClientName())
         .addFetch(topic, partition, offset, 100000)
@@ -429,7 +500,7 @@ public class ScribeConsumer {
         LOG.info("Encounter error when fetching from consumer. Error Code: " + code);
         if (code == ErrorMapping.OffsetOutOfRangeCode())  {
           // We asked for an invalid offset. For simple case ask for the last element to reset
-          System.out.println("inside errormap");
+          LOG.info("inside errormap");
           offset = getLatestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.LatestTime());
           continue;
         } else {
@@ -455,16 +526,16 @@ public class ScribeConsumer {
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
           if (currentOffset < offset) {
-            System.out.println("Found an old offset: " + currentOffset + "Expecting: " + offset);
+            LOG.info("Found an old offset: " + currentOffset + "Expecting: " + offset);
             continue;
           }
           offset = messageAndOffset.nextOffset();
           ByteBuffer payload = messageAndOffset.message().payload();
-
+          
           byte[] bytes = new byte[payload.limit()];
           payload.get(bytes);
 
-          System.out.println(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+          LOG.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
           writer.write(bytes);
 
@@ -481,23 +552,38 @@ public class ScribeConsumer {
       }
     } // while
   }
-
+  
+  public void cleanStart(boolean b){
+    cleanStart = b;
+  }
+  
   public static void main(String[] args) throws IOException {
-    ScribeConsumer sc = new ScribeConsumer();
-    JCommander jc = new JCommander(sc);
+    commandLineArgs p = new commandLineArgs();
+    
+    JCommander jc = new JCommander(p);
     jc.addConverterFactory(new CustomConvertFactory());
-    jc.parse(args);
-
-    sc.setScribeCommitLogFactory(ScribeCommitLogFactory.instance(sc.getCommitLogAbsPath()));
-    sc.setFileSystemFactory(FileSystemFactory.instance());
-    boolean proceed = sc.init();
-    if (proceed) {
-      try {
-        sc.run();
-      } catch (LostLeadershipException e) {
-        LOG.fatal("Leader went away. Couldn't find a new leader!");
-      }
+    try{
+      jc.parse(args);
+    } catch (ParameterException e){
+      System.err.println(e.getMessage());
+      jc.usage();
+      System.exit(-1);
     }
+    
+    ScribeConsumer sc = new ScribeConsumer(p.preCommitPrefix, p.commitPrefix, p.topic, p.partition, p.brokerList, p.commitCheckPointInterval, p.hdfsPath);
+    sc.init();
+    if(p.cleanstart){
+      sc.cleanStart(true);
+    }
+    
+    try{
+      sc.runServerLoop();
+    } catch (LostLeadershipException e) {
+        LOG.fatal("Leader went away. Couldn't find a new leader!");
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    
   }
 
 }

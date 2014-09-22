@@ -1,6 +1,7 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.filesystem;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -22,5 +23,10 @@ public class FileSystemFactory extends AbstractFileSystemFactory {
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
     FileSystem fs = FileSystem.get(conf);
     return fs;
+  }
+  
+
+  public FileSystem build(URI uri) throws IOException {
+    return this.build();
   }
 }

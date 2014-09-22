@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.fixture;
 
 import java.io.BufferedReader;
 import java.io.File;

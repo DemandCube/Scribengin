@@ -2,6 +2,12 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin: 'application'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.6.2.201302030002"
+    reportsDir = file("$buildDir/JacocoReportDir")
+}
 
 archivesBaseName = 'scribengin'
 mainClassName = 'com.neverwinterdp.scribengin.Client'
@@ -43,6 +49,15 @@ dependencies {
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+  
+  testCompile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
+  testCompile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
+  testCompile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
+  testCompile group: 'com.neverwinterdp', name: 'commons.zookeeper', version: '1.0-SNAPSHOT'
+  testCompile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
+  //Queuengin is needed to bring up Kafka in the tests
+  //but if testCompile is used, then it doesn't work in Eclipse.
+  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
 
   testCompile group: 'junit', name: 'junit', version: '4.11'
 }
