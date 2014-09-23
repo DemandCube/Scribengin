@@ -10,7 +10,7 @@ jacoco {
 }
 
 archivesBaseName = 'scribengin'
-mainClassName = 'com.neverwinterdp.scribengin.Client'
+mainClassName = 'com.neverwinterdp.scribengin.yarn.Client'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
@@ -49,7 +49,7 @@ dependencies {
 
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
-  
+
   testCompile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   testCompile group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
   testCompile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
