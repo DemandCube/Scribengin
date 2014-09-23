@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.utilities;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -11,9 +11,9 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 
 
-class Util {
+public class Util {
 
-  static LocalResource newYarnAppResource(
+  public static LocalResource newYarnAppResource(
       FileSystem fs, Path path,
       LocalResourceType type, LocalResourceVisibility vis) throws IOException {
     Path qualified = fs.makeQualified(path);

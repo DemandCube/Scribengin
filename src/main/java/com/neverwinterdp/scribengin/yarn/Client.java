@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.yarn;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +37,8 @@ import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.scribengin.constants.Constants;
+import com.neverwinterdp.scribengin.utilities.Util;
 
 public class Client {
   // usr/lib/hadoop/bin/hadoop jar scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092

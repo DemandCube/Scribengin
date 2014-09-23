@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.fixture;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,59 +8,34 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
-public class KafkaFixture extends Fixture {
-  private static int nextBrokerId =1;
+public class ZookeeperFixture extends Fixture {
   private Process proc;
-  private String host;
-  private int port;
-  private String zkHost;
-  private int zkPort;
   private String version;
-  private int brokerId;
-  private static final String PROPERTIES_FILENAME = "/kafka.properties";
+  private static final String PROPERTIES_FILENAME = "/zookeeper.properties";
   private static final String LOG4J_FILENAME = "/log4j.properties";
   private static final String TEMPLATED_LOG4J_FULLPATH = "servers/%s/resources" + LOG4J_FILENAME;
 
   private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources" + PROPERTIES_FILENAME;
-  private static final String JAVA_MAIN = "kafka.Kafka";
-  private static final String WAIT_FOR_REGEX = ".*?started.*?";
+  private static final String JAVA_MAIN = "org.apache.zookeeper.server.quorum.QuorumPeerMain";
+  private static final String WAIT_FOR_REGEX = ".*?Established session.*?";
 
-  private static int incAndGetId() {
-    int r = nextBrokerId;
-    nextBrokerId++;
-    return r;
-  }
-
-  public KafkaFixture( String version,
-      String kafkaHost, int kafkaPort,
-      String zkHost, int zkPort ) throws IOException {
+  public ZookeeperFixture(String version, String host, int port) throws IOException {
     super();
-    this.host = kafkaHost;
-    this.port = kafkaPort;
-    this.zkHost = zkHost;
-    this.zkPort = zkPort;
+    this.host = host;
+    this.port = port;
     this.version = version;
-    this.brokerId = incAndGetId();
   }
 
   public void start() throws IOException {
-    System.out.println(this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME); //xxx
-
     HashMap<String, String> context = new HashMap<String, String>();
-    context.put("broker_id", Integer.toString(brokerId));
-    context.put("host", host);
-    context.put("port", Integer.toString(port));
-    context.put("zk_host", zkHost);
-    context.put("zk_port", Integer.toString(zkPort));
-    context.put("partitions", Integer.toString(1));
-    context.put("replicas", Integer.toString(1));
     context.put("tmp_dir", tmpDir.getAbsolutePath());
+    context.put("host", this.host);
+    context.put("port", Integer.toString(this.port));
 
     this.renderConfig(
       String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
       this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME,
-      context
-    );
+      context );
 
     this.renderConfig(
       String.format(TEMPLATED_LOG4J_FULLPATH, this.version),
@@ -80,20 +55,18 @@ public class KafkaFixture extends Fixture {
 
     BufferedReader br = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
     String line = null;
+    //block until we see the regex string
     while ((line = br.readLine()) != null) {
       if (line.matches(WAIT_FOR_REGEX)) {
         break;
       }
     }
-
   }
 
   public void stop() throws IOException {
+    // Destroy the running process
     this.proc.destroy();
     // clean up the tmp directory
     FileUtils.deleteDirectory(this.tmpDir);
-    nextBrokerId--;
   }
-
 }
-
