@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.hostport;
 
 import com.beust.jcommander.IStringConverter;
 

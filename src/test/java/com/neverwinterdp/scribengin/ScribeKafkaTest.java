@@ -8,6 +8,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.fixture.KafkaFixture;
+import com.neverwinterdp.scribengin.fixture.ZookeeperFixture;
+
 
 public class ScribeKafkaTest {
   private static ZookeeperFixture zookeeper;
@@ -52,7 +55,7 @@ public class ScribeKafkaTest {
   }
 
 
-  @Test
-  public void testKafka() {
-  }
+  //@Test
+  //public void testKafka() {
+  //}
 }

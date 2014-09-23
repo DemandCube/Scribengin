@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.utilities;
 
 import java.io.IOException;
 import java.net.URI;

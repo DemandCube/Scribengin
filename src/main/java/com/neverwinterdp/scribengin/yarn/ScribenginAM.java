@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.yarn;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +16,9 @@ import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.scribengin.constants.Constants;
+import com.neverwinterdp.scribengin.hostport.CustomConvertFactory;
+import com.neverwinterdp.scribengin.hostport.HostPort;
 
 
 public class ScribenginAM extends AbstractApplicationMaster {

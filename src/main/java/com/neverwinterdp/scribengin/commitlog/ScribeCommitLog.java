@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.commitlog;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

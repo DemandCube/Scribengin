@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.utilities;
 
 public class LostLeadershipException extends Exception {
 

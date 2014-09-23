@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.commitlog;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;

@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.scribecommitlog;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -10,9 +10,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.AbstractScribeCommitLogFactory;
-import com.neverwinterdp.scribengin.ScribeCommitLog;
-import com.neverwinterdp.scribengin.ScribeLogEntry;
+import com.neverwinterdp.scribengin.UnitTestCluster;
+import com.neverwinterdp.scribengin.commitlog.AbstractScribeCommitLogFactory;
+import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
+import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;
 
 public class ScribeCommitLogTestFactory extends AbstractScribeCommitLogFactory {
   private static final Log log =
