@@ -4,8 +4,6 @@ Pronounced Scribe Engine
 
 Scribengin is a highly reliable (HA) and performant event/logging transport that registers data under defined schemas in a variety of end systems.  Scribengin enables you to have multiple flows of data from a source to a sink. Scribengin will tolerate system failures of individual nodes and will do a complete recovery in the case of complete system failure.
 
-More simply described Scribengin is tool designed for efficiently transferring bulk data between source and destination (sink) systems like Kafka and Apache Hadoop, or Kinesis and structured datastores such as relational databases or key value stores.
-
 Reads data from sources:
 - Kafka
 - AWS Kinesis
@@ -41,17 +39,6 @@ Definitions
 - **Source** - is a system that is being read to get data from (Kafka, Kinesis e.g.)
 - **Sink** - is a destination system that is being written to (HDFS, Hbase, Hive e.g.)
 - A **Tributary** - is a portion or partition of data from a **Flow**
-
-Questions
-------
-
-- What is the difference between Storm/Spark and Scribengin?
-  - Storm is a individual event processing framework that can do arbitrary computations.
-  - Spark Streaming is a microbatch processing framework that can do fixed computations defined by the framework.
-  - Scribengin event processing but for enterprise grade moving data from source A to destination B with transactional guarantees in moving that data.  It is also self-healing "auto-recovery" of process failures, basically HA.  Scribengin promises exactly deliver once symantics while other systems don't guarantee that.
- 
-
-
 
 Yarn
 =====

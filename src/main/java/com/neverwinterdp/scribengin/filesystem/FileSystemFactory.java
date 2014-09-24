@@ -5,6 +5,7 @@ import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 public class FileSystemFactory extends AbstractFileSystemFactory {
   private static FileSystemFactory inst = null;
@@ -18,11 +19,13 @@ public class FileSystemFactory extends AbstractFileSystemFactory {
   public FileSystem build() throws IOException
   {
     Configuration conf = new Configuration();
+    conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
+    conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
     FileSystem fs = FileSystem.get(conf);
     return fs;
   }
+  
 
-  @Override
   public FileSystem build(URI uri) throws IOException {
     return this.build();
   }

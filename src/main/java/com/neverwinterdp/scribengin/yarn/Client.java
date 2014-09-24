@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
-//import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
+import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
@@ -37,8 +37,11 @@ import org.apache.log4j.Logger;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.scribengin.constants.Constants;
+import com.neverwinterdp.scribengin.utilities.Util;
 
 public class Client {
+  // usr/lib/hadoop/bin/hadoop jar scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
   private static final Logger LOG = Logger.getLogger(Client.class.getName());
   private YarnClient yarnClient;
   private Configuration conf;
@@ -65,8 +68,6 @@ public class Client {
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
     private List<String> kafkaSeedBrokers;
 
-  @Parameter(names = {"-" + Constants.OPT_KAFKA_PORT, "--" + Constants.OPT_KAFKA_PORT})
-    private int port;
 
   public Client() throws Exception{
     this.conf = new YarnConfiguration();
@@ -79,7 +80,7 @@ public class Client {
     yarnClient.init(conf);
   }
 
-  public void init(String[] args) {
+  public void init() {
     LOG.setLevel(Level.INFO);
     LOG.info("command: " + this.command);
   }
@@ -94,7 +95,7 @@ public class Client {
     YarnClientApplication app = yarnClient.createApplication();
 
     // GetNewApplicationResponse can be used to determined resources available.
-    //GetNewApplicationResponse appResponse = app.getNewApplicationResponse();
+    GetNewApplicationResponse appResponse = app.getNewApplicationResponse();
 
     ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
     ApplicationId appId = appContext.getApplicationId();
@@ -104,9 +105,11 @@ public class Client {
     ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
 
     LocalResource appMasterJar;
-    appMasterJar = this.setupAppMasterJar(this.hdfsJar);
+    FileSystem fs = FileSystem.get(this.conf);
+
     amContainer.setLocalResources(
-        Collections.singletonMap("ae_master.jar", appMasterJar));
+        Collections.singletonMap("master.jar",
+        Util.newYarnAppResource(fs, new Path(this.hdfsJar), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION) ));
 
     // Set up CLASSPATH for ApplicationMaster
     Map<String, String> appMasterEnv = new HashMap<String, String>();
@@ -139,7 +142,7 @@ public class Client {
     sb.append("--").append(Constants.OPT_CONTAINER_COUNT).append(" ").append(this.containerCount).append(" ");
     sb.append("--").append(Constants.OPT_COMMAND).append(" '").append(StringEscapeUtils.escapeJava(this.command)).append("' ");
     sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ").append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
-    sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
+    //sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
     sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ").append(StringUtils.join(this.topicList, " ")).append(" ");
 
     sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout").append(" ");
@@ -190,7 +193,7 @@ public class Client {
     for (String c : conf.getStrings(
           YarnConfiguration.YARN_APPLICATION_CLASSPATH,
           YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
-      classPathEnv.append(File.pathSeparatorChar);
+      classPathEnv.append(File.pathSeparatorChar) ;
       classPathEnv.append(c.trim());
     }
 
@@ -199,32 +202,15 @@ public class Client {
     appMasterEnv.put(Environment.CLASSPATH.name(), envStr);
   }
 
-
-  private LocalResource setupAppMasterJar(FileStatus status, Path jarHdfsPath) throws IOException {
-    LocalResource appMasterJar =  Records.newRecord(LocalResource.class);
-    appMasterJar.setResource(ConverterUtils.getYarnUrlFromPath(jarHdfsPath));
-    appMasterJar.setSize(status.getLen());
-    appMasterJar.setTimestamp(status.getModificationTime());
-    appMasterJar.setType(LocalResourceType.FILE);
-    appMasterJar.setVisibility(LocalResourceVisibility.APPLICATION);
-    return appMasterJar;
-  }
-
-  // Assume that the hdfsPath already exits in HDFS
-  private LocalResource setupAppMasterJar(String hdfsPath) throws IOException {
-    FileSystem fs = FileSystem.get(this.conf);
-    Path dst = new Path(hdfsPath);
-    dst = fs.makeQualified(dst); // must use fully qualified path name. Otherise, nodemanager gets angry.
-    return this.setupAppMasterJar(fs.getFileStatus(dst), dst);
-  }
-
   public static void main(String[] args) throws Exception {
     LOG.info("main");
     Client c = new Client();
     boolean r = false;
 
-    new JCommander(c, args);
-    c.init(args);
+    JCommander jc = new JCommander(c);
+    jc.parse(args);
+
+    c.init();
     r = c.run();
 
     if (r) {
