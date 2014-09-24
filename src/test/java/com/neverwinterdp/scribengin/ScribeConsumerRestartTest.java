@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -15,21 +13,19 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.javaapi.producer.Producer;
-import kafka.message.MessageAndOffset;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-import com.neverwinterdp.queuengin.kafka.SimplePartitioner;
+import com.neverwinterdp.scribengin.clusterBuilder.SupportClusterBuilder;
 import com.neverwinterdp.scribengin.hostport.HostPort;
-import com.neverwinterdp.scribengin.kafka.SupportClusterBuilder;
 import com.neverwinterdp.scribengin.ScribeConsumer;
 
 /**
@@ -43,7 +39,8 @@ public class ScribeConsumerRestartTest {
   static String TOPIC = "cluster.test";
   static int numOfMessages = 100 ;
   static protected SupportClusterBuilder supportClusterBuilder;
-
+  private static final Logger LOG = Logger.getLogger(ScribeConsumerRestartTest.class.getName());
+  
   @BeforeClass
   static public void setup() throws Exception {
     supportClusterBuilder = new SupportClusterBuilder();
@@ -88,8 +85,6 @@ public class ScribeConsumerRestartTest {
       RemoteIterator<LocatedFileStatus> directoryIterator = fs.listFiles(directory,false);
       while(directoryIterator.hasNext()){
         Path p = directoryIterator.next().getPath();
-        System.err.println("PATH: ");
-        System.err.println(p);
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
          while((tempLine = br.readLine() ) != null){
            readLine += tempLine;
@@ -125,18 +120,24 @@ public class ScribeConsumerRestartTest {
                                            brokerList,  //list of kafkas
                                            200,  //check interval
                                            supportClusterBuilder.getHadoopConnection());  //connection to hadoop
+    LOG.info("Init for ScribeConsumer 1");
     sw.init();
+    LOG.info("Setting clean start to true for ScribeConsumer 1");
     sw.cleanStart(true);
+    LOG.info("Starting ScribeConsumer 1");
     sw.start();
-
+    
+    LOG.info("Creating kafka data");
     //Create kafka data
     createKafkaData(0);
       
     //Wait for consumption
     Thread.sleep(5000);
     //Ensure messages 0-100 were consumed
+    LOG.info("Asserting data is correct");
     assertHDFSmatchesKafka(0,supportClusterBuilder.getHadoopConnection());
     
+    LOG.info("Stopping ScribeConsumer 1");
     //Kill the worker
     sw.stop();
     
@@ -150,21 +151,26 @@ public class ScribeConsumerRestartTest {
                                             brokerList,  //list of kafkas
                                             200,  //check interval
                                             supportClusterBuilder.getHadoopConnection());  //connection to hadoop
+    LOG.info("Init for ScribeConsumer 2");
     sw2.init();
+    LOG.info("Starting ScribeConsumer 2");
     sw2.start();
     Thread.sleep(2000);
     
+    LOG.info("Creating kafka data");
     //Create data starting at message 100
     createKafkaData(100);
     
     //Wait for data to be consumed
     Thread.sleep(5000);
     
+    LOG.info("Stopping ScribeConsumer 2");
     sw2.stop();
     
     //Wait for thread to die to avoid closed filesystem errors
     Thread.sleep(5000);
     
+    LOG.info("Asserting data is correct");
     //Ensure all the data is there and in the correct order
     assertHDFSmatchesKafka(100,supportClusterBuilder.getHadoopConnection());
   }
