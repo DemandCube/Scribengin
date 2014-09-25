@@ -57,6 +57,7 @@ Host: localhost
 Port: 9999
 Enable 'Socks Proxy'
 Click "OK" to save.  Once saved - Change the mode to "Use proxy localhost:9999 for all URLs (or you can figure out how to make a pattern subscription)
+You can now navigate to http://localhost.localdomain:8080 and see the Ambari console
 ```
 
 Back on the vagrant machine, lets install Gradle 1.12 to our home directory while we wait
@@ -91,4 +92,32 @@ sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel
 #This is the folder that's mounted from your host machine via the Vagrantfile
 cd /vagrant/NeverwinterDP
 ./neverwinterdp.sh gradle clean build install
+cd ../Scribengin
 ```
+
+Almost there!  Copy your jar file to HDFS
+```
+hdfs dfs -copyFromLocal /vagrant/Scribengin/bin/build/libs/scribengin-1.0-SNAPSHOT.jar /
+```
+
+Run Scribengin
+```
+/usr/lib/hadoop/bin/hadoop jar scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
+#Notice that the --container_cnt and --command options no longer make sense. They will be removed soon
+```
+
+
+
+To see it running:
+------------------
+- Go to Ambari (Use FoxyProxy and navigate to (http://localhost.localdomain:8080). 
+- Click on Yarn on the left. 
+- Click on the quick link drop down in the middle and select ResourceManager UI.
+- The resouremanager ui will tell you what's running, what failed, etc. You can click around to get to the application master log. You can't get to the worker log from here, however.
+- To get to the worker log, go back to your vm, and cd into /hadoop/yarn/log/[application_id]/[container]_0000[x]. You can find the application id from the resource manager web ui. Container_000001 is your app master. >1 are your workers. Cd into that, and you should see stdout and std error.
+
+
+To kill the job:
+----------------
+Ctrl-c doesn't really kill the yarn app. You'll need to issue a kill command.
+yarn application -kill  [application_id]
