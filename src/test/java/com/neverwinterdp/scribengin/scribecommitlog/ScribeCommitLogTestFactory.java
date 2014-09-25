@@ -10,7 +10,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.UnitTestCluster;
+import com.neverwinterdp.scribengin.clusterBuilder.UnitTestCluster;
 import com.neverwinterdp.scribengin.commitlog.AbstractScribeCommitLogFactory;
 import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
 import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;

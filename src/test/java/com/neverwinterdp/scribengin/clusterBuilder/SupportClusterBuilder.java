@@ -1,9 +1,10 @@
-package com.neverwinterdp.scribengin.kafka;
+package com.neverwinterdp.scribengin.clusterBuilder;
+
+import java.io.IOException;
 
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.scribengin.kafka.MiniDfsClusterBuilder;
 
 /**
  * Brings up kafka, zookeeper, hadoop
@@ -17,9 +18,9 @@ public class SupportClusterBuilder {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
   
-  MiniDfsClusterBuilder hadoopServer = new MiniDfsClusterBuilder();
+  private static String MINI_CLUSTER_PATH = "/tmp/miniCluster";
+  UnitTestCluster hadoopServer;
   Server  zkServer, kafkaServer ;
-  
   Shell   shell ;
   String hadoopConnection="";
 
@@ -31,7 +32,7 @@ public class SupportClusterBuilder {
     shell.getShellContext().connect();
     shell.execute("module list --type available");
     Thread.sleep(1000);
-    hadoopServer = new MiniDfsClusterBuilder();
+    hadoopServer = UnitTestCluster.instance(MINI_CLUSTER_PATH);
   }
 
   public Shell getShell() { return this.shell ; }
@@ -45,8 +46,10 @@ public class SupportClusterBuilder {
     hadoopServer.destroy();
   }
   
-  public void install() throws InterruptedException {
-    hadoopConnection = hadoopServer.build();
+  public void install() throws InterruptedException, IOException {
+    hadoopServer.build(3);
+    hadoopConnection = hadoopServer.getUrl();
+    
     String installScript =
         "module install " + 
         " -Pmodule.data.drop=true" +

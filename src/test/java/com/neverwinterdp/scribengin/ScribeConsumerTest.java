@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribeConsumer;
+import com.neverwinterdp.scribengin.clusterBuilder.UnitTestCluster;
 import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
 import com.neverwinterdp.scribengin.scribecommitlog.ScribeCommitLogTestFactory;
 

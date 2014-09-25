@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.clusterBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -27,11 +27,24 @@ public class UnitTestCluster extends AbstractFileSystemFactory {
       inst = new UnitTestCluster(clusterPath);
     return inst;
   }
-
-  public FileSystem build() throws IOException {
-    MiniDFSCluster miniCluster = createMiniDFSCluster(clusterPath, 1);
+  
+  public FileSystem build(int numMachines) throws IOException{
+    MiniDFSCluster miniCluster = createMiniDFSCluster(clusterPath, numMachines);
     FileSystem r = miniCluster.getFileSystem();
     return r;
+  }
+  
+  public FileSystem build() throws IOException {
+    return build(1);
+  }
+  
+  public String getUrl(){
+    return "hdfs://localhost:"+ hdfsCluster.getNameNodePort() + "/";
+  }
+  
+  public void destroy(){
+    hdfsCluster.shutdown();
+    FileUtil.fullyDelete(new File(clusterPath).getAbsoluteFile());
   }
 
   protected MiniYARNCluster createMiniYARNCluster(int numOfNodeManagers) throws Exception {

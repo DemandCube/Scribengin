@@ -1,12 +1,17 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.cluster;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
+
+import kafka.javaapi.producer.Producer;
+import kafka.producer.KeyedMessage;
+import kafka.producer.ProducerConfig;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -18,20 +23,16 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-
 import com.neverwinterdp.scribengin.clusterBuilder.SupportClusterBuilder;
-import com.neverwinterdp.scribengin.hostport.HostPort;
-import com.neverwinterdp.scribengin.ScribeConsumer;
+import com.neverwinterdp.server.Server;
+import com.neverwinterdp.server.shell.Shell;
 
 /**
+ * Brings up scribengin cluster
  * @author Richard Duarte
+ *
  */
-public class ScribeConsumerRestartTest {
+public class ScribeConsumerClusterTest {
   static {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
@@ -39,7 +40,9 @@ public class ScribeConsumerRestartTest {
   static String TOPIC = "cluster.test";
   static int numOfMessages = 100 ;
   static protected SupportClusterBuilder supportClusterBuilder;
-  private static final Logger LOG = Logger.getLogger(ScribeConsumerRestartTest.class.getName());
+  private static final Logger LOG = Logger.getLogger(ScribeConsumerClusterTest.class.getName());
+  private static Server scribeConsumer;
+  
   
   @BeforeClass
   static public void setup() throws Exception {
@@ -52,6 +55,9 @@ public class ScribeConsumerRestartTest {
     try{
       supportClusterBuilder.uninstall();
       supportClusterBuilder.destroy();
+    } catch(Exception e){}
+    try{
+      scribeConsumer.destroy();
     } catch(Exception e){}
   }
   
@@ -103,29 +109,28 @@ public class ScribeConsumerRestartTest {
     assertEquals("Data passed into Kafka did not match what was read from HDFS",assertionString,readLine);
   }
 
-  /**
-   * Starts a ScribeWorker, Stops it, Commits more data to kafka, and starts a new ScribeWorker
-   * No data should be repeated
-   */
   @Test
-  public void testScribenginWorkerRestart() throws Exception {
+  public void ScribeWorkerClusterTest() throws InterruptedException{
     
-    List<HostPort> brokerList = new LinkedList<HostPort>();
-    brokerList.add(new HostPort("localhost",9092));
+    //Bring up scribeConsumer
+    scribeConsumer = Server.create("-Pserver.name=scribeconsumer", "-Pserver.roles=scribeconsumer");
+    Shell shell = new Shell() ;
+    shell.getShellContext().connect();
+    shell.execute("module list --type available");
     
-    ScribeConsumer sw = new ScribeConsumer("/tmp",  //pre commit path
-                                           "/committed",  //commit path
-                                           TOPIC,   //kafka topic
-                                           0,       //kafka partition
-                                           brokerList,  //list of kafkas
-                                           200,  //check interval
-                                           supportClusterBuilder.getHadoopConnection());  //connection to hadoop
-    LOG.info("Init for ScribeConsumer 1");
-    sw.init();
-    LOG.info("Setting clean start to true for ScribeConsumer 1");
-    sw.cleanStart(true);
-    LOG.info("Starting ScribeConsumer 1");
-    sw.start();
+    String installScript ="module install " + 
+        " -Pmodule.data.drop=true" +
+        " -Pscribeconsumer:precommitpathprefix=/tmp" +
+        " -Pscribeconsumer:commitpathprefix=/committed" +
+        " -Pscribeconsumer:topic="+ TOPIC +
+        " -Pscribeconsumer:partition=0" +
+        " -Pscribeconsumer:brokerList=127.0.0.1:9092" +
+        " -Pscribeconsumer:commitCheckPointInterval=500"+
+        " -Pscribeconsumer:hdfsPath="+supportClusterBuilder.getHadoopConnection()+
+        " -Pscribeconsumer:cleanStart=True"+
+        " --member-role scribeconsumer --autostart --module ScribeConsumer \n";
+    shell.executeScript(installScript);
+    Thread.sleep(2000);
     
     LOG.info("Creating kafka data");
     //Create kafka data
@@ -136,42 +141,5 @@ public class ScribeConsumerRestartTest {
     //Ensure messages 0-100 were consumed
     LOG.info("Asserting data is correct");
     assertHDFSmatchesKafka(0,supportClusterBuilder.getHadoopConnection());
-    
-    LOG.info("Stopping ScribeConsumer 1");
-    //Kill the worker
-    sw.stop();
-    
-    Thread.sleep(10000);
-    
-    //Create new worker
-    ScribeConsumer sw2 = new ScribeConsumer("/tmp",  //pre commit path
-                                            "/committed",  //commit path
-                                            TOPIC,   //kafka topic
-                                            0,       //kafka partition
-                                            brokerList,  //list of kafkas
-                                            200,  //check interval
-                                            supportClusterBuilder.getHadoopConnection());  //connection to hadoop
-    LOG.info("Init for ScribeConsumer 2");
-    sw2.init();
-    LOG.info("Starting ScribeConsumer 2");
-    sw2.start();
-    Thread.sleep(2000);
-    
-    LOG.info("Creating kafka data");
-    //Create data starting at message 100
-    createKafkaData(100);
-    
-    //Wait for data to be consumed
-    Thread.sleep(5000);
-    
-    LOG.info("Stopping ScribeConsumer 2");
-    sw2.stop();
-    
-    //Wait for thread to die to avoid closed filesystem errors
-    Thread.sleep(5000);
-    
-    LOG.info("Asserting data is correct");
-    //Ensure all the data is there and in the correct order
-    assertHDFSmatchesKafka(100,supportClusterBuilder.getHadoopConnection());
   }
 }

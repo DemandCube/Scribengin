@@ -55,32 +55,35 @@ public class ScribeConsumer {
   // checkout EtlMultiOutputCommitter in Camus
   // /usr/lib/kafka/bin/kafka-console-producer.sh --topic scribe --broker-list 10.0.2.15:9092
 
+  //Variables set by constructor method/command line parameters
   private String PRE_COMMIT_PATH_PREFIX;
   private String COMMIT_PATH_PREFIX;
-
-  private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
-
+  private String topic;
+  private int partition;
+  private List<HostPort> brokerList; // list of (host:port)s
+  private long commitCheckPointInterval; // ms
+  private String hdfsPath = null;
+  
+  //Set by cleanStart() method
+  private boolean cleanStart = false;
+  
+  //Instantiated at time of object instantiation
+  private Timer checkPointIntervalTimer;
+  private List<HostPort> replicaBrokers; // list of (host:port)s
+  
+  //Private class variables
   private String currTmpDataPath;
   private String currDataPath;
   private AbstractScribeCommitLogFactory scribeCommitLogFactory;
   private AbstractFileSystemFactory fileSystemFactory;
-  private List<HostPort> replicaBrokers; // list of (host:port)s
-
-  private String topic;
-  private int partition;
   private long lastCommittedOffset;
   private long offset; // offset is on a per line basis. starts on the last valid offset
-  private List<HostPort> brokerList; // list of (host:port)s
-  private long commitCheckPointInterval; // ms
-  private String hdfsPath = null;
   private Thread serverThread;
-  
-  private boolean cleanStart = false;
-  
   private SimpleConsumer consumer;
-  //private FileSystem fs;
-  private Timer checkPointIntervalTimer;
-
+  private static final Logger LOG = Logger.getLogger(ScribeConsumer.class.getName());
+  
+  
+  
   public ScribeConsumer() {
     checkPointIntervalTimer = new Timer();
     replicaBrokers = new ArrayList<HostPort>();
@@ -127,7 +130,7 @@ public class ScribeConsumer {
       r = false;
       LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition + ". In fact, meta is null.");
     }
-    if (metadata != null && metadata.leader() == null) {
+    else if (metadata.leader() == null) {
       r = false;
       LOG.error("Can't find meta data for Topic: " + topic + " partition: " + partition);
     }
@@ -558,7 +561,7 @@ public class ScribeConsumer {
   }
   
   public static void main(String[] args) throws IOException {
-    commandLineArgs p = new commandLineArgs();
+    CommandLineArgs p = new CommandLineArgs();
     
     JCommander jc = new JCommander(p);
     jc.addConverterFactory(new CustomConvertFactory());

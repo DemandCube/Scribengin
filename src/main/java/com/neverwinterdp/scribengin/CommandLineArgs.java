@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.HostPort;
 
-class commandLineArgs {
+class CommandLineArgs {
   @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX}, description="Pre commit path")
   public String preCommitPrefix="/tmp";
   
