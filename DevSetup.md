@@ -72,6 +72,7 @@ source ~/.bashrc
 
 We now need to set up and launch kafka  (Only launch once zookeeper is running in the Ambari console)
 ```
+sudo yum install wget
 wget https://archive.apache.org/dist/kafka/0.8.0/kafka_2.8.0-0.8.0.tar.gz
 tar -xzf kafka_2.8.0-0.8.0.tar.gz
 cd kafka_2.8.0-0.8.0
