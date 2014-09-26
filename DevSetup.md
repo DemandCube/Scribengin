@@ -42,11 +42,18 @@ ssh -D 9999 vagrant@192.168.1.2
 #Password: vagrant
 ```
 
-Once on your vagrant machine:
+Edit your /etc/hosts file to look like this
+```
+127.0.0.1   kxae localhost
+::1         localhost
+```
+
+
+On your vagrant machine, set up our single node cluster:
 ```
 git clone https://github.com/DemandCube/hadoop-single-node-cluster
 cd hadoop-single-node-cluster
-sudo ./INSTALL-HADOOP
+sudo ./INSTALL-HADOOP -m
 #This will take a long time. Go get some coffee
 ```
 
