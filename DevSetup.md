@@ -63,6 +63,7 @@ You can now navigate to http://localhost.localdomain:8080 and see the Ambari con
 
 Back on the vagrant machine, lets install Gradle 1.12 to our home directory while we wait
 ```
+sudo yum install wget
 cd ~/
 wget https://services.gradle.org/distributions/gradle-1.12-bin.zip
 unzip gradle-1.12-bin.zip
@@ -72,7 +73,6 @@ source ~/.bashrc
 
 We now need to set up and launch kafka  (Only launch once zookeeper is running in the Ambari console)
 ```
-sudo yum install wget
 wget https://archive.apache.org/dist/kafka/0.8.0/kafka_2.8.0-0.8.0.tar.gz
 tar -xzf kafka_2.8.0-0.8.0.tar.gz
 cd kafka_2.8.0-0.8.0
