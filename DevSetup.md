@@ -6,7 +6,8 @@ cd NeverwinterDP
 ./neverwinterdp.sh checkout
 ```
 
-Vagrant file to use.  Note - replace vm.synced_folder with /path/to/your/workspace/
+Here's the Vagrantfile to use.  
+#####Note - replace vm.synced_folder with /path/to/your/workspace/
 ```
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
