@@ -42,7 +42,7 @@ ssh -D 9999 vagrant@192.168.1.2
 #Password: vagrant
 ```
 
-Edit your /etc/hosts file to look like this
+Edit your VM's /etc/hosts file to look like this
 ```
 127.0.0.1   kxae localhost
 ::1         localhost
