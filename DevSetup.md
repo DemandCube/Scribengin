@@ -61,7 +61,7 @@ Click "OK" to save.  Once saved - Change the mode to "Use proxy localhost:9999 f
 You can now navigate to http://localhost.localdomain:8080 and see the Ambari console
 ```
 
-Back on the vagrant machine, lets install Gradle 1.12 to our home directory while we wait
+Back on the vagrant machine, lets install Gradle 1.12 to our home directory while we wait and install Java
 ```
 sudo yum install wget
 cd ~/
@@ -69,6 +69,10 @@ wget https://services.gradle.org/distributions/gradle-1.12-bin.zip
 unzip gradle-1.12-bin.zip
 echo "export PATH=$PATH:/home/vagrant/gradle-1.12/bin/" >> ~/.bashrc
 source ~/.bashrc
+
+
+#Installing java 
+sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel
 ```
 
 We now need to set up and launch kafka  (Only launch once zookeeper is running in the Ambari console)
@@ -88,9 +92,6 @@ cd kafka_2.8.0-0.8.0 #Go back to your kafka directory
 
 Now lets build Scribengin - to do this, lets use our handy dandy Neverwinter scripts
 ```
-#Installing java is a dependency for this step
-sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel
-
 #This is the folder that's mounted from your host machine via the Vagrantfile
 cd /vagrant/NeverwinterDP
 ./neverwinterdp.sh gradle clean build install
