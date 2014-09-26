@@ -53,7 +53,7 @@ On your vagrant machine, set up our single node cluster:
 ```
 git clone https://github.com/DemandCube/hadoop-single-node-cluster
 cd hadoop-single-node-cluster
-sudo ./INSTALL-HADOOP -m
+sudo ./INSTALL-HADOOP
 #This will take a long time. Go get some coffee
 ```
 
