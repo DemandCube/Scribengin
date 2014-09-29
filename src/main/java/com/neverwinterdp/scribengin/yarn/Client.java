@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
@@ -30,7 +28,6 @@ import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -47,29 +44,30 @@ public class Client {
   private Configuration conf;
 
   @Parameter(names = {"-" + Constants.OPT_APPNAME, "--" + Constants.OPT_APPNAME})
-    private String appname;
-  @Parameter(names = {"-" + Constants.OPT_COMMAND, "--" + Constants.OPT_COMMAND})
-    private String command;
-  @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_MEM, "--" + Constants.OPT_APPLICATION_MASTER_MEM})
-    private int applicationMasterMem;
+  private String appname;
+
+  @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_MEM,
+      "--" + Constants.OPT_APPLICATION_MASTER_MEM})
+  private int applicationMasterMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_MEM, "--" + Constants.OPT_CONTAINER_MEM})
-    private int containerMem;
-  @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
-    private int containerCount;
-
+  private int containerMem;
+ 
   @Parameter(names = {"-" + Constants.OPT_HDFSJAR, "--" + Constants.OPT_HDFSJAR})
-    private String hdfsJar;
-  @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME, "--" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME})
-    private String applicationMasterClassName;
+  private String hdfsJar;
+  @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME,
+      "--" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME})
+  private String applicationMasterClassName;
 
-  @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
-    private List<String> topicList;
+  @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC},
+      variableArity = true)
+  private List<String> topicList;
 
-  @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
-    private List<String> kafkaSeedBrokers;
+  @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS,
+      "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
+  private List<String> kafkaSeedBrokers;
 
 
-  public Client() throws Exception{
+  public Client() throws Exception {
     this.conf = new YarnConfiguration();
     this.yarnClient = YarnClient.createYarnClient();
     //
@@ -82,7 +80,6 @@ public class Client {
 
   public void init() {
     LOG.setLevel(Level.INFO);
-    LOG.info("command: " + this.command);
   }
 
   public boolean run() throws IOException, YarnException {
@@ -109,7 +106,8 @@ public class Client {
 
     amContainer.setLocalResources(
         Collections.singletonMap("master.jar",
-        Util.newYarnAppResource(fs, new Path(this.hdfsJar), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION) ));
+            Util.newYarnAppResource(fs, new Path(this.hdfsJar), LocalResourceType.FILE,
+                LocalResourceVisibility.APPLICATION)));
 
     // Set up CLASSPATH for ApplicationMaster
     Map<String, String> appMasterEnv = new HashMap<String, String>();
@@ -119,7 +117,7 @@ public class Client {
     // Set up resource requirements for ApplicationMaster
     Resource capability = Records.newRecord(Resource.class);
     capability.setMemory(this.applicationMasterMem);
-    capability.setVirtualCores(1);  //TODO: Can we really setVirtualCores ?
+    capability.setVirtualCores(1); //TODO: Can we really setVirtualCores ?
     amContainer.setCommands(Collections.singletonList(this.getCommand()));
 
     // put everything together.
@@ -138,14 +136,16 @@ public class Client {
     sb.append(Environment.JAVA_HOME.$()).append("/bin/java").append(" ");
     sb.append("-Xmx").append(this.applicationMasterMem).append("M").append(" ");
     sb.append(this.applicationMasterClassName).append(" ");
-    sb.append("--").append(Constants.OPT_CONTAINER_MEM).append(" ").append(this.containerMem).append(" ");
-    sb.append("--").append(Constants.OPT_CONTAINER_COUNT).append(" ").append(this.containerCount).append(" ");
-    sb.append("--").append(Constants.OPT_COMMAND).append(" '").append(StringEscapeUtils.escapeJava(this.command)).append("' ");
-    sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ").append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
+    sb.append("--").append(Constants.OPT_CONTAINER_MEM).append(" ").append(this.containerMem)
+        .append(" ");
+    sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ")
+        .append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
     //sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
-    sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ").append(StringUtils.join(this.topicList, " ")).append(" ");
+    sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ")
+        .append(StringUtils.join(this.topicList, " ")).append(" ");
 
-    sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout").append(" ");
+    sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout")
+        .append(" ");
     sb.append("2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr");
     String r = sb.toString();
     LOG.info("ApplicationConstants.getCommand() : " + r);
@@ -172,12 +172,14 @@ public class Client {
           r = true;
           break;
         } else {
-          LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString());
+          LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue="
+              + status.toString());
           r = false;
           break;
         }
       } else if (state == YarnApplicationState.KILLED || state == YarnApplicationState.FAILED) {
-        LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString());
+        LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue="
+            + status.toString());
         r = false;
         break;
       }
@@ -191,9 +193,9 @@ public class Client {
     classPathEnv.append("./*");
 
     for (String c : conf.getStrings(
-          YarnConfiguration.YARN_APPLICATION_CLASSPATH,
-          YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
-      classPathEnv.append(File.pathSeparatorChar) ;
+        YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+        YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
+      classPathEnv.append(File.pathSeparatorChar);
       classPathEnv.append(c.trim());
     }
 
@@ -219,5 +221,3 @@ public class Client {
     System.exit(2);
   }
 }
-
-
