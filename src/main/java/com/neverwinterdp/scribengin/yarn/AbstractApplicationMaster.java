@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
@@ -20,7 +19,6 @@ import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
-import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.NodeReport;
@@ -31,7 +29,6 @@ import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -52,9 +49,6 @@ public abstract class AbstractApplicationMaster {
 
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
   protected int totalContainerCount;
-
-  @Parameter(names = {"-" + Constants.OPT_COMMAND, "--" + Constants.OPT_COMMAND})
-  private String command;
 
   private AtomicInteger completedContainerCount;
   private AtomicInteger allocatedContainerCount;
@@ -88,7 +82,6 @@ public abstract class AbstractApplicationMaster {
   public boolean run() throws IOException, YarnException {
     // Initialize clients to RM and NMs.
     LOG.info("ApplicationMaster::run");
-    LOG.error("command: " + this.command);
     AMRMClientAsync.CallbackHandler rmListener = new RMCallbackHandler();
     resourceManager = AMRMClientAsync.createAMRMClientAsync(1000, rmListener);
     resourceManager.init(conf);
@@ -143,7 +136,7 @@ public abstract class AbstractApplicationMaster {
     failedCommandList.add(failedCmd);
   }
 
-  abstract protected List<String> buildCommandList(int startingFrom, int containerCnt, String command);
+  abstract protected List<String> buildCommandList(int startingFrom, int containerCnt);
 
   private class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
     // CallbackHandler for RM.
@@ -191,7 +184,7 @@ public abstract class AbstractApplicationMaster {
       if (failedCommandList.isEmpty()) {
         int startFrom = allocatedContainerCount.getAndAdd(containerCnt);
         LOG.error("containerCnt: " + containerCnt);
-        cmdLst = buildCommandList(startFrom, containerCnt, command);
+        cmdLst = buildCommandList(startFrom, containerCnt);
       } else {
         // TODO: keep track of failed commands' history.
         cmdLst = failedCommandList;
@@ -199,7 +192,7 @@ public abstract class AbstractApplicationMaster {
         if (failedCommandListCnt < containerCnt) {
           // It's possible that the allocated containers are for both newly allocated and failed containers
           int startFrom = allocatedContainerCount.getAndAdd(containerCnt - failedCommandListCnt);
-          cmdLst.addAll(buildCommandList(startFrom, containerCnt, command));
+          cmdLst.addAll(buildCommandList(startFrom, containerCnt));
         }
       }
 

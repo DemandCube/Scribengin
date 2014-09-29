@@ -13,13 +13,13 @@ public class SampleAM extends AbstractApplicationMaster {
   }
 
   @Override
-  protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
+  protected List<String> buildCommandList(int startingFrom, int containerCnt) {
     // TODO Auto-generated method stub
     List<String> r = new ArrayList<String>();
     int stopAt = startingFrom + containerCnt;
     for (int i = startingFrom; i < stopAt; i++) {
       StringBuilder sb = new StringBuilder();
-      sb.append(commandTemplate).append(" ").append(String.valueOf(i));
+      sb.append(" ").append(String.valueOf(i));
       String cmd = sb.toString();
       LOG.info("curr i : " + i);
       LOG.info(cmd);

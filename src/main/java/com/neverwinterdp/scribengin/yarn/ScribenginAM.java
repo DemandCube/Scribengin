@@ -55,7 +55,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
   }
 
   @Override
-  protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
+  protected List<String> buildCommandList(int startingFrom, int containerCnt) {
+    LOG.info("buildCommandList. ");
     List<String> r = new ArrayList<String>();
     for ( Map.Entry<String, Map<Integer, PartitionMetadata> > entry : topicMetadataMap.entrySet() ) {
       String t = entry.getKey();
@@ -63,7 +64,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
 
       for ( Map.Entry<Integer, PartitionMetadata> innerEntry: entry.getValue().entrySet()) {
         Integer partition = innerEntry.getKey();
-        LOG.info("\tpartition: " + partition);
+        LOG.info("partition: " + partition);
 
         StringBuilder sb = new StringBuilder();
         sb.append(Environment.JAVA_HOME.$()).append("/bin/java").append(" ");
@@ -74,6 +75,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
         r.add(sb.toString());
       }
     }
+    LOG.info("Command list "+ r);
     return r;
   }
 
