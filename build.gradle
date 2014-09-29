@@ -3,9 +3,6 @@ apply plugin: 'eclipse'
 apply plugin: 'maven'
 apply plugin: 'application'
 apply plugin: 'jacoco'
-apply plugin:'application'
-
-mainClassName = "com.neverwinterdp.scribengin.ScribeConsumer"
 
 jacoco {
     toolVersion = "0.6.2.201302030002"
@@ -140,11 +137,4 @@ def isIn(set, File file) {
     if(file.name.startsWith(item)) return true ;
   }
   return false ;
-}
-
-run {    
-    /* Pass all the properties: */
-    systemProperties System.getProperties()
-      /* Need to split the space-delimited value in the exec.args */
-    args System.getProperty("exec.args").split()    
 }
