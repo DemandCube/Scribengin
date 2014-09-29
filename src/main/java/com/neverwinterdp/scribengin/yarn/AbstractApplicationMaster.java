@@ -47,7 +47,6 @@ public abstract class AbstractApplicationMaster {
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_MEM, "--" + Constants.OPT_CONTAINER_MEM})
   private int containerMem;
 
-  @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
   protected int totalContainerCount;
 
   private AtomicInteger completedContainerCount;
@@ -55,9 +54,9 @@ public abstract class AbstractApplicationMaster {
   private AtomicInteger failedContainerCount;
   private AtomicInteger requestedContainerCount;
 
-  private String appMasterHostname = "";     // TODO: What should this really be?
-  private int appMasterRpcPort = 0;          // TODO: What should this really be?
-  private String appMasterTrackingUrl = "";  // TODO: What should this really be?
+  private String appMasterHostname = ""; // TODO: What should this really be?
+  private int appMasterRpcPort = 0; // TODO: What should this really be?
+  private String appMasterTrackingUrl = ""; // TODO: What should this really be?
 
   private boolean done;
   protected Map<ContainerId, String> containerIdCommandMap;
@@ -92,14 +91,15 @@ public abstract class AbstractApplicationMaster {
     nodeManager.start();
 
     // Register with RM
-    resourceManager.registerApplicationMaster(appMasterHostname, appMasterRpcPort, appMasterTrackingUrl);
+    resourceManager.registerApplicationMaster(appMasterHostname, appMasterRpcPort,
+        appMasterTrackingUrl);
 
 
     // Ask RM to give us a bunch of containers
-    for (int i = 0; i < totalContainerCount; i++) {
-      ContainerRequest containerReq = setupContainerReqForRM();
-      resourceManager.addContainerRequest(containerReq);
-    }
+
+    ContainerRequest containerReq = setupContainerReqForRM();
+    resourceManager.addContainerRequest(containerReq);
+
     requestedContainerCount.addAndGet(totalContainerCount);
 
     while (!done) {
@@ -110,7 +110,7 @@ public abstract class AbstractApplicationMaster {
     }// while
 
     // Un-register with ResourceManager
-    resourceManager.unregisterApplicationMaster( FinalApplicationStatus.SUCCEEDED, "", "");
+    resourceManager.unregisterApplicationMaster(FinalApplicationStatus.SUCCEEDED, "", "");
     return true;
   }
 
@@ -145,7 +145,7 @@ public abstract class AbstractApplicationMaster {
 
 
     public void onContainersCompleted(List<ContainerStatus> statuses) {
-      for (ContainerStatus status: statuses) {
+      for (ContainerStatus status : statuses) {
         assert (status.getState() == ContainerState.COMPLETE);
 
         int exitStatus = status.getExitStatus();
@@ -212,16 +212,19 @@ public abstract class AbstractApplicationMaster {
         ContainerLaunchContext ctx = Records.newRecord(ContainerLaunchContext.class);
         containerIdCommandMap.put(c.getId(), cmdStr);
         ctx.setCommands(Collections.singletonList(
-              sb.append(cmdStr)
-                .append(" 1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout")
-                .append(" 2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr")
+            sb.append(cmdStr)
+                .append(" 1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR)
+                .append("/stdout")
+                .append(" 2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR)
+                .append("/stderr")
                 .toString()));
 
         try {
           // TODO: get rid of the hardcoding of scribengin-1.0-SNAPSHOT.jar
           ctx.setLocalResources(
               Collections.singletonMap("scribeconsumer.jar",
-                Util.newYarnAppResource(fs, new Path("/scribengin-1.0-SNAPSHOT.jar"), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION)));
+                  Util.newYarnAppResource(fs, new Path("/scribengin-1.0-SNAPSHOT.jar"),
+                      LocalResourceType.FILE, LocalResourceVisibility.APPLICATION)));
 
           nodeManager.startContainer(c, ctx);
         } catch (YarnException e) {
@@ -233,7 +236,7 @@ public abstract class AbstractApplicationMaster {
     }
 
 
-    public void onNodesUpdated(List<NodeReport> updated) { }
+    public void onNodesUpdated(List<NodeReport> updated) {}
 
     public void onError(Throwable e) {
       done = true;

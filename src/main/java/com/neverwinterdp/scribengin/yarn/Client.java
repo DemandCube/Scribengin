@@ -51,9 +51,7 @@ public class Client {
   private int applicationMasterMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_MEM, "--" + Constants.OPT_CONTAINER_MEM})
   private int containerMem;
-  @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
-  private int containerCount;
-
+ 
   @Parameter(names = {"-" + Constants.OPT_HDFSJAR, "--" + Constants.OPT_HDFSJAR})
   private String hdfsJar;
   @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME,
@@ -139,8 +137,6 @@ public class Client {
     sb.append("-Xmx").append(this.applicationMasterMem).append("M").append(" ");
     sb.append(this.applicationMasterClassName).append(" ");
     sb.append("--").append(Constants.OPT_CONTAINER_MEM).append(" ").append(this.containerMem)
-        .append(" ");
-    sb.append("--").append(Constants.OPT_CONTAINER_COUNT).append(" ").append(this.containerCount)
         .append(" ");
     sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ")
         .append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
