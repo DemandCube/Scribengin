@@ -109,6 +109,8 @@ Edit what user you run as when you work with Hadoop
 ```
 #This is to avoid permission problems
 echo "export HADOOP_USER_NAME=hdfs" >> ~/.bashrc
+#This is to set the native hadoop library path for java to find
+echo "export LD_LIBRARY_PATH=/usr/lib/hadoop/lib/native/:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 
