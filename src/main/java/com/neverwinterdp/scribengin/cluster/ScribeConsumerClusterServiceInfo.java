@@ -31,7 +31,7 @@ public class ScribeConsumerClusterServiceInfo extends ServiceInfo{
   private String hdfsPath = null;
   
   //Set by cleanStart() method
-  @Inject @Named("scribeconsumer:cleanStart")
+  @Inject(optional=true) @Named("scribeconsumer:cleanStart")
   private boolean cleanStart = false;
   
   

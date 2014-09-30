@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
@@ -20,7 +19,6 @@ import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
-import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.NodeReport;
@@ -31,7 +29,6 @@ import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -79,6 +76,20 @@ public abstract class AbstractApplicationMaster {
     containerIdCommandMap = new HashMap<ContainerId, String>();
     failedCommandList = new ArrayList<String>();
   }
+  
+  public AbstractApplicationMaster(String yarnSiteXml) {
+    conf = new YarnConfiguration();
+    //example - "/etc/hadoop/conf/yarn-site.xml"
+    this.conf.addResource(new Path(yarnSiteXml));
+    
+    completedContainerCount = new AtomicInteger();
+    allocatedContainerCount = new AtomicInteger();
+    failedContainerCount = new AtomicInteger();
+    requestedContainerCount = new AtomicInteger();
+
+    containerIdCommandMap = new HashMap<ContainerId, String>();
+    failedCommandList = new ArrayList<String>();
+  }
 
   public void init() {
     LOG.setLevel(Level.INFO);
@@ -92,8 +103,9 @@ public abstract class AbstractApplicationMaster {
     AMRMClientAsync.CallbackHandler rmListener = new RMCallbackHandler();
     resourceManager = AMRMClientAsync.createAMRMClientAsync(1000, rmListener);
     resourceManager.init(conf);
+    
     resourceManager.start();
-
+    
     nodeManager = NMClient.createNMClient();
     nodeManager.init(conf);
     nodeManager.start();

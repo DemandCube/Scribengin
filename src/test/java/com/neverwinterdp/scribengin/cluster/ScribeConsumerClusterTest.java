@@ -110,7 +110,7 @@ public class ScribeConsumerClusterTest {
   }
 
   @Test
-  public void ScribeWorkerClusterTest() throws InterruptedException{
+  public void ScribeConsumerClusterTest() throws InterruptedException{
     
     //Bring up scribeConsumer
     scribeConsumer = Server.create("-Pserver.name=scribeconsumer", "-Pserver.roles=scribeconsumer");

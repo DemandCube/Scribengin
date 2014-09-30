@@ -20,7 +20,8 @@ import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.CustomConvertFactory;
 import com.neverwinterdp.scribengin.hostport.HostPort;
 
-
+//Example command line running
+///usr/lib/hadoop/bin/hadoop jar /vagrant/Scribengin/bin/build/libs/scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.yarn.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
 public class ScribenginAM extends AbstractApplicationMaster {
   // /hadoop/yarn/local is where the local dir is on the local filesystem.
   // yarn application -kill [application id]
@@ -40,10 +41,12 @@ public class ScribenginAM extends AbstractApplicationMaster {
 
   // {topic(String) : { partition(integer) : PartitionMetaData }}
   private Map<String, Map<Integer, PartitionMetadata> > topicMetadataMap;
-
+  
+  @Parameter(names = {"-" + Constants.OPT_YARN_SITE_XML, "--" + Constants.OPT_YARN_SITE_XML})
+  private static String yarnSiteXml = "/etc/hadoop/conf/yarn-site.xml";
 
   public ScribenginAM() {
-    super();
+    super(yarnSiteXml);
     topicMetadataMap = new HashMap<String, Map<Integer, PartitionMetadata>>();
   }
 
@@ -53,7 +56,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
       getMetaData(topic);
     }
   }
-
+  //$JAVA_HOME/bin/java -Xmx300M com.neverwinterdp.scribengin.yarn.ScribenginAM --container_mem 1024 --container_cnt 1 --command 'null' --kafka_seed_brokers 127.0.0.1:9092, --topic scribe2 1> <LOG_DIR>/stdout 2> <LOG_DIR>/stderr
+  //java -cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --broker_list HOST1:PORT,HOST2:PORT2 --checkpoint_interval 100 --partition 0
   @Override
   protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
     List<String> r = new ArrayList<String>();
@@ -74,7 +78,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
         r.add(sb.toString());
       }
     }
-    return r;
+    //return r;
+    return null;
   }
 
   private String getBrokerListStr() {

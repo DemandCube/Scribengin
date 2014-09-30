@@ -26,7 +26,7 @@ import kafka.producer.ProducerConfig;
 
 import com.neverwinterdp.scribengin.clusterBuilder.SupportClusterBuilder;
 import com.neverwinterdp.scribengin.hostport.HostPort;
-import com.neverwinterdp.scribengin.ScribeConsumer;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer;
 
 /**
  * @author Richard Duarte

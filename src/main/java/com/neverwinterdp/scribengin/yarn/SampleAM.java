@@ -14,7 +14,6 @@ public class SampleAM extends AbstractApplicationMaster {
 
   @Override
   protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
-    // TODO Auto-generated method stub
     List<String> r = new ArrayList<String>();
     int stopAt = startingFrom + containerCnt;
     for (int i = startingFrom; i < stopAt; i++) {

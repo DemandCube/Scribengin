@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
@@ -30,7 +29,6 @@ import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -43,49 +41,79 @@ import com.neverwinterdp.scribengin.utilities.Util;
 public class Client {
   // usr/lib/hadoop/bin/hadoop jar scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
   private static final Logger LOG = Logger.getLogger(Client.class.getName());
+  private ApplicationId appId;
   private YarnClient yarnClient;
   private Configuration conf;
 
   @Parameter(names = {"-" + Constants.OPT_APPNAME, "--" + Constants.OPT_APPNAME})
-    private String appname;
+  private String appname;
   @Parameter(names = {"-" + Constants.OPT_COMMAND, "--" + Constants.OPT_COMMAND})
-    private String command;
+  private String command;
   @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_MEM, "--" + Constants.OPT_APPLICATION_MASTER_MEM})
-    private int applicationMasterMem;
+  private int applicationMasterMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_MEM, "--" + Constants.OPT_CONTAINER_MEM})
-    private int containerMem;
+  private int containerMem;
   @Parameter(names = {"-" + Constants.OPT_CONTAINER_COUNT, "--" + Constants.OPT_CONTAINER_COUNT})
-    private int containerCount;
+  private int containerCount;
 
   @Parameter(names = {"-" + Constants.OPT_HDFSJAR, "--" + Constants.OPT_HDFSJAR})
-    private String hdfsJar;
+  private String hdfsJar;
+  
+  @Parameter(names = {"-" + Constants.OPT_YARN_SITE_XML, "--" + Constants.OPT_YARN_SITE_XML})
+  private String yarnSiteXml= "/etc/hadoop/conf/yarn-site.xml";
+
+  @Parameter(names = {"-" + Constants.OPT_DEFAULT_FS, "--" + Constants.OPT_DEFAULT_FS})
+  private String defaultFs="hdfs://127.0.0.1";
+
+  
   @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME, "--" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME})
-    private String applicationMasterClassName;
+  private String applicationMasterClassName;
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
-    private List<String> topicList;
+  private List<String> topicList;
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
-    private List<String> kafkaSeedBrokers;
+  private List<String> kafkaSeedBrokers;
 
-
+  public Client(String appname, String hdfsJar, String applicationMasterClassName, String defaultFs, String yarnSiteXml, List<String> topicList, List<String> kafkaSeedBrokers, int containerMem, int applicationMasterMem) throws Exception{
+    this();
+    this.appname = appname;
+    this.hdfsJar = hdfsJar;
+    this.applicationMasterClassName = applicationMasterClassName; 
+    this.topicList = topicList;
+    this.kafkaSeedBrokers = kafkaSeedBrokers;
+    this.containerMem = containerMem;
+    this.applicationMasterMem = applicationMasterMem;
+    this.defaultFs = defaultFs;
+    this.yarnSiteXml = yarnSiteXml;
+    
+    //TODO: this variable should be removed
+    this.containerCount = 1;
+  }
+  
+  
   public Client() throws Exception{
     this.conf = new YarnConfiguration();
     this.yarnClient = YarnClient.createYarnClient();
-    //
+    
+    this.conf.addResource(new Path(this.yarnSiteXml));
+    this.conf.set("fs.defaultFS", this.defaultFs);
+    
     // Yarn Client's initialization determines the RM's IP address and port.
     // These values are extracted from yarn-site.xml or yarn-default.xml.
     // It also determines the interval by which it should poll for the
     // application's state.
     yarnClient.init(conf);
   }
+  
+  
 
   public void init() {
     LOG.setLevel(Level.INFO);
     LOG.info("command: " + this.command);
   }
-
-  public boolean run() throws IOException, YarnException {
+  
+  public ApplicationId run() throws IOException, YarnException {
     LOG.info("calling run.");
     yarnClient.start();
 
@@ -93,12 +121,12 @@ public class Client {
     //   1. GetNewApplication Response
     //   2. ApplicationSubmissionContext
     YarnClientApplication app = yarnClient.createApplication();
-
+    
     // GetNewApplicationResponse can be used to determined resources available.
     GetNewApplicationResponse appResponse = app.getNewApplicationResponse();
-
+    
     ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
-    ApplicationId appId = appContext.getApplicationId();
+    this.appId = appContext.getApplicationId();
     appContext.setApplicationName(this.appname);
 
     // Set up the container launch context for AM.
@@ -106,11 +134,10 @@ public class Client {
 
     LocalResource appMasterJar;
     FileSystem fs = FileSystem.get(this.conf);
-
+    
     amContainer.setLocalResources(
         Collections.singletonMap("master.jar",
         Util.newYarnAppResource(fs, new Path(this.hdfsJar), LocalResourceType.FILE, LocalResourceVisibility.APPLICATION) ));
-
     // Set up CLASSPATH for ApplicationMaster
     Map<String, String> appMasterEnv = new HashMap<String, String>();
     setupAppMasterEnv(appMasterEnv);
@@ -129,8 +156,17 @@ public class Client {
 
     // Submit application
     yarnClient.submitApplication(appContext);
-
-    return this.monitorApplication(appId);
+    LOG.info("APPID: "+this.appId.toString());
+    return this.appId;
+    //return this.monitorApplication(appId);
+  }
+  
+  public YarnClient getYarnClient(){
+    return this.yarnClient;
+  }
+  
+  public ApplicationId getAppId(){
+    return this.appId;
   }
 
   private String getCommand() {
@@ -209,10 +245,10 @@ public class Client {
 
     JCommander jc = new JCommander(c);
     jc.parse(args);
-
+    
     c.init();
-    r = c.run();
-
+    ApplicationId appId = c.run();
+    r = c.monitorApplication(appId);
     if (r) {
       System.exit(0);
     }
