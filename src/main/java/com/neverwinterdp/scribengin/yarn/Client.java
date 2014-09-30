@@ -37,6 +37,7 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.utilities.Util;
 
+
 public class Client {
   // usr/lib/hadoop/bin/hadoop jar scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
   private static final Logger LOG = Logger.getLogger(Client.class.getName());
@@ -62,7 +63,7 @@ public class Client {
   @Parameter(names = {"-" + Constants.OPT_DEFAULT_FS, "--" + Constants.OPT_DEFAULT_FS})
   private String defaultFs="hdfs://127.0.0.1";
 
-  
+  @Parameter(names = {"-" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME, "--" + Constants.OPT_APPLICATION_MASTER_CLASS_NAME})
   private String applicationMasterClassName;
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC},

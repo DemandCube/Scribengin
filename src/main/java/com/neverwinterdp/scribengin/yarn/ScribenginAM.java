@@ -56,8 +56,8 @@ public class ScribenginAM extends AbstractApplicationMaster {
       getMetaData(topic);
     }
   }
+  
   //$JAVA_HOME/bin/java -Xmx300M com.neverwinterdp.scribengin.yarn.ScribenginAM --container_mem 1024 --container_cnt 1 --command 'null' --kafka_seed_brokers 127.0.0.1:9092, --topic scribe2 1> <LOG_DIR>/stdout 2> <LOG_DIR>/stderr
-  //java -cp scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --broker_list HOST1:PORT,HOST2:PORT2 --checkpoint_interval 100 --partition 0
   @Override
   protected List<String> buildCommandList(int startingFrom, int containerCnt) {
     LOG.info("buildCommandList. ");
@@ -80,7 +80,7 @@ public class ScribenginAM extends AbstractApplicationMaster {
       }
     }
     LOG.info("Command list "+ r);
-    return null;
+    return r;
   }
 
   private String getBrokerListStr() {
