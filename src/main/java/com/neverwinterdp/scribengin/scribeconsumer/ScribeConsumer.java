@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.scribeconsumer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -63,6 +63,7 @@ public class ScribeConsumer {
   private List<HostPort> brokerList; // list of (host:port)s
   private long commitCheckPointInterval; // ms
   private String hdfsPath = null;
+  //private String libhadoopPath = "/usr/lib/hadoop/lib/native/libhadoop.so";
   
   //Set by cleanStart() method
   private boolean cleanStart = false;
@@ -89,6 +90,18 @@ public class ScribeConsumer {
     replicaBrokers = new ArrayList<HostPort>();
   }
   
+  public ScribeConsumer(ScribeConsumerConfig c){
+    this();
+    this.PRE_COMMIT_PATH_PREFIX = c.PRE_COMMIT_PATH_PREFIX;
+    this.COMMIT_PATH_PREFIX = c.COMMIT_PATH_PREFIX;
+    this.topic = c.topic;
+    this.partition = c.partition;
+    this.brokerList = c.brokerList;
+    this.commitCheckPointInterval = c.commitCheckPointInterval;
+    this.hdfsPath = c.hdfsPath;
+    //this.libhadoopPath = c.libHadoopPath;
+  }
+  
   public ScribeConsumer(String preCommitPathPrefix, String commitPathPrefix, String topic, int partition, List<HostPort> brokerList, long commitCheckPointInterval){
     this();
     this.PRE_COMMIT_PATH_PREFIX = preCommitPathPrefix;
@@ -113,6 +126,12 @@ public class ScribeConsumer {
   }
 
   public void init() throws IOException {
+    //try{
+    //  System.load(this.libhadoopPath);
+    //}catch(UnsatisfiedLinkError e){
+    //  System.err.println("Native code library failed to load.\n" + e);
+    //}
+    
     if(this.hdfsPath == null){
       setScribeCommitLogFactory(ScribeCommitLogFactory.instance(getCommitLogAbsPath()));
       setFileSystemFactory(FileSystemFactory.instance());
@@ -163,6 +182,10 @@ public class ScribeConsumer {
     serverThread.start();
   }
   
+  public Thread.State getServerState(){
+    return serverThread.getState();
+  }
+  
   public void stop(){
     try{
       checkPointIntervalTimer.cancel();
@@ -211,7 +234,7 @@ public class ScribeConsumer {
   }
 
   private synchronized void commit() {
-    LOG.info(">> committing");
+    LOG.info(">> committing: "+ this.topic);
     
     if (lastCommittedOffset != offset) {
       //Commit
@@ -561,7 +584,7 @@ public class ScribeConsumer {
   }
   
   public static void main(String[] args) throws IOException {
-    CommandLineArgs p = new CommandLineArgs();
+    ScribeConsumerCommandLineArgs p = new ScribeConsumerCommandLineArgs();
     
     JCommander jc = new JCommander(p);
     jc.addConverterFactory(new CustomConvertFactory());

@@ -12,10 +12,10 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.ScribeConsumer;
 import com.neverwinterdp.scribengin.clusterBuilder.UnitTestCluster;
 import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
 import com.neverwinterdp.scribengin.scribecommitlog.ScribeCommitLogTestFactory;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer;
 
 
 //@RunWith(PowerMockRunner.class)

@@ -13,7 +13,12 @@ public class SampleAM extends AbstractApplicationMaster {
   }
 
   @Override
+<<<<<<< HEAD
+  protected List<String> buildCommandList(int startingFrom, int containerCnt, String commandTemplate) {
+=======
   protected List<String> buildCommandList(int startingFrom, int containerCnt) {
+    // TODO Auto-generated method stub
+>>>>>>> master
     List<String> r = new ArrayList<String>();
     int stopAt = startingFrom + containerCnt;
     for (int i = startingFrom; i < stopAt; i++) {

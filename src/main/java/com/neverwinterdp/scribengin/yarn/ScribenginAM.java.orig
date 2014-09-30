@@ -79,8 +79,13 @@ public class ScribenginAM extends AbstractApplicationMaster {
         r.add(sb.toString());
       }
     }
-    LOG.info("Command list "+ r);
+<<<<<<< HEAD
+    //return r;
     return null;
+=======
+    LOG.info("Command list "+ r);
+    return r;
+>>>>>>> master
   }
 
   private String getBrokerListStr() {

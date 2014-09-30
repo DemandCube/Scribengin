@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.scribeconsumer;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.HostPort;
 
-class CommandLineArgs {
+class ScribeConsumerCommandLineArgs {
   @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX}, description="Pre commit path")
   public String preCommitPrefix="/tmp";
   
@@ -19,6 +19,9 @@ class CommandLineArgs {
   @Parameter(names = {"-"+Constants.OPT_HDFS_PATH, "--"+Constants.OPT_HDFS_PATH}, description="Host:Port of HDFS path")
   public String hdfsPath = null;
 
+  //@Parameter(names = {"-"+Constants.OPT_LIB_HADOOP_PATH, "--"+Constants.OPT_LIB_HADOOP_PATH}, description="Path to libhadoop.so")
+  //public String libHadoopPath= "/usr/lib/hadoop/lib/native/libhadoop.so";
+
   @Parameter(names = {"-"+Constants.OPT_PARTITION, "--"+Constants.OPT_PARTITION}, required = true, description="Kafka partition")
   public int partition;
 
@@ -30,6 +33,7 @@ class CommandLineArgs {
   
   @Parameter(names={"-"+Constants.OPT_CLEAN_START,"--"+Constants.OPT_CLEAN_START}, description="If enabled, sets start offset to 0")
   public boolean cleanstart = false;
+  
   
   @Parameter(names={"-help","--help","-h"}, description="Displays help message")
   public boolean help = false;

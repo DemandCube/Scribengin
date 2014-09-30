@@ -72,6 +72,20 @@ public abstract class AbstractApplicationMaster {
     containerIdCommandMap = new HashMap<ContainerId, String>();
     failedCommandList = new ArrayList<String>();
   }
+  
+  public AbstractApplicationMaster(String yarnSiteXml) {
+    conf = new YarnConfiguration();
+    //example - "/etc/hadoop/conf/yarn-site.xml"
+    this.conf.addResource(new Path(yarnSiteXml));
+    
+    completedContainerCount = new AtomicInteger();
+    allocatedContainerCount = new AtomicInteger();
+    failedContainerCount = new AtomicInteger();
+    requestedContainerCount = new AtomicInteger();
+
+    containerIdCommandMap = new HashMap<ContainerId, String>();
+    failedCommandList = new ArrayList<String>();
+  }
 
   public void init() {
     LOG.setLevel(Level.INFO);
@@ -84,8 +98,9 @@ public abstract class AbstractApplicationMaster {
     AMRMClientAsync.CallbackHandler rmListener = new RMCallbackHandler();
     resourceManager = AMRMClientAsync.createAMRMClientAsync(1000, rmListener);
     resourceManager.init(conf);
+    
     resourceManager.start();
-
+    
     nodeManager = NMClient.createNMClient();
     nodeManager.init(conf);
     nodeManager.start();
