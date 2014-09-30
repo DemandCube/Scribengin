@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumerConfig;
 import com.neverwinterdp.scribengin.utilities.Util;
 
 public abstract class AbstractApplicationMaster {
@@ -152,7 +153,8 @@ public abstract class AbstractApplicationMaster {
   }
 
   abstract protected List<String> buildCommandList(int startingFrom, int containerCnt);
-
+  //abstract protected String buildCommandList(ScribeConsumerConfig conf);
+  
   private class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
     // CallbackHandler for RM.
     // Execute a program when the container is allocated
