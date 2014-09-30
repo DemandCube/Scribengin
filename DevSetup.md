@@ -105,7 +105,7 @@ cd /vagrant/NeverwinterDP
 cd ../Scribengin
 ```
 
-Edit what user you run as when you work with Hadoop
+Edit what user you run as when you work with Hadoop and make sure java can find your hadoop libraries
 ```
 #This is to avoid permission problems
 echo "export HADOOP_USER_NAME=hdfs" >> ~/.bashrc
