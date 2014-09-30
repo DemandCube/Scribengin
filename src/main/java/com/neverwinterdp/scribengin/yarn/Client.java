@@ -84,9 +84,6 @@ public class Client {
     this.applicationMasterMem = applicationMasterMem;
     this.defaultFs = defaultFs;
     this.yarnSiteXml = yarnSiteXml;
-    
-    //TODO: this variable should be removed
-    this.containerCount = 1;
   }
   
   
