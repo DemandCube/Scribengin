@@ -74,6 +74,21 @@ public class Client {
       "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
   private List<String> kafkaSeedBrokers;
 
+  @Parameter(names={"-"+Constants.OPT_CLEAN_START,"--"+Constants.OPT_CLEAN_START}, description="If enabled, sets start offset to 0")
+  public boolean cleanstart = false;
+  
+  @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX}, description="Pre commit path")
+  public String preCommitPrefix="/tmp";
+  
+  @Parameter(names = {"-"+Constants.OPT_COMMIT_PATH_PREFIX, "--"+Constants.OPT_COMMIT_PATH_PREFIX}, description="Commit path")
+  public String commitPrefix="/committed";
+  
+  @Parameter(names = {"-"+Constants.OPT_HDFS_PATH, "--"+Constants.OPT_HDFS_PATH}, description="Host:Port of HDFS path")
+  public String hdfsPath = null;
+  
+  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_INTERVAL, "--"+Constants.OPT_CHECK_POINT_INTERVAL}, description="Check point interval in milliseconds")
+  public long commitCheckPointInterval=500;
+  
   public Client(String appname, String hdfsJar, String applicationMasterClassName, String defaultFs, String yarnSiteXml, List<String> topicList, List<String> kafkaSeedBrokers, int containerMem, int applicationMasterMem) throws Exception{
     this();
     this.appname = appname;
@@ -143,7 +158,7 @@ public class Client {
     Resource capability = Records.newRecord(Resource.class);
     capability.setMemory(this.applicationMasterMem);
     capability.setVirtualCores(1); //TODO: Can we really setVirtualCores ?
-    amContainer.setCommands(Collections.singletonList(this.getCommand()));
+    amContainer.setCommands(Collections.singletonList(this.getAppMasterCommand()));
 
     // put everything together.
     appContext.setAMContainerSpec(amContainer);
@@ -165,7 +180,7 @@ public class Client {
     return this.appId;
   }
 
-  private String getCommand() {
+  private String getAppMasterCommand() {
     StringBuilder sb = new StringBuilder();
     sb.append(Environment.JAVA_HOME.$()).append("/bin/java").append(" ");
     sb.append("-Xmx").append(this.applicationMasterMem).append("M").append(" ");
@@ -174,13 +189,24 @@ public class Client {
         .append(" ");
     sb.append("--").append(Constants.OPT_KAFKA_SEED_BROKERS).append(" ")
         .append(StringUtils.join(this.kafkaSeedBrokers, " ")).append(" ");
-    //sb.append("--").append(Constants.OPT_KAFKA_PORT).append(" ").append(this.port).append(" ");
     sb.append("--").append(Constants.OPT_KAFKA_TOPIC).append(" ")
         .append(StringUtils.join(this.topicList, " ")).append(" ");
-
-    sb.append("1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout")
+    sb.append(" --").append(Constants.OPT_YARN_SITE_XML).append(" ").append(this.yarnSiteXml);
+    sb.append(" --").append(Constants.OPT_PRE_COMMIT_PATH_PREFIX).append(" ").append(this.preCommitPrefix);
+    sb.append(" --").append(Constants.OPT_COMMIT_PATH_PREFIX).append(" ").append(this.commitPrefix);
+    sb.append(" --").append(Constants.OPT_CHECK_POINT_INTERVAL).append(" ").append(Long.toString(this.commitCheckPointInterval));
+    
+    if(this.hdfsPath != null){
+      sb.append(" --").append(Constants.OPT_HDFS_PATH).append(" ").append(this.hdfsPath);
+    }
+    if(this.cleanstart){
+      sb.append(" --").append(Constants.OPT_CLEAN_START);
+    }
+    
+    
+    sb.append(" 1> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stdout")
         .append(" ");
-    sb.append("2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr");
+    sb.append(" 2> ").append(ApplicationConstants.LOG_DIR_EXPANSION_VAR).append("/stderr");
     String r = sb.toString();
     LOG.info("ApplicationConstants.getCommand() : " + r);
     return r;

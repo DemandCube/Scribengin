@@ -32,6 +32,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.mortbay.log.Log;
 
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
@@ -62,7 +63,8 @@ public abstract class AbstractApplicationMaster {
   private boolean done;
   protected Map<ContainerId, String> containerIdCommandMap;
   protected List<String> failedCommandList;
-
+  protected ScribeConsumerConfig scribeConsumerConfig;
+  
   public AbstractApplicationMaster() {
     conf = new YarnConfiguration();
     completedContainerCount = new AtomicInteger();
@@ -99,23 +101,23 @@ public abstract class AbstractApplicationMaster {
     AMRMClientAsync.CallbackHandler rmListener = new RMCallbackHandler();
     resourceManager = AMRMClientAsync.createAMRMClientAsync(1000, rmListener);
     resourceManager.init(conf);
-    
     resourceManager.start();
     
     nodeManager = NMClient.createNMClient();
     nodeManager.init(conf);
     nodeManager.start();
-
+    
     // Register with RM
     resourceManager.registerApplicationMaster(appMasterHostname, appMasterRpcPort,
         appMasterTrackingUrl);
 
-
+    Log.info("total container count: "+Integer.toString(totalContainerCount));
+    
     // Ask RM to give us a bunch of containers
-
-    ContainerRequest containerReq = setupContainerReqForRM();
-    resourceManager.addContainerRequest(containerReq);
-
+    //for (int i = 0; i < totalContainerCount; i++) {
+      ContainerRequest containerReq = setupContainerReqForRM();
+      resourceManager.addContainerRequest(containerReq);
+    //}
     requestedContainerCount.addAndGet(totalContainerCount);
 
     while (!done) {
@@ -152,8 +154,8 @@ public abstract class AbstractApplicationMaster {
     failedCommandList.add(failedCmd);
   }
 
-  abstract protected List<String> buildCommandList(int startingFrom, int containerCnt);
-  //abstract protected String buildCommandList(ScribeConsumerConfig conf);
+  //abstract protected List<String> buildCommandList(int startingFrom, int containerCnt);
+  abstract protected List<String> buildCommandList(ScribeConsumerConfig conf);
   
   private class RMCallbackHandler implements AMRMClientAsync.CallbackHandler {
     // CallbackHandler for RM.
@@ -162,6 +164,7 @@ public abstract class AbstractApplicationMaster {
 
 
     public void onContainersCompleted(List<ContainerStatus> statuses) {
+      LOG.info("onContainersCompleted");
       for (ContainerStatus status : statuses) {
         assert (status.getState() == ContainerState.COMPLETE);
 
@@ -195,13 +198,14 @@ public abstract class AbstractApplicationMaster {
     }
 
     public void onContainersAllocated(List<Container> containers) {
+      LOG.info("onContainersAllocated");
       int containerCnt = containers.size();
       List<String> cmdLst;
 
       if (failedCommandList.isEmpty()) {
         int startFrom = allocatedContainerCount.getAndAdd(containerCnt);
-        LOG.error("containerCnt: " + containerCnt);
-        cmdLst = buildCommandList(startFrom, containerCnt);
+        LOG.info("containerCnt: " + containerCnt);
+        cmdLst = buildCommandList(scribeConsumerConfig);
       } else {
         // TODO: keep track of failed commands' history.
         cmdLst = failedCommandList;
@@ -209,7 +213,7 @@ public abstract class AbstractApplicationMaster {
         if (failedCommandListCnt < containerCnt) {
           // It's possible that the allocated containers are for both newly allocated and failed containers
           int startFrom = allocatedContainerCount.getAndAdd(containerCnt - failedCommandListCnt);
-          cmdLst.addAll(buildCommandList(startFrom, containerCnt));
+          cmdLst = buildCommandList(scribeConsumerConfig);
         }
       }
 
@@ -224,7 +228,7 @@ public abstract class AbstractApplicationMaster {
 
         Container c = containers.get(i);
         String cmdStr = cmdLst.remove(0);
-        LOG.error("running cmd: " + cmdStr);
+        LOG.info("running cmd: " + cmdStr);
         StringBuilder sb = new StringBuilder();
         ContainerLaunchContext ctx = Records.newRecord(ContainerLaunchContext.class);
         containerIdCommandMap.put(c.getId(), cmdStr);

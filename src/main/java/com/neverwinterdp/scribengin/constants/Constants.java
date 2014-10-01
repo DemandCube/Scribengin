@@ -14,7 +14,7 @@ public class Constants {
   
   public static final String OPT_BROKER_LIST = "broker_list";
   public static final String OPT_PARTITION = "partition";
-  public static final String OPT_CHECK_POINT_TIMER = "checkpoint_interval";
+  public static final String OPT_CHECK_POINT_INTERVAL = "checkpoint_interval";
 
   public static final String OPT_HDFS_PATH = "hdfsPath";
 

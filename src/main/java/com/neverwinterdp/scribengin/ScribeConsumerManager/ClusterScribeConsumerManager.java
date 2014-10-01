@@ -18,6 +18,9 @@ import com.neverwinterdp.server.service.ServiceRegistration;
 import com.neverwinterdp.server.shell.Shell;
 
 public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
+  private static final Logger LOG = Logger.getLogger(ClusterScribeConsumerManager.class.getName());
+  List<ServerInfo> servers = new LinkedList<ServerInfo>();
+  
   
   private class ServerInfo{
     public Server server;
@@ -33,8 +36,18 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     
   }
   
-  private static final Logger LOG = Logger.getLogger(ClusterScribeConsumerManager.class.getName());
-  List<ServerInfo> servers = new LinkedList<ServerInfo>();
+  
+  @Override
+  public boolean startNewConsumers(ScribeConsumerConfig c, List<String> topics) {
+    boolean retVal = true;
+    for(String t: topics){
+      c.topic = t;
+      if(!this.startNewConsumer(c)){
+        retVal = false;
+      }
+    }
+    return retVal;
+  }
   
   @Override
   public boolean startNewConsumer(ScribeConsumerConfig c) {
@@ -113,6 +126,10 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     return retVal;
   }
 
-  
 
+  @Override
+  public int getNumConsumers() {
+    return servers.size();
+  }
+  
 }
