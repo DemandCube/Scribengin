@@ -26,7 +26,7 @@ public class ScribeMasterCommandLineArgs {
   @Parameter(names = {"-"+Constants.OPT_BROKER_LIST, "--"+Constants.OPT_BROKER_LIST}, variableArity = true, required = true, description="List of Kafka's in host:port format")
   public List<HostPort> brokerList; // list of (host:port)s
 
-  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_TIMER, "--"+Constants.OPT_CHECK_POINT_TIMER}, description="Check point interval in milliseconds")
+  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_INTERVAL, "--"+Constants.OPT_CHECK_POINT_INTERVAL}, description="Check point interval in milliseconds")
   public long commitCheckPointInterval; // ms
   
   @Parameter(names={"-"+Constants.OPT_CLEAN_START,"--"+Constants.OPT_CLEAN_START}, description="If enabled, sets start offset to 0")

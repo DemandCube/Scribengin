@@ -19,32 +19,39 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.CustomConvertFactory;
 import com.neverwinterdp.scribengin.hostport.HostPort;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumerConfig;
 
-//Example command line running
-///usr/lib/hadoop/bin/hadoop jar /vagrant/Scribengin/bin/build/libs/scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --container_cnt 1  --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --command echo --am_class_name "com.neverwinterdp.scribengin.yarn.ScribenginAM" --topic scribe --kafka_seed_brokers 10.0.2.15:9092
 public class ScribenginAM extends AbstractApplicationMaster {
-  // /hadoop/yarn/local is where the local dir is on the local filesystem.
-  // yarn application -kill [application id]
-  // copy the jar file to hdfs. I copy scribengin-1.0-SNAPSHOT.jar to hdfs's /
-  // hadoop jar scribengin-1.0-SNAPSHOT.jar -am_mem 300 -container_mem 300 --container_cnt 4 --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name scribe --command "echo" --am_class_name "com.neverwinterdp.scribengin.ScribenginAM" -topic "scribe" -kafka_seed_brokers "10.0.2.15" -kafka_port 9092
 
   private static final Logger LOG = Logger.getLogger(ScribenginAM.class.getName());
 
   @Parameter(names = {"-" + Constants.OPT_KAFKA_SEED_BROKERS, "--" + Constants.OPT_KAFKA_SEED_BROKERS}, variableArity = true)
   private List<HostPort> brokerList; // list of (host:port)s
 
-  // TODO: This is not ideal.
-  // topic is repeated in topicList and topicMetadataMap. However, with jcommander automatically parses and store
-  // parsed cli arguments to member variables, this is the best I can come up with right now
   @Parameter(names = {"-" + Constants.OPT_KAFKA_TOPIC, "--" + Constants.OPT_KAFKA_TOPIC}, variableArity = true)
-    private List<String> topicList;
+  private List<String> topicList;
 
+  @Parameter(names = {"-" + Constants.OPT_CLEAN_START, "--" + Constants.OPT_CLEAN_START})
+  private boolean cleanStart=false;
+  
   // {topic(String) : { partition(integer) : PartitionMetaData }}
   private Map<String, Map<Integer, PartitionMetadata> > topicMetadataMap;
   
   @Parameter(names = {"-" + Constants.OPT_YARN_SITE_XML, "--" + Constants.OPT_YARN_SITE_XML})
   private static String yarnSiteXml = "/etc/hadoop/conf/yarn-site.xml";
+  
+  @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX}, description="Pre commit path")
+  public String preCommitPrefix="/tmp";
+  
+  @Parameter(names = {"-"+Constants.OPT_COMMIT_PATH_PREFIX, "--"+Constants.OPT_COMMIT_PATH_PREFIX}, description="Commit path")
+  public String commitPrefix="/committed";
 
+  @Parameter(names = {"-"+Constants.OPT_HDFS_PATH, "--"+Constants.OPT_HDFS_PATH}, description="Host:Port of HDFS path")
+  public String hdfsPath = null;
+
+  @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_INTERVAL, "--"+Constants.OPT_CHECK_POINT_INTERVAL}, description="Check point interval in milliseconds", required = true)
+  public long commitCheckPointInterval = 500; // ms
+  
   public ScribenginAM() {
     super(yarnSiteXml);
     topicMetadataMap = new HashMap<String, Map<Integer, PartitionMetadata>>();
@@ -55,27 +62,55 @@ public class ScribenginAM extends AbstractApplicationMaster {
     for (String topic : topicList) {
       getMetaData(topic);
     }
+    this.scribeConsumerConfig = new ScribeConsumerConfig();
+    scribeConsumerConfig.cleanStart = this.cleanStart;
+    scribeConsumerConfig.COMMIT_PATH_PREFIX = this.commitPrefix;
+    scribeConsumerConfig.commitCheckPointInterval = this.commitCheckPointInterval;
+    scribeConsumerConfig.PRE_COMMIT_PATH_PREFIX = this.preCommitPrefix;
+    scribeConsumerConfig.hdfsPath = this.hdfsPath;
+    
+    //scribeConsumerConfig.applicationMasterMem = this.applicationMasterMem;
+    //scribeConsumerConfig.appMasterClassName = this.applicationMasterClassName;
+    //scribeConsumerConfig.appname = this.appname;
+    //scribeConsumerConfig.brokerList = this.brokerList;
+    //scribeConsumerConfig.containerMem = this.containerMem;
+    //scribeConsumerConfig.defaultFs = this.defaultFs;
+    //scribeConsumerConfig.partition = this.partition;
+    //scribeConsumerConfig.yarnSiteXml = yarnSiteXml;
+    //scribeConsumerConfig.topic
+    //scribeConsumerConfig.scribenginJarPath =
   }
   
-  //$JAVA_HOME/bin/java -Xmx300M com.neverwinterdp.scribengin.yarn.ScribenginAM --container_mem 1024 --container_cnt 1 --command 'null' --kafka_seed_brokers 127.0.0.1:9092, --topic scribe2 1> <LOG_DIR>/stdout 2> <LOG_DIR>/stderr
   @Override
-  protected List<String> buildCommandList(int startingFrom, int containerCnt) {
+  protected List<String> buildCommandList(ScribeConsumerConfig c) {
     LOG.info("buildCommandList. ");
     List<String> r = new ArrayList<String>();
     for ( Map.Entry<String, Map<Integer, PartitionMetadata> > entry : topicMetadataMap.entrySet() ) {
       String t = entry.getKey();
       LOG.info("topic : " + t);
-
+      
       for ( Map.Entry<Integer, PartitionMetadata> innerEntry: entry.getValue().entrySet()) {
         Integer partition = innerEntry.getKey();
         LOG.info("partition: " + partition);
 
         StringBuilder sb = new StringBuilder();
         sb.append(Environment.JAVA_HOME.$()).append("/bin/java").append(" ");
-        sb.append("-cp scribeconsumer.jar com.neverwinterdp.scribengin.ScribeConsumer --topic scribe --checkpoint_interval 100 --broker_list ");
-        sb.append(getBrokerListStr());
-        sb.append(" --partition ");
-        sb.append(Integer.toString(partition));
+        
+        sb.append("-cp scribeconsumer.jar " + com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer.class.getName())
+            .append(" --"+Constants.OPT_BROKER_LIST+" "+getBrokerListStr())
+            .append(" --"+Constants.OPT_CHECK_POINT_INTERVAL+" "+Long.toString(c.commitCheckPointInterval))
+            .append(" --"+Constants.OPT_COMMIT_PATH_PREFIX+" "+c.COMMIT_PATH_PREFIX)
+            .append(" --"+Constants.OPT_PARTITION+" "+ Integer.toString(partition))
+            .append(" --"+Constants.OPT_PRE_COMMIT_PATH_PREFIX+" "+ c.PRE_COMMIT_PATH_PREFIX)
+            .append(" --"+Constants.OPT_KAFKA_TOPIC+" "+t)
+            ;
+         if(c.hdfsPath != null){
+           sb.append(" --"+Constants.OPT_HDFS_PATH+" "+c.hdfsPath);
+         }
+         if(c.cleanStart){
+           sb.append(" --"+Constants.OPT_CLEAN_START);
+         }
+        
         r.add(sb.toString());
       }
     }

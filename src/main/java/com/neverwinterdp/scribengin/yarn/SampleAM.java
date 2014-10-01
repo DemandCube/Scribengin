@@ -1,30 +1,16 @@
 package com.neverwinterdp.scribengin.yarn;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.beust.jcommander.JCommander;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumerConfig;
 
 
 public class SampleAM extends AbstractApplicationMaster {
 
   public SampleAM() {
     super();
-  }
-
-  @Override
-  protected List<String> buildCommandList(int startingFrom, int containerCnt) {
-    List<String> r = new ArrayList<String>();
-    int stopAt = startingFrom + containerCnt;
-    for (int i = startingFrom; i < stopAt; i++) {
-      StringBuilder sb = new StringBuilder();
-      sb.append(" ").append(String.valueOf(i));
-      String cmd = sb.toString();
-      LOG.info("curr i : " + i);
-      LOG.info(cmd);
-      r.add(cmd);
-    }
-    return r;
   }
 
   public static void main(String[] args) {
@@ -40,6 +26,13 @@ public class SampleAM extends AbstractApplicationMaster {
       e.printStackTrace();
       System.exit(0);
     }
+  }
+
+  @Override
+  protected List<String> buildCommandList(ScribeConsumerConfig conf) {
+    List<String> s = new LinkedList<String>();
+    s.add("ls");
+    return s;
   }
 
 }

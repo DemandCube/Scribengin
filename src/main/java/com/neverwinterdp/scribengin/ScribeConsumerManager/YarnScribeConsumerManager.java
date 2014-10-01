@@ -36,13 +36,25 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   }
   
   @Override
+  public boolean startNewConsumers(ScribeConsumerConfig conf, List<String> topics) {
+    boolean retVal = true;
+    for(String s: topics){
+      conf.topic = s;
+      if(!this.startNewConsumer(conf)){
+        retVal = false;
+      }
+    }
+    return retVal;
+  }
+  
+  @Override
   public boolean startNewConsumer(ScribeConsumerConfig conf) {
+    List<String> topics = new LinkedList<String>();
+    topics.add(conf.topic);
     Client client = null;
     try {
-      List<String> topics = new LinkedList<String>();
-      topics.add(conf.topic);
       client = new Client(conf.appname, 
-                          conf.scribenginjar, 
+                          conf.scribenginJarPath, 
                           conf.appMasterClassName, 
                           conf.yarnSiteXml, 
                           conf.defaultFs, 
@@ -118,5 +130,10 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
       }
     }
     return retVal;
+  }
+  
+  @Override
+  public int getNumConsumers() {
+    return yarnApps.size();
   }
 }

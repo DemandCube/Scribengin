@@ -21,7 +21,7 @@ public class ScribeConsumerConfig {
   
   //Yarn config parameters
   public String appname = "ScribeConsumer";
-  public String scribenginjar = "/scribengin-1.0-SNAPSHOT.jar";
+  public String scribenginJarPath = "/scribengin-1.0-SNAPSHOT.jar";
   public String appMasterClassName = com.neverwinterdp.scribengin.yarn.ScribenginAM.class.getName();
   //public String libHadoopPath= "/usr/lib/hadoop/lib/native/libhadoop.so";
   public String yarnSiteXml = "/etc/hadoop/conf/yarn-site.xml";

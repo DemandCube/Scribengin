@@ -26,13 +26,10 @@ public class ScribeMaster {
   }
   
   public void start(){
-    for(String topic: topics){
-      try{
-        commonConf.topic = topic;
-        manager.startNewConsumer(commonConf) ;
-      } catch(Exception e){
-        e.printStackTrace();
-      }
+    try{
+      manager.startNewConsumers(commonConf,topics) ;
+    } catch(Exception e){
+      e.printStackTrace();
     }
   }
   
@@ -43,6 +40,10 @@ public class ScribeMaster {
   
   public void checkOnConsumers(){
     manager.monitorConsumers();
+  }
+  
+  public int getNumConsumers(){
+    return manager.getNumConsumers();
   }
   
   public static void main(String[] args){
@@ -74,7 +75,7 @@ public class ScribeMaster {
     c.cleanStart = p.cleanstart;
     
     c.appname = p.appname;
-    c.scribenginjar = p.scribenginjar;
+    c.scribenginJarPath = p.scribenginjar;
     c.appMasterClassName = p.appMasterClassName;
     c.containerMem = p.containerMem;
     c.applicationMasterMem = p.applicationMasterMem;
@@ -108,6 +109,9 @@ public class ScribeMaster {
       sm.checkOnConsumers();
       try {
         Thread.sleep(5000);
+        if(sm.getNumConsumers() < 1){
+          break;
+        }
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
