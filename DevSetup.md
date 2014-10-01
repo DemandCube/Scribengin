@@ -119,7 +119,7 @@ Almost there!  Copy your jar file to HDFS
 hdfs dfs -copyFromLocal /vagrant/Scribengin/build/libs/scribengin-1.0-SNAPSHOT.jar /
 ```
 
-Run Scribengin
+Run ScribeConsumer in yarn
 ```
 /usr/lib/hadoop/bin/hadoop jar /vagrant/Scribengin/build/libs/scribengin-1.0-SNAPSHOT.jar --container_mem 300 --am_mem 300 --hdfsjar /scribengin-1.0-SNAPSHOT.jar --app_name foobar --am_class_name "com.neverwinterdp.scribengin.yarn.ScribenginAM" --topic [YOUR TOPIC NAME GOES HERE] --kafka_seed_brokers 10.0.2.15:9092
 ```
@@ -141,4 +141,20 @@ Ctrl-c doesn't really kill the yarn app. You'll need to issue a kill command.
 ```
 #application_id can be found in the resourcemanager UI
 yarn application -kill  [application_id]
+```
+
+
+
+To run ScribeMaster in yarn mode:
+-------------------
+```
+#On the VM
+java -cp build/libs/scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeMaster --topic scribe1,scribe2 --broker_list 127.0.0.1:9092 --partition 0 --checkpoint_interval 500 --mode yarn
+```
+
+To run ScribeMaster in non-yarn mode:
+-------------------
+```
+#On the VM
+java -cp build/libs/scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeMaster --topic scribe1,scribe2 --broker_list 127.0.0.1:9092 --partition 0 --checkpoint_interval 500
 ```
