@@ -33,6 +33,7 @@ public class ScribeConsumerClusterService extends AbstractService {
                             this.serviceInfo.getPartition(),
                             this.serviceInfo.getBrokerList(),
                             this.serviceInfo.getCommitCheckPointInterval(),
+                            this.serviceInfo.getCleanStart(),
                             this.serviceInfo.getHdfsPath());
     if(this.serviceInfo.getDatePartitioner() != null){
       System.err.println(this.serviceInfo.getDatePartitioner());

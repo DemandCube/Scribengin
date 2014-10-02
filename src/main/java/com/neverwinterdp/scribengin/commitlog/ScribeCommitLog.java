@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
@@ -25,7 +26,7 @@ import org.apache.log4j.Logger;
 public class ScribeCommitLog {
   private static final int NUM_CORRECT_RECORDS = 3;
   private static final Logger log =
-    Logger.getLogger(ScribeCommitLog.class);
+      Logger.getLogger(ScribeCommitLog.class);
 
   private FileSystem fs;
   //private List recentLogEntryList;
@@ -99,7 +100,7 @@ public class ScribeCommitLog {
         }
 
         if (b == '\n' || fptr == 0) {
-          if ( buffer.size() > 0 ) {
+          if (buffer.size() > 0) {
             // read from the back of the file, so we'll have to reverse the string.
             String jsonStr = new StringBuffer(buffer.toString()).reverse().toString();
             buffer.reset();
@@ -130,20 +131,20 @@ public class ScribeCommitLog {
       // If not, make sure to write an extra '\n' to the log file
       in.seek(status.getLen() - 1);
       if (in.readByte() != '\n') {
-         FSDataOutputStream os = fs.append(path);
-         os.write('\n');
-         try {
-           os.close();
-         } catch (IOException e) {
-           //TODO: log
-         }
+        FSDataOutputStream os = fs.append(path);
+        os.write('\n');
+        try {
+          os.close();
+        } catch (IOException e) {
+          //TODO: log
+        }
       }
 
       fsClose();
     }
 
-    Collections.reverse( logEntryList );
-    recentLogIter = logEntryList.listIterator( logEntryList.size() );
+    Collections.reverse(logEntryList);
+    recentLogIter = logEntryList.listIterator(logEntryList.size());
   }
 
   // return null, if there's no more entry in the log
@@ -162,5 +163,14 @@ public class ScribeCommitLog {
     } catch (IOException e) {
       // TODO: log
     }
+  }
+
+  /**
+   * Clear the contents of the commit log.
+   * 
+   * */
+  public void clear() throws IOException {
+    // fs.truncate(path);
+    fs.delete(path, true);
   }
 }
