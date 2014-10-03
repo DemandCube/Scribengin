@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.ScribeMaster;
 import com.neverwinterdp.scribengin.ScribeConsumerManager.ClusterScribeConsumerManager;
+import com.neverwinterdp.scribengin.ScribeConsumerManager.YarnScribeConsumerManager;
 import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumerConfig;
 import com.neverwinterdp.server.service.AbstractService;
 import com.neverwinterdp.server.module.ModuleProperties;
@@ -33,7 +34,7 @@ public class ScribeMasterClusterService extends AbstractService{
     conf.applicationMasterMem = this.serviceInfo.applicationMasterMem;
     conf.appMasterClassName = this.serviceInfo.appMasterClassName;
     conf.appname = this.serviceInfo.appname;
-    conf.brokerList = this.serviceInfo.brokerList;
+    conf.brokerList = this.serviceInfo.getKafkaAsList();
     conf.cleanStart = this.serviceInfo.cleanstart;
     conf.COMMIT_PATH_PREFIX = this.serviceInfo.commitPrefix;
     conf.commitCheckPointInterval = this.serviceInfo.commitCheckPointInterval;
@@ -46,7 +47,12 @@ public class ScribeMasterClusterService extends AbstractService{
     
     sm = new ScribeMaster(this.serviceInfo.getTopicsAsList(), conf);
     
-    sm.setScribeConsumerManager(new ClusterScribeConsumerManager());
+    if(this.serviceInfo.mode != "yarn"){
+      sm.setScribeConsumerManager(new ClusterScribeConsumerManager());
+    }
+    else{
+      sm.setScribeConsumerManager(new YarnScribeConsumerManager());
+    }
     
     sm.start();
     logger.info("Starting ScribeMaster Complete");

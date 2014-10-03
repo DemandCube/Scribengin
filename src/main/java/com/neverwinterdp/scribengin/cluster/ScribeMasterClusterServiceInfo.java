@@ -14,43 +14,48 @@ public class ScribeMasterClusterServiceInfo extends ServiceInfo {
   @Inject @Named("scribemaster:topics")
   private String topics;
   
-  @Inject @Named("scribemaster:preCommitPrefix")
+  @Inject(optional=true) @Named("scribemaster:preCommitPrefix")
   public String preCommitPrefix="/tmp";
 
-  @Inject @Named("scribemaster:commitPrefix")
+  @Inject(optional=true) @Named("scribemaster:commitPrefix")
   public String commitPrefix="/committed";
 
-  @Inject @Named("scribemaster:hdfsPath")
+  @Inject(optional=true) @Named("scribemaster:hdfsPath")
   public String hdfsPath = null;
 
-  @Inject @Named("scribemaster:partition")
-  public int partition;
+  @Inject(optional=true) @Named("scribemaster:partition")
+  public int partition=0;
 
   @Inject @Named("scribemaster:brokerList")
-  public List<HostPort> brokerList; // list of (host:port)s
+  public String brokerList; // list of (host:port)s
 
-  @Inject @Named("scribemaster:commitCheckPointInterval")
-  public long commitCheckPointInterval; // ms
+  @Inject(optional=true) @Named("scribemaster:commitCheckPointInterval")
+  public long commitCheckPointInterval=500; // ms
   
-  @Inject @Named("scribemaster:cleanStart")
+  @Inject(optional=true) @Named("scribemaster:cleanStart")
   public boolean cleanstart = false;
+  
+  
   
   ////////////////////////
   //Yarn config parameters
-  @Inject @Named("scribemaster:appname")
+  @Inject(optional=true) @Named("scribemaster:appName")
   public String appname = "ScribeConsumer";
   
-  @Inject @Named("scribemaster:scribenginJar")
+  @Inject(optional=true) @Named("scribemaster:scribenginJar")
   public String scribenginjar = "/scribengin-1.0-SNAPSHOT.jar";
   
-  @Inject @Named("scribemaster:appMasterClassName")
+  @Inject(optional=true) @Named("scribemaster:appMasterClassName")
   public String appMasterClassName = com.neverwinterdp.scribengin.yarn.ScribenginAM.class.getName();
   
-  @Inject @Named("scribemaster:containerMem")
+  @Inject(optional=true) @Named("scribemaster:containerMem")
   public int containerMem = 1024;
   
-  @Inject @Named("scribemaster:applicationMasterMem")
+  @Inject(optional=true) @Named("scribemaster:applicationMasterMem")
   public int applicationMasterMem = 300;
+  
+  @Inject(optional=true) @Named("scribemaster:mode")
+  public String mode = "distributed";
   
   public String getTopics(){ return topics;}
   public List<String> getTopicsAsList(){
@@ -60,5 +65,15 @@ public class ScribeMasterClusterServiceInfo extends ServiceInfo {
       ret.add(x);
     }
     return ret;
+  }
+  
+  public List<HostPort> getKafkaAsList(){
+    List<HostPort> res = new LinkedList<HostPort>();
+    String[] splitBrokers = this.brokerList.split(",");
+    for(String x: splitBrokers){
+      String[] split = x.split(":");
+      res.add(new HostPort(split[0],split[1]));
+    }
+    return res;
   }
 }

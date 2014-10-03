@@ -39,11 +39,13 @@ public class UnitTestCluster extends AbstractFileSystemFactory {
   }
   
   public String getUrl(){
-    return "hdfs://localhost:"+ hdfsCluster.getNameNodePort() + "/";
+    return "hdfs://127.0.0.1:"+ hdfsCluster.getNameNodePort() + "/";
   }
   
   public void destroy(){
-    hdfsCluster.shutdown();
+    try{
+      hdfsCluster.shutdown();
+    }catch(Exception e){}
     FileUtil.fullyDelete(new File(clusterPath).getAbsoluteFile());
   }
 
