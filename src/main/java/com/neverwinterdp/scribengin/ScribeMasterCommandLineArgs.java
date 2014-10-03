@@ -5,7 +5,6 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.HostPort;
-import com.beust.jcommander.converters.CommaParameterSplitter;
 
 public class ScribeMasterCommandLineArgs {
   @Parameter(names = {"-"+Constants.OPT_PRE_COMMIT_PATH_PREFIX, "--"+Constants.OPT_PRE_COMMIT_PATH_PREFIX}, description="Pre commit path")

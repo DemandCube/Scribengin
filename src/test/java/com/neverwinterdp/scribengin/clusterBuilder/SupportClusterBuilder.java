@@ -40,10 +40,19 @@ public class SupportClusterBuilder {
   public String getHadoopConnection() { return this.hadoopConnection; }
   
   public void destroy() throws Exception {
-    shell.close() ; 
-    kafkaServer.destroy();
-    zkServer.destroy();
-    hadoopServer.destroy();
+    try{
+      hadoopServer.destroy();
+    } catch(Exception e){}
+    try{
+      kafkaServer.destroy();
+    } catch(Exception e){}
+    try{
+      zkServer.destroy();
+    } catch(Exception e){}
+    try{
+      shell.close();
+    } catch(Exception e){}
+    Thread.sleep(2000);
   }
   
   public void install() throws InterruptedException, IOException {
@@ -59,19 +68,19 @@ public class SupportClusterBuilder {
         "module install " +
         " -Pmodule.data.drop=true" +
         " -Pkafka:port=9092 -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
-        " --member-role kafka --autostart --module Kafka \n" +
+        " --member-role kafka --autostart --module Kafka \n";// +
         
-        "module install " +
-        " -Pmodule.data.drop=true -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
-        " --member-role kafka --autostart --module KafkaConsumer\n";
+        //"module install " +
+        //" -Pmodule.data.drop=true -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
+        //" --member-role kafka --autostart --module KafkaConsumer\n";
       shell.executeScript(installScript);
-      Thread.sleep(1000);
+      Thread.sleep(3000);
   }
   
   public void uninstall() {
     
     String uninstallScript = 
-        "module uninstall --member-role kafka --timeout 40000 --module KafkaConsumer \n" +
+        //"module uninstall --member-role kafka --timeout 40000 --module KafkaConsumer \n" +
         "module uninstall --member-role kafka --timeout 40000 --module Kafka \n" +
         "module uninstall --member-role zookeeper --timeout 20000 --module Zookeeper \n";
     shell.executeScript(uninstallScript);

@@ -116,6 +116,7 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     while(iterator.hasNext()){
       ServerInfo si = iterator.next();
       try{
+        si.server.shutdown();
         si.server.destroy();
         iterator.remove();
       } catch(Exception e){
