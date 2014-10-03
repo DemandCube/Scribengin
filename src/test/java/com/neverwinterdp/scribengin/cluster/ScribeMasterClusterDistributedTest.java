@@ -8,7 +8,7 @@ import org.junit.Test;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.shell.Shell;
 
-public class ScribeMasterClusterTest {
+public class ScribeMasterClusterDistributedTest {
   static {
     System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
   }
@@ -33,7 +33,7 @@ public class ScribeMasterClusterTest {
   
   
   @Test
-  public void TestScribeMasterfCluster() throws InterruptedException{
+  public void TestScribeMasterClusterDistributed() throws InterruptedException{
     
     //Bring up scribeMaster
     scribeMaster = Server.create("-Pserver.name=scribemaster", "-Pserver.roles=scribemaster");
@@ -47,6 +47,7 @@ public class ScribeMasterClusterTest {
         " -Pscribemaster:brokerList=127.0.0.1:9092" +
         " -Pscribemaster:hdfsPath="+helper.getHadoopConnection()+
         " -Pscribemaster:cleanStart=True"+
+        " -Pscribemaster:mode=distributed"+
         " --member-role scribemaster --autostart --module ScribeMaster \n";
     shell.executeScript(installScript);
     Thread.sleep(2000);
@@ -56,7 +57,7 @@ public class ScribeMasterClusterTest {
     helper.createKafkaData(0);
       
     //Wait for consumption
-    Thread.sleep(5000);
+    Thread.sleep(10000);
     //Ensure messages 0-100 were consumed
     LOG.info("Asserting data is correct");
     helper.assertHDFSmatchesKafka(0,helper.getHadoopConnection());
