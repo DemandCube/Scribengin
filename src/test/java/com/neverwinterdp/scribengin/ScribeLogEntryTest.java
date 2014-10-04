@@ -2,14 +2,15 @@ package com.neverwinterdp.scribengin;
 
 import java.security.NoSuchAlgorithmException;
 
-import com.neverwinterdp.scribengin.ScribeLogEntry;
+import com.neverwinterdp.scribengin.commitlog.ScribeLogEntry;
+
 import org.junit.Assert;
 //import org.junit.Ignore;
 import org.junit.Test;
 
 public class ScribeLogEntryTest {
 
-
+  //@Ignore
   @Test
   public void testToJson()
   {
@@ -23,7 +24,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-
+  //@Ignore
   @Test
   public void testFromJson()
   {
@@ -40,7 +41,7 @@ public class ScribeLogEntryTest {
     }
   }
 
-
+  //@Ignore
   @Test
   public void testFromJsonWithBadChecksum()
   {

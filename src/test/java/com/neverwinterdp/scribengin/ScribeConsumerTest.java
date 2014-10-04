@@ -12,8 +12,10 @@ import org.apache.hadoop.fs.Path;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.ScribeCommitLog;
-import com.neverwinterdp.scribengin.ScribeConsumer;
+import com.neverwinterdp.scribengin.clusterBuilder.UnitTestCluster;
+import com.neverwinterdp.scribengin.commitlog.ScribeCommitLog;
+import com.neverwinterdp.scribengin.scribecommitlog.ScribeCommitLogTestFactory;
+import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer;
 
 
 //@RunWith(PowerMockRunner.class)
@@ -120,8 +122,8 @@ public class ScribeConsumerTest {
     }
 
     Assert.assertTrue(fs.exists(new Path(mismatchedPath)));
-
-    ScribeConsumer sc = new ScribeConsumer();
+    ScribeConsumer sc = new ScribeConsumer("/tmp", "/committed", "dummytopic", 0, null, 100, "hdfs://dummy");
+    //ScribeConsumer sc = new ScribeConsumer("hdfs://dummy", 0, "dummytopic");
     sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
     sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
 
