@@ -43,6 +43,9 @@ import com.neverwinterdp.scribengin.filesystem.FileSystemFactory;
 import com.neverwinterdp.scribengin.filesystem.HDFSFileSystemFactory;
 import com.neverwinterdp.scribengin.hostport.CustomConvertFactory;
 import com.neverwinterdp.scribengin.hostport.HostPort;
+import com.neverwinterdp.scribengin.partitioner.AbstractPartitioner;
+import com.neverwinterdp.scribengin.partitioner.DatePartitioner;
+import com.neverwinterdp.scribengin.partitioner.DumbPartitioner;
 import com.neverwinterdp.scribengin.utilities.LostLeadershipException;
 import com.neverwinterdp.scribengin.utilities.StringRecordWriter;
 
@@ -70,9 +73,11 @@ public class ScribeConsumer {
   
   //Instantiated at time of object instantiation
   private Timer checkPointIntervalTimer;
+  private Timer partitionerUpdateTimer;
   private List<HostPort> replicaBrokers; // list of (host:port)s
   
   //Private class variables
+  private AbstractPartitioner partitioner = null;
   private String currTmpDataPath;
   private String currDataPath;
   private AbstractScribeCommitLogFactory scribeCommitLogFactory;
@@ -87,6 +92,7 @@ public class ScribeConsumer {
   
   public ScribeConsumer() {
     checkPointIntervalTimer = new Timer();
+    partitionerUpdateTimer = new Timer();
     replicaBrokers = new ArrayList<HostPort>();
   }
   
@@ -99,6 +105,9 @@ public class ScribeConsumer {
     this.brokerList = c.brokerList;
     this.commitCheckPointInterval = c.commitCheckPointInterval;
     this.hdfsPath = c.hdfsPath;
+    if(c.date_partitioner != null){
+      this.setPartitioner(new DatePartitioner(c.date_partitioner));
+    }
     //this.libhadoopPath = c.libHadoopPath;
   }
   
@@ -116,6 +125,14 @@ public class ScribeConsumer {
     this(preCommitPathPrefix, commitPathPrefix, topic, partition, brokerList, commitCheckPointInterval);
     this.hdfsPath = hdfsPath;
   }
+  
+  /**
+   * Call this method before calling init()
+   * @param p
+   */
+  public void setPartitioner(AbstractPartitioner p){
+    this.partitioner = p;
+  }
 
   public void setScribeCommitLogFactory(AbstractScribeCommitLogFactory factory) {
     scribeCommitLogFactory = factory;
@@ -126,11 +143,9 @@ public class ScribeConsumer {
   }
 
   public void init() throws IOException {
-    //try{
-    //  System.load(this.libhadoopPath);
-    //}catch(UnsatisfiedLinkError e){
-    //  System.err.println("Native code library failed to load.\n" + e);
-    //}
+    if(partitioner == null){
+      partitioner = new DumbPartitioner();
+    }
     
     if(this.hdfsPath == null){
       setScribeCommitLogFactory(ScribeCommitLogFactory.instance(getCommitLogAbsPath()));
@@ -207,7 +222,19 @@ public class ScribeConsumer {
       }
     }, commitCheckPointInterval);
   }
-
+  
+  private void schedulePartitionUpdateTime(){
+    if(this.partitioner.getRefresh() == null){
+      return;
+    }
+    this.partitionerUpdateTimer.schedule(new TimerTask(){
+      @Override
+      public void run() {
+        commit();
+      }
+    }, partitioner.getRefresh());
+  }
+  
   private void commitData(String src, String dest) {
     FileSystem fs = null;
     Path destPath = new Path(dest);
@@ -279,12 +306,14 @@ public class ScribeConsumer {
     long ts = System.currentTimeMillis()/1000L;
     
     this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX+"/scribe.data."+ts;
-    this.currDataPath = COMMIT_PATH_PREFIX+"/scribe.data."+ts;
+    this.currDataPath = COMMIT_PATH_PREFIX+"/"+this.partitioner.getPartition()+"/scribe.data."+ts;
     
     if(this.hdfsPath != null){
       this.currTmpDataPath = this.hdfsPath+this.currTmpDataPath;
       this.currDataPath = this.hdfsPath+this.currDataPath;
     }
+    
+    schedulePartitionUpdateTime();
   }
 
   private String getTmpDataPathPattern() {
@@ -597,6 +626,10 @@ public class ScribeConsumer {
     }
     
     ScribeConsumer sc = new ScribeConsumer(p.preCommitPrefix, p.commitPrefix, p.topic, p.partition, p.brokerList, p.commitCheckPointInterval, p.hdfsPath);
+    if(p.date_partitioner != null){
+      sc.setPartitioner(new DatePartitioner(p.date_partitioner));
+    }
+    
     sc.init();
     if(p.cleanstart){
       sc.cleanStart(true);

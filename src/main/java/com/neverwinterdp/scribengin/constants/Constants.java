@@ -17,6 +17,8 @@ public class Constants {
   public static final String OPT_CHECK_POINT_INTERVAL = "checkpoint_interval";
 
   public static final String OPT_HDFS_PATH = "hdfsPath";
+  
+  public static final String OPT_DATE_PARTITIONER = "date_partitioner_format";
 
   public static final String OPT_PRE_COMMIT_PATH_PREFIX = "pre_commit_path_prefix";
   public static final String OPT_COMMIT_PATH_PREFIX = "commit_path_prefix";
