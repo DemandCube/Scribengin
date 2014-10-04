@@ -80,6 +80,7 @@ public class ScribeMaster {
     c.containerMem = p.containerMem;
     c.applicationMasterMem = p.applicationMasterMem;
     
+    c.date_partitioner = p.date_partitioner;
     
     final ScribeMaster sm = new ScribeMaster(topics, c);
     

@@ -2,12 +2,12 @@ package com.neverwinterdp.scribengin.cluster;
 
 import org.slf4j.Logger;
 
-import com.google.inject.Injector;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.neverwinterdp.scribengin.partitioner.DatePartitioner;
 import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer;
-import com.neverwinterdp.server.service.AbstractService;
-import com.neverwinterdp.server.service.ServiceState;
 import com.neverwinterdp.server.module.ModuleProperties;
+import com.neverwinterdp.server.service.AbstractService;
 import com.neverwinterdp.util.LoggerFactory;
 
 public class ScribeConsumerClusterService extends AbstractService {
@@ -34,11 +34,17 @@ public class ScribeConsumerClusterService extends AbstractService {
                             this.serviceInfo.getBrokerList(),
                             this.serviceInfo.getCommitCheckPointInterval(),
                             this.serviceInfo.getHdfsPath());
+    if(this.serviceInfo.getDatePartitioner() != null){
+      System.err.println(this.serviceInfo.getDatePartitioner());
+      
+      sc.setPartitioner(new DatePartitioner(this.serviceInfo.getDatePartitioner()));
+    }
     sc.init();
     
     if(this.serviceInfo.getCleanStart()){
       sc.cleanStart(true);
     }
+    
     
     sc.start();
     logger.info("Starting ScribeConsumer Complete");

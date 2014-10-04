@@ -3,10 +3,8 @@ package com.neverwinterdp.scribengin.cluster;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.beust.jcommander.Parameter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.neverwinterdp.scribengin.constants.Constants;
 import com.neverwinterdp.scribengin.hostport.HostPort;
 import com.neverwinterdp.server.service.ServiceInfo;
 
@@ -35,6 +33,8 @@ public class ScribeMasterClusterServiceInfo extends ServiceInfo {
   @Inject(optional=true) @Named("scribemaster:cleanStart")
   public boolean cleanstart = false;
   
+  @Inject(optional=true) @Named("scribemaster:date_partitioner")
+  public String date_partitioner = null;
   
   
   ////////////////////////

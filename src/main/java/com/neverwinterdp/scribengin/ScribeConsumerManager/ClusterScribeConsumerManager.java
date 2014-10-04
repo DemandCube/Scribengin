@@ -68,6 +68,9 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     if(c.cleanStart){
       installScript += " -Pscribeconsumer:cleanStart=True";
     }
+    if(c.date_partitioner != null){
+      installScript += " -Pscribeconsumer:date_partitioner="+c.date_partitioner;
+    }
     installScript +=
         " --member-role scribeconsumer --autostart --module ScribeConsumer \n";
     shell.executeScript(installScript);

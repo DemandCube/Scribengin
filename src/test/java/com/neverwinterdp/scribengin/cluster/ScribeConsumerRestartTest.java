@@ -9,7 +9,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.ScribeConsumerManager.ClusterScribeConsumerManager;
 import com.neverwinterdp.scribengin.hostport.HostPort;
 import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumer;
 import com.neverwinterdp.scribengin.scribeconsumer.ScribeConsumerConfig;
@@ -26,12 +25,14 @@ public class ScribeConsumerRestartTest  {
   private static final Logger LOG = Logger.getLogger(ScribeConsumerRestartTest.class.getName());
   private static ScribeConsumer sc1, sc2;
   
+  @Ignore
   @BeforeClass
   static public void setup() throws Exception {
     helper.setup();
     Thread.sleep(3000);
   }
 
+  @Ignore
   @AfterClass
   static public void teardown() throws Exception {
     try{
@@ -81,7 +82,7 @@ public class ScribeConsumerRestartTest  {
     sc1.stop();
     
     //Wait for file handles in HDFS to close
-    //TODO: Make it so we don't need ot sleep here
+    //TODO: Make it so we don't need to sleep here
     Thread.sleep(15000);
     
     LOG.info("Starting second ScribeConsumer");

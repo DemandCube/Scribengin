@@ -44,6 +44,7 @@ public class ScribeMasterClusterService extends AbstractService{
     conf.PRE_COMMIT_PATH_PREFIX = this.serviceInfo.preCommitPrefix;
     conf.scribenginJarPath = this.serviceInfo.scribenginjar;
     conf.topic = null;
+    conf.date_partitioner = this.serviceInfo.date_partitioner;
     
     sm = new ScribeMaster(this.serviceInfo.getTopicsAsList(), conf);
     

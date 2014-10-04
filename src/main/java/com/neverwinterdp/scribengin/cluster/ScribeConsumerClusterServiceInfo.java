@@ -34,6 +34,8 @@ public class ScribeConsumerClusterServiceInfo extends ServiceInfo{
   @Inject(optional=true) @Named("scribeconsumer:cleanStart")
   private boolean cleanStart = false;
   
+  @Inject(optional=true) @Named("scribeconsumer:date_partitioner")
+  private String date_partitioner=null;
   
   public String getPreCommitPathPrefix(){ return this.PRE_COMMIT_PATH_PREFIX; }
   public String getCommitPathPrefix(){ return this.COMMIT_PATH_PREFIX;}
@@ -42,6 +44,7 @@ public class ScribeConsumerClusterServiceInfo extends ServiceInfo{
   public long getCommitCheckPointInterval(){ return this.commitCheckPointInterval;}
   public String getHdfsPath(){ return this.hdfsPath;}
   public boolean getCleanStart(){ return this.cleanStart;}
+  public String getDatePartitioner(){ return this.date_partitioner;}
   
   public List<HostPort> getBrokerList(){
     List<HostPort> bl = new LinkedList<HostPort>();

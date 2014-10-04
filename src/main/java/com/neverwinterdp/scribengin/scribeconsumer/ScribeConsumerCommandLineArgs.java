@@ -34,6 +34,8 @@ class ScribeConsumerCommandLineArgs {
   @Parameter(names={"-"+Constants.OPT_CLEAN_START,"--"+Constants.OPT_CLEAN_START}, description="If enabled, sets start offset to 0")
   public boolean cleanstart = false;
   
+  @Parameter(names={"-"+Constants.OPT_DATE_PARTITIONER,"--"+Constants.OPT_DATE_PARTITIONER}, description="Date partitioner format to use")
+  public String date_partitioner=null;
   
   @Parameter(names={"-help","--help","-h"}, description="Displays help message")
   public boolean help = false;

@@ -18,6 +18,7 @@ public class ScribeConsumerConfig {
   //Set by cleanStart() method
   public boolean cleanStart = false;
   
+  public String date_partitioner = null;
   
   //Yarn config parameters
   public String appname = "ScribeConsumer";
