@@ -70,27 +70,54 @@ public class DatePartitioner extends AbstractPartitioner {
     if(frmtString.contains("S")){
       cal.add(Calendar.MILLISECOND, 1);
     }
+    //TODO: Need to zero out everything after the second, etc
     else if(frmtString.contains("s")){
       cal.add(Calendar.SECOND, 1);
+      cal.set(Calendar.MILLISECOND, 0);
     }
     else if(frmtString.contains("m")){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
       cal.add(Calendar.MINUTE, 1);
     }
     else if(frmtString.contains("h") || frmtString.contains("H") || 
         frmtString.contains("k") || frmtString.contains("K")){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
+      cal.set(Calendar.MINUTE, 0);
       cal.add(Calendar.HOUR_OF_DAY, 1);
     }
     else if(frmtString.contains("D") || frmtString.contains("d") || 
         frmtString.contains("F") || frmtString.contains("E") ){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
+      cal.set(Calendar.MINUTE, 0);
+      cal.set(Calendar.HOUR_OF_DAY, 0);
       cal.add(Calendar.DAY_OF_MONTH, 1);
     }
     else if(frmtString.contains("w") || frmtString.contains("W") ){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
+      cal.set(Calendar.MINUTE, 0);
+      cal.set(Calendar.HOUR_OF_DAY, 0);
+      cal.set(Calendar.DAY_OF_MONTH, 1);
       cal.add(Calendar.WEEK_OF_MONTH, 1);
     }
     else if(frmtString.contains("M")){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
+      cal.set(Calendar.MINUTE, 0);
+      cal.set(Calendar.HOUR_OF_DAY, 0);
+      cal.set(Calendar.DAY_OF_MONTH, 1);
       cal.add(Calendar.MONTH, 1);
     }
     else if(frmtString.contains("y")){
+      cal.set(Calendar.MILLISECOND, 0);
+      cal.set(Calendar.SECOND, 0);
+      cal.set(Calendar.MINUTE, 0);
+      cal.set(Calendar.HOUR_OF_DAY, 0);
+      cal.set(Calendar.DAY_OF_MONTH, 1);
+      cal.set(Calendar.MONTH, 0);
       cal.add(Calendar.YEAR, 1);
     }
     

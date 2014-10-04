@@ -63,6 +63,12 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshYear(){
     DatePartitioner d = new DatePartitioner("yyyy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
+    year.set(Calendar.SECOND, 0);
+    year.set(Calendar.MINUTE, 0);
+    year.set(Calendar.HOUR_OF_DAY, 0);
+    year.set(Calendar.DAY_OF_YEAR, 1);
+    year.set(Calendar.MONTH, 0);
     year.add(Calendar.YEAR, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
@@ -72,6 +78,11 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshMonth(){
     DatePartitioner d = new DatePartitioner("MM/yyyy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
+    year.set(Calendar.SECOND, 0);
+    year.set(Calendar.MINUTE, 0);
+    year.set(Calendar.HOUR_OF_DAY, 0);
+    year.set(Calendar.DAY_OF_MONTH, 1);
     year.add(Calendar.MONTH, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
@@ -81,6 +92,10 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshDay(){
     DatePartitioner d = new DatePartitioner("dd/MM/yy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
+    year.set(Calendar.SECOND, 0);
+    year.set(Calendar.MINUTE, 0);
+    year.set(Calendar.HOUR_OF_DAY, 0);
     year.add(Calendar.DAY_OF_YEAR, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
@@ -90,6 +105,9 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshHour(){
     DatePartitioner d = new DatePartitioner("HH/dd/MM/yy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
+    year.set(Calendar.SECOND, 0);
+    year.set(Calendar.MINUTE, 0);
     year.add(Calendar.HOUR_OF_DAY, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
@@ -99,6 +117,8 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshMinute(){
     DatePartitioner d = new DatePartitioner("mm/HH/dd/MM/yy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
+    year.set(Calendar.SECOND, 0);
     year.add(Calendar.MINUTE, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
@@ -108,6 +128,7 @@ public class DatePartitionerTest {
   public void testDatePartitionerGetRefreshSecond(){
     DatePartitioner d = new DatePartitioner("ss/mm/HH/dd/MM/yy");
     Calendar year = Calendar.getInstance();
+    year.set(Calendar.MILLISECOND, 0);
     year.add(Calendar.SECOND, 1);
     
     assertEquals(year.getTime(),d.getRefresh());
