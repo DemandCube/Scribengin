@@ -17,6 +17,22 @@ public class ScribeMasterClusterDistributedTest {
   static int numOfMessages = 100 ;
   private static final Logger LOG = Logger.getLogger(ScribeConsumerClusterTest.class.getName());
   private static Server scribeMaster;
+  //TODO: declare scribeConsumer
+  //You need to create a ScribeConsumerService, like the master one , create the consumer module and install 
+  //If you design correctly once the master and consumer are launched correctly, the master should be able to ping 
+  //the consumer , instruct the consumer to:
+  //public void stop(){
+  //  manager.shutdownConsumers();
+  //}
+  //
+  //public void checkOnConsumers(){
+  //  manager.monitorConsumers();
+  //}
+  //
+  //public int getNumConsumers(){
+  //  return manager.getNumConsumers();
+  //}
+
   
   @BeforeClass
   static public void setup() throws Exception {
@@ -37,6 +53,7 @@ public class ScribeMasterClusterDistributedTest {
     
     //Bring up scribeMaster
     scribeMaster = Server.create("-Pserver.name=scribemaster", "-Pserver.roles=scribemaster");
+    //TODO: scribeConsumer = Server.create("-Pserver.name=scribeconsumer", "-Pserver.roles=scribeconsumer");
     Shell shell = new Shell() ;
     shell.getShellContext().connect();
     shell.execute("module list --type available");
@@ -49,6 +66,7 @@ public class ScribeMasterClusterDistributedTest {
         " -Pscribemaster:cleanStart=True"+
         " -Pscribemaster:mode=distributed"+
         " --member-role scribemaster --autostart --module ScribeMaster \n";
+    //TODO: script to install consumer on the scribe consumer instance
     shell.executeScript(installScript);
     Thread.sleep(2000);
     
