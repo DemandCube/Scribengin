@@ -10,21 +10,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 public class KafkaFixture extends Fixture {
-  private static int nextBrokerId = 1;
+  
+  private static final Logger logger = Logger.getLogger(KafkaFixture.class);
+  private static int nextBrokerId =1;
   private Process proc;
   private String zkHost;
   private int zkPort;
+  private String version;
   private int brokerId;
   private static final String PROPERTIES_FILENAME = "/kafka.properties";
   private static final String LOG4J_FILENAME = "/log4j.properties";
   private static final String TEMPLATED_LOG4J_FULLPATH = "servers/%s/resources" + LOG4J_FILENAME;
 
-  private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources"
-      + PROPERTIES_FILENAME;
+  private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources" + PROPERTIES_FILENAME;
   private static final String JAVA_MAIN = "kafka.Kafka";
   private static final String WAIT_FOR_REGEX = ".*?started.*?";
-
-  private static final Logger logger = Logger.getLogger(KafkaFixture.class);
 
   private static int incAndGetId() {
     int r = nextBrokerId;
@@ -32,9 +32,9 @@ public class KafkaFixture extends Fixture {
     return r;
   }
 
-  public KafkaFixture(String version,
+  public KafkaFixture( String version,
       String kafkaHost, int kafkaPort,
-      String zkHost, int zkPort) throws IOException {
+      String zkHost, int zkPort ) throws IOException {
     super();
     this.host = kafkaHost;
     this.port = kafkaPort;
@@ -44,9 +44,9 @@ public class KafkaFixture extends Fixture {
     this.brokerId = incAndGetId();
   }
 
-  @Override
   public void start() throws IOException {
-   logger.info("starting kafka ");
+    System.out.println(this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME); //xxx
+
     HashMap<String, String> context = new HashMap<String, String>();
     context.put("broker_id", Integer.toString(brokerId));
     context.put("host", host);
@@ -56,46 +56,40 @@ public class KafkaFixture extends Fixture {
     context.put("partitions", Integer.toString(1));
     context.put("replicas", Integer.toString(1));
     context.put("tmp_dir", tmpDir.getAbsolutePath());
-    
-    try {
-      this.renderConfig(
-          String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
-          this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME,
-          context
-          );
 
-      this.renderConfig(
-          String.format(TEMPLATED_LOG4J_FULLPATH, this.version),
-          this.tmpDir.getAbsolutePath() + LOG4J_FILENAME,
-          context);
+    this.renderConfig(
+      String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
+      this.tmpDir.getAbsolutePath() + PROPERTIES_FILENAME,
+      context
+    );
 
-      ProcessBuilder pb = new ProcessBuilder(
-          String.format(KAFKA_RUN_CLASS_SH, this.version), //"servers/0.8.1/kafka-bin/bin/kafka-run-class.sh",
-          JAVA_MAIN, // "org.apache.zookeeper.server.quorum.QuorumPeerMain",
-          tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
-          );
-      Map<String, String> env = pb.environment();
-      logger.debug(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
-      env.put("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:" + this.tmpDir.getAbsolutePath()
-          + LOG4J_FILENAME);
+    this.renderConfig(
+      String.format(TEMPLATED_LOG4J_FULLPATH, this.version),
+      this.tmpDir.getAbsolutePath() + LOG4J_FILENAME,
+      context );
 
-      this.proc = pb.start();
+    ProcessBuilder pb = new ProcessBuilder(
+      String.format(KAFKA_RUN_CLASS_SH, this.version),  //"servers/0.8.1/kafka-bin/bin/kafka-run-class.sh",
+      JAVA_MAIN,                                        // "org.apache.zookeeper.server.quorum.QuorumPeerMain",
+      tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
+    );
+    Map<String, String> env = pb.environment();
+    System.out.println(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
+    env.put("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:" + this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
 
+    this.proc =  pb.start();
 
-      BufferedReader br = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
-      String line = null;
-      while ((line = br.readLine()) != null) {
-        System.out.println(line);
-        if (line.matches(WAIT_FOR_REGEX)) {
-          break;
-        }
+    BufferedReader br = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
+    String line = null;
+    while ((line = br.readLine()) != null) {
+      System.out.println(line);
+      if (line.matches(WAIT_FOR_REGEX)) {
+        break;
       }
-    } catch (Exception e) {
-      e.printStackTrace();
     }
+
   }
 
-  @Override
   public void stop() throws IOException {
     this.proc.destroy();
     // clean up the tmp directory
@@ -114,11 +108,16 @@ public class KafkaFixture extends Fixture {
     }
     BufferedReader reader =
         new BufferedReader(new InputStreamReader(p.getInputStream()));
-
     String line = "";
     while ((line = reader.readLine()) != null) {
       System.out.println(line);//xxx
     }
     System.out.println("Finished installing kafka.");
   }
+  @Override
+  public String toString() {
+    return "KafkaFixture [proc=" + proc + ", host=" + host + ", port=" + port + ", zkHost="
+        + zkHost + ", zkPort=" + zkPort + ", version=" + version + ", brokerId=" + brokerId + "]";
+  }
 }
+

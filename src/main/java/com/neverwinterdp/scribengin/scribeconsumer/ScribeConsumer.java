@@ -164,7 +164,7 @@ public class ScribeConsumer {
     }
   }
 
-  private boolean connectToTopic() {
+  public boolean connectToTopic() {
     boolean r = true;
     PartitionMetadata metadata = findLeader(brokerList, topic, partition);
     if (metadata == null) {

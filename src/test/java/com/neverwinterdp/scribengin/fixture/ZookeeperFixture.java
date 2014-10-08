@@ -79,7 +79,7 @@ public class ZookeeperFixture extends Fixture {
 
   @Override
   public void install() {
-    // TODO Auto-generated method stub
+    // Installed when kafka is installed.
 
   }
 }
