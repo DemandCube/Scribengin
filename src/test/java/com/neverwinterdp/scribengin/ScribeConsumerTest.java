@@ -122,7 +122,7 @@ public class ScribeConsumerTest {
     }
 
     Assert.assertTrue(fs.exists(new Path(mismatchedPath)));
-    ScribeConsumer sc = new ScribeConsumer("/tmp", "/committed", "dummytopic", 0, null, 100, "hdfs://dummy");
+    ScribeConsumer sc = new ScribeConsumer("/tmp", "/committed", "dummytopic", 0, null, 100,false, "hdfs://dummy");
     //ScribeConsumer sc = new ScribeConsumer("hdfs://dummy", 0, "dummytopic");
     sc.setScribeCommitLogFactory(ScribeCommitLogTestFactory.instance());
     sc.setFileSystemFactory(UnitTestCluster.instance(MINI_CLUSTER_PATH));
