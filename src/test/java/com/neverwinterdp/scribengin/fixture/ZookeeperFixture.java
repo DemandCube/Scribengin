@@ -62,7 +62,7 @@ public class ZookeeperFixture extends Fixture {
     String line = null;
     //block until we see the regex string
     while ((line = br.readLine()) != null) {
-      System.out.println(line);
+     System.out.println(line);
       if (line.matches(WAIT_FOR_REGEX)) {
         break;
       }
