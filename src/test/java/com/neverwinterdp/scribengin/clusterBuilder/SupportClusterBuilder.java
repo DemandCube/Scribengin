@@ -1,9 +1,13 @@
 package com.neverwinterdp.scribengin.clusterBuilder;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.neverwinterdp.scribengin.utilities.Util.isOpen;
+
 import java.io.IOException;
 
-import com.neverwinterdp.server.Server;
-import com.neverwinterdp.server.shell.Shell;
+import com.neverwinterdp.scribengin.fixture.Fixture;
+import com.neverwinterdp.scribengin.fixture.KafkaFixture;
+import com.neverwinterdp.scribengin.fixture.ZookeeperFixture;
 import com.neverwinterdp.util.FileUtil;
 
 /**
@@ -13,76 +17,51 @@ import com.neverwinterdp.util.FileUtil;
  */
 public class SupportClusterBuilder {
   static {
-    System.setProperty("app.dir", "build/cluster") ;
-    System.setProperty("app.config.dir", "src/app/config") ;
-    System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties") ;
+    System.setProperty("app.dir", "build/cluster");
+    System.setProperty("app.config.dir", "src/app/config");
+    System.setProperty("log4j.configuration", "file:src/app/config/log4j.properties");
   }
-  
+
   private static String MINI_CLUSTER_PATH = "/tmp/miniCluster";
   UnitTestCluster hadoopServer;
-  Server  zkServer, kafkaServer ;
-  Shell   shell ;
-  String hadoopConnection="";
+  Fixture zkFixture, kafkaFixture;
+  String hadoopConnection = "";
 
-  public SupportClusterBuilder() throws Exception {
+
+  public SupportClusterBuilder(String version, String zkHost, int zkPort, String kafkaHost,
+      int kafkaPort) throws Exception {
+    checkArgument(!isOpen(kafkaPort), "The requested kakfka Port:" + kafkaPort
+        + " is already in use.");
+    checkArgument(!isOpen(zkPort), "The requested zookeeper Port:" + zkPort + " is already in use.");
+    
+
     FileUtil.removeIfExist("build/cluster", false);
-    zkServer = Server.create("-Pserver.name=zookeeper", "-Pserver.roles=zookeeper") ;
-    kafkaServer = Server.create("-Pserver.name=kafka", "-Pserver.roles=kafka") ;
-    shell = new Shell() ;
-    shell.getShellContext().connect();
-    shell.execute("module list --type available");
-    Thread.sleep(1000);
+    zkFixture = new ZookeeperFixture(version, zkHost, zkPort);
+    kafkaFixture = new KafkaFixture(version, kafkaHost, kafkaPort, zkHost, zkPort);
     hadoopServer = UnitTestCluster.instance(MINI_CLUSTER_PATH);
   }
 
-  public Shell getShell() { return this.shell ; }
-  
-  public String getHadoopConnection() { return this.hadoopConnection; }
-  
-  public void destroy() throws Exception {
-    try{
-      hadoopServer.destroy();
-    } catch(Exception e){}
-    try{
-      kafkaServer.destroy();
-    } catch(Exception e){}
-    try{
-      zkServer.destroy();
-    } catch(Exception e){}
-    try{
-      shell.close();
-    } catch(Exception e){}
-    Thread.sleep(2000);
+
+  public String getHadoopConnection() {
+    return this.hadoopConnection;
   }
+
   
   public void install() throws InterruptedException, IOException {
     hadoopServer.build(3);
     hadoopConnection = hadoopServer.getUrl();
-    
-    String installScript =
-        "module install " + 
-        " -Pmodule.data.drop=true" +
-        " -Pzk:clientPort=2181 " +
-        " --member-role zookeeper --autostart --module Zookeeper \n" +
-        
-        "module install " +
-        " -Pmodule.data.drop=true" +
-        " -Pkafka:port=9092 -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
-        " --member-role kafka --autostart --module Kafka \n";// +
-        
-        //"module install " +
-        //" -Pmodule.data.drop=true -Pkafka:zookeeper.connect=127.0.0.1:2181 " +
-        //" --member-role kafka --autostart --module KafkaConsumer\n";
-      shell.executeScript(installScript);
-      Thread.sleep(3000);
+    kafkaFixture.install();
+    System.out.println("Now we go to start kafka");
+    zkFixture.start();
+    kafkaFixture.start();
+    Thread.sleep(5000);
   }
-  
-  public void uninstall() {
-    
-    String uninstallScript = 
-        //"module uninstall --member-role kafka --timeout 40000 --module KafkaConsumer \n" +
-        "module uninstall --member-role kafka --timeout 40000 --module Kafka \n" +
-        "module uninstall --member-role zookeeper --timeout 20000 --module Zookeeper \n";
-    shell.executeScript(uninstallScript);
+
+  public void uninstall() throws IOException {
+    hadoopServer.destroy();
+    kafkaFixture.stop();
+    zkFixture.stop();
+    //TODO uninstall kafka
+    //TODO uninstall zookeeper
   }
 }
