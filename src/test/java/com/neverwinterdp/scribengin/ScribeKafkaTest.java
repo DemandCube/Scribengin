@@ -1,6 +1,8 @@
 package com.neverwinterdp.scribengin;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -35,7 +37,7 @@ public class ScribeKafkaTest {
   @BeforeClass
   public static void setup() throws IOException, InterruptedException {
     System.out.println("calling setup..."); //xxx
-   /* Process p = Runtime.getRuntime().exec("script/bootstrap_kafka.sh servers");
+    Process p = Runtime.getRuntime().exec("script/bootstrap_kafka.sh servers");
     p.waitFor();
     BufferedReader reader =
         new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -44,7 +46,7 @@ public class ScribeKafkaTest {
     while ((line = reader.readLine()) != null) {
       System.out.println(line);//xxx
     }
-*/
+
     zookeeper = new ZookeeperFixture("0.8.1", "127.0.0.1", 2323);
     zookeeper.start();
 
