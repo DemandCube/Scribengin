@@ -577,6 +577,12 @@ public class ScribeConsumer {
     }
     else {
       lastCommittedOffset = getLatestOffset(topic, partition, kafka.api.OffsetRequest.LatestTime());
+      long earliestOffset =
+          getEarliestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.EarliestTime());
+      if (earliestOffset == lastCommittedOffset) {
+        throw new IllegalStateException(
+            "Scribe consumer is consuming from the first offset yet --clean_start was not defined.");
+      }
       offset = lastCommittedOffset;
     }
     LOG.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
