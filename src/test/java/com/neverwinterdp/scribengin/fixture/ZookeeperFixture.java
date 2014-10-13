@@ -52,7 +52,7 @@ public class ZookeeperFixture extends Fixture {
         tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
         );
     Map<String, String> env = pb.environment();
-    System.out.println(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
+    logger.debug(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
     env.put("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:" + this.tmpDir.getAbsolutePath()
         + LOG4J_FILENAME);
 
@@ -70,6 +70,7 @@ public class ZookeeperFixture extends Fixture {
   }
 
   public void stop() throws IOException {
+    logger.info("stop.");
     // Destroy the running process
     this.proc.destroy();
     // clean up the tmp directory

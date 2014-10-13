@@ -50,7 +50,6 @@ public class SupportClusterBuilder {
     hadoopServer.build(3);
     hadoopConnection = hadoopServer.getUrl();
     kafkaFixture.install();
-    System.out.println("Now we go to start kafka");
     zkFixture.start();
     kafkaFixture.start();
     Thread.sleep(5000);

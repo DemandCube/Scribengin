@@ -46,7 +46,7 @@ public class KafkaFixture extends Fixture {
 
   @Override
   public void start() throws IOException {
-    System.out.println("Starting kafka ");
+   logger.info("starting kafka ");
     HashMap<String, String> context = new HashMap<String, String>();
     context.put("broker_id", Integer.toString(brokerId));
     context.put("host", host);
@@ -56,7 +56,7 @@ public class KafkaFixture extends Fixture {
     context.put("partitions", Integer.toString(1));
     context.put("replicas", Integer.toString(1));
     context.put("tmp_dir", tmpDir.getAbsolutePath());
-    System.out.println("Before crucial try");
+    
     try {
       this.renderConfig(
           String.format(TEMPLATED_PROPERTIES_FULLPATH, this.version),
@@ -75,7 +75,7 @@ public class KafkaFixture extends Fixture {
           tmpDir.getAbsolutePath() + PROPERTIES_FILENAME
           );
       Map<String, String> env = pb.environment();
-      System.out.println(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
+      logger.debug(this.tmpDir.getAbsolutePath() + LOG4J_FILENAME);
       env.put("KAFKA_LOG4J_OPTS", "-Dlog4j.configuration=file:" + this.tmpDir.getAbsolutePath()
           + LOG4J_FILENAME);
 
