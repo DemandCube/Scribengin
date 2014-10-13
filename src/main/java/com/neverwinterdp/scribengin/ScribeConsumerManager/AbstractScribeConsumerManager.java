@@ -27,4 +27,11 @@ public abstract class AbstractScribeConsumerManager {
   public abstract boolean shutdownConsumers();
   
   public abstract int getNumConsumers();
+  
+  /**
+   * For testing - should kill the consumers in a way
+   * that forces monitorConsumers to restart them
+   * @return true if consumers were killed properly
+   */
+  public abstract boolean killConsumersUncleanly();
 }

@@ -15,6 +15,8 @@ public class ScribeMaster {
   private AbstractScribeConsumerManager manager;
   private List<String> topics;
   private ScribeConsumerConfig commonConf;
+  private Thread scribeMasterThread;
+  
   
   public ScribeMaster(List<String> topics, ScribeConsumerConfig conf){
     this.topics = topics;
@@ -35,15 +37,39 @@ public class ScribeMaster {
   
   
   public void stop(){
+    try{
+      scribeMasterThread.interrupt();
+    } catch(Exception e){}
     manager.shutdownConsumers();
+    
   }
   
   public void checkOnConsumers(){
     manager.monitorConsumers();
   }
   
+  public void checkOnConsumersThreaded(final int refresh){
+    scribeMasterThread = new Thread() {
+      public void run() {
+        while(true){
+          checkOnConsumers();
+          try {
+            Thread.sleep(refresh);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    };
+    scribeMasterThread.start();
+  }
+  
   public int getNumConsumers(){
     return manager.getNumConsumers();
+  }
+  
+  public boolean killConsumersForceRestart(){
+    return manager.killConsumersUncleanly();
   }
   
   public static void main(String[] args){

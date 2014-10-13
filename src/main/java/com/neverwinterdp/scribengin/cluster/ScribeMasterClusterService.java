@@ -48,7 +48,7 @@ public class ScribeMasterClusterService extends AbstractService{
     
     sm = new ScribeMaster(this.serviceInfo.getTopicsAsList(), conf);
     
-    if(this.serviceInfo.mode != "yarn"){
+    if(! this.serviceInfo.mode.matches("yarn")){
       sm.setScribeConsumerManager(new ClusterScribeConsumerManager());
     }
     else{
@@ -56,6 +56,8 @@ public class ScribeMasterClusterService extends AbstractService{
     }
     
     sm.start();
+    //Thread.sleep(5000);
+    //sm.checkOnConsumersThreaded(1000);
     logger.info("Starting ScribeMaster Complete");
     
   }

@@ -51,7 +51,7 @@ public class ScribeConsumerRestartTest  {
    * 
    * This test is currently failing and ruining my life.  Ignoring for now.
    */
-  @Ignore
+  //@Ignore
   @Test
   public void testScribenginWorkerRestart() throws Exception {
     ScribeConsumerConfig c = new ScribeConsumerConfig();
@@ -85,6 +85,10 @@ public class ScribeConsumerRestartTest  {
     //TODO: Make it so we don't need to sleep here
     Thread.sleep(15000);
     
+    LOG.info("Creating kafka data part 2");
+    //Create data starting at message 100
+    helper.createKafkaData(100);
+    
     LOG.info("Starting second ScribeConsumer");
     //Create new worker
     sc2 = new ScribeConsumer(c);
@@ -92,9 +96,7 @@ public class ScribeConsumerRestartTest  {
     sc2.init();
     sc2.start();
     
-    LOG.info("Creating kafka data part 2");
-    //Create data starting at message 100
-    helper.createKafkaData(100);
+    
     
     //Wait for data to be consumed
     Thread.sleep(20000);
