@@ -212,6 +212,7 @@ public class ScribeConsumer {
     } catch(Exception e){
       e.printStackTrace();
     }
+    commit();
   }
   
   private void scheduleCommitTimer() {
@@ -290,8 +291,11 @@ public class ScribeConsumer {
         e.printStackTrace();
       }
     }
-
-    scheduleCommitTimer();
+    try{
+      scheduleCommitTimer();
+    } catch (IllegalStateException e){
+      LOG.error("Could not reschedule commit timer.  Ignore if this is during ScribeConsumer shutdown.");
+    }
   }
 
   private String getClientName() {
