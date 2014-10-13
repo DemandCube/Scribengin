@@ -20,6 +20,7 @@ public class ZookeeperFixture extends Fixture {
       + PROPERTIES_FILENAME;
   private static final String JAVA_MAIN = "org.apache.zookeeper.server.quorum.QuorumPeerMain";
   private static final String WAIT_FOR_REGEX = ".*?Established session.*?";
+  private static final String SNAPSHOTTING = ".*?FileTxnSnapLog.*?";
 
   public ZookeeperFixture(String version, String host, int port) throws IOException {
     super();
@@ -63,7 +64,7 @@ public class ZookeeperFixture extends Fixture {
     //block until we see the regex string
     while ((line = br.readLine()) != null) {
       System.out.println(line);
-      if (line.matches(WAIT_FOR_REGEX)) {
+      if (line.matches(WAIT_FOR_REGEX) || line.matches(SNAPSHOTTING)) {
         break;
       }
     }
@@ -79,7 +80,8 @@ public class ZookeeperFixture extends Fixture {
 
   @Override
   public void install() {
-    // TODO Auto-generated method stub
+    // Installed when installing kafka
+    //TODO do a check then install if needed
 
   }
 }
