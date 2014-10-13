@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.clusterBuilder;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.neverwinterdp.scribengin.utilities.Util.isOpen;
 
 import java.io.IOException;
@@ -30,9 +30,8 @@ public class SupportClusterBuilder {
 
   public SupportClusterBuilder(String version, String zkHost, int zkPort, String kafkaHost,
       int kafkaPort) throws Exception {
-    checkArgument(!isOpen(kafkaPort), "The requested kakfka Port:" + kafkaPort
-        + " is already in use.");
-    checkArgument(!isOpen(zkPort), "The requested zookeeper Port:" + zkPort + " is already in use.");
+    checkState(!isOpen(kafkaPort), "The requested kafka Port: %s is already in use.", kafkaPort);
+    checkState(!isOpen(zkPort), "The requested zookeeper Port: %s is already in use.", zkPort);
     
 
     FileUtil.removeIfExist("build/cluster", false);
