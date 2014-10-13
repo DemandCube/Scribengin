@@ -14,7 +14,7 @@ public class SupportClusterBuilderTest {
   static int zkPort = 2181;
   private static String version = "0.8.1.1";
   private static String zkHost = "127.0.0.1";
-  private static int kafkaPort = 9091;
+  private static int kafkaPort = 2191;
   private static String kafkaHost = "127.0.0.1";
 
   private static final Logger logger = Logger.getLogger(SupportClusterBuilderTest.class);

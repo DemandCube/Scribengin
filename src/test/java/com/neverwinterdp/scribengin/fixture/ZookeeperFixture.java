@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 public class ZookeeperFixture extends Fixture {
   private Process proc;
@@ -14,6 +15,7 @@ public class ZookeeperFixture extends Fixture {
   private static final String LOG4J_FILENAME = "/log4j.properties";
   private static final String TEMPLATED_LOG4J_FULLPATH = "servers/%s/resources" + LOG4J_FILENAME;
 
+  private static final Logger logger = Logger.getLogger(ZookeeperFixture.class);
   private static final String TEMPLATED_PROPERTIES_FULLPATH = "servers/%s/resources"
       + PROPERTIES_FILENAME;
   private static final String JAVA_MAIN = "org.apache.zookeeper.server.quorum.QuorumPeerMain";
@@ -28,6 +30,7 @@ public class ZookeeperFixture extends Fixture {
 
   @Override
   public void start() throws IOException {
+    logger.info("start. ");
     HashMap<String, String> context = new HashMap<String, String>();
     context.put("tmp_dir", tmpDir.getAbsolutePath());
     context.put("host", this.host);
@@ -59,7 +62,7 @@ public class ZookeeperFixture extends Fixture {
     String line = null;
     //block until we see the regex string
     while ((line = br.readLine()) != null) {
-     System.out.println(line);
+      System.out.println(line);
       if (line.matches(WAIT_FOR_REGEX)) {
         break;
       }
