@@ -102,12 +102,13 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
       //Basically ScribeConsumer should never die, so restart it if something happens
       if(!(state == Thread.State.NEW || state == Thread.State.RUNNABLE) || state == null){
         LOG.error("Server in bad state.  Thread state: "+state.toString()+" Topic: "+si.conf.topic);
+        si.conf.cleanStart = false;
         if(startNewConsumer(si.conf)){
           it.remove();
         }
       }
       else{
-        System.err.println("SERVER FUCKING STATE: "+state.toString());
+        System.err.println("SERVER STATE: "+state.toString());
       }
     }
   }
@@ -134,6 +135,24 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
   @Override
   public int getNumConsumers() {
     return servers.size();
+  }
+
+
+  @Override
+  public boolean killConsumersUncleanly() {
+    boolean retVal = true;
+    Iterator<ServerInfo> iterator = servers.iterator();
+    while(iterator.hasNext()){
+      ServerInfo si = iterator.next();
+      try{
+        si.server.shutdown();
+        si.server.destroy();
+      } catch(Exception e){
+        e.printStackTrace();
+        retVal = false;
+      }
+    }
+    return retVal;
   }
   
 }

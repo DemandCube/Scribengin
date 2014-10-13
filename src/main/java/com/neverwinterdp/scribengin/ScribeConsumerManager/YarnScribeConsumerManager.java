@@ -102,6 +102,7 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
           break;
         } else {
           LOG.info("Application finished but errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
+          yarnInfo.conf.cleanStart = false;
           if(startNewConsumer(yarnInfo.conf)){
             it.remove();
           }
@@ -135,5 +136,22 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   @Override
   public int getNumConsumers() {
     return yarnApps.size();
+  }
+
+  @Override
+  public boolean killConsumersUncleanly() {
+    boolean retVal = true;
+    Iterator<YarnInfo> it = yarnApps.iterator();
+    while(it.hasNext()){
+      YarnInfo yi = it.next();
+      try{
+        LOG.info("KILLING: "+yi.client.getAppId().toString());
+        yi.client.getYarnClient().killApplication(yi.client.getAppId());
+      } catch(Exception e){
+        e.printStackTrace();
+        retVal = false;
+      }
+    }
+    return retVal;
   }
 }
