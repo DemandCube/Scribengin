@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.neverwinterdp.scribengin.ScribeConsumerManager.AbstractScribeConsumerManager;
@@ -16,7 +18,7 @@ public class ScribeMaster {
   private List<String> topics;
   private ScribeConsumerConfig commonConf;
   private Thread scribeMasterThread;
-  
+  private static final Logger LOG = Logger.getLogger(ScribeMaster.class.getName());
   
   public ScribeMaster(List<String> topics, ScribeConsumerConfig conf){
     this.topics = topics;
@@ -80,14 +82,13 @@ public class ScribeMaster {
     try{
       jc.parse(args);
     } catch (ParameterException e){
-      System.err.println(e.getMessage());
+      LOG.error(e.getMessage());
       jc.usage();
       System.exit(-1);
     }
     List<String> topics = new LinkedList<String>();
     String[] split = p.topic.split(",");
     for(String x: split){
-      System.err.println("TOPIC: "+x);
       topics.add(x);
     }
     
@@ -118,8 +119,8 @@ public class ScribeMaster {
       sm.setScribeConsumerManager(new YarnScribeConsumerManager());
     }
     else{
-      System.err.println("Invalid mode: "+p.mode);
-      System.err.println("Valid modes: dev, distributed, yarn");
+      LOG.error("Invalid mode: "+p.mode);
+      LOG.error("Valid modes: dev, distributed, yarn");
       System.exit(-1);
     }
     
