@@ -87,6 +87,7 @@ public class ScribeMaster {
     List<String> topics = new LinkedList<String>();
     String[] split = p.topic.split(",");
     for(String x: split){
+      System.err.println("TOPIC: "+x);
       topics.add(x);
     }
     
