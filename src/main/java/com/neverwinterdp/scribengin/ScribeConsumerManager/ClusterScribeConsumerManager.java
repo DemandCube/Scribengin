@@ -42,7 +42,7 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     boolean retVal = true;
     for(String t: topics){
       c.topic = t;
-      if(!this.startNewConsumer(c)){
+      if(!this.startNewConsumer(new ScribeConsumerConfig(c))){
         retVal = false;
       }
     }

@@ -40,7 +40,7 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
     boolean retVal = true;
     for(String s: topics){
       conf.topic = s;
-      if(!this.startNewConsumer(conf)){
+      if(!this.startNewConsumer(new ScribeConsumerConfig(conf))){
         retVal = false;
       }
     }
@@ -80,6 +80,7 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   
   @Override 
   public void monitorConsumers(){
+    LinkedList<ScribeConsumerConfig> toAdd = new LinkedList<ScribeConsumerConfig>();
     Iterator<YarnInfo> it = yarnApps.iterator();
     
     while (it.hasNext()) {
@@ -95,23 +96,32 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
       YarnApplicationState state = report.getYarnApplicationState();
       FinalApplicationStatus status = report.getFinalApplicationStatus();
 
-      if (state == YarnApplicationState.FINISHED) {
+      if (state == YarnApplicationState.FINISHED || state == YarnApplicationState.KILLED ) {
         if (status == FinalApplicationStatus.SUCCEEDED) {
           LOG.info("Application completed successfully: "+c.getAppId().toString());
           it.remove();
           break;
-        } else {
+        } 
+        else if(state == YarnApplicationState.ACCEPTED){
+          //Do nothing
+        }
+        else {
           LOG.info("Application finished but errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
           yarnInfo.conf.cleanStart = false;
-          if(startNewConsumer(yarnInfo.conf)){
-            it.remove();
-          }
+          toAdd.add(yarnInfo.conf);
+          it.remove();
           break;
         }
-      } else if (state == YarnApplicationState.KILLED || state == YarnApplicationState.FAILED) {
+      } else if (state == YarnApplicationState.FAILED) {
         LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
         it.remove();
         break;
+      }
+    }
+    
+    if(toAdd.size() > 0){
+      for(ScribeConsumerConfig sci: toAdd){
+        startNewConsumer(sci);
       }
     }
   }

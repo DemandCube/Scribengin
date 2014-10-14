@@ -35,6 +35,36 @@ public class ScribeConsumerConfig {
     this.brokerList.add(new HostPort("127.0.0.1","9092"));
   }
   
+  /**
+   * Copy constructor
+   * @param c
+   */
+  public ScribeConsumerConfig(ScribeConsumerConfig c){
+    this.PRE_COMMIT_PATH_PREFIX = c.PRE_COMMIT_PATH_PREFIX;
+    this.COMMIT_PATH_PREFIX = c.COMMIT_PATH_PREFIX;
+    this.topic = c.topic;
+    this.partition = c.partition;
+    this.commitCheckPointInterval = c.commitCheckPointInterval; // ms
+    this.hdfsPath = c.hdfsPath;
+    this.brokerList = new LinkedList<HostPort>();
+    this.brokerList.addAll(c.brokerList);
+    
+    //Set by cleanStart() method
+    this.cleanStart = c.cleanStart;
+    
+    this.date_partitioner = c.date_partitioner;
+    
+    //Yarn config parameters
+    this.appname = c.appname;
+    this.scribenginJarPath = c.scribenginJarPath;
+    this.appMasterClassName = c.appMasterClassName;
+    //public String libHadoopPath= "/usr/lib/hadoop/lib/native/libhadoop.so";
+    this.yarnSiteXml = c.yarnSiteXml;
+    this.defaultFs = c.defaultFs;
+    this.containerMem = c.containerMem;
+    this.applicationMasterMem = c.applicationMasterMem;
+  }
+  
   public ScribeConsumerConfig(String topic){
     this();
     this.topic = topic;
