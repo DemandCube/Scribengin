@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.ScribeConsumerManager;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,9 +17,7 @@ import com.neverwinterdp.scribengin.yarn.Client;
 
 public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   private class YarnInfo{
-    @SuppressWarnings("unused")
     public Client client;
-    @SuppressWarnings("unused")
     public ScribeConsumerConfig conf;
     
     public YarnInfo(Client c, ScribeConsumerConfig cnf){
@@ -28,8 +27,8 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   }
   
   private static final Logger LOG = Logger.getLogger(YarnScribeConsumerManager.class.getName());
-  List<YarnInfo> yarnApps = new LinkedList<YarnInfo>();
-  
+  //List<YarnInfo> yarnApps = new LinkedList<YarnInfo>();
+  List<YarnInfo> yarnApps = Collections.synchronizedList(new LinkedList<YarnInfo>());
   
   public YarnScribeConsumerManager(){
     super();
@@ -69,7 +68,9 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
     try {
       client.init();
       client.run();
-      yarnApps.add(new YarnInfo(client, conf));
+      synchronized(yarnApps){
+        yarnApps.add(new YarnInfo(client, conf));
+      }
       return true;
     } catch (IOException | YarnException e) {
       e.printStackTrace();
@@ -81,63 +82,66 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   @Override 
   public void monitorConsumers(){
     LinkedList<ScribeConsumerConfig> toAdd = new LinkedList<ScribeConsumerConfig>();
-    Iterator<YarnInfo> it = yarnApps.iterator();
-    
-    while (it.hasNext()) {
-      YarnInfo yarnInfo = it.next();
-      ApplicationReport report = null;
-      Client c = null;
-      try {
-        c = yarnInfo.client;
-        report = c.getYarnClient().getApplicationReport(c.getAppId());
-      } catch (YarnException | IOException e) {
-        e.printStackTrace();
-      };
-      YarnApplicationState state = report.getYarnApplicationState();
-      FinalApplicationStatus status = report.getFinalApplicationStatus();
-
-      if (state == YarnApplicationState.FINISHED || state == YarnApplicationState.KILLED ) {
-        if (status == FinalApplicationStatus.SUCCEEDED) {
-          LOG.info("Application completed successfully: "+c.getAppId().toString());
+    synchronized(yarnApps){
+      Iterator<YarnInfo> it = yarnApps.iterator();
+      
+      while (it.hasNext()) {
+        YarnInfo yarnInfo = it.next();
+        ApplicationReport report = null;
+        Client c = null;
+        try {
+          c = yarnInfo.client;
+          report = c.getYarnClient().getApplicationReport(c.getAppId());
+        } catch (YarnException | IOException e) {
+          e.printStackTrace();
+        };
+        YarnApplicationState state = report.getYarnApplicationState();
+        FinalApplicationStatus status = report.getFinalApplicationStatus();
+  
+        if (state == YarnApplicationState.FINISHED || state == YarnApplicationState.KILLED ) {
+          if (status == FinalApplicationStatus.SUCCEEDED) {
+            LOG.info("Application completed successfully: "+c.getAppId().toString());
+            it.remove();
+            break;
+          } 
+          else if(state == YarnApplicationState.ACCEPTED){
+            //Do nothing
+          }
+          else {
+            LOG.info("Application finished but errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
+            yarnInfo.conf.cleanStart = false;
+            toAdd.add(new ScribeConsumerConfig(yarnInfo.conf));
+            it.remove();
+            break;
+          }
+        } else if (state == YarnApplicationState.FAILED) {
+          LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
           it.remove();
           break;
-        } 
-        else if(state == YarnApplicationState.ACCEPTED){
-          //Do nothing
         }
-        else {
-          LOG.info("Application finished but errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
-          yarnInfo.conf.cleanStart = false;
-          toAdd.add(yarnInfo.conf);
-          it.remove();
-          break;
-        }
-      } else if (state == YarnApplicationState.FAILED) {
-        LOG.info("Application errored out. YarnState=" + state.toString() + ", finalStatue=" + status.toString() + ", AppId: "+c.getAppId().toString());
-        it.remove();
-        break;
       }
     }
     
-    if(toAdd.size() > 0){
-      for(ScribeConsumerConfig sci: toAdd){
-        startNewConsumer(sci);
-      }
+    
+    for(ScribeConsumerConfig sci: toAdd){
+      startNewConsumer(sci);
     }
   }
 
   @Override
   public boolean shutdownConsumers() {
     boolean retVal = true;
-    Iterator<YarnInfo> it = yarnApps.iterator();
-    while(it.hasNext()){
-      YarnInfo yi = it.next();
-      try{
-        yi.client.getYarnClient().killApplication(yi.client.getAppId());
-        it.remove();
-      } catch(Exception e){
-        e.printStackTrace();
-        retVal = false;
+    synchronized(yarnApps){
+      Iterator<YarnInfo> it = yarnApps.iterator();
+      while(it.hasNext()){
+        YarnInfo yi = it.next();
+        try{
+          yi.client.getYarnClient().killApplication(yi.client.getAppId());
+          it.remove();
+        } catch(Exception e){
+          e.printStackTrace();
+          retVal = false;
+        }
       }
     }
     return retVal;
@@ -145,21 +149,25 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
   
   @Override
   public int getNumConsumers() {
-    return yarnApps.size();
+    synchronized(yarnApps){
+      return yarnApps.size();
+    }
   }
 
   @Override
   public boolean killConsumersUncleanly() {
     boolean retVal = true;
-    Iterator<YarnInfo> it = yarnApps.iterator();
-    while(it.hasNext()){
-      YarnInfo yi = it.next();
-      try{
-        LOG.info("KILLING: "+yi.client.getAppId().toString());
-        yi.client.getYarnClient().killApplication(yi.client.getAppId());
-      } catch(Exception e){
-        e.printStackTrace();
-        retVal = false;
+    synchronized(yarnApps){
+      Iterator<YarnInfo> it = yarnApps.iterator();
+      while(it.hasNext()){
+        YarnInfo yi = it.next();
+        try{
+          LOG.info("KILLING: "+yi.client.getAppId().toString());
+          yi.client.getYarnClient().killApplication(yi.client.getAppId());
+        } catch(Exception e){
+          e.printStackTrace();
+          retVal = false;
+        }
       }
     }
     return retVal;
