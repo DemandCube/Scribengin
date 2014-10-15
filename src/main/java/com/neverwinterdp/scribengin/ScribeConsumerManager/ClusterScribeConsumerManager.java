@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.ScribeConsumerManager;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,8 +20,8 @@ import com.neverwinterdp.server.shell.Shell;
 
 public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
   private static final Logger LOG = Logger.getLogger(ClusterScribeConsumerManager.class.getName());
-  List<ServerInfo> servers = new LinkedList<ServerInfo>();
-  
+  //List<ServerInfo> servers = new LinkedList<ServerInfo>();
+  List<ServerInfo> servers = Collections.synchronizedList(new LinkedList<ServerInfo>());
   
   private class ServerInfo{
     public Server server;
@@ -42,7 +43,7 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
     boolean retVal = true;
     for(String t: topics){
       c.topic = t;
-      if(!this.startNewConsumer(c)){
+      if(!this.startNewConsumer(new ScribeConsumerConfig(c))){
         retVal = false;
       }
     }
@@ -83,48 +84,55 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
   @Override
   public void monitorConsumers() {
     HazelcastClusterClient client = new HazelcastClusterClient() ;
-    
-    Iterator<ServerInfo> it = servers.iterator();
-    while (it.hasNext()) {
-      ServerInfo si = it.next();
-      ClusterMember member = si.server.getClusterService().getMember();
-      ServerRegistration serverRegistration = client.getServerRegistration(member);
-      ServiceRegistration statusService = serverRegistration.getServices().get(0) ;
-      ServiceCommand<Thread.State> serverState = new ScribeConsumerStatusCommand().setLogEnable(true) ;
-      serverState.setTargetService(statusService);
-      ServiceCommandResult<Thread.State> serverThreadState = client.execute(serverState, member) ;
-      
-      if(serverThreadState.hasError()) {
-        LOG.error("Error getting thread state: "+serverThreadState.getError());
-        continue;
-      }
-      Thread.State state = serverThreadState.getResult();
-      //Basically ScribeConsumer should never die, so restart it if something happens
-      if(!(state == Thread.State.NEW || state == Thread.State.RUNNABLE) || state == null){
-        LOG.error("Server in bad state.  Thread state: "+state.toString()+" Topic: "+si.conf.topic);
-        if(startNewConsumer(si.conf)){
+    List<ScribeConsumerConfig> toAdd = new LinkedList<ScribeConsumerConfig>();
+    synchronized(servers){
+      Iterator<ServerInfo> it = servers.iterator();
+      while (it.hasNext()) {
+        ServerInfo si = it.next();
+        ClusterMember member = si.server.getClusterService().getMember();
+        ServerRegistration serverRegistration = client.getServerRegistration(member);
+        ServiceRegistration statusService = serverRegistration.getServices().get(0) ;
+        ServiceCommand<Thread.State> serverState = new ScribeConsumerStatusCommand().setLogEnable(true) ;
+        serverState.setTargetService(statusService);
+        ServiceCommandResult<Thread.State> serverThreadState = client.execute(serverState, member) ;
+        
+        if(serverThreadState.hasError()) {
+          LOG.error("Error getting thread state: "+serverThreadState.getError());
+          continue;
+        }
+        Thread.State state = serverThreadState.getResult();
+        //Basically ScribeConsumer should never die, so restart it if something happens
+        if(!(state == Thread.State.NEW || state == Thread.State.RUNNABLE) || state == null){
+          LOG.error("Server in bad state.  Thread state: "+state.toString()+" Topic: "+si.conf.topic);
+          si.conf.cleanStart = false;
+          toAdd.add(new ScribeConsumerConfig(si.conf));
           it.remove();
         }
+        else{
+          System.err.println("SERVER STATE: "+state.toString());
+        }
       }
-      else{
-        System.err.println("SERVER FUCKING STATE: "+state.toString());
-      }
+    }
+    for(ScribeConsumerConfig c: toAdd){
+      startNewConsumer(c);
     }
   }
 
   @Override
   public boolean shutdownConsumers() {
     boolean retVal = true;
-    Iterator<ServerInfo> iterator = servers.iterator();
-    while(iterator.hasNext()){
-      ServerInfo si = iterator.next();
-      try{
-        si.server.shutdown();
-        si.server.destroy();
-        iterator.remove();
-      } catch(Exception e){
-        e.printStackTrace();
-        retVal = false;
+    synchronized(servers){
+      Iterator<ServerInfo> iterator = servers.iterator();
+      while(iterator.hasNext()){
+        ServerInfo si = iterator.next();
+        try{
+          si.server.shutdown();
+          si.server.destroy();
+          iterator.remove();
+        } catch(Exception e){
+          e.printStackTrace();
+          retVal = false;
+        }
       }
     }
     return retVal;
@@ -133,7 +141,29 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
 
   @Override
   public int getNumConsumers() {
-    return servers.size();
+    synchronized(servers){
+      return servers.size();
+    }
+  }
+
+
+  @Override
+  public boolean killConsumersUncleanly() {
+    boolean retVal = true;
+    Iterator<ServerInfo> iterator = servers.iterator();
+    synchronized(servers){
+      while(iterator.hasNext()){
+        ServerInfo si = iterator.next();
+        try{
+          si.server.shutdown();
+          si.server.destroy();
+        } catch(Exception e){
+          e.printStackTrace();
+          retVal = false;
+        }
+      }
+      return retVal;
+    }
   }
   
 }
