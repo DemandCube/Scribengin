@@ -18,16 +18,16 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   
 
-  config.vm.define :kxae do | kxae |
-    kxae.vm.box = "demandcube/centos-65_x86_64-VB-4.3.8"
+  config.vm.define :ndp do | ndp |
+    ndp.vm.box = "demandcube/centos-65_x86_64-VB-4.3.8"
     
     # Create a private network
-    kxae.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
-    kxae.vm.hostname = "kxae"
-    kxae.vm.synced_folder  "/Users/rcduar/workspace", "/vagrant"
+    ndp.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
+    ndp.vm.hostname = "ndp"
+    ndp.vm.synced_folder  "/Users/rcduar/workspace", "/vagrant"
     
     config.vm.provider :virtualbox do |vb|
-      vb.name = "kxae"
+      vb.name = "ndp"
       vb.customize ["modifyvm", :id, "--memory", "6168"]
       vb.customize ["modifyvm", :id, "--cpus", "2"]
     end
@@ -44,7 +44,7 @@ ssh -D 9999 vagrant@192.168.1.2
 
 Edit your VM's /etc/hosts file to look like this
 ```
-127.0.0.1   kxae localhost
+127.0.0.1   ndp localhost
 ::1         localhost
 ```
 
