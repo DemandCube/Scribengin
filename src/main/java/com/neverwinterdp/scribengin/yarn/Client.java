@@ -89,7 +89,10 @@ public class Client {
   @Parameter(names = {"-"+Constants.OPT_CHECK_POINT_INTERVAL, "--"+Constants.OPT_CHECK_POINT_INTERVAL}, description="Check point interval in milliseconds")
   public long commitCheckPointInterval=500;
   
-  public Client(String appname, String hdfsJar, String applicationMasterClassName, String defaultFs, String yarnSiteXml, List<String> topicList, List<String> kafkaSeedBrokers, int containerMem, int applicationMasterMem) throws Exception{
+  public Client(String appname, String hdfsJar, String applicationMasterClassName, 
+                String defaultFs, String yarnSiteXml, String commitPathPrefix, 
+                String preCommitPathPrefix, List<String> topicList, List<String> kafkaSeedBrokers, 
+                int containerMem, int applicationMasterMem) throws Exception{
     this();
     this.appname = appname;
     this.hdfsJar = hdfsJar;
@@ -100,6 +103,8 @@ public class Client {
     this.applicationMasterMem = applicationMasterMem;
     this.defaultFs = defaultFs;
     this.yarnSiteXml = yarnSiteXml;
+    this.commitPrefix = commitPathPrefix;
+    this.preCommitPrefix = preCommitPathPrefix;
   }
   
   
