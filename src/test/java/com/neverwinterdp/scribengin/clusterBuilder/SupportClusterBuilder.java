@@ -47,6 +47,7 @@ public class SupportClusterBuilder {
 
   
   public void install() throws InterruptedException, IOException {
+    //TODO delete kafka and zk data
     hadoopServer.build(3);
     hadoopConnection = hadoopServer.getUrl();
     kafkaFixture.install();

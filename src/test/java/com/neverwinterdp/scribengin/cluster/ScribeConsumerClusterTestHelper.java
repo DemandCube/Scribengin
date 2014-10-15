@@ -18,12 +18,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.log4j.Logger;
 
 import com.neverwinterdp.scribengin.clusterBuilder.SupportClusterBuilder;
 
 public class ScribeConsumerClusterTestHelper {
   public ScribeConsumerClusterTestHelper() {}
 
+  private static final Logger logger = Logger.getLogger(ScribeConsumerClusterTestHelper.class);
   private String TOPIC = "cluster.test";
   private int numOfMessages = 100;
   private SupportClusterBuilder supportClusterBuilder;
@@ -39,7 +41,7 @@ public class ScribeConsumerClusterTestHelper {
 
   public void setup() throws Exception {
     supportClusterBuilder =
-        new SupportClusterBuilder("0.8.1.1", "127.0.0.1", 2181, "127.0.0.1", 2192);
+        new SupportClusterBuilder("0.8.1.1", "127.0.0.1", 2181, "127.0.0.1", 9092);
     supportClusterBuilder.install();
     Thread.sleep(2000);
   }
@@ -53,11 +55,11 @@ public class ScribeConsumerClusterTestHelper {
   }
 
   public void createKafkaData(int startNum) {
-    //Write numOfMessages to Kafka
+    logger.info("createKafkaData. ");
     Properties producerProps = new Properties();
-    producerProps.put("metadata.broker.list", "localhost:9092");
+    producerProps.put("metadata.broker.list", "127.0.0.1:9092");
     producerProps.put("serializer.class", "kafka.serializer.StringEncoder");
-    producerProps.put("request.required.acks", "1");
+    producerProps.put("request.required.acks", "0");
 
     Producer<String, String> producer =
         new Producer<String, String>(new ProducerConfig(producerProps));
@@ -103,5 +105,4 @@ public class ScribeConsumerClusterTestHelper {
     assertEquals("Data passed into Kafka did not match what was read from HDFS", assertionString,
         readLine);
   }
-
 }
