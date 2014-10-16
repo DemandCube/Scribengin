@@ -74,7 +74,7 @@ Back on the vagrant machine, lets install Java and wget, and setup gradle
 sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel wget -y
 
 #Set up gradle
-cd /path/to/your/workspace/
+cd /vagrant/NeverwinterDP
 ./gradlew
 ```
 
