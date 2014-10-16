@@ -87,6 +87,7 @@ cd /vagrant/NeverwinterDP
 
 We now need to set up and launch kafka  (Only launch once zookeeper is running in the Ambari console)
 ```
+cd ~/
 wget https://archive.apache.org/dist/kafka/0.8.0/kafka_2.8.0-0.8.0.tar.gz
 tar -xzf kafka_2.8.0-0.8.0.tar.gz
 cd kafka_2.8.0-0.8.0
@@ -96,7 +97,7 @@ cd kafka_2.8.0-0.8.0
 
 You'll now need to make a topic in Kafka for Scribengin to consume
 ```
-cd kafka_2.8.0-0.8.0 #Go back to your kafka directory
+cd ~/kafka_2.8.0-0.8.0 #Go back to your kafka directory
 ./bin/kafka-create-topic.sh --zookeeper localhost:2181 --replica 1 partition 1 --topic [YOUR TOPIC NAME GOES HERE]
 ```
 
