@@ -16,22 +16,22 @@ Here's the Vagrantfile to use.
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  
 
-  config.vm.define :ndp do | ndp |
-    ndp.vm.box = "demandcube/centos-65_x86_64-VB-4.3.8"
-    
-    # Create a private network
-    ndp.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
-    ndp.vm.hostname = "ndp"
-    ndp.vm.synced_folder  "/Users/rcduar/workspace", "/vagrant"
-    
-    config.vm.provider :virtualbox do |vb|
-      vb.name = "ndp"
-      vb.customize ["modifyvm", :id, "--memory", "6168"]
-      vb.customize ["modifyvm", :id, "--cpus", "2"]
-    end
-  end
+
+config.vm.define :ndp do | ndp |
+ndp.vm.box = "demandcube/centos-65_x86_64-VB-4.3.8"
+
+# Create a private network
+ndp.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
+ndp.vm.hostname = "ndp"
+ndp.vm.synced_folder  "/Users/rcduar/workspace", "/vagrant"
+
+config.vm.provider :virtualbox do |vb|
+vb.name = "ndp"
+vb.customize ["modifyvm", :id, "--memory", "6168"]
+vb.customize ["modifyvm", :id, "--cpus", "2"]
+end
+end
 end
 ```
 
@@ -68,18 +68,21 @@ Click "OK" to save.  Once saved - Change the mode to "Use proxy localhost:9999 f
 You can now navigate to http://localhost.localdomain:8080 and see the Ambari console
 ```
 
-Back on the vagrant machine, lets install Gradle 1.12 to our home directory while we wait and install Java
+Back on the vagrant machine, lets install Java and wget, and setup gradle
 ```
-sudo yum install wget
-cd ~/
-wget https://services.gradle.org/distributions/gradle-1.12-bin.zip
-unzip gradle-1.12-bin.zip
-echo "export PATH=$PATH:/home/vagrant/gradle-1.12/bin/" >> ~/.bashrc
-source ~/.bashrc
-
-
 #Installing java 
-sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel
+sudo yum install java-1.7.0-openjdk java-1.7.0-openjdk-devel wget -y
+
+#Set up gradle
+cd /path/to/your/workspace/
+./gradlew
+```
+
+Now lets build Scribengin - to do this, lets use our handy dandy Neverwinter scripts
+```
+#This is the folder that's mounted from your host machine via the Vagrantfile
+cd /vagrant/NeverwinterDP
+./neverwinterdp.sh gradlew clean build install
 ```
 
 We now need to set up and launch kafka  (Only launch once zookeeper is running in the Ambari console)
@@ -87,6 +90,7 @@ We now need to set up and launch kafka  (Only launch once zookeeper is running i
 wget https://archive.apache.org/dist/kafka/0.8.0/kafka_2.8.0-0.8.0.tar.gz
 tar -xzf kafka_2.8.0-0.8.0.tar.gz
 cd kafka_2.8.0-0.8.0
+#This next command will be an ongoing process, so you'll probably want to launch another SSH session to run it
 ./bin/kafka-server-start.sh ./config/server.properties
 ```
 
@@ -96,14 +100,6 @@ cd kafka_2.8.0-0.8.0 #Go back to your kafka directory
 ./bin/kafka-create-topic.sh --zookeeper localhost:2181 --replica 1 partition 1 --topic [YOUR TOPIC NAME GOES HERE]
 ```
 
-
-Now lets build Scribengin - to do this, lets use our handy dandy Neverwinter scripts
-```
-#This is the folder that's mounted from your host machine via the Vagrantfile
-cd /vagrant/NeverwinterDP
-./neverwinterdp.sh gradle clean build install
-cd ../Scribengin
-```
 
 Edit what user you run as when you work with Hadoop and make sure java can find your hadoop libraries
 ```
@@ -149,6 +145,7 @@ To run ScribeMaster in yarn mode:
 -------------------
 ```
 #On the VM
+cd /vagrant/Scribengin
 java -cp build/libs/scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeMaster --topic scribe1,scribe2 --broker_list 127.0.0.1:9092 --partition 0 --checkpoint_interval 500 --mode yarn
 ```
 
@@ -156,5 +153,6 @@ To run ScribeMaster in non-yarn mode:
 -------------------
 ```
 #On the VM
+cd /vagrant/Scribengin
 java -cp build/libs/scribengin-1.0-SNAPSHOT.jar com.neverwinterdp.scribengin.ScribeMaster --topic scribe1,scribe2 --broker_list 127.0.0.1:9092 --partition 0 --checkpoint_interval 500
 ```
