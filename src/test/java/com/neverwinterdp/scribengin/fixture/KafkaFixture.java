@@ -7,12 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 public class KafkaFixture extends Fixture {
+  
+  private static final Logger logger = Logger.getLogger(KafkaFixture.class);
   private static int nextBrokerId =1;
   private Process proc;
-  private String host;
-  private int port;
   private String zkHost;
   private int zkPort;
   private String version;
@@ -81,6 +82,7 @@ public class KafkaFixture extends Fixture {
     BufferedReader br = new BufferedReader(new InputStreamReader(this.proc.getInputStream()));
     String line = null;
     while ((line = br.readLine()) != null) {
+      System.out.println(line);
       if (line.matches(WAIT_FOR_REGEX)) {
         break;
       }
@@ -95,5 +97,27 @@ public class KafkaFixture extends Fixture {
     nextBrokerId--;
   }
 
+  @Override
+  public void install() throws IOException {
+    logger.info("Installing kafka ");
+    Process p = Runtime.getRuntime().exec("script/bootstrap_kafka.sh servers");
+    try {
+      p.waitFor();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(p.getInputStream()));
+    String line = "";
+    while ((line = reader.readLine()) != null) {
+      System.out.println(line);//xxx
+    }
+    System.out.println("Finished installing kafka.");
+  }
+  @Override
+  public String toString() {
+    return "KafkaFixture [proc=" + proc + ", host=" + host + ", port=" + port + ", zkHost="
+        + zkHost + ", zkPort=" + zkPort + ", version=" + version + ", brokerId=" + brokerId + "]";
+  }
 }
 

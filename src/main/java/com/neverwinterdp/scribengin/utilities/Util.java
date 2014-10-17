@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.utilities;
 import java.io.IOException;
+import java.net.Socket;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,5 +26,12 @@ public class Util {
     resource.setTimestamp(status.getModificationTime());
     resource.setSize(status.getLen());
     return resource;
+  }
+  public static boolean isOpen(int port) {
+    try (Socket ignored = new Socket("127.0.0.1", port)) {
+      return true;
+    } catch (IOException ignored) {
+      return false;
+    }
   }
 }
