@@ -32,6 +32,10 @@ The Problem
 ======
 The core problem is how to reliably and at scale have a distributed application write data to multiple destination data systems.  This requires the ability to todo data mapping, partitioning with optional filtering to the destination system.
 
+Status
+======
+Currently we are reorganizing the code for V2 of Scribengin to make things more modular and better organized.
+
 Definitions
 ======
 
