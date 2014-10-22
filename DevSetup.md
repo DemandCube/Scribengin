@@ -53,8 +53,7 @@ On your vagrant machine, set up our single node cluster:
 ```
 git clone https://github.com/DemandCube/hadoop-single-node-cluster
 cd hadoop-single-node-cluster
-sudo ./INSTALL-HADOOP
-#This will take a long time. Go get some coffee
+sudo ./INSTALL-HADOOP -y
 ```
 
 On your host machine: to watch the process of installation with Ambari, you'll need to install foxyproxy in FireFox or Chrome:
