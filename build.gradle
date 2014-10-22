@@ -39,7 +39,7 @@ repositories {
 dependencies {
   compile group: 'org.apache.kafka', name: 'kafka_2.10', version:'0.8.1.1'
   compile group: 'com.beust', name: 'jcommander', version:'1.30'
-  compile group: 'commons-io', name: 'commons-io', version: '2.4'
+  //compile group: 'commons-io', name: 'commons-io', version: '2.4'
 
   compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'2.2.0'
   compile group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.2.0'
@@ -92,15 +92,14 @@ def doRelease(String releaseDir) {
   }
 
   def jars = [
-    "lib.common", "test-framework", "queuengin",
-    "jackson-core-asl", "jackson-mapper-asl",
-    "kafka", "scala-library", "zkclient", "zookeeper",
-    "log4j", "slf4j-api", "slf4j-simple", "slf4j-log4j12",
-    "metrics-core", "metrics-annotation"
+    //"lib.common", "test-framework", "queuengin",
+    //"scala-library", "zkclient", "zookeeper",
+    //"log4j", "slf4j-api", "slf4j-simple", "slf4j-log4j12",
+    //"metrics-core", "metrics-annotation"
   ]
 
   println "Copy the dependency library"
-  project(':sparkngin').configurations.compile.each { File file ->
+  configurations.compile.each { File file ->
     if(isIn(jars, file)) {
       println "  Copy $file.name to Scribengin/libs"
       copy {
