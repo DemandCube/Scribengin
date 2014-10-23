@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.utilities;
+package com.neverwinterdp.scribengin.writer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -8,7 +8,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-public class StringRecordWriter {
+public class StringRecordWriter extends RecordWriter {
   private FSDataOutputStream os;
   private FileSystem fs;
 
@@ -16,6 +16,7 @@ public class StringRecordWriter {
     Configuration conf = new Configuration();
     conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+
 
     fs = FileSystem.get(URI.create(uri), conf);
     Path path = new Path(uri);
@@ -30,11 +31,13 @@ public class StringRecordWriter {
     }
   }
 
+  @Override
   public void write(byte[] bytes) throws IOException {
     os.write(bytes);
     os.write('\n');
   }
 
+  @Override
   public void close() {
     try {
       os.close();

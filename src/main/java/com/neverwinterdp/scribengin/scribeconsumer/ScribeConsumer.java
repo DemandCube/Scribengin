@@ -47,7 +47,9 @@ import com.neverwinterdp.scribengin.partitioner.AbstractPartitioner;
 import com.neverwinterdp.scribengin.partitioner.DatePartitioner;
 import com.neverwinterdp.scribengin.partitioner.DumbPartitioner;
 import com.neverwinterdp.scribengin.utilities.LostLeadershipException;
-import com.neverwinterdp.scribengin.utilities.StringRecordWriter;
+import com.neverwinterdp.scribengin.writer.RecordWriter;
+import com.neverwinterdp.scribengin.writer.StringRecordWriter;
+
 
 public class ScribeConsumer {
   // Random comments:
@@ -624,7 +626,7 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
-      StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
+      RecordWriter writer = new StringRecordWriter(currTmpDataPath);
       synchronized (this) {
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
