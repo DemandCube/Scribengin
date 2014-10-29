@@ -51,7 +51,10 @@ do
 done
 
 cd $CWD/Scribengin
-java -cp $SCRIBEJAR com.neverwinterdp.scribengin.ScribeMaster --topic $TOPICS --broker_list 127.0.0.1:9092 --partition 0 --checkpoint_interval 500 --mode yarn &
+hdfs dfs -mkdir -p /user/yarn/ || true
+hdfs dfs -chown yarn:yarn /user/yarn/ || true
+java -cp $SCRIBEJAR com.neverwinterdp.scribengin.ScribeMaster --topic $TOPICS --broker_list 127.0.0.1:9092 --partition 0 --mode yarn --pre_commit_path_prefix /user/yarn/tmp --commit_path_prefix /user/yarn   --clean_start --hdfsPath hdfs://localhost/ &
+#--hdfsPath hdfs://127.0.0.1:50010 --checkpoint_interval 5000 
 SCRIBE_PROC_ID=$!
 echo "Scribengin process ID: $SCRIBE_PROC_ID"
 

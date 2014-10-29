@@ -16,7 +16,10 @@ public class StringRecordWriter {
     Configuration conf = new Configuration();
     conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
     conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
-
+    conf.addResource(new Path("/etc/hadoop/conf/yarn-site.xml"));
+    conf.addResource(new Path("/etc/hadoop/conf/mapred-site.xml"));
+    
+    
     fs = FileSystem.get(URI.create(uri), conf);
     Path path = new Path(uri);
 
@@ -42,10 +45,10 @@ public class StringRecordWriter {
       //TODO: log
     }
 
-    try {
-      fs.close();
-    } catch (IOException e) {
+    //try {
+      //fs.close();
+    //} catch (IOException e) {
       // TODO: log
-    }
+    //}
   }
 }

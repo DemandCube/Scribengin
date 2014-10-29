@@ -59,10 +59,12 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
                           conf.yarnSiteXml, 
                           conf.COMMIT_PATH_PREFIX,
                           conf.PRE_COMMIT_PATH_PREFIX,
+                          conf.hdfsPath,
                           topics,
                           conf.getBrokerListAsListOfStrings(), 
                           conf.containerMem, 
-                          conf.applicationMasterMem
+                          conf.applicationMasterMem,
+                          conf.cleanStart
                         );
     } catch (Exception e) {
       e.printStackTrace();
