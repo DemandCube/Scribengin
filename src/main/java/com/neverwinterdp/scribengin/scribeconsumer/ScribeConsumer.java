@@ -662,6 +662,7 @@ public class ScribeConsumer {
           writer.write(bytes);
           writer.close();
           msgReadCnt++;
+          Thread.sleep(5000);
         }// for
         
       }

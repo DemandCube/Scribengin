@@ -42,6 +42,7 @@ public class StringRecordWriter {
     try {
       os.close();
     } catch (IOException e) {
+      e.printStackTrace();
       //TODO: log
     }
 
