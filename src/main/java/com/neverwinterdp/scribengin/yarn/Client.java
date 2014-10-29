@@ -125,7 +125,12 @@ public class Client {
     this.yarnClient = YarnClient.createYarnClient();
     
     this.conf.addResource(new Path(this.yarnSiteXml));
-    this.conf.set("fs.defaultFS", this.defaultFs);
+    this.conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
+    this.conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+    this.conf.addResource(new Path("/etc/hadoop/conf/mapred-site.xml"));
+    //this.conf.set("fs.defaultFS", "hdfs://Scribengin.sandbox.neverwinterdp.com:8020");
+    //this.conf.set("fs.defaultFS", this.defaultFs);
+    
     
     // Yarn Client's initialization determines the RM's IP address and port.
     // These values are extracted from yarn-site.xml or yarn-default.xml.
