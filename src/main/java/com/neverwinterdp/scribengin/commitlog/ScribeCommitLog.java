@@ -172,6 +172,6 @@ public class ScribeCommitLog {
   public void clear() throws IOException {
     // fs.truncate(path);
     fs.delete(path, true);
-    fsClose();
+    //fsClose();
   }
 }
