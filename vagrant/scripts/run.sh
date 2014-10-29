@@ -43,7 +43,7 @@ hdfs dfs -rm /scribengin-1.0-SNAPSHOT.jar || true
 #Move new one to hdfs
 hdfs dfs -copyFromLocal $SCRIBEJAR /
 
-
+cd $CWD/kafka_2.8.0-0.8.0
 for X in $@
 do
   echo "CREATING TOPIC: $X"
@@ -53,7 +53,7 @@ done
 cd $CWD/Scribengin
 hdfs dfs -mkdir -p /user/yarn/ || true
 hdfs dfs -chown yarn:yarn /user/yarn/ || true
-java -cp $SCRIBEJAR com.neverwinterdp.scribengin.ScribeMaster --topic $TOPICS --broker_list 127.0.0.1:9092 --partition 0 --mode yarn --pre_commit_path_prefix /user/yarn/tmp --commit_path_prefix /user/yarn   --clean_start --hdfsPath hdfs://localhost/ &
+java -cp $SCRIBEJAR com.neverwinterdp.scribengin.ScribeMaster --topic $TOPICS --broker_list 127.0.0.1:9092 --partition 0  --pre_commit_path_prefix /user/yarn/tmp --commit_path_prefix /user/yarn   --clean_start --hdfsPath hdfs://localhost/ --mode yarn &
 #--hdfsPath hdfs://127.0.0.1:50010 --checkpoint_interval 5000 
 SCRIBE_PROC_ID=$!
 echo "Scribengin process ID: $SCRIBE_PROC_ID"
