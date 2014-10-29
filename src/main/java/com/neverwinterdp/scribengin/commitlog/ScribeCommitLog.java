@@ -1,24 +1,18 @@
 package com.neverwinterdp.scribengin.commitlog;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
@@ -48,6 +42,9 @@ public class ScribeCommitLog {
       conf = new Configuration();
       conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
       conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+      conf.addResource(new Path("/etc/hadoop/conf/yarn-site.xml"));
+      conf.addResource(new Path("/etc/hadoop/conf/mapred-site.xml"));
+      
       fs = FileSystem.get(URI.create(uri), conf);
     } else {
       // local
@@ -67,15 +64,17 @@ public class ScribeCommitLog {
 
     ScribeLogEntry entry = new ScribeLogEntry(startOffset, endOffset, srcPath, destPath);
     String jsonStr = ScribeLogEntry.toJson(entry);
+    
     os.write(jsonStr.getBytes());
     os.write('\n');
 
     try {
       os.close();
     } catch (IOException e) {
-      //TODO: log
+      log.error(e.getMessage());
+      e.printStackTrace();
     }
-    fsClose();
+    //fsClose();
   }
 
   public void read() throws IOException
@@ -140,7 +139,7 @@ public class ScribeCommitLog {
         }
       }
 
-      fsClose();
+      //fsClose();
     }
 
     Collections.reverse(logEntryList);
@@ -161,7 +160,8 @@ public class ScribeCommitLog {
     try {
       fs.close();
     } catch (IOException e) {
-      // TODO: log
+      log.error(e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -172,5 +172,6 @@ public class ScribeCommitLog {
   public void clear() throws IOException {
     // fs.truncate(path);
     fs.delete(path, true);
+    fsClose();
   }
 }

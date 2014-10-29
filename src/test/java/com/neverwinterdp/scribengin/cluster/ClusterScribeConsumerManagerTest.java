@@ -47,6 +47,7 @@ public class ClusterScribeConsumerManagerTest{
   public void ScribeConsumerClusterTest() throws InterruptedException{
     manager = new ClusterScribeConsumerManager();
     ScribeConsumerConfig c = new ScribeConsumerConfig();
+    System.err.println(helper.getHadoopConnection());
     c.hdfsPath = helper.getHadoopConnection();
     c.topic = helper.getTopic();
     List<HostPort> bList = new LinkedList<HostPort>();

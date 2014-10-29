@@ -11,7 +11,7 @@ public class ScribeConsumerConfig {
   public  String COMMIT_PATH_PREFIX = "/committed";
   public String topic = "scribe";
   public int partition = 0;
-  public long commitCheckPointInterval = 500; // ms
+  public long commitCheckPointInterval = 5000; // ms
   public String hdfsPath = null;
   public List<HostPort> brokerList; // list of (host:port)s
   

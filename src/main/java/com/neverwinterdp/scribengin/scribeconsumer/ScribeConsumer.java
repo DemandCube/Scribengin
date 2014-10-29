@@ -245,6 +245,7 @@ public class ScribeConsumer {
   }
 
   private void commitData(String src, String dest) {
+    LOG.info(">> commit: " + this.topic);
     FileSystem fs = null;
     Path destPath = new Path(dest);
 
@@ -270,12 +271,11 @@ public class ScribeConsumer {
   }
 
   private synchronized void commit() {
-    LOG.info(">> committing: " + this.topic);
+    //LOG.info(">> committing: " + this.topic);
 
-    if (lastCommittedOffset != offset) {
+    if (lastCommittedOffset != offset || (this.cleanStart == true && offset == 0 && lastCommittedOffset == 0)) {
       //Commit
-
-      try {
+      
         // First record the to-be taken action in the WAL.
         // Then, mv the tmp data file to it's location.
         long startOffset = lastCommittedOffset + 1;
@@ -285,19 +285,25 @@ public class ScribeConsumer {
         LOG.info("\ttmpDataPath : " + currTmpDataPath); //xxx
         LOG.info("\tDataPath    : " + currDataPath); //xxx
 
-        ScribeCommitLog log = scribeCommitLogFactory.build();
-        log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+        ScribeCommitLog log = null;
+        try {
+          log = scribeCommitLogFactory.build();
+        } catch (IOException e) {
+          LOG.error(e.getMessage());
+          e.printStackTrace();
+        }
+        try {
+          log.record(startOffset, endOffset, currTmpDataPath, currDataPath);
+        } catch (NoSuchAlgorithmException | IOException e) {
+          LOG.error(e.getMessage());
+          e.printStackTrace();
+        }
+        LOG.info(">> committing: " + this.topic);
         commitData(currTmpDataPath, currDataPath);
 
         lastCommittedOffset = offset;
         generateTmpAndDestDataPaths();
-      } catch (IOException e) {
-        // TODO : LOG this error
-        e.printStackTrace();
-      } catch (NoSuchAlgorithmException e) {
-        // TODO : LOG this error
-        e.printStackTrace();
-      }
+      
     }
     try{
       scheduleCommitTimer();
@@ -315,7 +321,7 @@ public class ScribeConsumer {
   }
 
   private void generateTmpAndDestDataPaths() {
-    long ts = System.currentTimeMillis() / 1000L;
+    long ts = System.currentTimeMillis();// / 1000L;
 
     this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX + "/scribe.data." + ts;
     this.currDataPath =
@@ -404,11 +410,20 @@ public class ScribeConsumer {
     // Corrupted log file
     // Clean up. Delete the tmp data file if present.
     FileStatus[] fileStatusArry = fs.globStatus(new Path(getTmpDataPathPattern()));
+    //So we don't try to write to a bad path
+    generateTmpAndDestDataPaths();
     for (int i = 0; i < fileStatusArry.length; i++) {
       FileStatus fileStatus = fileStatusArry[i];
-      fs.delete(fileStatus.getPath());
+      try{
+        fs.delete(fileStatus.getPath(),false);
+      }
+      catch(Exception e){
+        LOG.error(e.getMessage());
+        e.printStackTrace();
+      }
     }
     fs.close();
+    
   }
 
   private ScribeLogEntry getLatestValidEntry(ScribeCommitLog log) {
@@ -417,8 +432,9 @@ public class ScribeConsumer {
       do {
         entry = log.getLatestEntry();
       } while (entry != null && !entry.isCheckSumValid());
-    } catch (NoSuchAlgorithmException ex) {
-      //TODO log
+    } catch (NoSuchAlgorithmException e) {
+      LOG.error(e.getMessage());
+      e.printStackTrace();
     }
     return entry;
   }
@@ -452,10 +468,10 @@ public class ScribeConsumer {
         entry = getLatestValidEntry(log);
       }
     } catch (IOException e) {
-      //TODO: log.warn
+      LOG.error(e.getMessage());
       e.printStackTrace();
     } catch (NoSuchAlgorithmException e) {
-      //TODO: log.warn
+      LOG.error(e.getMessage());
       e.printStackTrace();
     }
 
@@ -580,6 +596,8 @@ public class ScribeConsumer {
       long earliestOffset =
           getEarliestOffsetFromKafka(topic, partition, kafka.api.OffsetRequest.EarliestTime());
       if (earliestOffset == lastCommittedOffset) {
+        LOG.error("Scribe consumer is consuming from the first offset yet --clean_start was not defined. Throwing a IllegalStateException."+
+                  "This error means that we have detected an abnormality - normally our latestOffset shouldn't match the lastCommittedOffset.");
         throw new IllegalStateException(
             "Scribe consumer is consuming from the first offset yet --clean_start was not defined.");
       }
@@ -588,7 +606,7 @@ public class ScribeConsumer {
     LOG.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
 
     while (true) {
-      LOG.info(">> offset: " + offset); //xxx
+      //LOG.info(">> offset: " + offset); //xxx
       FetchRequest req = new FetchRequestBuilder()
           .clientId(getClientName())
           .addFetch(topic, partition, offset, 100000)
@@ -624,8 +642,8 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
-      StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
       synchronized (this) {
+        
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
           if (currentOffset < offset) {
@@ -638,14 +656,15 @@ public class ScribeConsumer {
           byte[] bytes = new byte[payload.limit()];
           payload.get(bytes);
 
-          LOG.info(String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+          LOG.info("Writing to tmp: "+String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
+          StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
           writer.write(bytes);
-
+          writer.close();
           msgReadCnt++;
         }// for
+        
       }
-      writer.close();
 
       if (msgReadCnt == 0) {
         try {
