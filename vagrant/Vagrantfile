@@ -15,7 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #singlenodecluster.vm.provision :shell,
     #  inline: "cd /vagrant/scripts && ./setup.sh"
     singlenodecluster.vm.provision :shell,
-      inline: "cd /vagrant/scripts && nohup ./run.sh scribe1 scribe2 0<&- &> scribemaster.log &"
+      inline: "cd /vagrant/scripts && nohup ./run.sh -c scribe1 scribe2 0<&- &> scribemaster.log &"
     
       
     config.vm.provider :virtualbox do |vb|
