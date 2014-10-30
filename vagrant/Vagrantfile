@@ -12,10 +12,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     singlenodecluster.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
     singlenodecluster.vm.hostname = "singlenodecluster"
     singlenodecluster.vm.synced_folder  "./", "/vagrant", disabled: false
-    #singlenodecluster.vm.provision :shell,
-    #  inline: "cd /vagrant/scripts && ./setup.sh"
     singlenodecluster.vm.provision :shell,
-      inline: "cd /vagrant/scripts && nohup ./run.sh -c scribe1 scribe2 0<&- &> scribemaster.log &"
+      inline: "cd /vagrant/scripts && ./setup.sh"
+    singlenodecluster.vm.provision :shell,
+      inline: "cd /vagrant/scripts/kafka_2.8.0-0.8.0 && nohup ./bin/kafka-server-start.sh ./config/server.properties 0<&- &> kafka.log &",
+      privileged: false
+    singlenodecluster.vm.provision :shell,
+      inline: "cd /vagrant/scripts && nohup ./run.sh -c scribe1 scribe2 0<&- &> scribemaster.log &",
+      privileged: false
     
       
     config.vm.provider :virtualbox do |vb|

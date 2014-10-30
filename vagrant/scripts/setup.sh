@@ -42,10 +42,10 @@ wget https://archive.apache.org/dist/kafka/0.8.0/kafka_2.8.0-0.8.0.tar.gz
 tar -xzf kafka_2.8.0-0.8.0.tar.gz
 
 #Launch kafka
-cd kafka_2.8.0-0.8.0
+#cd kafka_2.8.0-0.8.0
 #Launch Kafka at system startup
 echo $CWD/kafka_2.8.0-0.8.0/bin/kafka-server-start.sh $CWD/kafka_2.8.0-0.8.0/config/server.properties >> /etc/rc.d/rc.local
 #Launch Kafka now
-./bin/kafka-server-start.sh ./config/server.properties &
-KAFKA_PROC_ID=$!
-echo "Kafka process ID: $KAFKA_PROC_ID"
+#./bin/kafka-server-start.sh ./config/server.properties &
+#KAFKA_PROC_ID=$!
+#echo "Kafka process ID: $KAFKA_PROC_ID"
