@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.scribeconsumer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -187,7 +188,7 @@ public class ScribeConsumer {
           64 * 1024, // buffersize
           getClientName());
 
-      scheduleCommitTimer();
+      //scheduleCommitTimer();
     }
     return r;
   }
@@ -245,7 +246,7 @@ public class ScribeConsumer {
   }
 
   private void commitData(String src, String dest) {
-    LOG.info(">> commit: " + this.topic);
+    LOG.info(">> atomic commit: " + this.topic);
     FileSystem fs = null;
     Path destPath = new Path(dest);
 
@@ -298,7 +299,7 @@ public class ScribeConsumer {
           LOG.error(e.getMessage());
           e.printStackTrace();
         }
-        LOG.info(">> committing: " + this.topic);
+        LOG.info(">> committing scribelog: " + this.topic);
         commitData(currTmpDataPath, currDataPath);
 
         lastCommittedOffset = offset;
@@ -323,9 +324,9 @@ public class ScribeConsumer {
   private void generateTmpAndDestDataPaths() {
     long ts = System.currentTimeMillis();// / 1000L;
 
-    this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX + "/scribe.data." + ts;
+    this.currTmpDataPath = PRE_COMMIT_PATH_PREFIX + "/scribe.data." + topic + "."+ ts;
     this.currDataPath =
-        COMMIT_PATH_PREFIX + "/" + this.partitioner.getPartition() + "/scribe.data." + ts;
+        COMMIT_PATH_PREFIX + "/" + this.partitioner.getPartition() + "/scribe.data." + topic + "."+ts;
 
     if (this.hdfsPath != null) {
       this.currTmpDataPath = this.hdfsPath + this.currTmpDataPath;
@@ -604,7 +605,9 @@ public class ScribeConsumer {
       offset = lastCommittedOffset;
     }
     LOG.info(">> lastCommittedOffset: " + lastCommittedOffset); //xxx
-
+    
+    scheduleCommitTimer();
+    
     while (true) {
       //LOG.info(">> offset: " + offset); //xxx
       FetchRequest req = new FetchRequestBuilder()
@@ -642,8 +645,8 @@ public class ScribeConsumer {
 
       long msgReadCnt = 0;
 
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       synchronized (this) {
-        
         for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
           long currentOffset = messageAndOffset.offset();
           if (currentOffset < offset) {
@@ -655,14 +658,11 @@ public class ScribeConsumer {
 
           byte[] bytes = new byte[payload.limit()];
           payload.get(bytes);
-
-          LOG.info("Writing to tmp: "+String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
+          outputStream.write(bytes);
+          outputStream.write("\n".getBytes());
+          LOG.info("Concatenating for tmp string: "+String.valueOf(messageAndOffset.offset()) + ": " + new String(bytes));
           // Write to HDFS /tmp partition
-          StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
-          writer.write(bytes);
-          writer.close();
           msgReadCnt++;
-          Thread.sleep(5000);
         }// for
         
       }
@@ -672,6 +672,13 @@ public class ScribeConsumer {
           Thread.sleep(1000); //Didn't read anything, so go to sleep for awhile.
         } catch (InterruptedException e) {
         }
+      }
+      else{
+        LOG.info("Writing to tmp: "+new String(outputStream.toByteArray()));
+        StringRecordWriter writer = new StringRecordWriter(currTmpDataPath);
+        writer.write(outputStream.toByteArray());
+        writer.close();
+        outputStream.close();
       }
     } // while
   }
