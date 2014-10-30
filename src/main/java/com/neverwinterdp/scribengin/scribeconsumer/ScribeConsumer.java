@@ -252,6 +252,11 @@ public class ScribeConsumer {
 
     try {
       fs = fileSystemFactory.build(URI.create(src));
+      //If source doesn't exist, don't commit
+      if(!fs.exists(new Path(src))){
+        return;
+      }
+      
       if (!fs.exists(destPath.getParent())) {
         fs.mkdirs(destPath.getParent());
       }
