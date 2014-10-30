@@ -18,6 +18,18 @@ Additonal:
 
 This is part of [NeverwinterDP the Data Pipeline for Hadoop](https://github.com/DemandCube/NeverwinterDP)
 
+Running
+====
+To get your VM up and running:
+```
+git clone git://github.com/DemandCube/Scribengin
+cd Scribengin/vagrant
+vagrant up
+```
+
+For more info on how it all works take a look at [The DevSetup Guide] (https://github.com/DemandCube/Scribengin/blob/master/DevSetup.md)
+
+
 Community
 ====
 - [Mailing List](https://groups.google.com/forum/#!forum/scribengin)
