@@ -27,8 +27,10 @@ public class StringRecordWriter {
     //System.out.println("dfs.support.append is set to: " + flag);
 
     if (fs.exists(path)) {
+      //System.out.println("!!!!!!! APPENDING to "+path.toString());
       os = fs.append(path);
     } else {
+      //System.out.println("!!!!!!! CREATING "+path.toString());
       os = fs.create(path);
     }
   }
