@@ -42,6 +42,11 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
       if(!this.startNewConsumer(new ScribeConsumerConfig(conf))){
         retVal = false;
       }
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
     return retVal;
   }
