@@ -1,0 +1,31 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+#Installs hadoop-single-node-cluster with minimal packages for yarn development
+#Gets Scribengin ready to go and runs it
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.define :singlenodecluster do | singlenodecluster |
+    singlenodecluster.vm.box = "demandcube/centos-65_x86_64-VB-4.3.8"
+    singlenodecluster.vm.network :private_network, ip: "192.168.1.2", :netmask => "255.255.0.0" 
+    singlenodecluster.vm.hostname = "singlenodecluster"
+    singlenodecluster.vm.synced_folder  "./", "/vagrant", disabled: false
+    singlenodecluster.vm.provision :shell,
+      inline: "cd /vagrant/scripts && ./setup.sh"
+    singlenodecluster.vm.provision :shell,
+      inline: "cd /vagrant/scripts/kafka_2.8.0-0.8.0 && nohup ./bin/kafka-server-start.sh ./config/server.properties 0<&- &> kafka.log &",
+      privileged: false
+    singlenodecluster.vm.provision :shell,
+      inline: "cd /vagrant/scripts && nohup ./run.sh -c scribe1 scribe2 0<&- &> scribemaster.log &",
+      privileged: false
+    
+      
+    config.vm.provider :virtualbox do |vb|
+      vb.name = "singlenodecluster"
+      vb.customize ["modifyvm", :id, "--memory", "6168"]
+      vb.customize ["modifyvm", :id, "--cpus", "2"]
+    end
+  end
+end

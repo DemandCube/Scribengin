@@ -106,6 +106,8 @@ public class ClusterScribeConsumerManager extends AbstractScribeConsumerManager{
           LOG.error("Server in bad state.  Thread state: "+state.toString()+" Topic: "+si.conf.topic);
           si.conf.cleanStart = false;
           toAdd.add(new ScribeConsumerConfig(si.conf));
+          si.server.shutdown();
+          si.server.destroy();
           it.remove();
         }
         else {

@@ -7,18 +7,14 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
@@ -43,39 +39,72 @@ public class ScribeCommitLog {
     Configuration conf;
     path = new Path(uri);
 
-    if (useLocalFS == false) {
+    //if (useLocalFS == false) {
       // hdfs
       conf = new Configuration();
       conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
       conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
+      conf.addResource(new Path("/etc/hadoop/conf/yarn-site.xml"));
+      conf.addResource(new Path("/etc/hadoop/conf/mapred-site.xml"));
+      
       fs = FileSystem.get(URI.create(uri), conf);
-    } else {
+    //} else {
       // local
       // It's unit test's responsiblility to set fs.
-    }
+    //}
   }
 
   public void record(long startOffset, long endOffset, String srcPath, String destPath)
       throws NoSuchAlgorithmException, IOException
   {
-    FSDataOutputStream os;
+    FSDataOutputStream os = null;
+    //appending doesn't work
+    //So read in old file
+    //Write out new file
     if (fs.exists(path)) {
-      os = fs.append(path);
-    } else {
+      //this append nonsense doesn't work
+      //os = fs.append(path);
+      
+      //read in the old log
+      BufferedReader br=new BufferedReader(new InputStreamReader(fs.open(path)));
+      String finalLine="";
+      String line=br.readLine();
+      finalLine += line;
+      while (line != null){
+        line = br.readLine();
+        finalLine += line;
+      }
+      
       os = fs.create(path);
+      if(finalLine != null && !finalLine.isEmpty()){
+        os.write(finalLine.getBytes());
+        
+        ScribeLogEntry entry = new ScribeLogEntry(startOffset, endOffset, srcPath, destPath);
+        String jsonStr = ScribeLogEntry.toJson(entry);
+        os.write(jsonStr.getBytes());
+        os.write('\n');
+        
+      }
+    }
+    //Create the new file
+    else {
+      os = fs.create(path);
+      ScribeLogEntry entry = new ScribeLogEntry(startOffset, endOffset, srcPath, destPath);
+      String jsonStr = ScribeLogEntry.toJson(entry);
+      os.write(jsonStr.getBytes());
+      os.write('\n');
     }
 
-    ScribeLogEntry entry = new ScribeLogEntry(startOffset, endOffset, srcPath, destPath);
-    String jsonStr = ScribeLogEntry.toJson(entry);
-    os.write(jsonStr.getBytes());
-    os.write('\n');
-
-    try {
-      os.close();
-    } catch (IOException e) {
-      //TODO: log
+    //close
+    if(os != null){
+      try {
+        os.close();
+      } catch (IOException e) {
+        log.error(e.getMessage());
+        e.printStackTrace();
+      }
+      //fsClose();
     }
-    fsClose();
   }
 
   public void read() throws IOException
@@ -140,7 +169,7 @@ public class ScribeCommitLog {
         }
       }
 
-      fsClose();
+      //fsClose();
     }
 
     Collections.reverse(logEntryList);
@@ -161,7 +190,8 @@ public class ScribeCommitLog {
     try {
       fs.close();
     } catch (IOException e) {
-      // TODO: log
+      log.error(e.getMessage());
+      e.printStackTrace();
     }
   }
 
@@ -171,6 +201,10 @@ public class ScribeCommitLog {
    * */
   public void clear() throws IOException {
     // fs.truncate(path);
+    System.out.println("DELETING LOG "+path.toString());
     fs.delete(path, true);
+    while(fs.exists(path)){}
+    System.out.println("DELETING LOG COMPLETE");
+    //fsClose();
   }
 }

@@ -42,6 +42,11 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
       if(!this.startNewConsumer(new ScribeConsumerConfig(conf))){
         retVal = false;
       }
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
     return retVal;
   }
@@ -59,10 +64,12 @@ public class YarnScribeConsumerManager extends AbstractScribeConsumerManager{
                           conf.yarnSiteXml, 
                           conf.COMMIT_PATH_PREFIX,
                           conf.PRE_COMMIT_PATH_PREFIX,
+                          conf.hdfsPath,
                           topics,
                           conf.getBrokerListAsListOfStrings(), 
                           conf.containerMem, 
-                          conf.applicationMasterMem
+                          conf.applicationMasterMem,
+                          conf.cleanStart
                         );
     } catch (Exception e) {
       e.printStackTrace();
