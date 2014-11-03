@@ -5,6 +5,10 @@ apply plugin: 'maven'
 archivesBaseName = 'scribengin.v2'
 
 eclipse {
+  project {
+    name = 'scribengin.v2'
+  }
+
   classpath {
     downloadSources=true
   }

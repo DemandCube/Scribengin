@@ -17,6 +17,10 @@ task wrapper(type: Wrapper) {
 }
 
 eclipse {
+  project {
+    name = 'scribengin.v1'
+  }
+
   classpath {
     downloadSources=true
   }
