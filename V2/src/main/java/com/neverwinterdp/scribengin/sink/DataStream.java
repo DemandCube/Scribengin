@@ -1,7 +1,6 @@
-package com.neverwinterdp.scribengin.dataflow;
+package com.neverwinterdp.scribengin.sink;
 
 public interface DataStream {
   public int getIndex() ;
-  public DataStreamReader getReader() ;
   public DataStreamWriter getWriter() ;
 }

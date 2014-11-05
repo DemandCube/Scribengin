@@ -1,20 +1,20 @@
-package com.neverwinterdp.scribengin.dataflow;
+package com.neverwinterdp.scribengin.sink;
 
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.dataflow.ri.DataFlowImpl;
+import com.neverwinterdp.scribengin.sink.ri.SinkImpl;
 
-public class DataFlowUnitTest {
+public class SinkUnitTest {
   @Test
-  public void testDataFlow() throws Exception {
-    DataFlow dataflow = new DataFlowImpl("RI") ;
+  public void testSink() throws Exception {
+    Sink dataflow = new SinkImpl("RI") ;
     test(dataflow);
   }
   
-  private void test(DataFlow dataFlow) throws Exception {
+  private void test(Sink dataFlow) throws Exception {
     for(int i = 0; i < 5; i++) {
       DataStream stream = dataFlow.newDataStream() ;
       DataStreamWriter streamWriter = stream.getWriter() ;
@@ -26,13 +26,6 @@ public class DataFlowUnitTest {
     DataStream[] streams = dataFlow.getDataStreams() ;
     Assert.assertEquals(5, streams.length);
     
-    DataFlowReader reader = dataFlow.getReader() ;
-    int recordCount = 0 ;
-    Record record = null ;
-    while((record = reader.next()) != null) {
-      recordCount++ ;
-    }
-    Assert.assertEquals(50, recordCount);
     dataFlow.close();
   }
   

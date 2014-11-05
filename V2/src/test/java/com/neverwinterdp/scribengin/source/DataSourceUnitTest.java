@@ -7,7 +7,7 @@ import org.junit.Assert;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.source.CommitPoint;
 import com.neverwinterdp.scribengin.source.DataSource;
-import com.neverwinterdp.scribengin.source.DataSourceReader;
+import com.neverwinterdp.scribengin.source.DataSourceStreamReader;
 import com.neverwinterdp.scribengin.source.ri.DataSourceImpl;
 
 /**
@@ -16,8 +16,11 @@ import com.neverwinterdp.scribengin.source.ri.DataSourceImpl;
 public class DataSourceUnitTest {
   @Test
   public void testDataSource() throws Exception {
-    DataSource datasource = new DataSourceImpl("RI", 100) ;
-    DataSourceReader reader = datasource.getReader() ;
+    DataSource datasource = new DataSourceImpl("RI", 3, 100) ;
+    DataSourceStream[] streams = datasource.getDataStreams() ;
+    Assert.assertEquals(3, streams.length);
+    
+    DataSourceStreamReader reader = streams[0].getReader("test") ;
     for(int i = 0 ; i < 25; i++) {
       Record record = reader.next() ;
       Assert.assertNotNull(record);
