@@ -60,8 +60,8 @@
    - HDFS file source are also splitable, but we have to make sure that the file is locked during the read. We can also use zookeeper to implement lock and transaction for HDFS file reader.
 
  * Sink is the data repository where the processed, transformed record should be stored. In order to archieve the parallel processing, the sink should allow the concurrent write. 
-   - Most of the data server such Kafka, Elasticsearch, HBase, Cassandra, they are supported the concurrent write, we just need to create a client to send the data to the server. 
-   - The hdfs sink should allow multiple tmp segment for each SinkStream. When a SinkStream commit, we can move the tmp segment to another tmp dir. There should be another master process that suppose to manage and merge the commit segment in the commit tmp dir.
+    - Most of the data server such Kafka, Elasticsearch, HBase, Cassandra, they are supported the concurrent write, we just need to create a client to send the data to the server. 
+    - The hdfs sink should allow multiple tmp segment for each SinkStream. When a SinkStream commit, we can move the tmp segment to another tmp dir. There should be another master process that suppose to manage and merge the commit segment in the commit tmp dir.
 
  * A Dataflow is a logic of a computation such as functions, filters, streaming joins, streaming aggregations... 
    - The dataflow consists of a master process, can be a yarn app master, and several workers. Each worker, can be the yarn allocated container, can have several executors. The master may use zookeeper to store the data and coordinate with the other dataflow process.
