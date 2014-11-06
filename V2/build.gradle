@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+
+archivesBaseName = 'scribengin.v2'
+
+eclipse {
+  project {
+    name = 'scribengin.v2'
+  }
+
+  classpath {
+    downloadSources=true
+  }
+}
+
+
+eclipse.classpath.defaultOutputDir = file( 'build/classes' )
+
+group = 'com.neverwinterdp'
+sourceCompatibility = 1.7
+version = '1.0-SNAPSHOT'
+configurations.compile.transitive = true
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+
+dependencies {
+  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+
+  testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+test {
+  forkEvery = 1
+  ignoreFailures = true
+  testLogging.showStandardStreams = true
+  testLogging {
+    events "passed", "skipped", "failed"
+  }
+}
