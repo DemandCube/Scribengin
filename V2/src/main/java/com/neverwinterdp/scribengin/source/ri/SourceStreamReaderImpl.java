@@ -5,20 +5,20 @@ import java.util.List;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.source.CommitPoint;
-import com.neverwinterdp.scribengin.source.DataSourceStream;
-import com.neverwinterdp.scribengin.source.DataSourceStreamReader;
+import com.neverwinterdp.scribengin.source.SourceStream;
+import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
 /**
  * @author Tuan Nguyen
  */
-public class DataSourceStreamReaderImpl implements DataSourceStreamReader {
+public class SourceStreamReaderImpl implements SourceStreamReader {
   private String name ;
-  private DataSourceStreamImpl dataStream ;
+  private SourceStreamImpl dataStream ;
   private List<Record> records ;
   private int commitPoint ;
   private int currPosition ;
   
-  public DataSourceStreamReaderImpl(String name, DataSourceStreamImpl dataStream, List<Record> records) {
+  public SourceStreamReaderImpl(String name, SourceStreamImpl dataStream, List<Record> records) {
     this.name = name ;
     this.dataStream = dataStream ;
     this.records    = records ;
@@ -26,7 +26,7 @@ public class DataSourceStreamReaderImpl implements DataSourceStreamReader {
   
   public String getName() { return name ; }
   
-  public DataSourceStream getDataStream() { return this.dataStream ; }
+  public SourceStream getDataStream() { return this.dataStream ; }
   
   public Record next() throws Exception {
     if(currPosition < records.size()) return records.get(currPosition++) ;

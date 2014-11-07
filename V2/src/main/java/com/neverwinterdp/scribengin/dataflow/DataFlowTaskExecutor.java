@@ -1,13 +1,10 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-public interface DataFlowTaskExecutor {
-  static enum Status { INIT, RUNNING, TERMINATED }
+public interface DataflowTaskExecutor {
+
+  public DataflowTaskExecutorDescriptor getDescriptor() ;
   
-  public String getServer() ;
-  public int    getProcessId() ;
-  public Status getStatus() ;
   public void   kill() ;
-  
-  public DataFlowTask       getDataFlowTask() ;
-  public DataFlowTaskReport getDataFlowTaskReport() ;
+  public DataflowTask       getDataflowTask() ;
+  public DataflowTaskReport getDataflowTaskReport() ;
 }

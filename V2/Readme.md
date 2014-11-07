@@ -90,3 +90,49 @@ A Dataflow is a logic of a computation such as functions, filters, streaming joi
 ###Tools##
 
 Tool can be developed to manage and monitor the dataflow or multiple dataflow by accessing the zookeeper to retrieve the the configuration, status of each data flow. It can also modify a dataflow configuration such rebalance the number of the workers or tasks. In this case the master should watch the configuration on the zookeeper and address to the change by killing or allocate more containers for the worker. 
+
+##Scribengin Data structure##
+  ScribenginRegistry
+    locks/
+      sources/
+        source-descriptor-1
+          stream-descriptor-1
+            lock
+            commit-log
+          stream-descriptor-2
+        source-descriptor-2
+          stream-descriptor-1
+          stream-descriptor-2
+      sinks
+        sink-descriptor-1
+          stream-descriptor-1
+          stream-descriptor-2
+        sink-descriptor-2
+          stream-descriptor-1
+          stream-descriptor-2
+    dataflows
+      dataflow1
+        config
+        task-descriptors
+          task-descriptor-1
+            sources
+              source-descriptor-1
+                stream-descriptor-1
+            sinks
+              sink-descriptor-1
+                stream-descriptor-1
+          task-descriptor-2
+          task-descriptor-3
+          ....
+        workers
+          worker-descriptor-1
+            task-executor-descriptor-1
+              task-descriptor-ref-1
+            task-executor-descriptor-2
+              task-descriptor-ref-2
+          worker-descriptor-2
+
+Class name convention:
+
+Config suffix is used for the class that hold the parameters that are taken from user input via argument parameters or  file configuration. The class should be serializable and transferable
+Descriptor suffix is used for the class that describe a resource such source , stream, worker, task... The descriptor class should be serializable and transferable
