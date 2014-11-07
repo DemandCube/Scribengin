@@ -1,5 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-public interface DataflowTaskReport {
+public interface DataFlowTaskReport {
   public double getProgress() ;
 }

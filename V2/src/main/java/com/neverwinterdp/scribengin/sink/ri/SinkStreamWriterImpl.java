@@ -30,5 +30,17 @@ public class SinkStreamWriterImpl implements SinkStreamWriter {
   synchronized public void close() throws Exception {
     if(tmpHolder.size() > 0) commit() ;
   }
+
+  @Override
+  public boolean verifyLastCommit() throws Exception {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public boolean discard() throws Exception {
+    // TODO Auto-generated method stub
+    return false;
+  }
   
 }
