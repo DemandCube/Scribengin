@@ -35,6 +35,7 @@ repositories {
 
 configurations.all {
   exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
+  exclude(group: 'storm', name: 'storm', version: '0.8.1')
 
   resolutionStrategy {
     force 'com.google.guava:guava:13.0'
