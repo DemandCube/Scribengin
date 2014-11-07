@@ -1,10 +1,10 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-public interface DataFlowTaskExecutor {
+public interface DataflowTaskExecutor {
 
-  public DataFlowTaskExecutorDescriptor getDescriptor() ;
+  public DataflowTaskExecutorDescriptor getDescriptor() ;
   
   public void   kill() ;
   public DataflowTask       getDataflowTask() ;
-  public DataFlowTaskReport getDataflowTaskReport() ;
+  public DataflowTaskReport getDataflowTaskReport() ;
 }

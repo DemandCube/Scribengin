@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-public class DataFlowTaskDescriptor {
+public class DataflowTaskDescriptor {
   static public enum Status { INIT, PROCESSING, SUSPENDED, TERMINATED }
   private int id ;
   private Status status = Status.INIT ;
