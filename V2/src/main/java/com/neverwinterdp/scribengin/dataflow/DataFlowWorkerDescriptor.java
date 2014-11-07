@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-public class DataFlowWorkerDescriptor {
+public class DataflowWorkerDescriptor {
   private String hostname;
   private int    processId ;
   

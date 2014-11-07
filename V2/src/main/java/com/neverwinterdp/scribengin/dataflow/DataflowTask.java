@@ -6,7 +6,7 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.source.Source;
 
 public interface DataflowTask {
-  public DataFlowTaskDescriptor getDescriptor() ;
+  public DataflowTaskDescriptor getDescriptor() ;
   
   public Source getSource();
   public Sink getSink();

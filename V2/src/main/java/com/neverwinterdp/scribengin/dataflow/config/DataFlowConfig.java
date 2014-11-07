@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.config;
 
 
-public class DataFlowConfig {
+public class DataflowConfig {
   private String         name;
   private SourceConfig[] sourceConfig;
   private SinkConfig[]   sinkConfig;
