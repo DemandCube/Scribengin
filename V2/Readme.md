@@ -91,6 +91,8 @@ A Dataflow is a logic of a computation such as functions, filters, streaming joi
 
 Tool can be developed to manage and monitor the dataflow or multiple dataflow by accessing the zookeeper to retrieve the the configuration, status of each data flow. It can also modify a dataflow configuration such rebalance the number of the workers or tasks. In this case the master should watch the configuration on the zookeeper and address to the change by killing or allocate more containers for the worker. 
 
+##Code Design##
+
 ```
 
 ##Scribengin Data structure##
