@@ -138,4 +138,5 @@ Tool can be developed to manage and monitor the dataflow or multiple dataflow by
 Class name convention:
 
 Config suffix is used for the class that hold the parameters that are taken from user input via argument parameters or  file configuration. The class should be serializable and transferable
+
 Descriptor suffix is used for the class that describe a resource such source , stream, worker, task... The descriptor class should be serializable and transferable
