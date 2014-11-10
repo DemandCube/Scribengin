@@ -1,10 +1,13 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.sink.ri;
 
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.sink.Sink;
+import com.neverwinterdp.scribengin.sink.SinkStream;
+import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.sink.ri.SinkImpl;
 
 public class SinkUnitTest {
@@ -16,14 +19,14 @@ public class SinkUnitTest {
   
   private void test(Sink dataFlow) throws Exception {
     for(int i = 0; i < 5; i++) {
-      DataStream stream = dataFlow.newDataStream() ;
-      DataStreamWriter streamWriter = stream.getWriter() ;
+      SinkStream stream = dataFlow.newSinkStream() ;
+      SinkStreamWriter streamWriter = stream.getWriter() ;
       for(int j = 0; j  < 10; j++) {
         streamWriter.append(createRecord("key-" + i + "-" + j, 32));
       }
       streamWriter.close();
     }
-    DataStream[] streams = dataFlow.getDataStreams() ;
+    SinkStream[] streams = dataFlow.getDataStreams() ;
     Assert.assertEquals(5, streams.length);
     
     dataFlow.close();

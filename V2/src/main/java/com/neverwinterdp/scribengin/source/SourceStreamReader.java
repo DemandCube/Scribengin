@@ -5,10 +5,10 @@ import com.neverwinterdp.scribengin.Record;
 /**
  * @author Tuan Nguyen
  */
-public interface DataSourceStreamReader {
+public interface SourceStreamReader {
   public String getName() ;
   
-  public DataSourceStream getDataStream() ;
+  public SourceStream getDataStream() ;
   
   public Record next() throws Exception;
   
