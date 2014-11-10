@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin.sink.ri;
 
 import java.util.LinkedHashMap;
 
+import com.neverwinterdp.scribengin.scribe.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 
@@ -40,6 +41,12 @@ public class SinkImpl implements Sink {
 
   @Override
   public void close() throws Exception  { 
+    
+  }
+
+  @Override
+  public void setPartitioner(SinkPartitioner s) {
+    // TODO Auto-generated method stub
     
   }
 }
