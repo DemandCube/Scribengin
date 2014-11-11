@@ -118,7 +118,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
   @Override
   public CommitPoint commit() throws Exception {
-    // TODO update CommitPoint, or new CommitPoint
+    // TODO write commit point to registry
     return null;
   }
 
