@@ -63,7 +63,7 @@ public class ZookeeperServerLauncher  {
     };
     zkThread.start() ;
     //wait to make sure the server is launched
-    Thread.sleep(1000);
+    Thread.sleep(3000);
   }
 
   public void stop() {

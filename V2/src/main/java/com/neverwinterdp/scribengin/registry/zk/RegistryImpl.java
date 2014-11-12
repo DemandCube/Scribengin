@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin.registry.zk;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -37,11 +38,16 @@ public class RegistryImpl implements Registry {
   
   public ZooKeeper getZkClient() { return this.zkClient ; }
   
+  public String getSessionId() {
+    if(zkClient == null) return null ;
+    return Long.toString(zkClient.getSessionId()) ;
+  }
+  
   public String getBasePath() { return this.basePath ; }
   
   public Registry connect() throws RegistryException {
     try {
-      zkClient = new ZooKeeper(zkConnect, 15000, new DefaultWatcher());
+      zkClient = new ZooKeeper(zkConnect, 15000, new RegistryWatcher());
     } catch (IOException ex) {
       throw new RegistryException(ErrorCode.Connection, ex) ;
     }
@@ -60,6 +66,7 @@ public class RegistryImpl implements Registry {
     }
   }
   
+  @Override
   public Node create(String path, NodeCreateMode mode) throws RegistryException {
     return create(path, new byte[0], mode);
   }
@@ -78,27 +85,12 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
-  public  Node create(String path, byte[] data, NodeWatcher watcher, NodeCreateMode mode) throws RegistryException {
-    zkClient.register(new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-      }
-    });
-    return null;
-  }
-  
-  @Override
   public <T> Node create(String path, T data, NodeCreateMode mode) throws RegistryException {
     byte[] bytes = JSONSerializer.INSTANCE.toBytes(data); 
     return create(path, bytes, mode);
   }
   
   @Override
-  public <T> Node create(String path, T data, NodeWatcher watcher, NodeCreateMode mode) throws RegistryException {
-    byte[] bytes = JSONSerializer.INSTANCE.toBytes(data); 
-    return create(path, bytes, watcher, mode);
-  }
-  
   public Node createIfNotExist(String path) throws RegistryException {
     zkCreateIfNotExist(realPath(path));
     return new Node(this, path) ;
@@ -117,6 +109,15 @@ public class RegistryImpl implements Registry {
       throw new RegistryException(ErrorCode.Unknown, e) ;
     }
   }
+  
+  public List<String> getChildren(String dir) throws RegistryException {
+    try {
+      List<String> names = zkClient.getChildren(realPath(dir), false);
+      return names ;
+    } catch (KeeperException | InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
 
   @Override
   public boolean exists(String path) throws RegistryException {
@@ -129,9 +130,24 @@ public class RegistryImpl implements Registry {
     }
   }
   
+  @Override
+  public void watch(String path, NodeWatcher watcher) throws RegistryException {
+    try {
+      Stat stat = zkClient.exists(realPath(path), new ZKNodeWatcher(basePath, watcher)) ;
+    } catch (KeeperException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    } catch (InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
   
   @Override
-  public void remove(String path) throws RegistryException {
+  public void delete(String path) throws RegistryException {
+    try {
+      zkClient.delete(realPath(path), -1);
+    } catch (InterruptedException | KeeperException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
   }
   
   private void zkCreateIfNotExist(String path) throws RegistryException {
@@ -154,13 +170,16 @@ public class RegistryImpl implements Registry {
     }
   }
   
-  private String realPath(String path) { return basePath + path; }
-  
   private CreateMode toCreateMode(NodeCreateMode mode) {
     if(mode == NodeCreateMode.PERSISTENT) return CreateMode.PERSISTENT ;
     else if(mode == NodeCreateMode.PERSISTENT_SEQUENTIAL) return CreateMode.PERSISTENT_SEQUENTIAL ;
     else if(mode == NodeCreateMode.EPHEMERAL) return CreateMode.EPHEMERAL ;
     else if(mode == NodeCreateMode.EPHEMERAL_SEQUENTIAL) return CreateMode.EPHEMERAL_SEQUENTIAL ;
     throw new RuntimeException("Mode " + mode + " is not supported") ;
+  }
+  
+  private String realPath(String path) { 
+    if(path.equals("/")) return basePath ;
+    return basePath + path; 
   }
 }
