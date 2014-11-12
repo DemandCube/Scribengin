@@ -52,8 +52,9 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
   @Override
   public Record next() throws Exception {
+    //ensure consumer is not null and not closed.
 
-    // TODO read next offset, move commitpoint
+    //TODO read next offset, move commitpoint
     //TODO update commitpoint in registry
     //TODO initialize a proper KafkaSourceStream
     //TODO handle exceptions
@@ -124,7 +125,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
   @Override
   public void close() throws Exception {
-
+    consumer.close();
   }
 
   public void setDataStream(KafkaSourceStream dataStream) {

@@ -12,7 +12,7 @@ import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 
 public class KafkaSource implements Source {
   //TODO: implement kafka source and assign each kafka partition as a source stream
-
+  //TODO KafkaSourceDescriptor  for topic metadata?
   //Source descriptor defines topic?
   private SourceDescriptor descriptor;
   private Set<SourceStream> sourceStreams;
@@ -45,9 +45,18 @@ public class KafkaSource implements Source {
   @Override
   public SourceStream[] getSourceStreams() {
     //Create SourceStreams here
-    // TODO For each partition get a sourceStream
- 
-    return (SourceStream[]) sourceStreams.toArray();
+    /* TODO For each partition get a sourceStream
+    REad zk, get partitions for topic
+     create sourceStreams for each partiotions
+     SourceStream should have 
+    1. partition id
+    2.  topic name
+    3. Leader HostPort
+    
+    SourceStream will figure out start offset for topic/partition
+    Monitor zk topic path for new partitions?
+    */
+    return  sourceStreams.toArray(new SourceStream[sourceStreams.size()]);
   }
 }
 
@@ -69,9 +78,9 @@ class IdPredicate implements Predicate<SourceStream> {
 
 class DescriptorPredicate implements Predicate<SourceStream> {
 
-  private Object descriptor;
+  private SourceStreamDescriptor descriptor;
 
-  public DescriptorPredicate(Object descriptor) {
+  public DescriptorPredicate(SourceStreamDescriptor descriptor) {
     this.descriptor = descriptor;
   }
 
