@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.registry;
 
+import com.neverwinterdp.scribengin.registry.lock.Lock;
+
 public class Node {
   private Registry  registry ;
   private String path  ;
@@ -31,15 +33,15 @@ public class Node {
   }
 
   public void delete() throws RegistryException {
+    registry.delete(path);
   }
 
-  public void lock() throws RegistryException {
-  }
-
-  public void unlock() throws RegistryException {
+  public Lock getLock(String name) throws RegistryException {
+    return new Lock(registry, path, name) ;
   }
 
   public void watch(NodeWatcher watcher) throws RegistryException {
+    registry.watch(path, watcher);
   }
 
   public void unwatch() throws RegistryException {

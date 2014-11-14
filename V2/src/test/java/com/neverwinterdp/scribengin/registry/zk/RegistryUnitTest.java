@@ -8,10 +8,16 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
+import com.neverwinterdp.scribengin.registry.NodeEvent;
+import com.neverwinterdp.scribengin.registry.NodeEventCatcher;
 import com.neverwinterdp.scribengin.registry.Registry;
 import com.neverwinterdp.util.FileUtil;
 
 public class RegistryUnitTest {
+  static {
+    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
+  }
+  
   private ZookeeperServerLauncher zkServerLauncher ;
   
   @Before
@@ -30,17 +36,26 @@ public class RegistryUnitTest {
   @Test
   public void testPersistent() throws Exception {
     String DATA = "hello";
+    
     Registry registry = newRegistry().connect(); 
-    Node persistentNode = registry.create("/persistent", DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
-    Assert.assertEquals("/persistent", persistentNode.getPath()) ;
-    Assert.assertTrue(persistentNode.exists());
-    Assert.assertEquals(DATA, new String(persistentNode.getData())) ;
+    Node pNode = registry.create("/persistent", DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
+    Assert.assertEquals("/persistent", pNode.getPath()) ;
+    Assert.assertTrue(pNode.exists());
+    Assert.assertEquals(DATA, new String(pNode.getData())) ;
     registry.disconnect();
     
     registry = newRegistry().connect();
-    persistentNode = registry.get("/persistent") ;
-    Assert.assertTrue(persistentNode.exists());
-    Assert.assertEquals(DATA, new String(persistentNode.getData())) ;
+    pNode = registry.get("/persistent") ;
+    Assert.assertTrue(pNode.exists());
+    //TODO: should test the the create child , create event , modify data event
+    NodeEventCatcher pNodeEventCatcher = new NodeEventCatcher() ;
+    pNode.watch(pNodeEventCatcher) ;
+    Assert.assertEquals(DATA, new String(pNode.getData())) ;
+    pNode.delete();
+    Assert.assertFalse(pNode.exists());
+    Thread.sleep(1000); //wait to make sure that the watcher is invoked
+    Assert.assertEquals(pNode.getPath(), pNodeEventCatcher.getNodeEvent().getPath());
+    Assert.assertEquals(NodeEvent.Type.DELETE, pNodeEventCatcher.getNodeEvent().getType());
     registry.disconnect();
   }
   

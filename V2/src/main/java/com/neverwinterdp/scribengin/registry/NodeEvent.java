@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.registry;
 
 public class NodeEvent {
-  static public enum Type { CREATE, DELETE, MODIFY, LOCK, UNLOCK }
+  static public enum Type { CREATE, DELETE, MODIFY, LOCK, UNLOCK, OTHER}
   
   private String path ;
   private Type   type ;
