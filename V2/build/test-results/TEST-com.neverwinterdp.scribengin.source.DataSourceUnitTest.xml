@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.neverwinterdp.scribengin.source.DataSourceUnitTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2014-11-07T14:41:51" hostname="appleTarts" time="0.009">
-  <properties/>
-  <testcase name="testDataSource" classname="com.neverwinterdp.scribengin.source.DataSourceUnitTest" time="0.009"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

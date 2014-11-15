@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.neverwinterdp.scribengin.sink.ri.SinkUnitTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2014-11-07T14:41:50" hostname="appleTarts" time="0.005">
-  <properties/>
-  <testcase name="testSink" classname="com.neverwinterdp.scribengin.sink.ri.SinkUnitTest" time="0.005"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
