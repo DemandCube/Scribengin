@@ -1,26 +1,23 @@
 package com.neverwinterdp.scribengin.stream;
 
-import com.neverwinterdp.scribengin.scribe.Scribe;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.source.Source;
+import com.neverwinterdp.scribengin.sink.SinkStream;
+import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
-import com.neverwinterdp.scribengin.trigger.Trigger;
 
 public interface Stream {
-  public StreamDescriptor getDescriptor() ;
   
-  public Source getSource();
-  public Sink getSink();
-  public Task getTask();
-  
+  void setSourceStream(SourceStream s);
+  void setSink(SinkStream s);
+  void setInvalidSink(SinkStream s);
   void setTask(Task t);
-  void setTrigger(Trigger t);
   
-  public Scribe[] getScribes();
+  SinkStream getSinkStream();
+  SinkStream getInvalidSink();
+  SourceStream getSourceStream();
+  Task getTask();
   
-  public boolean start();
-  public boolean stop();
-  
-  public void nextTuple();
-  //public void execute(SourceStream[] in, SinkStream[] out) ;
+  boolean processNext();
+  boolean initStreams();
+  boolean closeStreams();
+
 }

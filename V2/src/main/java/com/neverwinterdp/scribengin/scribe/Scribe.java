@@ -1,13 +1,17 @@
 package com.neverwinterdp.scribengin.scribe;
 
-import com.neverwinterdp.scribengin.scribe.partitioner.SinkPartitioner;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.source.SourceStream;
+import com.neverwinterdp.scribengin.stream.Stream;
+import com.neverwinterdp.scribengin.task.Task;
 
 public interface Scribe {
-  void setSource(SourceStream s);
-  void setSink(SinkStream s);
-  void setPartitioner(SinkPartitioner s);
-  void processNext();
+  void setStream(Stream s);
+  
+  Stream getStream();
+  
+  boolean init();
+  boolean close();
+  
+  void start();
+  void stop();
   
 }

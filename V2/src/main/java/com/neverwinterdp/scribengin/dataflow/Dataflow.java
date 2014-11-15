@@ -1,18 +1,21 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-import com.neverwinterdp.scribengin.dataflow.config.DataflowConfig;
-import com.neverwinterdp.scribengin.stream.Stream;
+import com.neverwinterdp.scribengin.scribe.Scribe;
+import com.neverwinterdp.scribengin.streamcoordinator.StreamCoordinator;
 
 public interface Dataflow {
-  public DataflowConfig getDataflowConfig() ;
-  public Stream[] getStreams() ;
-  public DataflowWorker[] getDataflowWorker() ;
+  //public DataflowConfig getDataflowConfig() ;
 
-  public void onModify(DataflowConfig config) ;
+  //public void onModify(DataflowConfig config) ;
+  
+  public void setStreamCoordinator(StreamCoordinator s);
   
   public String getName();
-  public boolean killFlow();
-  public boolean stopFlow();
-  public boolean startFlow();
+  public void pause();
+  public void stop();
+  public void start();
+  
+  public void initScribes();
+  public Scribe[] getScribes();
 }
 

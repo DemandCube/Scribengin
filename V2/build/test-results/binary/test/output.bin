@@ -1,0 +1,450 @@
+™0    [Test worker] WARN  org.apache.hadoop.util.NativeCodeLoader  - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+	 zookeeper config zkProperties: 
+	{
+	  "maxClientCnxns" : "0",
+	  "clientPort" : "2181",
+	'  "dataDir" : "./build/data/zookeeper"
+	}
+	n0    [Thread-5] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - autopurge.snapRetainCount set to 3
+	l1    [Thread-5] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - autopurge.purgeInterval set to 0
+	h1    [Thread-5] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - Purge task is not scheduled.
+	LEither no config or no quorum defined in config, running in standalone mode
+	Y8    [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServerMain  - Starting server
+	ó19   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:zookeeper.version=3.4.6-1569965, built on 02/20/2014 09:09 GMT
+	l19   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:host.name=localhost
+	n20   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.version=1.7.0_51
+	w20   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.vendor=Oracle Corporation
+	¶20   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre
+	ày20   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.class.path=/Users/rcduar/workspace/Scribengin/V2/build/classes/test:/Users/rcduar/workspace/Scribengin/V2/build/resources/test:/Users/rcduar/workspace/Scribengin/V2/build/classes/main:/Users/rcduar/workspace/Scribengin/V2/build/resources/main:/Users/rcduar/.m2/repository/com/neverwinterdp/queuengin/1.0-SNAPSHOT/queuengin-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.hadoop-framework/1.0-SNAPSHOT/commons.hadoop-framework-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/junit/junit/4.11/junit-4.11.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.cluster/1.0-SNAPSHOT/commons.cluster-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.yara.core/1.0-SNAPSHOT/commons.yara.core-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.zookeeper/1.0-SNAPSHOT/commons.zookeeper-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.api/1.0-SNAPSHOT/commons.api-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.utils/1.0-SNAPSHOT/commons.utils-1.0-SNAPSHOT.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.kafka/kafka_2.10/0.8.1.1/8e28e6594969b2f42eb8017416e9f7aa4921985f/kafka_2.10-0.8.1.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.beust/jcommander/1.35/47592e181b0bdbbeb63029e08c5e74f6803c4edd/jcommander-1.35.jar:/Users/rcduar/.m2/repository/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.netty/1.0-SNAPSHOT/commons.netty-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/twitter4j/twitter4j-stream/3.0.3/twitter4j-stream-3.0.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/13.0/d6f92000cabd7bf4418789497e396b9c56820ef1/guava-13.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.mrunit/mrunit/1.0.0/d6e4cce578b705508bfd7fd3fafbccc3adb33e83/mrunit-1.0.0-hadoop2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-minicluster/2.4.0/fbe8d8e34e8df2119d7e4b575be9782e6b674962/hadoop-minicluster-2.4.0.jar:/Users/rcduar/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.codahale.metrics/metrics-json/3.0.2/46198fe0284104519b60ff2ad49f71c98ba942f2/metrics-json-3.0.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.codahale.metrics/metrics-core/3.0.2/c6a7fb32776e984b64ff1a548e3044238ea5a931/metrics-core-3.0.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hazelcast/hazelcast/3.2.5/5301085736bdd2939e2149a14c28e7b22e6ac481/hazelcast-3.2.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hazelcast/hazelcast-client/3.2.5/7c9b3ae73ff873aee251f7cda414660751be2dea/hazelcast-client-3.2.5.jar:/Users/rcduar/.m2/repository/com/google/inject/guice/3.0/guice-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.reflections/reflections/0.9.9-RC1/b78b545f452a6b7d4fab2641dd0b0147a0f4fd5e/reflections-0.9.9-RC1.jar:/Users/rcduar/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar:/Users/rcduar/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6.jar:/Users/rcduar/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.4.3/a30ec6f59b6d31b2df06fa73925fda2fc7e84486/jackson-annotations-2.4.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.4.3/4cb3dbb0c2f75b51aa7543c53252989785a0c609/jackson-core-2.4.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.4.3/feff63199be7b8f495c2f3e2096dcb6bd5e5b0b3/jackson-databind-2.4.3.jar:/Users/rcduar/.m2/repository/com/yammer/metrics/metrics-core/2.2.0/metrics-core-2.2.0.jar:/Users/rcduar/.m2/repository/org/xerial/snappy/snappy-java/1.0.5/snappy-java-1.0.5.jar:/Users/rcduar/.m2/repository/net/sf/jopt-simple/jopt-simple/3.2/jopt-simple-3.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.scala-lang/scala-library/2.10.1/ed3e1a6b0615dea666a7eaf753b03030f3f889/scala-library-2.10.1.jar:/Users/rcduar/.m2/repository/com/101tec/zkclient/0.3/zkclient-0.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.netty/netty-all/4.0.23.Final/294104aaf1781d6a56a07d561e792c5d0c95f45/netty-all-4.0.23.Final.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.protobuf/protobuf-java/2.6.0/88ba32feefe385d5dc284b71f649201eabd15778/protobuf-java-2.6.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.facebook.nifty/nifty-core/0.13.1/a0379497110b773b8617807f38bd17f51519a04e/nifty-core-0.13.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.github.spullara.mustache.java/compiler/0.8.16/c3ba2430fe177f4ac433d9e9340a41e89fc436d4/compiler-0.8.16.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hubspot.jackson/jackson-datatype-protobuf/0.4.0/95788b793e3b8b502165fdc147593e680765e780/jackson-datatype-protobuf-0.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.facebook.nifty/nifty-client/0.13.1/2d4254d2fc70b05610541475b83f448307e8ef18/nifty-client-0.13.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.thrift/libthrift/0.9.1/16c9cccf08caa385b5fc93934cb3216fe6ac6a72/libthrift-0.9.1.jar:/Users/rcduar/.m2/repository/org/mockito/mockito-all/1.8.5/mockito-all-1.8.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-common/2.4.0/ee58fa4bad7ef480138081193989a4155d177bb2/hadoop-common-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-common/2.4.0/9bbb15066ad1045cd0e412b6767f67bae3b605c1/hadoop-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-hdfs/2.4.0/c0a66955b3829b682291edb5880972295a4ebf95/hadoop-hdfs-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-hdfs/2.4.0/d2dfc2f9f60c87a34e353bc10913709d20e40713/hadoop-hdfs-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-tests/2.4.0/6446dad329a042e01fd793c4a4eed578ae0b05dc/hadoop-yarn-server-tests-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-jobclient/2.4.0/66afbd3bdb60ea51d3420994b5af399aea93fb7/hadoop-mapreduce-client-jobclient-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-jobclient/2.4.0/59dbc4c2b52e05423cef645a4b9e4786ca2127cf/hadoop-mapreduce-client-jobclient-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-app/2.4.0/72e6d74b86f1f2cdfa6b2ef29ea2c04672c8cc0e/hadoop-mapreduce-client-app-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-api/2.4.0/be3740fe449e3788eebf0f29820ff2a908c4764/hadoop-yarn-api-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-core/2.4.0/a248d2caf05f0c7a5830be9071676244035d1fb6/hadoop-mapreduce-client-core-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-hs/2.4.0/9e2a71cd62348730aac1594724611cf8c240ad7c/hadoop-mapreduce-client-hs-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/net.sourceforge.findbugs/annotations/1.3.2/d77bc83e0408680034a29481a89de0dba9802a97/annotations-1.3.2.jar:/Users/rcduar/.m2/repository/javax/inject/javax.inject/1/javax.inject-1.jar:/Users/rcduar/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.sonatype.sisu.inject/cglib/2.2.1-v20090111/7ce5e983fd0e6c78346f4c9cbfa39d83049dda2/cglib-2.2.1-v20090111.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.16.1-GA/315891b371395271977af518d4db5cee1a0bc9bf/javassist-3.16.1-GA.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/dom4j/dom4j/1.6.1/5d3ccc056b6f056dbf0dddfdf43894b9065a8f94/dom4j-1.6.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.inject.extensions/guice-multibindings/3.0/5e670615a927571234df68a8b1fe1a16272be555/guice-multibindings-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.airlift/units/0.91/bfef7b2694c12b21362e84fedb9ba6d2ed6e34e7/units-0.91.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.netty/netty/3.7.0.Final/7a8c35599c68c0bf383df74469aa3e03d9aca87/netty-3.7.0.Final.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/annotations/2.0.2/cc66a822cd193a601e1466e938aed7b6be58c4c1/annotations-2.0.2.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar:/Users/rcduar/.m2/repository/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpcore/4.2.4/3b7f38df6de5dd8b500e602ae8c2dd5ee446f883/httpcore-4.2.4.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-annotations/2.4.0/4951034b7b9b6523ed29002052d57f87aec0e056/hadoop-annotations-2.4.0.jar:/Users/rcduar/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-math3/3.1.1/commons-math3-3.1.1.jar:/Users/rcduar/.m2/repository/xmlenc/xmlenc/0.52/xmlenc-0.52.jar:/Users/rcduar/.m2/repository/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar:/Users/rcduar/.m2/repository/commons-io/commons-io/2.4/commons-io-2.4.jar:/Users/rcduar/.m2/repository/commons-net/commons-net/3.1/commons-net-3.1.jar:/Users/rcduar/.m2/repository/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar:/Users/rcduar/.m2/repository/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar:/Users/rcduar/.m2/repository/org/mortbay/jetty/jetty/6.1.26/jetty-6.1.26.jar:/Users/rcduar/.m2/repository/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-core/1.9/jersey-core-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-json/1.9/jersey-json-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-server/1.9/jersey-server-1.9.jar:/Users/rcduar/.m2/repository/net/java/dev/jets3t/jets3t/0.9.0/jets3t-0.9.0.jar:/Users/rcduar/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/Users/rcduar/.m2/repository/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.8.8/jackson-core-asl-1.8.8.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.8.8/jackson-mapper-asl-1.8.8.jar:/Users/rcduar/.m2/repository/org/apache/avro/avro/1.7.4/avro-1.7.4.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-auth/2.4.0/d0285b9d1b98114e16fb18148d790d94f73ade68/hadoop-auth-2.4.0.jar:/Users/rcduar/.m2/repository/com/jcraft/jsch/0.1.42/jsch-0.1.42.jar:/Users/rcduar/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-compress/1.4.1/commons-compress-1.4.1.jar:/Users/rcduar/.m2/repository/commons-daemon/commons-daemon/1.0.13/commons-daemon-1.0.13.jar:/Users/rcduar/.m2/repository/javax/servlet/jsp/jsp-api/2.1/jsp-api-2.1.jar:/Users/rcduar/.m2/repository/tomcat/jasper-runtime/5.5.23/jasper-runtime-5.5.23.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-common/2.4.0/12260e4eae52ae4c3746b08b9339c1d8c9d00ca1/hadoop-yarn-server-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-nodemanager/2.4.0/1378dde7f4cd615a2a778c1c6c8f7fc32adbc9e9/hadoop-yarn-server-nodemanager-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-resourcemanager/2.4.0/7e111d734eec17960652f7b4b7487950bba4f614/hadoop-yarn-server-resourcemanager-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-common/2.4.0/16aa88eb8671a6d1be84255d5376a824d6695b68/hadoop-yarn-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-common/2.4.0/4ae19c8ca616efede1ced57772dfbee388c9f8d5/hadoop-mapreduce-client-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-shuffle/2.4.0/916412ad768a57e694d1d9053592487b9dc8db42/hadoop-mapreduce-client-shuffle-2.4.0.jar:/Users/rcduar/.m2/repository/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-web-proxy/2.4.0/466077449bb02aedb9db5ca618911ba875827b9/hadoop-yarn-server-web-proxy-2.4.0.jar:/Users/rcduar/.m2/repository/tomcat/jasper-compiler/5.5.23/jasper-compiler-5.5.23.jar:/Users/rcduar/.m2/repository/commons-el/commons-el/1.0/commons-el-1.0.jar:/Users/rcduar/.m2/repository/asm/asm/3.1/asm-3.1.jar:/Users/rcduar/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/8613ae82954779d518631e05daa73a6a954817d5/validation-api-1.1.0.Final.jar:/Users/rcduar/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar:/Users/rcduar/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.8.3/jackson-jaxrs-1.8.3.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-xc/1.8.3/jackson-xc-1.8.3.jar:/Users/rcduar/.m2/repository/com/jamesmurty/utils/java-xmlbuilder/0.4/java-xmlbuilder-0.4.jar:/Users/rcduar/.m2/repository/commons-digester/commons-digester/1.8/commons-digester-1.8.jar:/Users/rcduar/.m2/repository/commons-beanutils/commons-beanutils-core/1.8.0/commons-beanutils-core-1.8.0.jar:/Users/rcduar/.m2/repository/com/thoughtworks/paranamer/paranamer/2.3/paranamer-2.3.jar:/Users/rcduar/.m2/repository/org/tukaani/xz/1.0/xz-1.0.jar:/Users/rcduar/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-client/1.9/jersey-client-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/contribs/jersey-guice/1.9/jersey-guice-1.9.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-applicationhistoryservice/2.4.0/69abcf0b8a4e04a5fe1d7e3338112b3bfa4f1674/hadoop-yarn-server-applicationhistoryservice-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-client/2.4.0/a9f918ed8043c0b22f7372500097dcee4c0b16a1/hadoop-yarn-client-2.4.0.jar:/Users/rcduar/.m2/repository/commons-beanutils/commons-beanutils/1.7.0/commons-beanutils-1.7.0.jar:/Users/rcduar/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar:/Users/rcduar/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.fusesource.leveldbjni/leveldbjni-all/1.8/707350a2eeb1fa2ed77a32ddb3893ed308e941db/leveldbjni-all-1.8.jar:/Users/rcduar/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/Users/rcduar/.m2/repository/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar:/Users/rcduar/.m2/repository/commons-codec/commons-codec/1.6/commons-codec-1.6.jar
+	˙39   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.library.path=/Users/rcduar/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+	ô40   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.io.tmpdir=/var/folders/_z/ff_kztqj1n343nkyc8l4h42m0000gn/T/
+	k40   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:java.compiler=<NA>
+	i40   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:os.name=Mac OS X
+	g40   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:os.arch=x86_64
+	i40   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:os.version=10.10
+	i41   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:user.name=rcduar
+	p41   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:user.home=/Users/rcduar
+	á41   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Server environment:user.dir=/Users/rcduar/workspace/Scribengin/V2
+	Z62   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - tickTime set to 3000
+	a62   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - minSessionTimeout set to -1
+	a62   [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - maxSessionTimeout set to -1
+	o78   [Thread-5] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - binding to port 0.0.0.0/0.0.0.0:2181
+	kafka properties:
+	{
+	)  "controlled.shutdown.enable" : "true",
+	  "port" : "9092",
+	  "broker.id" : "1",
+	%  "log.dirs" : "./build/data/kafka",
+	+  "auto.leader.rebalance.enable" : "true",
+	*  "zookeeper.connect" : "127.0.0.1:2181",
+	'  "auto.create.topics.enable" : "true"
+	}
+	T1265 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Verifying properties
+	x1305 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property auto.create.topics.enable is overridden to true
+	{1306 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property auto.leader.rebalance.enable is overridden to true
+	e1306 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property broker.id is overridden to 1
+	y1306 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property controlled.shutdown.enable is overridden to true
+	u1306 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property log.dirs is overridden to ./build/data/kafka
+	c1307 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property port is overridden to 9092
+	z1307 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property zookeeper.connect is overridden to 127.0.0.1:2181
+	R1310 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], starting
+	s1312 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Connecting to zookeeper on 127.0.0.1:2181
+	y1322 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  org.I0Itec.zkclient.ZkEventThread  - Starting ZkClient event thread.
+	è1327 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:zookeeper.version=3.4.6-1569965, built on 02/20/2014 09:09 GMT
+	d1327 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:host.name=localhost
+	f1327 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.version=1.7.0_51
+	o1327 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.vendor=Oracle Corporation
+	û1327 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.home=/Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre
+	Äy1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.class.path=/Users/rcduar/workspace/Scribengin/V2/build/classes/test:/Users/rcduar/workspace/Scribengin/V2/build/resources/test:/Users/rcduar/workspace/Scribengin/V2/build/classes/main:/Users/rcduar/workspace/Scribengin/V2/build/resources/main:/Users/rcduar/.m2/repository/com/neverwinterdp/queuengin/1.0-SNAPSHOT/queuengin-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.hadoop-framework/1.0-SNAPSHOT/commons.hadoop-framework-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/junit/junit/4.11/junit-4.11.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.cluster/1.0-SNAPSHOT/commons.cluster-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.yara.core/1.0-SNAPSHOT/commons.yara.core-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.zookeeper/1.0-SNAPSHOT/commons.zookeeper-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.api/1.0-SNAPSHOT/commons.api-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.utils/1.0-SNAPSHOT/commons.utils-1.0-SNAPSHOT.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.kafka/kafka_2.10/0.8.1.1/8e28e6594969b2f42eb8017416e9f7aa4921985f/kafka_2.10-0.8.1.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.beust/jcommander/1.35/47592e181b0bdbbeb63029e08c5e74f6803c4edd/jcommander-1.35.jar:/Users/rcduar/.m2/repository/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3.jar:/Users/rcduar/.m2/repository/com/neverwinterdp/commons.netty/1.0-SNAPSHOT/commons.netty-1.0-SNAPSHOT.jar:/Users/rcduar/.m2/repository/org/twitter4j/twitter4j-stream/3.0.3/twitter4j-stream-3.0.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/13.0/d6f92000cabd7bf4418789497e396b9c56820ef1/guava-13.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.mrunit/mrunit/1.0.0/d6e4cce578b705508bfd7fd3fafbccc3adb33e83/mrunit-1.0.0-hadoop2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-minicluster/2.4.0/fbe8d8e34e8df2119d7e4b575be9782e6b674962/hadoop-minicluster-2.4.0.jar:/Users/rcduar/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.codahale.metrics/metrics-json/3.0.2/46198fe0284104519b60ff2ad49f71c98ba942f2/metrics-json-3.0.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.codahale.metrics/metrics-core/3.0.2/c6a7fb32776e984b64ff1a548e3044238ea5a931/metrics-core-3.0.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hazelcast/hazelcast/3.2.5/5301085736bdd2939e2149a14c28e7b22e6ac481/hazelcast-3.2.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hazelcast/hazelcast-client/3.2.5/7c9b3ae73ff873aee251f7cda414660751be2dea/hazelcast-client-3.2.5.jar:/Users/rcduar/.m2/repository/com/google/inject/guice/3.0/guice-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.reflections/reflections/0.9.9-RC1/b78b545f452a6b7d4fab2641dd0b0147a0f4fd5e/reflections-0.9.9-RC1.jar:/Users/rcduar/.m2/repository/log4j/log4j/1.2.17/log4j-1.2.17.jar:/Users/rcduar/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6.jar:/Users/rcduar/.m2/repository/org/apache/zookeeper/zookeeper/3.4.6/zookeeper-3.4.6-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.4.3/a30ec6f59b6d31b2df06fa73925fda2fc7e84486/jackson-annotations-2.4.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.4.3/4cb3dbb0c2f75b51aa7543c53252989785a0c609/jackson-core-2.4.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.4.3/feff63199be7b8f495c2f3e2096dcb6bd5e5b0b3/jackson-databind-2.4.3.jar:/Users/rcduar/.m2/repository/com/yammer/metrics/metrics-core/2.2.0/metrics-core-2.2.0.jar:/Users/rcduar/.m2/repository/org/xerial/snappy/snappy-java/1.0.5/snappy-java-1.0.5.jar:/Users/rcduar/.m2/repository/net/sf/jopt-simple/jopt-simple/3.2/jopt-simple-3.2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.scala-lang/scala-library/2.10.1/ed3e1a6b0615dea666a7eaf753b03030f3f889/scala-library-2.10.1.jar:/Users/rcduar/.m2/repository/com/101tec/zkclient/0.3/zkclient-0.3.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.netty/netty-all/4.0.23.Final/294104aaf1781d6a56a07d561e792c5d0c95f45/netty-all-4.0.23.Final.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.protobuf/protobuf-java/2.6.0/88ba32feefe385d5dc284b71f649201eabd15778/protobuf-java-2.6.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.facebook.nifty/nifty-core/0.13.1/a0379497110b773b8617807f38bd17f51519a04e/nifty-core-0.13.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.github.spullara.mustache.java/compiler/0.8.16/c3ba2430fe177f4ac433d9e9340a41e89fc436d4/compiler-0.8.16.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.hubspot.jackson/jackson-datatype-protobuf/0.4.0/95788b793e3b8b502165fdc147593e680765e780/jackson-datatype-protobuf-0.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.facebook.nifty/nifty-client/0.13.1/2d4254d2fc70b05610541475b83f448307e8ef18/nifty-client-0.13.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.thrift/libthrift/0.9.1/16c9cccf08caa385b5fc93934cb3216fe6ac6a72/libthrift-0.9.1.jar:/Users/rcduar/.m2/repository/org/mockito/mockito-all/1.8.5/mockito-all-1.8.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-common/2.4.0/ee58fa4bad7ef480138081193989a4155d177bb2/hadoop-common-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-common/2.4.0/9bbb15066ad1045cd0e412b6767f67bae3b605c1/hadoop-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-hdfs/2.4.0/c0a66955b3829b682291edb5880972295a4ebf95/hadoop-hdfs-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-hdfs/2.4.0/d2dfc2f9f60c87a34e353bc10913709d20e40713/hadoop-hdfs-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-tests/2.4.0/6446dad329a042e01fd793c4a4eed578ae0b05dc/hadoop-yarn-server-tests-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-jobclient/2.4.0/66afbd3bdb60ea51d3420994b5af399aea93fb7/hadoop-mapreduce-client-jobclient-2.4.0-tests.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-jobclient/2.4.0/59dbc4c2b52e05423cef645a4b9e4786ca2127cf/hadoop-mapreduce-client-jobclient-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-app/2.4.0/72e6d74b86f1f2cdfa6b2ef29ea2c04672c8cc0e/hadoop-mapreduce-client-app-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-api/2.4.0/be3740fe449e3788eebf0f29820ff2a908c4764/hadoop-yarn-api-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-core/2.4.0/a248d2caf05f0c7a5830be9071676244035d1fb6/hadoop-mapreduce-client-core-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-hs/2.4.0/9e2a71cd62348730aac1594724611cf8c240ad7c/hadoop-mapreduce-client-hs-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/net.sourceforge.findbugs/annotations/1.3.2/d77bc83e0408680034a29481a89de0dba9802a97/annotations-1.3.2.jar:/Users/rcduar/.m2/repository/javax/inject/javax.inject/1/javax.inject-1.jar:/Users/rcduar/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.sonatype.sisu.inject/cglib/2.2.1-v20090111/7ce5e983fd0e6c78346f4c9cbfa39d83049dda2/cglib-2.2.1-v20090111.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.javassist/javassist/3.16.1-GA/315891b371395271977af518d4db5cee1a0bc9bf/javassist-3.16.1-GA.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/dom4j/dom4j/1.6.1/5d3ccc056b6f056dbf0dddfdf43894b9065a8f94/dom4j-1.6.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.inject.extensions/guice-multibindings/3.0/5e670615a927571234df68a8b1fe1a16272be555/guice-multibindings-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.airlift/units/0.91/bfef7b2694c12b21362e84fedb9ba6d2ed6e34e7/units-0.91.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/io.netty/netty/3.7.0.Final/7a8c35599c68c0bf383df74469aa3e03d9aca87/netty-3.7.0.Final.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/annotations/2.0.2/cc66a822cd193a601e1466e938aed7b6be58c4c1/annotations-2.0.2.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar:/Users/rcduar/.m2/repository/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.httpcomponents/httpcore/4.2.4/3b7f38df6de5dd8b500e602ae8c2dd5ee446f883/httpcore-4.2.4.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-annotations/2.4.0/4951034b7b9b6523ed29002052d57f87aec0e056/hadoop-annotations-2.4.0.jar:/Users/rcduar/.m2/repository/commons-cli/commons-cli/1.2/commons-cli-1.2.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-math3/3.1.1/commons-math3-3.1.1.jar:/Users/rcduar/.m2/repository/xmlenc/xmlenc/0.52/xmlenc-0.52.jar:/Users/rcduar/.m2/repository/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar:/Users/rcduar/.m2/repository/commons-io/commons-io/2.4/commons-io-2.4.jar:/Users/rcduar/.m2/repository/commons-net/commons-net/3.1/commons-net-3.1.jar:/Users/rcduar/.m2/repository/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar:/Users/rcduar/.m2/repository/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar:/Users/rcduar/.m2/repository/org/mortbay/jetty/jetty/6.1.26/jetty-6.1.26.jar:/Users/rcduar/.m2/repository/org/mortbay/jetty/jetty-util/6.1.26/jetty-util-6.1.26.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-core/1.9/jersey-core-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-json/1.9/jersey-json-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-server/1.9/jersey-server-1.9.jar:/Users/rcduar/.m2/repository/net/java/dev/jets3t/jets3t/0.9.0/jets3t-0.9.0.jar:/Users/rcduar/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/Users/rcduar/.m2/repository/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.8.8/jackson-core-asl-1.8.8.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.8.8/jackson-mapper-asl-1.8.8.jar:/Users/rcduar/.m2/repository/org/apache/avro/avro/1.7.4/avro-1.7.4.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-auth/2.4.0/d0285b9d1b98114e16fb18148d790d94f73ade68/hadoop-auth-2.4.0.jar:/Users/rcduar/.m2/repository/com/jcraft/jsch/0.1.42/jsch-0.1.42.jar:/Users/rcduar/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar:/Users/rcduar/.m2/repository/org/apache/commons/commons-compress/1.4.1/commons-compress-1.4.1.jar:/Users/rcduar/.m2/repository/commons-daemon/commons-daemon/1.0.13/commons-daemon-1.0.13.jar:/Users/rcduar/.m2/repository/javax/servlet/jsp/jsp-api/2.1/jsp-api-2.1.jar:/Users/rcduar/.m2/repository/tomcat/jasper-runtime/5.5.23/jasper-runtime-5.5.23.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-common/2.4.0/12260e4eae52ae4c3746b08b9339c1d8c9d00ca1/hadoop-yarn-server-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-nodemanager/2.4.0/1378dde7f4cd615a2a778c1c6c8f7fc32adbc9e9/hadoop-yarn-server-nodemanager-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-resourcemanager/2.4.0/7e111d734eec17960652f7b4b7487950bba4f614/hadoop-yarn-server-resourcemanager-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-common/2.4.0/16aa88eb8671a6d1be84255d5376a824d6695b68/hadoop-yarn-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-common/2.4.0/4ae19c8ca616efede1ced57772dfbee388c9f8d5/hadoop-mapreduce-client-common-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-mapreduce-client-shuffle/2.4.0/916412ad768a57e694d1d9053592487b9dc8db42/hadoop-mapreduce-client-shuffle-2.4.0.jar:/Users/rcduar/.m2/repository/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-web-proxy/2.4.0/466077449bb02aedb9db5ca618911ba875827b9/hadoop-yarn-server-web-proxy-2.4.0.jar:/Users/rcduar/.m2/repository/tomcat/jasper-compiler/5.5.23/jasper-compiler-5.5.23.jar:/Users/rcduar/.m2/repository/commons-el/commons-el/1.0/commons-el-1.0.jar:/Users/rcduar/.m2/repository/asm/asm/3.1/asm-3.1.jar:/Users/rcduar/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/1.1.0.Final/8613ae82954779d518631e05daa73a6a954817d5/validation-api-1.1.0.Final.jar:/Users/rcduar/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar:/Users/rcduar/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.8.3/jackson-jaxrs-1.8.3.jar:/Users/rcduar/.m2/repository/org/codehaus/jackson/jackson-xc/1.8.3/jackson-xc-1.8.3.jar:/Users/rcduar/.m2/repository/com/jamesmurty/utils/java-xmlbuilder/0.4/java-xmlbuilder-0.4.jar:/Users/rcduar/.m2/repository/commons-digester/commons-digester/1.8/commons-digester-1.8.jar:/Users/rcduar/.m2/repository/commons-beanutils/commons-beanutils-core/1.8.0/commons-beanutils-core-1.8.0.jar:/Users/rcduar/.m2/repository/com/thoughtworks/paranamer/paranamer/2.3/paranamer-2.3.jar:/Users/rcduar/.m2/repository/org/tukaani/xz/1.0/xz-1.0.jar:/Users/rcduar/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar:/Users/rcduar/.m2/repository/com/sun/jersey/jersey-client/1.9/jersey-client-1.9.jar:/Users/rcduar/.m2/repository/com/sun/jersey/contribs/jersey-guice/1.9/jersey-guice-1.9.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-server-applicationhistoryservice/2.4.0/69abcf0b8a4e04a5fe1d7e3338112b3bfa4f1674/hadoop-yarn-server-applicationhistoryservice-2.4.0.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.apache.hadoop/hadoop-yarn-client/2.4.0/a9f918ed8043c0b22f7372500097dcee4c0b16a1/hadoop-yarn-client-2.4.0.jar:/Users/rcduar/.m2/repository/commons-beanutils/commons-beanutils/1.7.0/commons-beanutils-1.7.0.jar:/Users/rcduar/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar:/Users/rcduar/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/Users/rcduar/.gradle/caches/modules-2/files-2.1/org.fusesource.leveldbjni/leveldbjni-all/1.8/707350a2eeb1fa2ed77a32ddb3893ed308e941db/leveldbjni-all-1.8.jar:/Users/rcduar/.m2/repository/jline/jline/0.9.94/jline-0.9.94.jar:/Users/rcduar/.m2/repository/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar:/Users/rcduar/.m2/repository/commons-codec/commons-codec/1.6/commons-codec-1.6.jar
+	Ú1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.library.path=/Users/rcduar/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+	ë1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.io.tmpdir=/var/folders/_z/ff_kztqj1n343nkyc8l4h42m0000gn/T/
+	c1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:java.compiler=<NA>
+	a1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:os.name=Mac OS X
+	_1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:os.arch=x86_64
+	a1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:os.version=10.10
+	a1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:user.name=rcduar
+	h1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:user.home=/Users/rcduar
+	1328 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Client environment:user.dir=/Users/rcduar/workspace/Scribengin/V2
+	∫1330 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Initiating client connection, connectString=127.0.0.1:2181 sessionTimeout=6000 watcher=org.I0Itec.zkclient.ZkClient@7160c6db
+	”1348 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Opening socket connection to server 127.0.0.1/127.0.0.1:2181. Will not attempt to authenticate using SASL (unknown error)
+	ß1349 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Socket connection established to 127.0.0.1/127.0.0.1:2181, initiating session
+	ú1350 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - Accepted socket connection from /127.0.0.1:54167
+	•1356 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Client attempting to establish new session at /127.0.0.1:54167
+	m1359 [SyncThread:0] INFO  org.apache.zookeeper.server.persistence.FileTxnLog  - Creating new log file: log.1
+	®1374 [SyncThread:0] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Established session 0x1498ab44ffa0000 with negotiated timeout 6000 for client /127.0.0.1:54167
+	’1374 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Session establishment complete on server 127.0.0.1/127.0.0.1:2181, sessionid = 0x1498ab44ffa0000, negotiated timeout = 6000
+	o1377 [KafkaLauncher-EventThread] INFO  org.I0Itec.zkclient.ZkClient  - zookeeper state changed (SyncConnected)
+	†1406 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab44ffa0000 type:create cxid:0x4 zxid:0x3 txntype:-1 reqpath:n/a Error Path:/brokers Error:KeeperErrorCode = NoNode for /brokers
+	û1412 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab44ffa0000 type:create cxid:0xa zxid:0x7 txntype:-1 reqpath:n/a Error Path:/config Error:KeeperErrorCode = NoNode for /config
+	ù1416 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab44ffa0000 type:create cxid:0x10 zxid:0xb txntype:-1 reqpath:n/a Error Path:/admin Error:KeeperErrorCode = NoNode for /admin
+	î1444 [KafkaLauncher] INFO  kafka.log.LogManager  - Log directory '/Users/rcduar/workspace/Scribengin/V2/./build/data/kafka' not found, creating it.
+	d1454 [KafkaLauncher] INFO  kafka.log.LogManager  - Starting log cleanup with a period of 300000 ms.
+	y1457 [KafkaLauncher] INFO  kafka.log.LogManager  - Starting log flusher with a default period of 9223372036854775807 ms.
+	b1490 [KafkaLauncher] INFO  kafka.network.Acceptor  - Awaiting socket connections on 0.0.0.0:9092.
+	^1491 [KafkaLauncher] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Started
+	q1564 [KafkaLauncher] INFO  kafka.utils.Mx4jLoader$  - Will not load MX4J, mx4j-tools.jar is not in the classpath
+	f1565 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller starting up
+	c1598 [KafkaLauncher] INFO  kafka.server.ZookeeperLeaderElector  - 1 successfully elected as leader
+	Ñ1599 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Broker 1 starting become controller state transition
+	¥1601 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab44ffa0000 type:setData cxid:0x19 zxid:0xf txntype:-1 reqpath:n/a Error Path:/controller_epoch Error:KeeperErrorCode = NoNode for /controller_epoch
+	s1603 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller 1 incremented epoch to 1
+	Ç1624 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions undergoing preferred replica election: 
+	Ü1625 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions that completed preferred replica election: 
+	Ñ1626 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Resuming preferred replica election for partitions: 
+	r1629 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions being reassigned: Map()
+	u1630 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions already reassigned: List()
+	z1631 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Resuming reassignment of partitions: Map()
+	n1635 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: List of topics to be deleted: 
+	x1636 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: List of topics ineligible for deletion: 
+	~1641 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Currently active brokers in the cluster: Set()
+	Ä1642 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Currently shutting brokers in the cluster: Set()
+	|1642 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Current list of topics in the cluster: Set()
+	¶1646 [KafkaLauncher] INFO  kafka.controller.ReplicaStateMachine  - [Replica state machine on controller 1]: Started replica state machine with initial state -> Map()
+	¨1652 [KafkaLauncher] INFO  kafka.controller.PartitionStateMachine  - [Partition state machine on Controller 1]: Started partition state machine with initial state -> Map()
+	ç1654 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Broker 1 is ready to serve as the new controller with epoch 1
+	ä1655 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Starting preferred replica leader election for partitions 
+	©1656 [KafkaLauncher] INFO  kafka.controller.PartitionStateMachine  - [Partition state machine on Controller 1]: Invoking state change to OnlinePartition for partitions 
+	‘1659 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab44ffa0000 type:delete cxid:0x27 zxid:0x11 txntype:-1 reqpath:n/a Error Path:/admin/preferred_replica_election Error:KeeperErrorCode = NoNode for /admin/preferred_replica_election
+	z1662 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: starting the partition rebalance scheduler
+	k1663 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller startup complete
+	{1680 [KafkaLauncher] INFO  kafka.utils.ZkUtils$  - Registered broker 1 at path /brokers/ids/1 with address localhost:9092.
+	Q1691 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], started
+	Ä1775 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.server.ZookeeperLeaderElector$LeaderChangeListener  - New leader is 1
+	≥1779 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.controller.ControllerEpochListener  - [ControllerEpochListener on 1]: Initialized controller epoch to 1 and zk version 0
+	‹1781 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.controller.ReplicaStateMachine$BrokerChangeListener  - [BrokerChangeListener on Controller 1]: Broker change listener fired for path /brokers/ids with children 1
+	ÿ1868 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.controller.ReplicaStateMachine$BrokerChangeListener  - [BrokerChangeListener on Controller 1]: Newly added brokers: 1, deleted brokers: , all live brokers: 1
+	‹1874 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Controller 1 connected to id:1,host:localhost,port:9092 for sending state change requests
+	ä1875 [Controller-1-to-broker-1-send-thread] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Starting 
+	ä1876 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  kafka.controller.KafkaController  - [Controller 1]: New broker startup callback for 1
+	.TODO: should insert some data into kafka here
+	U4946 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], shutting down
+	d4948 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Starting controlled shutdown
+	p5021 [kafka-request-handler-0] INFO  kafka.controller.KafkaController  - [Controller 1]: Shutting down broker 1
+	e5041 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Controlled shutdown succeeded
+	b5043 [Test worker] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Shutting down
+	g5060 [Test worker] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Shutdown completed
+	t5061 [Test worker] INFO  kafka.server.KafkaRequestHandlerPool  - [Kafka Request Handler on Broker 1], shutting down
+	{5062 [Test worker] INFO  kafka.server.KafkaRequestHandlerPool  - [Kafka Request Handler on Broker 1], shut down completely
+	a5416 [Test worker] INFO  kafka.server.ReplicaManager  - [Replica Manager on Broker 1]: Shut down
+	q5417 [Test worker] INFO  kafka.server.ReplicaFetcherManager  - [ReplicaFetcherManager on broker 1] shutting down
+	v5418 [Test worker] INFO  kafka.server.ReplicaFetcherManager  - [ReplicaFetcherManager on broker 1] shutdown completed
+	o5423 [Test worker] INFO  kafka.server.ReplicaManager  - [Replica Manager on Broker 1]: Shutted down completely
+	u5431 [Test worker] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Shutting down
+	â5432 [Controller-1-to-broker-1-send-thread] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Stopped 
+	z5432 [Test worker] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Shutdown completed
+	j5432 [Test worker] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller shutdown complete
+	z5433 [ZkClient-EventThread-19-127.0.0.1:2181] INFO  org.I0Itec.zkclient.ZkEventThread  - Terminate ZkClient event thread.
+	ü5433 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Processed session termination for sessionid: 0x1498ab44ffa0000
+	]5435 [Test worker] INFO  org.apache.zookeeper.ZooKeeper  - Session: 0x1498ab44ffa0000 closed
+	`5435 [KafkaLauncher-EventThread] INFO  org.apache.zookeeper.ClientCnxn  - EventThread shut down
+	ø5435 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxn  - Closed socket connection for client /127.0.0.1:54167 which had sessionid 0x1498ab44ffa0000
+	[5435 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], shut down completed
+	5KafkaThreadKiller thread shutdown kafka successfully
+	Shutdown KafkaServer in 490ms
+	ì5436 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - NIOServerCnxn factory exited run method
+	V5436 [Test worker] INFO  org.apache.zookeeper.server.ZooKeeperServer  - shutting down
+	S5436 [Thread-5] INFO  org.apache.zookeeper.server.ZooKeeperServer  - shutting down
+	V5436 [Thread-5] INFO  org.apache.zookeeper.server.SessionTrackerImpl  - Shutting down
+	X5436 [Thread-5] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Shutting down
+	X5436 [Thread-5] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - Shutting down
+	Y5436 [Test worker] INFO  org.apache.zookeeper.server.SessionTrackerImpl  - Shutting down
+	[5436 [Test worker] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Shutting down
+	[5437 [Test worker] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - Shutting down
+	k5437 [SyncThread:0] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - SyncRequestProcessor exited!
+	Ç5436 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - PrepRequestProcessor exited loop!
+	u5437 [Test worker] INFO  org.apache.zookeeper.server.FinalRequestProcessor  - shutdown of request processor complete
+	r5437 [Thread-5] INFO  org.apache.zookeeper.server.FinalRequestProcessor  - shutdown of request processor complete
+	l5437 [Thread-5] WARN  org.apache.zookeeper.jmx.MBeanRegistry  - Failed to unregister MBean InMemoryDataTree
+	
+X5438 [Thread-5] WARN  org.apache.zookeeper.jmx.MBeanRegistry  - Error during unregister
+	
+}javax.management.InstanceNotFoundException: org.apache.ZooKeeperService:name0=StandaloneServer_port-1,name1=InMemoryDataTree
+	
+l	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getMBean(DefaultMBeanServerInterceptor.java:1095)
+	
+{	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.exclusiveUnregisterMBean(DefaultMBeanServerInterceptor.java:427)
+	
+r	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.unregisterMBean(DefaultMBeanServerInterceptor.java:415)
+	
+T	at com.sun.jmx.mbeanserver.JmxMBeanServer.unregisterMBean(JmxMBeanServer.java:546)
+	
+N	at org.apache.zookeeper.jmx.MBeanRegistry.unregister(MBeanRegistry.java:115)
+	
+N	at org.apache.zookeeper.jmx.MBeanRegistry.unregister(MBeanRegistry.java:132)
+	
+X	at org.apache.zookeeper.server.ZooKeeperServer.unregisterJMX(ZooKeeperServer.java:465)
+	
+S	at org.apache.zookeeper.server.ZooKeeperServer.shutdown(ZooKeeperServer.java:458)
+	
+`	at org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig(ZooKeeperServerMain.java:116)
+	
+ zookeeper config zkProperties: 
+	
+É	at com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher$ZooKeeperServerMainExt.start(ZookeeperServerLauncher.java:125)
+	
+{
+	
+k	at com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher$1.run(ZookeeperServerLauncher.java:56)
+	
+  "maxClientCnxns" : "0",
+	
+  "clientPort" : "2181",
+	
+'  "dataDir" : "./build/data/zookeeper"
+	
+}
+	
+n5441 [Thread-8] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - autopurge.snapRetainCount set to 3
+	
+l5441 [Thread-8] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - autopurge.purgeInterval set to 0
+	
+h5441 [Thread-8] INFO  org.apache.zookeeper.server.DatadirCleanupManager  - Purge task is not scheduled.
+	
+LEither no config or no quorum defined in config, running in standalone mode
+	
+Y5441 [Thread-8] INFO  org.apache.zookeeper.server.ZooKeeperServerMain  - Starting server
+	
+Z5442 [Thread-8] INFO  org.apache.zookeeper.server.ZooKeeperServer  - tickTime set to 3000
+	
+a5442 [Thread-8] INFO  org.apache.zookeeper.server.ZooKeeperServer  - minSessionTimeout set to -1
+	
+a5442 [Thread-8] INFO  org.apache.zookeeper.server.ZooKeeperServer  - maxSessionTimeout set to -1
+	
+o5442 [Thread-8] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - binding to port 0.0.0.0/0.0.0.0:2181
+	
+kafka properties:
+	
+{
+	
+)  "controlled.shutdown.enable" : "true",
+	
+  "port" : "9092",
+	
+  "broker.id" : "1",
+	
+%  "log.dirs" : "./build/data/kafka",
+	
++  "auto.leader.rebalance.enable" : "true",
+	
+*  "zookeeper.connect" : "127.0.0.1:2181",
+	
+'  "auto.create.topics.enable" : "true"
+	
+}
+	
+T6447 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Verifying properties
+	
+x6448 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property auto.create.topics.enable is overridden to true
+	
+{6448 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property auto.leader.rebalance.enable is overridden to true
+	
+e6448 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property broker.id is overridden to 1
+	
+y6448 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property controlled.shutdown.enable is overridden to true
+	
+u6449 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property log.dirs is overridden to ./build/data/kafka
+	
+c6449 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property port is overridden to 9092
+	
+z6449 [KafkaLauncher] INFO  kafka.utils.VerifiableProperties  - Property zookeeper.connect is overridden to 127.0.0.1:2181
+	
+R6449 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], starting
+	
+s6450 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Connecting to zookeeper on 127.0.0.1:2181
+	
+π6450 [KafkaLauncher] INFO  org.apache.zookeeper.ZooKeeper  - Initiating client connection, connectString=127.0.0.1:2181 sessionTimeout=6000 watcher=org.I0Itec.zkclient.ZkClient@d68b796
+	
+y6450 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  org.I0Itec.zkclient.ZkEventThread  - Starting ZkClient event thread.
+	
+”6451 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Opening socket connection to server 127.0.0.1/127.0.0.1:2181. Will not attempt to authenticate using SASL (unknown error)
+	
+ß6451 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Socket connection established to 127.0.0.1/127.0.0.1:2181, initiating session
+	
+ú6452 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - Accepted socket connection from /127.0.0.1:54170
+	
+•6452 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Client attempting to establish new session at /127.0.0.1:54170
+	
+m6452 [SyncThread:0] INFO  org.apache.zookeeper.server.persistence.FileTxnLog  - Creating new log file: log.1
+	
+®6454 [SyncThread:0] INFO  org.apache.zookeeper.server.ZooKeeperServer  - Established session 0x1498ab464cc0000 with negotiated timeout 6000 for client /127.0.0.1:54170
+	
+’6454 [KafkaLauncher-SendThread(127.0.0.1:2181)] INFO  org.apache.zookeeper.ClientCnxn  - Session establishment complete on server 127.0.0.1/127.0.0.1:2181, sessionid = 0x1498ab464cc0000, negotiated timeout = 6000
+	
+o6455 [KafkaLauncher-EventThread] INFO  org.I0Itec.zkclient.ZkClient  - zookeeper state changed (SyncConnected)
+	
+†6458 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab464cc0000 type:create cxid:0x4 zxid:0x3 txntype:-1 reqpath:n/a Error Path:/brokers Error:KeeperErrorCode = NoNode for /brokers
+	
+û6463 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab464cc0000 type:create cxid:0xa zxid:0x7 txntype:-1 reqpath:n/a Error Path:/config Error:KeeperErrorCode = NoNode for /config
+	
+ù6468 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab464cc0000 type:create cxid:0x10 zxid:0xb txntype:-1 reqpath:n/a Error Path:/admin Error:KeeperErrorCode = NoNode for /admin
+	
+î6472 [KafkaLauncher] INFO  kafka.log.LogManager  - Log directory '/Users/rcduar/workspace/Scribengin/V2/./build/data/kafka' not found, creating it.
+	
+d6472 [KafkaLauncher] INFO  kafka.log.LogManager  - Starting log cleanup with a period of 300000 ms.
+	
+y6473 [KafkaLauncher] INFO  kafka.log.LogManager  - Starting log flusher with a default period of 9223372036854775807 ms.
+	
+b6474 [KafkaLauncher] INFO  kafka.network.Acceptor  - Awaiting socket connections on 0.0.0.0:9092.
+	
+^6475 [KafkaLauncher] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Started
+	
+q6479 [KafkaLauncher] INFO  kafka.utils.Mx4jLoader$  - Will not load MX4J, mx4j-tools.jar is not in the classpath
+	
+f6479 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller starting up
+	
+c6481 [KafkaLauncher] INFO  kafka.server.ZookeeperLeaderElector  - 1 successfully elected as leader
+	
+Ñ6481 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Broker 1 starting become controller state transition
+	
+¥6481 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab464cc0000 type:setData cxid:0x19 zxid:0xf txntype:-1 reqpath:n/a Error Path:/controller_epoch Error:KeeperErrorCode = NoNode for /controller_epoch
+	
+s6483 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller 1 incremented epoch to 1
+	
+Ç6488 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions undergoing preferred replica election: 
+	
+Ü6489 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions that completed preferred replica election: 
+	
+Ñ6489 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Resuming preferred replica election for partitions: 
+	
+r6490 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions being reassigned: Map()
+	
+u6490 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Partitions already reassigned: List()
+	
+z6490 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Resuming reassignment of partitions: Map()
+	
+n6491 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: List of topics to be deleted: 
+	
+x6491 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: List of topics ineligible for deletion: 
+	
+~6492 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Currently active brokers in the cluster: Set()
+	
+Ä6492 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Currently shutting brokers in the cluster: Set()
+	
+|6492 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Current list of topics in the cluster: Set()
+	
+¶6492 [KafkaLauncher] INFO  kafka.controller.ReplicaStateMachine  - [Replica state machine on controller 1]: Started replica state machine with initial state -> Map()
+	
+¨6493 [KafkaLauncher] INFO  kafka.controller.PartitionStateMachine  - [Partition state machine on Controller 1]: Started partition state machine with initial state -> Map()
+	
+ç6493 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Broker 1 is ready to serve as the new controller with epoch 1
+	
+ä6493 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Starting preferred replica leader election for partitions 
+	
+©6493 [KafkaLauncher] INFO  kafka.controller.PartitionStateMachine  - [Partition state machine on Controller 1]: Invoking state change to OnlinePartition for partitions 
+	
+‘6494 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Got user-level KeeperException when processing sessionid:0x1498ab464cc0000 type:delete cxid:0x27 zxid:0x11 txntype:-1 reqpath:n/a Error Path:/admin/preferred_replica_election Error:KeeperErrorCode = NoNode for /admin/preferred_replica_election
+	
+z6494 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: starting the partition rebalance scheduler
+	
+k6495 [KafkaLauncher] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller startup complete
+	
+{6500 [KafkaLauncher] INFO  kafka.utils.ZkUtils$  - Registered broker 1 at path /brokers/ids/1 with address localhost:9092.
+	
+Q6500 [KafkaLauncher] INFO  kafka.server.KafkaServer  - [Kafka Server 1], started
+	
+Ä6512 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.server.ZookeeperLeaderElector$LeaderChangeListener  - New leader is 1
+	
+≥6515 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.controller.ControllerEpochListener  - [ControllerEpochListener on 1]: Initialized controller epoch to 1 and zk version 0
+	
+‹6516 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.controller.ReplicaStateMachine$BrokerChangeListener  - [BrokerChangeListener on Controller 1]: Broker change listener fired for path /brokers/ids with children 1
+	
+ÿ6550 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.controller.ReplicaStateMachine$BrokerChangeListener  - [BrokerChangeListener on Controller 1]: Newly added brokers: 1, deleted brokers: , all live brokers: 1
+	
+‹6551 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Controller 1 connected to id:1,host:localhost,port:9092 for sending state change requests
+	
+ä6551 [Controller-1-to-broker-1-send-thread] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Starting 
+	
+ä6551 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  kafka.controller.KafkaController  - [Controller 1]: New broker startup callback for 1
+	
+n6969 [SessionTracker] INFO  org.apache.zookeeper.server.SessionTrackerImpl  - SessionTrackerImpl exited loop!
+	
+U8455 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], shutting down
+	
+d8455 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Starting controlled shutdown
+	
+p8478 [kafka-request-handler-0] INFO  kafka.controller.KafkaController  - [Controller 1]: Shutting down broker 1
+	
+e8478 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], Controlled shutdown succeeded
+	
+b8478 [Test worker] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Shutting down
+	
+h8480 [kafka-processor-9092-1] INFO  kafka.network.Processor  - Closing socket connection to /127.0.0.1.
+	
+g8482 [Test worker] INFO  kafka.network.SocketServer  - [Socket Server on Broker 1], Shutdown completed
+	
+t8482 [Test worker] INFO  kafka.server.KafkaRequestHandlerPool  - [Kafka Request Handler on Broker 1], shutting down
+	
+{8482 [Test worker] INFO  kafka.server.KafkaRequestHandlerPool  - [Kafka Request Handler on Broker 1], shut down completely
+	
+a8707 [Test worker] INFO  kafka.server.ReplicaManager  - [Replica Manager on Broker 1]: Shut down
+	
+q8707 [Test worker] INFO  kafka.server.ReplicaFetcherManager  - [ReplicaFetcherManager on broker 1] shutting down
+	
+v8707 [Test worker] INFO  kafka.server.ReplicaFetcherManager  - [ReplicaFetcherManager on broker 1] shutdown completed
+	
+o8707 [Test worker] INFO  kafka.server.ReplicaManager  - [Replica Manager on Broker 1]: Shutted down completely
+	
+u8709 [Test worker] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Shutting down
+	
+â8709 [Controller-1-to-broker-1-send-thread] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Stopped 
+	
+z8709 [Test worker] INFO  kafka.controller.RequestSendThread  - [Controller-1-to-broker-1-send-thread], Shutdown completed
+	
+j8710 [Test worker] INFO  kafka.controller.KafkaController  - [Controller 1]: Controller shutdown complete
+	
+z8710 [ZkClient-EventThread-51-127.0.0.1:2181] INFO  org.I0Itec.zkclient.ZkEventThread  - Terminate ZkClient event thread.
+	
+ü8711 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Processed session termination for sessionid: 0x1498ab464cc0000
+	
+ø8712 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxn  - Closed socket connection for client /127.0.0.1:54170 which had sessionid 0x1498ab464cc0000
+	
+]8712 [Test worker] INFO  org.apache.zookeeper.ZooKeeper  - Session: 0x1498ab464cc0000 closed
+	
+[8712 [Test worker] INFO  kafka.server.KafkaServer  - [Kafka Server 1], shut down completed
+	
+5KafkaThreadKiller thread shutdown kafka successfully
+	
+`8712 [KafkaLauncher-EventThread] INFO  org.apache.zookeeper.ClientCnxn  - EventThread shut down
+	
+Shutdown KafkaServer in 258ms
+	
+ì8713 [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2181] INFO  org.apache.zookeeper.server.NIOServerCnxnFactory  - NIOServerCnxn factory exited run method
+	
+S8713 [Thread-8] INFO  org.apache.zookeeper.server.ZooKeeperServer  - shutting down
+	
+V8714 [Test worker] INFO  org.apache.zookeeper.server.ZooKeeperServer  - shutting down
+	
+V8714 [Thread-8] INFO  org.apache.zookeeper.server.SessionTrackerImpl  - Shutting down
+	
+Y8714 [Test worker] INFO  org.apache.zookeeper.server.SessionTrackerImpl  - Shutting down
+	
+[8714 [Test worker] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Shutting down
+	
+X8714 [Thread-8] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - Shutting down
+	
+[8714 [Test worker] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - Shutting down
+	
+Ç8714 [ProcessThread(sid:0 cport:-1):] INFO  org.apache.zookeeper.server.PrepRequestProcessor  - PrepRequestProcessor exited loop!
+	
+k8714 [SyncThread:0] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - SyncRequestProcessor exited!
+	
+X8714 [Thread-8] INFO  org.apache.zookeeper.server.SyncRequestProcessor  - Shutting down
+	
+u8714 [Test worker] INFO  org.apache.zookeeper.server.FinalRequestProcessor  - shutdown of request processor complete
+	
+r8714 [Thread-8] INFO  org.apache.zookeeper.server.FinalRequestProcessor  - shutdown of request processor complete
+	
+l8715 [Thread-8] WARN  org.apache.zookeeper.jmx.MBeanRegistry  - Failed to unregister MBean InMemoryDataTree
+	 X8715 [Thread-8] WARN  org.apache.zookeeper.jmx.MBeanRegistry  - Error during unregister
+	 }javax.management.InstanceNotFoundException: org.apache.ZooKeeperService:name0=StandaloneServer_port-1,name1=InMemoryDataTree
+	 l	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getMBean(DefaultMBeanServerInterceptor.java:1095)
+	 {	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.exclusiveUnregisterMBean(DefaultMBeanServerInterceptor.java:427)
+	 r	at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.unregisterMBean(DefaultMBeanServerInterceptor.java:415)
+	 T	at com.sun.jmx.mbeanserver.JmxMBeanServer.unregisterMBean(JmxMBeanServer.java:546)
+	 N	at org.apache.zookeeper.jmx.MBeanRegistry.unregister(MBeanRegistry.java:115)
+	 N	at org.apache.zookeeper.jmx.MBeanRegistry.unregister(MBeanRegistry.java:132)
+	 X	at org.apache.zookeeper.server.ZooKeeperServer.unregisterJMX(ZooKeeperServer.java:465)
+	 S	at org.apache.zookeeper.server.ZooKeeperServer.shutdown(ZooKeeperServer.java:458)
+	 `	at org.apache.zookeeper.server.ZooKeeperServerMain.runFromConfig(ZooKeeperServerMain.java:116)
+	 É	at com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher$ZooKeeperServerMainExt.start(ZookeeperServerLauncher.java:125)
+	 k	at com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher$1.run(ZookeeperServerLauncher.java:56)

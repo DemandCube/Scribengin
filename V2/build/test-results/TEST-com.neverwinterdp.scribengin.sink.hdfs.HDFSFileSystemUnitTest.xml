@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.neverwinterdp.scribengin.sink.hdfs.HDFSFileSystemUnitTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2014-11-07T14:41:48" hostname="appleTarts" time="0.926">
+  <properties/>
+  <testcase name="testConcat" classname="com.neverwinterdp.scribengin.sink.hdfs.HDFSFileSystemUnitTest" time="0.856"/>
+  <testcase name="testCreateReadWrite" classname="com.neverwinterdp.scribengin.sink.hdfs.HDFSFileSystemUnitTest" time="0.069"/>
+  <system-out><![CDATA[0    [Test worker] WARN  org.apache.hadoop.util.NativeCodeLoader  - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
