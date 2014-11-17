@@ -1,5 +1,10 @@
 package com.neverwinterdp.scribengin.stream;
 
+import java.util.Arrays;
+
+import com.neverwinterdp.scribengin.commitlog.CommitLog;
+import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
+import com.neverwinterdp.scribengin.commitlog.InMemoryCommitLog;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
@@ -11,13 +16,14 @@ public class StreamImpl implements Stream{
   private SinkStream sink;
   private SinkStream invalidSink;
   private Task task;
+  private CommitLog commitLog;
   
   public StreamImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
     this.source = y;
     this.sink = z;
     this.invalidSink = invalidSink;
     task = t;
-    
+    commitLog = new InMemoryCommitLog();
   }
 
   @Override
@@ -34,7 +40,6 @@ public class StreamImpl implements Stream{
     }
     return retVal;
   }
-
 
 
   @Override
@@ -58,15 +63,20 @@ public class StreamImpl implements Stream{
     try{
       if(this.source.hasNext()){
         Tuple t = task.execute(this.source.readNext());
-        if(t == null){
+        if(t.isInvalidData()){
+          t.setInvalidData(true);
           this.invalidSink.writeTuple(t);
         }
         else{
           this.sink.writeTuple(t);
         }
+        commitLog.addNextEntry(t.getCommitLogEntry());
       }
+      
+      
       return true;
     } catch(Exception e){
+      e.printStackTrace();
       return false;
     }
   }
@@ -110,6 +120,37 @@ public class StreamImpl implements Stream{
   @Override
   public void setTask(Task t) {
     this.task = t;
+  }
+
+  @Override
+  public boolean verifyDataInSink() {
+    CommitLogEntry[] commitLogs = this.commitLog.getCommitLogs();
+    
+    
+    boolean isDataValid = true;
+    
+    for(int i =0; i < commitLogs.length; i++){
+      if(!commitLogs[i].isInvalidData()){
+        if(!Arrays.equals(
+                    this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
+                    this.sink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
+                  ) {
+          isDataValid = false;
+          break;
+        }
+      }
+      else{
+        if(!Arrays.equals(
+                    this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
+                    this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
+                  ) {
+          //isDataValid = false;
+          break;
+        }
+      }
+    }
+    
+    return isDataValid;
   }
 
 

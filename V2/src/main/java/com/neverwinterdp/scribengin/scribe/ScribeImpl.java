@@ -1,7 +1,6 @@
 package com.neverwinterdp.scribengin.scribe;
 
 import com.neverwinterdp.scribengin.stream.Stream;
-import com.neverwinterdp.scribengin.task.Task;
 
 public class ScribeImpl implements Scribe{
 

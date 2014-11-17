@@ -28,6 +28,8 @@ public class StreamTest {
     assertEquals(45,((InMemorySinkStream)stream.getSinkStream()).getData().size());
     assertEquals(5,((InMemorySinkStream)stream.getInvalidSink()).getData().size());
     
+    assertTrue(stream.verifyDataInSink());
     assertTrue(stream.closeStreams());
+    
   }
 }

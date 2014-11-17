@@ -21,7 +21,7 @@ public class SourceStreamTest {
     for(int i =0; i<10; i++){
       assertTrue(s.hasNext());
       Tuple t = s.readNext();
-      assertEquals(Integer.toString(i),t.getKey());
+      assertEquals(Integer.toString(i+1),t.getKey());
       list.add(t);
     }
     assertTrue(list.size() == 10);

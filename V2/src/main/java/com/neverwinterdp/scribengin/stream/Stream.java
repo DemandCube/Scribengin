@@ -19,5 +19,7 @@ public interface Stream {
   boolean processNext();
   boolean initStreams();
   boolean closeStreams();
+  
+  boolean verifyDataInSink();
 
 }

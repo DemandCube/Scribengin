@@ -1,20 +1,33 @@
 package com.neverwinterdp.scribengin.source;
 
+import java.util.LinkedList;
 import java.util.UUID;
 
+import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class UUIDSourceStream implements SourceStream{
 
-  private Integer key;
+  private String name;
+  private LinkedList<byte[]> data;
   
   public UUIDSourceStream(){
-    key = 0;
+    name = UUID.randomUUID().toString();
+    data = new LinkedList<byte[]>();
   }
+  
   
   @Override
   public Tuple readNext() {
-    return new Tuple((key++).toString(), UUID.randomUUID().toString().getBytes());
+    data.add(UUID.randomUUID().toString().getBytes());
+    return new Tuple(Integer.toString(data.size()), 
+                      data.getLast(),
+                      new CommitLogEntry(this.getName(), data.size()-1, data.size()-1));
+  }
+  
+  @Override
+  public byte[] readFromOffset(long startOffset, long endOffset) {
+    return data.get((int)(startOffset));
   }
 
   @Override
@@ -34,6 +47,13 @@ public class UUIDSourceStream implements SourceStream{
 
   
   public int getNumTuples(){
-    return key;
+    return data.size();
   }
+
+  @Override
+  public String getName() {
+    return this.name;
+  }
+
+  
 }

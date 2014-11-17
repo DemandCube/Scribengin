@@ -12,8 +12,9 @@ public class DumbTask implements Task{
   public Tuple execute(Tuple t) {
     if(++count == 10){
       count = 0;
-      return null;
+      t.setInvalidData(true);
     }
+    
     return t;
   }
 
