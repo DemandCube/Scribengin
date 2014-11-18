@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Perms;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
@@ -20,6 +18,7 @@ import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
 import com.neverwinterdp.scribengin.registry.NodeWatcher;
 import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.registry.RegistryException;
 import com.neverwinterdp.util.JSONSerializer;
 
@@ -34,6 +33,11 @@ public class RegistryImpl implements Registry {
   public RegistryImpl(String zkConnect, String basePath) {
     this.zkConnect = zkConnect ;
     this.basePath = basePath ;
+  }
+  
+  public RegistryImpl(RegistryConfig config) {
+    this.zkConnect = config.getConnect() ;
+    this.basePath = config.getDbLocation() ;
   }
   
   public ZooKeeper getZkClient() { return this.zkClient ; }
@@ -110,6 +114,20 @@ public class RegistryImpl implements Registry {
     }
   }
   
+  public void setData(String path, byte[] data) throws RegistryException {
+    try {
+      Stat stat = zkClient.setData(realPath(path), data, -1) ;
+    } catch (KeeperException | InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
+  
+  public <T> void setData(String path, T data) throws RegistryException {
+    byte[] bytes = JSONSerializer.INSTANCE.toBytes(data) ;
+    setData(path, bytes);
+  }
+  
+  
   public List<String> getChildren(String dir) throws RegistryException {
     try {
       List<String> names = zkClient.getChildren(realPath(dir), false);
@@ -162,7 +180,11 @@ public class RegistryImpl implements Registry {
         //bother with the exists call or not?
         Stat nodeStat = zkClient.exists(pathString, false);
         if (nodeStat == null) {
-          zkClient.create(pathString, null, DEFAULT_ACL, CreateMode.PERSISTENT);
+          try {
+            zkClient.create(pathString, null, DEFAULT_ACL, CreateMode.PERSISTENT);
+          } catch(KeeperException.NodeExistsException ex) {
+            break;
+          }
         }
       }
     } catch(Exception ex) {

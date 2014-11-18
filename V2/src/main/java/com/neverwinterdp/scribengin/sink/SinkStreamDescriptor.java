@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.sink;
 
- public class SinkStreamDescriptor {
+public class SinkStreamDescriptor {
   private String location;
   private int    id;
 

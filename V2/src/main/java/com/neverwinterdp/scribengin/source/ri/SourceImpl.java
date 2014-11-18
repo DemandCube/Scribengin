@@ -30,7 +30,7 @@ public class SourceImpl implements Source {
     }
   }
   
-  public SourceDescriptor getSourceConfig() { return config; }
+  public SourceDescriptor getSourceDescriptor() { return config; }
 
   public SourceStream   getSourceStream(int id) { return streams.get(id) ; }
   

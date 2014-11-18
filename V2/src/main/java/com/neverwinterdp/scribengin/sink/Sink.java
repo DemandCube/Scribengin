@@ -2,8 +2,8 @@ package com.neverwinterdp.scribengin.sink;
 
 public interface Sink {
   public String getName();
-
-  public SinkStream[] getDataStreams();
+  
+  public SinkStream[] getSinkStreams();
 
   public void delete(SinkStream stream) throws Exception;
 

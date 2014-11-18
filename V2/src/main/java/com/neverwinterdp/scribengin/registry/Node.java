@@ -1,6 +1,8 @@
 package com.neverwinterdp.scribengin.registry;
 
+import com.neverwinterdp.scribengin.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.registry.lock.Lock;
+import com.neverwinterdp.util.JSONSerializer;
 
 public class Node {
   private Registry  registry ;
@@ -28,17 +30,27 @@ public class Node {
   public byte[] getData() throws RegistryException { 
     return registry.getData(path); 
   }
+  
+  public <T> T getData(Class<T> type) throws RegistryException { 
+    byte[] data = getData();
+    return JSONSerializer.INSTANCE.fromBytes(data, type);
+  }
 
   public void setData(byte[] data) throws RegistryException {
+    registry.setData(path, data);
+  }
+  
+  public <T> void setData(T data) throws RegistryException {
+    registry.setData(path, data);
   }
 
   public void delete() throws RegistryException {
     registry.delete(path);
   }
 
-  public Lock getLock(String name) throws RegistryException {
-    return new Lock(registry, path, name) ;
-  }
+  public Lock getLock(String name) { return new Lock(registry, path, name) ; }
+
+  public LeaderElection getLeaderElection() { return new LeaderElection(registry, path) ; }
 
   public void watch(NodeWatcher watcher) throws RegistryException {
     registry.watch(path, watcher);

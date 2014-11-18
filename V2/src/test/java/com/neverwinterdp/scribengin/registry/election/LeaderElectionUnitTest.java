@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.registry.lock;
+package com.neverwinterdp.scribengin.registry.election;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -7,23 +7,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
 import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryException;
 import com.neverwinterdp.scribengin.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 
-public class LockUnitTest {
+public class LeaderElectionUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
   }
   
-  final static String LOCK_DIR = "/locks" ;
+  final static String ELECTION_PATH = "/locks" ;
   
   private ZookeeperServerLauncher zkServerLauncher ;
   private AtomicLong lockOrder ;
@@ -42,57 +43,66 @@ public class LockUnitTest {
   }
 
   private Registry newRegistry() {
-    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2") ;
+    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2/leader") ;
   }
   
   @Test
-  public void testConcurrentLock() throws Exception {
+  public void testElection() throws Exception {
     String DATA = "lock directory";
     Registry registry = newRegistry().connect(); 
-    Node lockDir = registry.create(LOCK_DIR, DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
+    Node electionNode = registry.create(ELECTION_PATH, DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
     registry.disconnect();
-    Worker[] worker = new Worker[100];
-    ExecutorService executorPool = Executors.newFixedThreadPool(worker.length);
-    for(int i = 0; i < worker.length; i++) {
-      worker[i] = new Worker("worker-" + (i + 1)) ;
-      executorPool.execute(worker[i]);
+    
+    Leader[] leader = new Leader[10];
+    ExecutorService executorPool = Executors.newFixedThreadPool(leader.length);
+    for(int i = 0; i < leader.length; i++) {
+      leader[i] = new Leader("worker-" + (i + 1)) ;
+      executorPool.execute(leader[i]);
       if(i % 10 == 0) Thread.sleep(new Random().nextInt(50));
     }
     executorPool.shutdown();
     executorPool.awaitTermination(3 * 60 * 1000, TimeUnit.MILLISECONDS);
-    for(int i = 0; i < worker.length; i++) {
-      Assert.assertNotNull(worker[i].lockId);
-      Assert.assertTrue(worker[i].complete);
-    }
   }
   
-  public class Worker implements Runnable {
+  public class Leader implements Runnable {
     String name ;
-    LockId lockId ;
-    boolean complete = false;
+    LeaderElection election;
     
-    public Worker(String name) {
+    public Leader(String name) {
       this.name = name ;
     }
     
     public void run() {
       try {
-        Random random = new Random() ;
-        Thread.sleep(random.nextInt(100));
         Registry registry = newRegistry().connect();
-        Node lockDir =  registry.get(LOCK_DIR) ;
-        Lock lock = lockDir.getLock("write") ;
-        lockId = lock.lock(3 * 60 * 1000) ; //wait max 3 min for lock
-        System.out.println("\nWorker " + name + " acquires the lock: " + lockId);
-        long execTime = random.nextInt(200) ;
-        Thread.sleep(execTime);
-        System.out.println(" Process in " + execTime);
-        Assert.assertEquals(lockOrder.getAndIncrement(), lockId.getSequence()) ;
-        lock.unlock();
-        System.out.println("ScribenginMasterRunner " + name + " releases the lock: " + lockId);
+        Node electionPath =  registry.get(ELECTION_PATH) ;
+        election = electionPath.getLeaderElection();
+        election.setListener(new LeaderElectionListener() {
+          public void onElected() {
+            System.out.println(name + " is elected");
+          }
+        });
+        election.start();
+        Node node = election.getNode();
+        node.setData(name.getBytes());
+        Assert.assertEquals(name, new String(node.getData())) ;
+        int count = 0;
+        while(count < 25) {
+          try {
+            Thread.sleep(500);
+            if(election.isElected()) {
+              election.stop();
+              Thread.sleep(500);
+              election.start();
+            }
+            count++ ;
+          } catch(InterruptedException ex) {
+            break;
+          }
+        }
+        election.stop();
         registry.disconnect();
-        complete = true ;
-      } catch(Exception e) {
+      } catch(RegistryException e) {
         e.printStackTrace();
       }
     }

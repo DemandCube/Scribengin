@@ -9,4 +9,3 @@ public interface DataflowMaster {
 
   public void onModify(DataflowConfig config) ;
 }
-

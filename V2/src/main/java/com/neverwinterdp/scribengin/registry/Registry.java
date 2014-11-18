@@ -15,6 +15,8 @@ public interface Registry {
 
   public Node get(String path) throws RegistryException ;
   public byte[] getData(String path) throws RegistryException ;
+  public void setData(String path, byte[] data) throws RegistryException ;
+  public <T> void setData(String path, T data) throws RegistryException ;
   
   public List<String> getChildren(String dir) throws RegistryException ;
   

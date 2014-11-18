@@ -26,7 +26,7 @@ public class SinkUnitTest {
       }
       streamWriter.close();
     }
-    SinkStream[] streams = dataFlow.getDataStreams() ;
+    SinkStream[] streams = dataFlow.getSinkStreams() ;
     Assert.assertEquals(5, streams.length);
     
     dataFlow.close();

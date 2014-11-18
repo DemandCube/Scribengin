@@ -17,7 +17,7 @@ public class SinkImpl implements Sink {
   
   public String getName() { return this.name ; }
 
-  synchronized public SinkStream[] getDataStreams() {
+  synchronized public SinkStream[] getSinkStreams() {
     SinkStream[] array = new SinkStream[datastreams.size()] ;
     datastreams.values().toArray(array) ;
     return array;
