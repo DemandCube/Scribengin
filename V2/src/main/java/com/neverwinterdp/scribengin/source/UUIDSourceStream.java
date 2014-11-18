@@ -9,24 +9,29 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public class UUIDSourceStream implements SourceStream{
 
   private String name;
-  private LinkedList<byte[]> data;
+  private LinkedList<Tuple> data;
+  private int key;
   
   public UUIDSourceStream(){
     name = UUID.randomUUID().toString();
-    data = new LinkedList<byte[]>();
+    data = new LinkedList<Tuple>();
+    key = 0;
   }
   
   
   @Override
   public Tuple readNext() {
-    data.add(UUID.randomUUID().toString().getBytes());
-    return new Tuple(Integer.toString(data.size()), 
-                      data.getLast(),
-                      new CommitLogEntry(this.getName(), data.size()-1, data.size()-1));
+    Tuple t = new Tuple(Integer.toString(key), 
+                      UUID.randomUUID().toString().getBytes(),
+                      new CommitLogEntry(this.getName(), key, key));
+    data.add(t);
+    key++;
+    
+    return t;
   }
   
   @Override
-  public byte[] readFromOffset(long startOffset, long endOffset) {
+  public Tuple readFromOffset(long startOffset, long endOffset) {
     if(startOffset < data.size()){
       return data.get((int)(startOffset));
     }

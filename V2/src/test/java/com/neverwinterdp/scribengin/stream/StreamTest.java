@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -39,17 +38,23 @@ public class StreamTest {
     //Make sure data from source matches what's in sink
     assertTrue(stream.verifyDataInSink());
     
+    
     //Write bad data, ensure verification fails
-    stream.getSinkStream().writeTuple(new Tuple("key","blah".getBytes(), new CommitLogEntry()));
-    stream.getSourceStream().readNext();
     CommitLog c = ((StreamImpl)stream).getCommitLog();
-    c.addNextEntry(new CommitLogEntry("x",50L,50L));
+    stream.getSinkStream().writeTuple(new Tuple("key","blah".getBytes(), new CommitLogEntry()));
+    c.addNextEntry(stream.getSourceStream().readNext().getCommitLogEntry());
+    
     
     Method m = StreamImpl.class.getDeclaredMethod("setCommitLog",CommitLog.class);
     m.setAccessible(true);
     m.invoke(stream, c);
     
     assertFalse(stream.verifyDataInSink());
+    
+    
+    assertTrue(stream.fixDataInSink());
+    assertTrue(stream.verifyDataInSink());
+    
     
     assertTrue(stream.closeStreams());
   }

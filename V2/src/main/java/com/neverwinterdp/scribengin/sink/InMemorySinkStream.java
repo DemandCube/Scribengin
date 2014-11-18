@@ -58,14 +58,39 @@ public class InMemorySinkStream implements SinkStream{
   }
 
   @Override
-  public byte[] readFromOffset(long startOffset, long endOffset){
+  public Tuple readFromOffset(long startOffset, long endOffset){
     for(Tuple t: list){
       if(t.getCommitLogEntry().getStartOffset() == startOffset &&
           t.getCommitLogEntry().getEndOffset() == endOffset){
-        return t.getData();
+        return t;
       }
     }
     return null;
+  }
+  
+  @Override
+  public boolean removeFromOffset(long startOffset, long endOffset){
+    for(int i=0; i< list.size(); i++){
+      if(list.get(i).getCommitLogEntry().getStartOffset() == startOffset &&
+          list.get(i).getCommitLogEntry().getEndOffset() == endOffset){
+        list.remove(i);
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  @Override
+  public boolean replaceAtOffset(Tuple t, long startOffset, long endOffset) {
+    for(int i=0; i< list.size(); i++){
+      if(list.get(i).getCommitLogEntry().getStartOffset() == startOffset &&
+          list.get(i).getCommitLogEntry().getEndOffset() == endOffset){
+        list.set(i, t);
+        return true;
+      }
+    }
+    return list.add(t);
   }
   
 }

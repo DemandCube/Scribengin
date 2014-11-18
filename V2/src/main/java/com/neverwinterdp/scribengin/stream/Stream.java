@@ -21,5 +21,5 @@ public interface Stream {
   boolean closeStreams();
   
   boolean verifyDataInSink();
-
+  boolean fixDataInSink();
 }

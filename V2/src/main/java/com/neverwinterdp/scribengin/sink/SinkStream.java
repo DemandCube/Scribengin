@@ -7,7 +7,11 @@ public interface SinkStream {
   void setSinkPartitioner(SinkPartitioner sp);
   boolean writeTuple(Tuple t);
   
-  byte[] readFromOffset(long startOffset, long endOffset);
+  Tuple readFromOffset(long startOffset, long endOffset);
+  
+  //Used for recovery
+  boolean removeFromOffset(long startOffset, long endOffset);
+  boolean replaceAtOffset(Tuple t, long startOffset, long endOffset);
   
   boolean openStream();
   boolean closeStream();

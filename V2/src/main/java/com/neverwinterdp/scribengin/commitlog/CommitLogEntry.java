@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.commitlog;
 
+
 public class CommitLogEntry {
   private String readerName ;
   private long   startOffset ;
@@ -39,5 +40,24 @@ public class CommitLogEntry {
 
   public void setInvalidData(boolean invalidData) {
     this.invalidData = invalidData;
+  }
+  
+  
+  public boolean equals(Object obj) {
+    if(!(obj instanceof CommitLogEntry)){
+      return false;
+    }
+    if(obj == this){
+      return true;
+    }
+    CommitLogEntry c = (CommitLogEntry) obj;
+    
+    if(this.readerName.equals(c.getDatasourceName()) &&
+        this.startOffset == c.getStartOffset() &&
+        this.endOffset == c.getEndOffset()    &&
+         this.isInvalidData() == c.isInvalidData()){
+      return true;
+    }
+    return false;
   }
 }

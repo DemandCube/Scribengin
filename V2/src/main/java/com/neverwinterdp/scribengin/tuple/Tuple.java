@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.tuple;
 
+import java.util.Arrays;
+
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 
 public class Tuple {
@@ -38,5 +40,22 @@ public class Tuple {
   public void setInvalidData(boolean isInvalid) {
     this.invalidData = isInvalid;
     this.commitLogEntry.setInvalidData(isInvalid);
+  }
+
+  public boolean equals(Object obj) {
+    if(!(obj instanceof Tuple)){
+      return false;
+    }
+    if(obj == this){
+      return true;
+    }
+    Tuple t = (Tuple) obj;
+    if(Arrays.equals(t.getData(), this.getData()) &&
+        t.getKey().equals(this.getKey()) &&
+        t.getCommitLogEntry().equals(this.commitLogEntry) &&
+        t.isInvalidData() == this.isInvalidData()){
+      return true;
+    }
+    return false;
   }
 }

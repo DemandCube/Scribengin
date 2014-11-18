@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.stream;
 
-import java.util.Arrays;
-
 import com.neverwinterdp.scribengin.commitlog.CommitLog;
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.commitlog.InMemoryCommitLog;
@@ -140,8 +138,7 @@ public class StreamImpl implements Stream{
     
     for(int i =0; i < commitLogs.length; i++){
       if(!commitLogs[i].isInvalidData()){
-        if(!Arrays.equals(
-                    this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
+        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
                     this.sink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
                   ) {
           isDataValid = false;
@@ -149,11 +146,10 @@ public class StreamImpl implements Stream{
         }
       }
       else{
-        if(!Arrays.equals(
-                    this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
-                    this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
-                  ) {
-          //isDataValid = false;
+        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
+            this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
+          ) {
+          isDataValid = false;
           break;
         }
       }
@@ -162,6 +158,31 @@ public class StreamImpl implements Stream{
     return isDataValid;
   }
 
+  @Override
+  public boolean fixDataInSink(){
+    CommitLogEntry[] commitLogs = this.commitLog.getCommitLogs();
+    for(int i =0; i < commitLogs.length; i++){
+      if(!commitLogs[i].isInvalidData()){
+        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
+            this.sink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
+          ) {
+          this.sink.replaceAtOffset(
+              this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
+              commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset());
+        }
+      }
+      else{
+        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
+            this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
+          ) {
+          this.invalidSink.replaceAtOffset(
+              this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
+              commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset());
+        }
+      }
+    }
+    return this.verifyDataInSink();
+  }
 
 
 
