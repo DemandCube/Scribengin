@@ -49,10 +49,12 @@ public class StreamTest {
     m.setAccessible(true);
     m.invoke(stream, c);
     
+    //Make sure sink is messed up
     assertFalse(stream.verifyDataInSink());
     
-    
+    //Fix data in sink
     assertTrue(stream.fixDataInSink());
+    //Verify fix (fixDataInSink() should already call verifyDataInSink(), but just being verbose)
     assertTrue(stream.verifyDataInSink());
     
     
