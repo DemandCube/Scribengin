@@ -9,7 +9,7 @@ import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
-
+//worry about reconnection, get partitions
 public class KafkaSource implements Source {
   //TODO: implement kafka source and assign each kafka partition as a source stream
   //TODO KafkaSourceDescriptor  for topic metadata?

@@ -21,6 +21,7 @@ import com.neverwinterdp.scribengin.source.SourceStreamReader;
  * 
  * The partition is contained in sourceStream.descriptor, the topic is name
  * */
+//Auditing? metrics?
 public class KafkaSourceStreamReader implements SourceStreamReader {
 
   private String name;
@@ -55,7 +56,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
     //ensure consumer is not null and not closed.
 
     //TODO read next offset, move commitpoint
-    //TODO update commitpoint in registry
+    //TODO update commitpoint in registry?
     //TODO initialize a proper KafkaSourceStream
     //TODO handle exceptions
     String topic = name;
@@ -91,7 +92,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
 
   private CommitPoint getCommitPointForReader() {
-    // TODO Read it from registry
+    // TODO Read it from registry?
     return new CommitPoint();
   }
 
