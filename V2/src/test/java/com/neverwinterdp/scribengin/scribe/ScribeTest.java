@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.scribe.partitioner.DumbSinkPartitioner;
 import com.neverwinterdp.scribengin.sink.InMemorySinkStream;
+import com.neverwinterdp.scribengin.sink.partitioner.DumbSinkPartitioner;
 import com.neverwinterdp.scribengin.source.UUIDSourceStream;
 import com.neverwinterdp.scribengin.stream.Stream;
 import com.neverwinterdp.scribengin.stream.StreamImpl;

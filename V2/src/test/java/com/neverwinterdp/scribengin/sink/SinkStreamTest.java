@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
-import com.neverwinterdp.scribengin.scribe.partitioner.DumbSinkPartitioner;
+import com.neverwinterdp.scribengin.sink.partitioner.DumbSinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class SinkStreamTest {

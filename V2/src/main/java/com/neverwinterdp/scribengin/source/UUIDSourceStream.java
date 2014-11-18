@@ -27,7 +27,12 @@ public class UUIDSourceStream implements SourceStream{
   
   @Override
   public byte[] readFromOffset(long startOffset, long endOffset) {
-    return data.get((int)(startOffset));
+    if(startOffset < data.size()){
+      return data.get((int)(startOffset));
+    }
+    else{
+      return null;
+    }
   }
 
   @Override

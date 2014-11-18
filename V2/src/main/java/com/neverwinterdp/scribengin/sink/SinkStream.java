@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.sink;
 
-import com.neverwinterdp.scribengin.scribe.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public interface SinkStream {

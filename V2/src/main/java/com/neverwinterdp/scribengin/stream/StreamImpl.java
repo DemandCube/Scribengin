@@ -25,6 +25,15 @@ public class StreamImpl implements Stream{
     task = t;
     commitLog = new InMemoryCommitLog();
   }
+  
+  public CommitLog getCommitLog(){
+    return this.commitLog;
+  }
+  
+  @SuppressWarnings("unused")
+  private void setCommitLog(CommitLog c){
+    this.commitLog = c;
+  }
 
   @Override
   public boolean initStreams() {

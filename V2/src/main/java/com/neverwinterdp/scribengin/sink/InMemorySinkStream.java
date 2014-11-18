@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.UUID;
 
-import com.neverwinterdp.scribengin.scribe.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class InMemorySinkStream implements SinkStream{
