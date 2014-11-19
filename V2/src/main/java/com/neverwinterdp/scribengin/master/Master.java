@@ -9,7 +9,7 @@ import com.neverwinterdp.scribengin.registry.RegistryException;
 import com.neverwinterdp.scribengin.registry.RegistryFactory;
 import com.neverwinterdp.scribengin.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.registry.election.LeaderElectionListener;
-import com.neverwinterdp.scribengin.vmresource.VMResourceAllocator;
+import com.neverwinterdp.scribengin.vmresource.VMResourceService;
 import com.neverwinterdp.scribengin.vmresource.VMResourceConfig;
 import com.neverwinterdp.scribengin.vmresource.VMResourceFactory;
 
@@ -18,7 +18,7 @@ public class Master {
   final static public String MASTER_PATH = "/master" ;
   private MasterDescriptor descriptor ;
   private Registry registry ;
-  private VMResourceAllocator vmResourceAllocator ;
+  private VMResourceService vmResourceAllocator ;
   private  LeaderElection election  ;
 
   public Master(String[] args) throws Exception {

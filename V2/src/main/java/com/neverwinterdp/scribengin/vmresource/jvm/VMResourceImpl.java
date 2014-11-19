@@ -2,31 +2,21 @@ package com.neverwinterdp.scribengin.vmresource.jvm;
 
 import com.neverwinterdp.scribengin.vmresource.VMApplication;
 import com.neverwinterdp.scribengin.vmresource.VMResource;
+import com.neverwinterdp.scribengin.vmresource.VMResourceDescriptor;
 
 public class VMResourceImpl implements VMResource {
-  private long id;
-  private int  memory ;
-  private int  cpuCores ;
+  private VMResourceDescriptor descriptor ;
   private VMApplicationRunner vmApplicationRunner ;
   
   public VMResourceImpl(long id, int cpuCores, int memory) {
-    this.id = id ;
-    this.memory = memory ;
-    this.cpuCores = cpuCores;
+    descriptor = new VMResourceDescriptor() ;
+    descriptor.setId(id);
+    descriptor.setCpuCores(cpuCores);
+    descriptor.setMemory(memory);
   }
   
   @Override
-  public long getId() { return id; }
-
-  
-  @Override
-  public int getMemory() { return memory; }
-
-  @Override
-  public int getCpuCores() { return cpuCores; }
-
-  @Override
-  public String getHostname() { return "localhost"; }
+  public VMResourceDescriptor getDescriptor() { return descriptor; }
 
   @Override
   public void startApp(String vmAppClass, String[] args) throws Exception {

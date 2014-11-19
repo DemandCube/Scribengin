@@ -9,7 +9,7 @@ import com.neverwinterdp.scribengin.vmresource.VMResource;
 public class VMResourceAllocatorUnitTest {
   @Test
   public void testAllocator() throws Exception {
-    VMResourceAllocatorImpl allocator = new VMResourceAllocatorImpl();
+    VMResourceServiceImpl allocator = new VMResourceServiceImpl();
     for(int i = 0; i < 10; i++) {
       VMResource vmResource = allocator.allocate(1, 128) ;
       vmResource.startApp(DummyVMApplication.class.getName(), new String[] {"Dummy-" + i});

@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.vmresource;
 
-public interface VMResourceAllocator {
+public interface VMResourceService {
   public void start() throws Exception;
   public void stop() throws Exception ;
   
