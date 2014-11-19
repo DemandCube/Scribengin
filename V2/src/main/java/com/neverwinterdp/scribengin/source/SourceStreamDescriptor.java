@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.source;
 
 public class SourceStreamDescriptor {
-  private int    id;
+  protected int    id;
   private String location ;
 
   public int getId() { return id; }
