@@ -10,6 +10,18 @@ import com.neverwinterdp.scribengin.vmresource.VMResourceAllocator;
 public class VMResourceAllocatorImpl implements VMResourceAllocator {
   private AtomicLong idTracker = new AtomicLong();
   private Map<Long, VMResourceImpl> vmResources = new HashMap<Long, VMResourceImpl>() ;
+
+  @Override
+  synchronized public void start() throws Exception {
+  }
+  
+  @Override
+  synchronized public void stop() throws Exception {
+    for(VMResource vmResource : vmResources.values()) {
+      vmResource.exit();
+    }
+    vmResources.clear();
+  }
   
   @Override
   synchronized public VMResource[] getAllocatedVMResources() {
@@ -33,12 +45,5 @@ public class VMResourceAllocatorImpl implements VMResourceAllocator {
     }
     vmResources.remove(vmResource.getId()) ;
     vmResource.exit();
-  }
-  
-  @Override
-  synchronized public void close() throws Exception {
-    for(VMResource vmResource : vmResources.values()) {
-      vmResource.exit();
-    }
   }
 }

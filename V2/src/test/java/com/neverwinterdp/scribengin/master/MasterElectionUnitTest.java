@@ -15,6 +15,7 @@ import com.neverwinterdp.scribengin.registry.Registry;
 import com.neverwinterdp.scribengin.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.registry.zk.ZKRegistryFactory;
+import com.neverwinterdp.scribengin.vmresource.jvm.JVMVMResourceFactory;
 import com.neverwinterdp.util.FileUtil;
 
 public class MasterElectionUnitTest {
@@ -44,7 +45,9 @@ public class MasterElectionUnitTest {
     String[] args = {
         "--registry-factory", ZKRegistryFactory.class.getName(), 
         "--registry-connect", "127.0.0.1:2181",
-        "--registry-db-domain", "/scribengin/v2"
+        "--registry-db-domain", "/scribengin/v2",
+        
+        "--vm-resource-factory", JVMVMResourceFactory.class.getName(),
       } ;
     return new Master(args) ;
   }
@@ -77,7 +80,7 @@ public class MasterElectionUnitTest {
     public void run() {
       try {
         for(int i = 0; i < 10; i++) {
-          Thread.sleep(new Random().nextInt(5000));
+          Thread.sleep(new Random().nextInt(3000));
           LeaderElection election = master.getLeaderElection();
           if(election != null && election.isElected()) {
             master.stop();

@@ -10,6 +10,8 @@ import com.neverwinterdp.scribengin.registry.RegistryFactory;
 import com.neverwinterdp.scribengin.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.registry.election.LeaderElectionListener;
 import com.neverwinterdp.scribengin.vmresource.VMResourceAllocator;
+import com.neverwinterdp.scribengin.vmresource.VMResourceConfig;
+import com.neverwinterdp.scribengin.vmresource.VMResourceFactory;
 
 //TODO: should we pick the master name or leader name
 public class Master {
@@ -22,9 +24,14 @@ public class Master {
   public Master(String[] args) throws Exception {
     MasterConfig config = new MasterConfig() ;
     new JCommander(config, args) ;
+    
     RegistryConfig registryConfig = config.getRegistryConfig();
     Class<RegistryFactory> factory = (Class<RegistryFactory>)Class.forName(registryConfig.getFactory()) ;
     registry = factory.newInstance().create(registryConfig);
+    
+    VMResourceConfig vmResourceConfig = config.getVmResourceConfig();
+    Class<VMResourceFactory> vmResourceFactory = (Class<VMResourceFactory>)Class.forName(vmResourceConfig.getFactory()) ;
+    vmResourceAllocator = vmResourceFactory.newInstance().createAllocator(vmResourceConfig);
   }
   
   public MasterDescriptor getDescriptor() { return this.descriptor ; }
@@ -42,10 +49,11 @@ public class Master {
     election.getNode().setData(descriptor);
   }
   
-  public void stop() throws RegistryException {
+  public void stop() throws Exception, RegistryException {
     if(election != null) {
       election.stop();
       election = null ;
+      vmResourceAllocator.stop();
       registry.disconnect();
     }
   }
@@ -59,8 +67,8 @@ public class Master {
       try {
         descriptor.setType(Type.LEADER);
         election.getNode().setData(descriptor);
-        //TODO: init vmResourceAllocator
-      } catch (RegistryException e) {
+        vmResourceAllocator.start();
+      } catch(Exception e) {
         e.printStackTrace();
       }
     }
