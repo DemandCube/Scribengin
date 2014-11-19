@@ -28,6 +28,15 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
   private KafkaSourceStream dataStream;
   private SimpleConsumer consumer;
   private CommitPoint commitPoint;
+  public CommitPoint getCommitPoint() {
+    return commitPoint;
+  }
+
+  public void setCommitPoint(CommitPoint commitPoint) {
+    this.commitPoint = commitPoint;
+  }
+
+
   private static final int BUFFER_SIZE = 64 * 1024;
   private static final int TIMEOUT = 10000;
   private static final Logger logger = Logger.getLogger(KafkaSourceStreamReader.class);
@@ -54,18 +63,17 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
   @Override
   public Record next() throws Exception {
     //ensure consumer is not null and not closed.
-
     //TODO read next offset, move commitpoint
     //TODO update commitpoint in registry?
     //TODO initialize a proper KafkaSourceStream
     //TODO handle exceptions
     String topic = name;
     int partition = dataStream.getDescriptor().getId();
-    long offset = getCommitPointForReader().getEndOffset();
+    long endOffset = getCommitPointFromRepository().getEndOffset();
 
     FetchRequest req = new FetchRequestBuilder()
         .clientId(getClientName())
-        .addFetch(topic, partition, offset, 100000)
+        .addFetch(topic, partition, endOffset, 100000)
         .build();
 
     FetchResponse resp = consumer.fetch(req);
@@ -74,13 +82,13 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
     for (MessageAndOffset messageAndOffset : resp.messageSet(topic, partition)) {
       long currentOffset = messageAndOffset.offset();
-      offset = messageAndOffset.nextOffset();
+      endOffset = messageAndOffset.nextOffset();
       ByteBuffer payload = messageAndOffset.message().payload();
 
       byte[] bytes = new byte[payload.limit()];
       payload.get(bytes);
       record = new Record(topic, bytes);
-      commitPoint = new CommitPoint(name, currentOffset, offset);
+      commitPoint = new CommitPoint(name, currentOffset, endOffset);
 
 
       logger.info("Concatenating for tmp string: " + String.valueOf(messageAndOffset.offset())
@@ -91,7 +99,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
 
 
-  private CommitPoint getCommitPointForReader() {
+  private CommitPoint getCommitPointFromRepository() {
     // TODO Read it from registry?
     return new CommitPoint();
   }
