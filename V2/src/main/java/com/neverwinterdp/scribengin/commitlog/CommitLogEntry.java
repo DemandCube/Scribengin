@@ -7,7 +7,9 @@ public class CommitLogEntry {
   private long   endOffset   ;
   private boolean invalidData ; 
   
-  public CommitLogEntry() {} 
+  public CommitLogEntry() {
+    this("",-1,-1,false);
+  } 
   
   public CommitLogEntry(String readerName, long startOffset, long endOffset) {
     this.readerName = readerName ;

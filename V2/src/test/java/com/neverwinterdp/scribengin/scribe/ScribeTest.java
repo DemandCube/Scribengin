@@ -5,18 +5,18 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.sink.InMemorySinkStream;
-import com.neverwinterdp.scribengin.sink.partitioner.DumbSinkPartitioner;
-import com.neverwinterdp.scribengin.source.UUIDSourceStream;
-import com.neverwinterdp.scribengin.stream.Stream;
-import com.neverwinterdp.scribengin.stream.StreamImpl;
+import com.neverwinterdp.scribengin.stream.sink.InMemorySinkStream;
+import com.neverwinterdp.scribengin.stream.sink.partitioner.DumbSinkPartitioner;
+import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
+import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
+import com.neverwinterdp.scribengin.streamconnector.StreamConnectorImpl;
 import com.neverwinterdp.scribengin.task.DumbTask;
 
 public class ScribeTest {
   @Test
   public void testScribe() throws Exception {
 
-    Stream stream = new StreamImpl(new UUIDSourceStream(), 
+    StreamConnector stream = new StreamConnectorImpl(new UUIDSourceStream(), 
         new InMemorySinkStream(new DumbSinkPartitioner()), 
         new InMemorySinkStream(new DumbSinkPartitioner()), 
         new DumbTask());
@@ -30,7 +30,7 @@ public class ScribeTest {
     scribe.stop();
     Thread.sleep(100);
     
-    assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getNumTuples(),
+    assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getData().size(),
         ((InMemorySinkStream)stream.getInvalidSink()).getData().size() +
         ((InMemorySinkStream)stream.getSinkStream()).getData().size());
 
@@ -38,10 +38,9 @@ public class ScribeTest {
     Thread.sleep(1500);
     scribe.stop();
     Thread.sleep(100);
-    assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getNumTuples(),
+    assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getData().size(),
         ((InMemorySinkStream)stream.getInvalidSink()).getData().size() +
         ((InMemorySinkStream)stream.getSinkStream()).getData().size());
 
-    assertTrue(scribe.close());
   }
 }

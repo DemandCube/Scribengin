@@ -5,7 +5,7 @@ import java.util.LinkedList;
 
 import com.neverwinterdp.scribengin.scribe.Scribe;
 import com.neverwinterdp.scribengin.scribe.ScribeImpl;
-import com.neverwinterdp.scribengin.stream.Stream;
+import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 import com.neverwinterdp.scribengin.streamcoordinator.StreamCoordinator;
 
 public class DataflowImpl implements Dataflow{
@@ -19,7 +19,7 @@ public class DataflowImpl implements Dataflow{
     streamCoordinator = s;
   }
 
-  public void addStream(Stream s){
+  public void addStream(StreamConnector s){
     scribes.add(new ScribeImpl(s));
   }
   

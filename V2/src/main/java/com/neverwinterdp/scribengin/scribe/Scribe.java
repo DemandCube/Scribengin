@@ -1,11 +1,11 @@
 package com.neverwinterdp.scribengin.scribe;
 
-import com.neverwinterdp.scribengin.stream.Stream;
+import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 
 public interface Scribe {
-  void setStream(Stream s);
+  void setStream(StreamConnector s);
   
-  Stream getStream();
+  StreamConnector getStream();
   
   boolean init();
   boolean close();

@@ -1,12 +1,15 @@
 package com.neverwinterdp.scribengin.source;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.stream.source.SourceStream;
+import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class SourceStreamTest {
@@ -14,9 +17,9 @@ public class SourceStreamTest {
   public void testUUIDSourceStream(){
     SourceStream s = new UUIDSourceStream();
     
-    LinkedList<Tuple> list = new LinkedList<Tuple>();
+    assertNotNull(s.getName());
     
-    assertTrue(s.openStream());
+    LinkedList<Tuple> list = new LinkedList<Tuple>();
     
     for(int i =0; i<10; i++){
       assertTrue(s.hasNext());
@@ -25,7 +28,19 @@ public class SourceStreamTest {
       list.add(t);
     }
     assertTrue(list.size() == 10);
+    assertTrue(s.prepareCommit());
+    assertTrue(s.commit());
+    assertTrue(s.updateOffSet());
     
-    assertTrue(s.closeStream());
+    
+    assertTrue(s.hasNext());
+    Tuple t = s.readNext();
+    assertTrue(s.prepareCommit());
+    s.clearCommit();
+    Tuple t2 = s.readNext();
+    assertTrue(t.equals(t2));
+    assertTrue(s.commit());
+    assertTrue(s.updateOffSet());
+    
   }
 }

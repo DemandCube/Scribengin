@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.scribe.Scribe;
-import com.neverwinterdp.scribengin.sink.InMemorySinkStream;
-import com.neverwinterdp.scribengin.source.UUIDSourceStream;
+import com.neverwinterdp.scribengin.stream.sink.InMemorySinkStream;
+import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
 import com.neverwinterdp.scribengin.streamcoordinator.DumbStreamCoordinator;
 
 public class DataflowTest {
@@ -24,7 +24,7 @@ public class DataflowTest {
 
     Scribe[] scribes = d.getScribes();
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getNumTuples(),
+      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getData().size(),
           ((InMemorySinkStream)s.getStream().getInvalidSink()).getData().size() +
           ((InMemorySinkStream)s.getStream().getSinkStream()).getData().size());
     }
@@ -36,7 +36,7 @@ public class DataflowTest {
     Thread.sleep(100);
 
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getNumTuples(),
+      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getData().size(),
           ((InMemorySinkStream)s.getStream().getInvalidSink()).getData().size() +
           ((InMemorySinkStream)s.getStream().getSinkStream()).getData().size());
     }
@@ -44,5 +44,6 @@ public class DataflowTest {
 
     d.stop();
     assertEquals("Test", d.getName());
+    
   }
 }

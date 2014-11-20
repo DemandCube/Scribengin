@@ -1,19 +1,19 @@
 package com.neverwinterdp.scribengin.scribe;
 
-import com.neverwinterdp.scribengin.stream.Stream;
+import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 
 public class ScribeImpl implements Scribe{
 
-  private Stream stream;
+  private StreamConnector stream;
   private int timeout;
   private boolean active;
   private Thread scribeThread;
 
-  public ScribeImpl(Stream s){
+  public ScribeImpl(StreamConnector s){
     this(s, 1000);
   }
   
-  public ScribeImpl(Stream s, int Timeout){
+  public ScribeImpl(StreamConnector s, int Timeout){
     this.stream = s;
     timeout = Timeout;
     active = false;
@@ -32,7 +32,7 @@ public class ScribeImpl implements Scribe{
   }
   
   @Override
-  public void setStream(Stream s) {
+  public void setStream(StreamConnector s) {
     stream = s;
   }
 
@@ -63,16 +63,16 @@ public class ScribeImpl implements Scribe{
 
   @Override
   public boolean init() {
-    return this.stream.initStreams();
+    return true;
   }
 
   @Override
   public boolean close() {
-    return this.stream.closeStreams();
+    return true;
   }
 
   @Override
-  public Stream getStream() {
+  public StreamConnector getStream() {
     return this.stream;
   }
 
