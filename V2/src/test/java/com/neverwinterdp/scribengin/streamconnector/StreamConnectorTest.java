@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.stream.sink.InMemorySinkStream;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.DumbSinkPartitioner;
 import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
-import com.neverwinterdp.scribengin.task.DumbTask;
+import com.neverwinterdp.scribengin.task.TenPercentInvalidTask;
 
 public class StreamConnectorTest {
   
@@ -18,7 +18,7 @@ public class StreamConnectorTest {
     StreamConnector streamConn = new StreamConnectorImpl(new UUIDSourceStream(), 
                                       new InMemorySinkStream(new DumbSinkPartitioner()), 
                                       new InMemorySinkStream(new DumbSinkPartitioner()), 
-                                      new DumbTask());
+                                      new TenPercentInvalidTask());
     
     for(int i=0; i<50; i++){
       //Processes 10 records at a time

@@ -1,7 +1,6 @@
 package com.neverwinterdp.scribengin.streamconnector;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLog;
-import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.commitlog.InMemoryCommitLog;
 import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
@@ -39,13 +38,15 @@ public class StreamConnectorImpl implements StreamConnector{
     //We could write a class that takes in a sink/source
     //and decides when to commit
     //while(CommitDecision.notReadyToCommit(source,sink,invalidSink))){}
-    while(source.hasNext() && (sink.getBufferSize() + invalidSink.getBufferSize())< 10){
-      Tuple t = task.execute(source.readNext());
-      if(t.isInvalidData()){
-        invalidSink.append(t);
-      }
-      else{
-        sink.append(t);
+    while(source.hasNext() && !task.readyToCommit()){
+      Tuple[] tupleArray = task.execute(source.readNext());
+      for(Tuple t : tupleArray){
+        if(t.isInvalidData()){
+          invalidSink.append(t);
+        }
+        else{
+          sink.append(t);
+        }
       }
     }
     

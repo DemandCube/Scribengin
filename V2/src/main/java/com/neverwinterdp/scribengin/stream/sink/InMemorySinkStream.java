@@ -17,7 +17,11 @@ public class InMemorySinkStream implements SinkStream{
     this.list = new LinkedList<Tuple>();
     this.buffer = new LinkedList<Tuple>();
     //this.sp = sp;
-    this.name = UUID.randomUUID().toString();
+    this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
+  }
+  
+  public InMemorySinkStream(){
+    this(null);
   }
   
   @Override
@@ -73,6 +77,9 @@ public class InMemorySinkStream implements SinkStream{
 
   @Override
   public boolean commit() {
+    if(buffer.isEmpty()){
+      return true;
+    }
     return list.addAll(buffer);
   }
 

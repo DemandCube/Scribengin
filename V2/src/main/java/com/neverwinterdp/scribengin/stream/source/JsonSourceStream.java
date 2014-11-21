@@ -1,19 +1,23 @@
 package com.neverwinterdp.scribengin.stream.source;
 
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.UUID;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-public class UUIDSourceStream implements SourceStream{
+public class JsonSourceStream implements SourceStream {
 
   private String name;
   private LinkedList<Tuple> data;
   private int currentOffset;
   private int lastCommitted;
   
-  public UUIDSourceStream(){
+  public JsonSourceStream(){
     name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
     data = new LinkedList<Tuple>();
     currentOffset = 0;
@@ -29,9 +33,21 @@ public class UUIDSourceStream implements SourceStream{
     if(currentOffset < data.size()){
       return data.get(currentOffset++);
     }
+    Random rand = new Random();
+    JSONObject j = null; 
+    try {
+      String data = "{\"data\":"+ 
+          "[{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," + 
+          "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," +
+          "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}]}";
+      j = new JSONObject(data);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    
     
     Tuple t = new Tuple(Integer.toString(currentOffset), 
-                      UUID.randomUUID().toString().getBytes(),
+                      j.toString().getBytes(),
                       new CommitLogEntry(this.getName(), currentOffset, currentOffset));
     data.add(t);
     
@@ -89,6 +105,4 @@ public class UUIDSourceStream implements SourceStream{
     return true;
   }
 
-
-  
 }

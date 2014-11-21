@@ -6,7 +6,7 @@ import com.neverwinterdp.scribengin.stream.sink.InMemorySinkStream;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.DumbSinkPartitioner;
 import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
 import com.neverwinterdp.scribengin.streamconnector.StreamConnectorImpl;
-import com.neverwinterdp.scribengin.task.DumbTask;
+import com.neverwinterdp.scribengin.task.TenPercentInvalidTask;
 
 public class DumbStreamCoordinator implements StreamCoordinator{
 
@@ -29,7 +29,7 @@ public class DumbStreamCoordinator implements StreamCoordinator{
       s[i] = new ScribeImpl(new StreamConnectorImpl(new UUIDSourceStream(), 
           new InMemorySinkStream(new DumbSinkPartitioner()), 
           new InMemorySinkStream(new DumbSinkPartitioner()), 
-          new DumbTask()));
+          new TenPercentInvalidTask()));
     }
     
     return s;

@@ -58,4 +58,34 @@ public class Tuple {
     }
     return false;
   }
+  
+  @Override 
+  public String toString() {
+    StringBuilder result = new StringBuilder();
+    String NEW_LINE = System.getProperty("line.separator");
+    result.append("key: ");
+    result.append(this.key);
+    result.append(NEW_LINE);
+    
+    result.append("data: ");
+    result.append(new String(this.data));
+    result.append(NEW_LINE);
+    
+    result.append("invalidData: ");
+    result.append(String.valueOf(this.invalidData));
+    result.append(NEW_LINE);
+    
+    result.append("commitLog: ");
+    result.append(NEW_LINE);
+    String[] commitLog = this.commitLogEntry.toString().split(NEW_LINE);
+    for(String x: commitLog){
+      result.append("\t");
+      result.append(x);
+      result.append(NEW_LINE);
+    }
+    
+    
+
+    return result.toString();
+  }
 }

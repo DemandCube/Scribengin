@@ -8,14 +8,14 @@ import java.util.LinkedList;
 
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.stream.source.JsonSourceStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
-import com.neverwinterdp.scribengin.stream.source.UUIDSourceStream;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-public class SourceStreamTest {
+public class JsonSourceStreamTest {
   @Test
-  public void testUUIDSourceStream(){
-    SourceStream s = new UUIDSourceStream();
+  public void testJsonSourceStream(){
+    SourceStream s = new JsonSourceStream();
     
     assertNotNull(s.getName());
     

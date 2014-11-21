@@ -62,4 +62,29 @@ public class CommitLogEntry {
     }
     return false;
   }
+  
+  
+  @Override 
+  public String toString() {
+    StringBuilder result = new StringBuilder();
+    String NEW_LINE = System.getProperty("line.separator");
+
+    result.append("readerName: ");
+    result.append(this.readerName);
+    result.append(NEW_LINE);
+    
+    result.append("startOffset: ");
+    result.append(this.startOffset);
+    result.append(NEW_LINE);
+    
+    result.append("endOffset: ");
+    result.append(this.endOffset);
+    result.append(NEW_LINE);
+    
+    result.append("invalidData: ");
+    result.append(String.valueOf(this.invalidData));
+    result.append(NEW_LINE);
+    
+    return result.toString();
+  }
 }
