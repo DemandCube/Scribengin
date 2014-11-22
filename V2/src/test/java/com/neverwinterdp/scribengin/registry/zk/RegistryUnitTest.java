@@ -10,7 +10,8 @@ import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
 import com.neverwinterdp.scribengin.registry.NodeEvent;
 import com.neverwinterdp.scribengin.registry.NodeEventCatcher;
-import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryService;
+import com.neverwinterdp.scribengin.registry.RegistryConfig;
 import com.neverwinterdp.util.FileUtil;
 
 public class RegistryUnitTest {
@@ -37,7 +38,7 @@ public class RegistryUnitTest {
   public void testPersistent() throws Exception {
     String DATA = "hello";
     
-    Registry registry = newRegistry().connect(); 
+    RegistryService registry = newRegistry().connect(); 
     Node pNode = registry.create("/persistent", DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
     Assert.assertEquals("/persistent", pNode.getPath()) ;
     Assert.assertTrue(pNode.exists());
@@ -61,7 +62,7 @@ public class RegistryUnitTest {
   
   @Test
   public void testPersistentSequential() throws Exception {
-    Registry  registry = newRegistry().connect(); 
+    RegistryService  registry = newRegistry().connect(); 
     
     registry.create("/sequential", NodeCreateMode.PERSISTENT) ;
     Node seqNode1 = registry.create("/sequential/node", NodeCreateMode.PERSISTENT_SEQUENTIAL) ;
@@ -72,7 +73,7 @@ public class RegistryUnitTest {
   
   @Test
   public void testEphemeral() throws Exception {
-    Registry registry = newRegistry().connect(); 
+    RegistryService registry = newRegistry().connect(); 
     registry.create("/ephemeral", NodeCreateMode.PERSISTENT) ;
     Node ephemeralNode = registry.create("/ephemeral/node", NodeCreateMode.EPHEMERAL) ;
     Assert.assertEquals("/ephemeral/node", ephemeralNode.getPath()) ;
@@ -87,7 +88,7 @@ public class RegistryUnitTest {
   
   @Test
   public void testEphemeralSequential() throws Exception {
-    Registry registry = newRegistry().connect(); 
+    RegistryService registry = newRegistry().connect(); 
     registry.create("/ephemeral-sequential", NodeCreateMode.PERSISTENT) ;
     
     Node seqNode = registry.create("/ephemeral-sequential/node", NodeCreateMode.EPHEMERAL_SEQUENTIAL) ;
@@ -100,7 +101,7 @@ public class RegistryUnitTest {
     registry.disconnect();
   }
   
-  private Registry newRegistry() {
-    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2") ;
+  private RegistryService newRegistry() {
+    return new RegistryServiceImpl(RegistryConfig.getDefault()) ;
   }
 }

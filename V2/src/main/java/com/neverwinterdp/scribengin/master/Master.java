@@ -1,37 +1,37 @@
 package com.neverwinterdp.scribengin.master;
 
-import com.beust.jcommander.JCommander;
-import com.neverwinterdp.scribengin.dataflow.config.DataflowConfig;
+import java.util.Map;
+
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.neverwinterdp.scribengin.dataflow.DataflowConfig;
 import com.neverwinterdp.scribengin.master.MasterDescriptor.Type;
-import com.neverwinterdp.scribengin.registry.Registry;
-import com.neverwinterdp.scribengin.registry.RegistryConfig;
+import com.neverwinterdp.scribengin.module.ScribenginModule;
+import com.neverwinterdp.scribengin.registry.RegistryService;
 import com.neverwinterdp.scribengin.registry.RegistryException;
-import com.neverwinterdp.scribengin.registry.RegistryFactory;
 import com.neverwinterdp.scribengin.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.registry.election.LeaderElectionListener;
-import com.neverwinterdp.scribengin.vmresource.VMResourceService;
-import com.neverwinterdp.scribengin.vmresource.VMResourceConfig;
-import com.neverwinterdp.scribengin.vmresource.VMResourceFactory;
+import com.neverwinterdp.vm.VM;
+import com.neverwinterdp.vm.VMService;
 
 //TODO: should we pick the master name or leader name
 public class Master {
   final static public String MASTER_PATH = "/master" ;
+  
+  @Inject
+  private MasterConfig config;
+  
+  @Inject
+  private RegistryService registry ;
+  
+  @Inject
+  private VMService vmResourceService ;
+  
   private MasterDescriptor descriptor ;
-  private Registry registry ;
-  private VMResourceService vmResourceAllocator ;
   private  LeaderElection election  ;
 
-  public Master(String[] args) throws Exception {
-    MasterConfig config = new MasterConfig() ;
-    new JCommander(config, args) ;
-    
-    RegistryConfig registryConfig = config.getRegistryConfig();
-    Class<RegistryFactory> factory = (Class<RegistryFactory>)Class.forName(registryConfig.getFactory()) ;
-    registry = factory.newInstance().create(registryConfig);
-    
-    VMResourceConfig vmResourceConfig = config.getVmResourceConfig();
-    Class<VMResourceFactory> vmResourceFactory = (Class<VMResourceFactory>)Class.forName(vmResourceConfig.getFactory()) ;
-    vmResourceAllocator = vmResourceFactory.newInstance().createAllocator(vmResourceConfig);
+  public Master() {
   }
   
   public MasterDescriptor getDescriptor() { return this.descriptor ; }
@@ -53,12 +53,13 @@ public class Master {
     if(election != null) {
       election.stop();
       election = null ;
-      vmResourceAllocator.stop();
+      vmResourceService.stop();
       registry.disconnect();
     }
   }
   
-  public void submit(DataflowConfig config) {
+  public void submit(DataflowConfig config) throws Exception {
+    VM vmresource = vmResourceService.allocate(1, 128);
   }
   
   class MasterLeaderElectionListener implements LeaderElectionListener {
@@ -67,10 +68,28 @@ public class Master {
       try {
         descriptor.setType(Type.LEADER);
         election.getNode().setData(descriptor);
-        vmResourceAllocator.start();
+        vmResourceService.start();
       } catch(Exception e) {
         e.printStackTrace();
       }
     }
+  }
+  
+  static public Master create(Map<String, String> properties) throws Exception {
+    ScribenginModule module = new ScribenginModule(properties) {
+      protected void configure(Map<String, String> properties) {
+        try {
+          bindType(RegistryService.class, properties.get("registry.implementation"));
+          bindType(VMService.class, properties.get("vmresource.implementation"));
+        } catch (ClassNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+   
+    Injector container = Guice.createInjector(module);
+    
+    Master master = container.getInstance(Master.class) ;
+    return master ;
   }
 }

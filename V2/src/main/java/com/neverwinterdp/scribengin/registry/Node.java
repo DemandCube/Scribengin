@@ -5,15 +5,15 @@ import com.neverwinterdp.scribengin.registry.lock.Lock;
 import com.neverwinterdp.util.JSONSerializer;
 
 public class Node {
-  private Registry  registry ;
+  private RegistryService  registry ;
   private String path  ;
   
-  public Node(Registry registry, String path) {
+  public Node(RegistryService registry, String path) {
     this.registry = registry ;
     this.path = path ;
   }
 
-  public Registry getRegistry() { return this.registry ; }
+  public RegistryService getRegistry() { return this.registry ; }
   
   public String getPath() { return path; }
 

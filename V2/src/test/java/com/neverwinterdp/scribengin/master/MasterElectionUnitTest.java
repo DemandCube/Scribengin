@@ -5,51 +5,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.ScribenginUnitTest;
 import com.neverwinterdp.scribengin.client.shell.Shell;
-import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
-import com.neverwinterdp.scribengin.registry.Registry;
 import com.neverwinterdp.scribengin.registry.election.LeaderElection;
-import com.neverwinterdp.scribengin.registry.zk.RegistryImpl;
-import com.neverwinterdp.scribengin.registry.zk.ZKRegistryFactory;
-import com.neverwinterdp.scribengin.vmresource.jvm.JVMVMResourceFactory;
-import com.neverwinterdp.util.FileUtil;
 
-public class MasterElectionUnitTest {
-  static {
-    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
-  }
-  
-  private ZookeeperServerLauncher zkServerLauncher ;
-  
-  @Before
-  public void setup() throws Exception {
-    FileUtil.removeIfExist("./build/data", false);
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
-    zkServerLauncher.start();
-  }
-  
-  @After
-  public void teardown() throws Exception {
-    zkServerLauncher.stop();
-  }
-
-  private Registry newRegistry() {
-    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2");
-  }
-  
+public class MasterElectionUnitTest extends ScribenginUnitTest {
   private Master newScribenginMaster() throws Exception {
-    String[] args = {
-        "--registry-factory", ZKRegistryFactory.class.getName(), 
-        "--registry-connect", "127.0.0.1:2181",
-        "--registry-db-domain", "/scribengin/v2",
-        
-        "--vm-resource-factory", JVMVMResourceFactory.class.getName(),
-      } ;
-    return new Master(args) ;
+    return newMasterContainer().getInstance(Master.class) ;
   }
   
   @Test

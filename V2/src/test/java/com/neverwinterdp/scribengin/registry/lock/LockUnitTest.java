@@ -14,8 +14,9 @@ import org.junit.Assert;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
-import com.neverwinterdp.scribengin.registry.Registry;
-import com.neverwinterdp.scribengin.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.registry.RegistryService;
+import com.neverwinterdp.scribengin.registry.RegistryConfig;
+import com.neverwinterdp.scribengin.registry.zk.RegistryServiceImpl;
 import com.neverwinterdp.util.FileUtil;
 
 public class LockUnitTest {
@@ -41,14 +42,14 @@ public class LockUnitTest {
     zkServerLauncher.stop();
   }
 
-  private Registry newRegistry() {
-    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2") ;
+  private RegistryService newRegistry() {
+    return new RegistryServiceImpl(RegistryConfig.getDefault()) ;
   }
   
   @Test
   public void testConcurrentLock() throws Exception {
     String DATA = "lock directory";
-    Registry registry = newRegistry().connect(); 
+    RegistryService registry = newRegistry().connect(); 
     Node lockDir = registry.create(LOCK_DIR, DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
     registry.disconnect();
     Worker[] worker = new Worker[100];
@@ -79,7 +80,7 @@ public class LockUnitTest {
       try {
         Random random = new Random() ;
         Thread.sleep(random.nextInt(100));
-        Registry registry = newRegistry().connect();
+        RegistryService registry = newRegistry().connect();
         Node lockDir =  registry.get(LOCK_DIR) ;
         Lock lock = lockDir.getLock("write") ;
         lockId = lock.lock(3 * 60 * 1000) ; //wait max 3 min for lock

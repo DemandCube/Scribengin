@@ -9,22 +9,22 @@ import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
 import com.neverwinterdp.scribengin.registry.NodeEvent;
 import com.neverwinterdp.scribengin.registry.NodeWatcher;
-import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryService;
 import com.neverwinterdp.scribengin.registry.RegistryException;
 
 public class Lock {
-  private Registry  registry ;
+  private RegistryService  registry ;
   private String    lockDir ;
   private String    name ;
   private LockId    lockId ;
   
-  public Lock(Registry registry, String dir, String name) {
+  public Lock(RegistryService registry, String dir, String name) {
     this.registry = registry;
     this.lockDir = dir ;
     this.name = name ;
   }
   
-  public Registry getRegistry() { return this.registry ; }
+  public RegistryService getRegistry() { return this.registry ; }
   
   public String getName() { return this.name ; }
   

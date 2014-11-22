@@ -9,23 +9,23 @@ import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
 import com.neverwinterdp.scribengin.registry.NodeEvent;
 import com.neverwinterdp.scribengin.registry.NodeWatcher;
-import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryService;
 import com.neverwinterdp.scribengin.registry.RegistryException;
 
 public class LeaderElection {
-  private Registry  registry ;
+  private RegistryService  registry ;
   private String    electionPath ;
   private LeaderId  leaderId ;
   private LeaderElectionListener listener ;
   private boolean elected = false ;
   private Node node ;
   
-  public LeaderElection(Registry registry, String electionPath) {
+  public LeaderElection(RegistryService registry, String electionPath) {
     this.registry = registry;
     this.electionPath = electionPath ;
   }
   
-  public Registry getRegistry() { return this.registry ; }
+  public RegistryService getRegistry() { return this.registry ; }
   
   public String getElectionPath() { return this.electionPath ; }
   

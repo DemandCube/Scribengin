@@ -14,9 +14,10 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.scribengin.registry.Node;
 import com.neverwinterdp.scribengin.registry.NodeCreateMode;
-import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryService;
+import com.neverwinterdp.scribengin.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.registry.RegistryException;
-import com.neverwinterdp.scribengin.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.registry.zk.RegistryServiceImpl;
 import com.neverwinterdp.util.FileUtil;
 
 public class LeaderElectionUnitTest {
@@ -42,14 +43,14 @@ public class LeaderElectionUnitTest {
     zkServerLauncher.stop();
   }
 
-  private Registry newRegistry() {
-    return new RegistryImpl("127.0.0.1:2181", "/scribengin/v2/leader") ;
+  private RegistryService newRegistry() {
+    return new RegistryServiceImpl(RegistryConfig.getDefault()) ;
   }
   
   @Test
   public void testElection() throws Exception {
     String DATA = "lock directory";
-    Registry registry = newRegistry().connect(); 
+    RegistryService registry = newRegistry().connect(); 
     Node electionNode = registry.create(ELECTION_PATH, DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
     registry.disconnect();
     
@@ -74,7 +75,7 @@ public class LeaderElectionUnitTest {
     
     public void run() {
       try {
-        Registry registry = newRegistry().connect();
+        RegistryService registry = newRegistry().connect();
         Node electionPath =  registry.get(ELECTION_PATH) ;
         election = electionPath.getLeaderElection();
         election.setListener(new LeaderElectionListener() {

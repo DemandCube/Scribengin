@@ -1,0 +1,36 @@
+NeverwinterDP
+  vm-resources/
+    available/
+      vm-1[descriptor]
+      vm-2[descriptor]
+      vm-3[descriptor]
+    allocated/
+      vm-1[descriptor]
+        events[start - stop -finish]
+        application
+          config
+          commands
+            command-id[payload: command - command result]
+            command-id[payload: command - command result]
+          events[start - stop -finish]
+          executors
+            executor-1
+              dataflow-task-report
+            executor-2
+      vm-2[descriptor]
+        application
+  Scribengin/
+    masters
+      master-1[descriptor]
+         vm-reference
+      master-2[descriptor]
+         vm-reference
+    dataflows
+      dataflow-1[descriptor]
+        dataflow-master
+        dataflow-tasks
+          dataflow-task-1[descriptor]
+            data-flow-executor-ref
+     workers
+       worker-vm-reference-1[descriptor]
+       worker-vm-reference-2[descriptor]

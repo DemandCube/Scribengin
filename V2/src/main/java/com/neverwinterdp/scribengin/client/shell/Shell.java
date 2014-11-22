@@ -4,17 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.neverwinterdp.scribengin.client.RegistryClient;
-import com.neverwinterdp.scribengin.registry.Registry;
+import com.neverwinterdp.scribengin.registry.RegistryService;
 
 public class Shell {
   private Console console ;
   private RegistryClient client ;
   private Map<String, Command> commands = new HashMap<String, Command>() ;
   
-  public Shell(Registry registry) {
+  public Shell(RegistryService registry) {
     this.console = new Console() ;
     client = new RegistryClient(registry);
     commands.put("master", new MasterCommand());
+    commands.put("vmresource", new VMResourceCommand());
   }
   
   public Console console() { return this.console ; }
