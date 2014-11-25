@@ -13,11 +13,17 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public class JsonSourceStream implements SourceStream {
 
   private String name;
+  private String key;
   private LinkedList<Tuple> data;
   private int currentOffset;
   private int lastCommitted;
   
   public JsonSourceStream(){
+    this("data");
+  }
+  
+  public JsonSourceStream(String k){
+    key = k;
     name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
     data = new LinkedList<Tuple>();
     currentOffset = 0;
@@ -36,7 +42,7 @@ public class JsonSourceStream implements SourceStream {
     Random rand = new Random();
     JSONObject j = null; 
     try {
-      String data = "{\"data\":"+ 
+      String data = "{\""+this.key+"\":"+ 
           "[{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," + 
           "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," +
           "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}]}";

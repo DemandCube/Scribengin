@@ -6,6 +6,8 @@ import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
 import com.neverwinterdp.scribengin.tuple.Tuple;
+import com.neverwinterdp.scribengin.tuple.counter.InMemoryTupleCounter;
+import com.neverwinterdp.scribengin.tuple.counter.TupleCounter;
 
 public class StreamConnectorImpl implements StreamConnector{
 
@@ -14,13 +16,20 @@ public class StreamConnectorImpl implements StreamConnector{
   private SinkStream invalidSink;
   private Task task;
   private CommitLog commitLog;
+  private TupleCounter tupleTracker;
   
+
   public StreamConnectorImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
+    this(y,z,invalidSink,t, new InMemoryTupleCounter());
+  }
+  
+  public StreamConnectorImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c){
     this.source = y;
     this.sink = z;
     this.invalidSink = invalidSink;
     task = t;
     commitLog = new InMemoryCommitLog();
+    this.tupleTracker = c;    
   }
   
   public CommitLog getCommitLog(){
@@ -32,19 +41,31 @@ public class StreamConnectorImpl implements StreamConnector{
     this.commitLog = c;
   }
 
+  @Override
+  public void setTupleCounter(TupleCounter t) {
+    this.tupleTracker = t;
+  }
   
   @Override
   public boolean processNext() {
-    //We could write a class that takes in a sink/source
-    //and decides when to commit
-    //while(CommitDecision.notReadyToCommit(source,sink,invalidSink))){}
+    long valid = 0;
+    long invalid = 0;
+    long created = 0;
+    
     while(source.hasNext() && !task.readyToCommit()){
       Tuple[] tupleArray = task.execute(source.readNext());
       for(Tuple t : tupleArray){
         if(t.isInvalidData()){
+          invalid++;
           invalidSink.append(t);
         }
         else{
+          if(t.isTaskGenerated()){
+            created++;
+          }
+          else{
+            valid++;
+          }
           sink.append(t);
         }
       }
@@ -58,13 +79,20 @@ public class StreamConnectorImpl implements StreamConnector{
     //A single & is used to not short circuit the execution of the logical statement
     //http://stackoverflow.com/questions/8759868/java-logical-operator-short-circuiting
     if(sink.prepareCommit() & source.prepareCommit() & invalidSink.prepareCommit()){
+      long numTuplesWritten = sink.getBufferSize() + invalidSink.getBufferSize();
       //The actual committing of data
       if(sink.commit() & invalidSink.commit()){
         //update any offsets that need to be managed
         invalidSink.updateOffSet();
         sink.updateOffSet();
         source.updateOffSet();
-          
+        
+        
+        this.tupleTracker.addCreated(created);
+        this.tupleTracker.addInvalid(invalid);
+        this.tupleTracker.addValid(valid);
+        this.tupleTracker.addWritten(numTuplesWritten);
+        
        //send some sort of acknowledgement?
        //write to a commitLog?
       }
@@ -129,6 +157,12 @@ public class StreamConnectorImpl implements StreamConnector{
   public void setTask(Task t) {
     this.task = t;
   }
+  
+  @Override
+  public TupleCounter getTupleTracker() {
+    return this.tupleTracker;
+  }
+  
 /*
   @Override
   public boolean verifyDataInSink() {
@@ -186,5 +220,7 @@ public class StreamConnectorImpl implements StreamConnector{
   }
 
 */
+
+  
 
 }

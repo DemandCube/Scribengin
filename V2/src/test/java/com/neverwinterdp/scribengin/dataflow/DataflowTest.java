@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -24,9 +25,11 @@ public class DataflowTest {
 
     Scribe[] scribes = d.getScribes();
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getData().size(),
-          ((InMemorySinkStream)s.getStream().getInvalidSink()).getData().size() +
-          ((InMemorySinkStream)s.getStream().getSinkStream()).getData().size());
+      assertEquals( ((UUIDSourceStream)s.getStreamConnector().getSourceStream()).getData().size(),
+          ((InMemorySinkStream)s.getStreamConnector().getInvalidSink()).getData().size() +
+          ((InMemorySinkStream)s.getStreamConnector().getSinkStream()).getData().size());
+      //System.err.println(s.getStreamConnector().getTupleTracker());
+      assertTrue(s.getStreamConnector().getTupleTracker().validateCounts());
     }
 
     d.start();
@@ -36,9 +39,11 @@ public class DataflowTest {
     Thread.sleep(100);
 
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStream().getSourceStream()).getData().size(),
-          ((InMemorySinkStream)s.getStream().getInvalidSink()).getData().size() +
-          ((InMemorySinkStream)s.getStream().getSinkStream()).getData().size());
+      assertEquals( ((UUIDSourceStream)s.getStreamConnector().getSourceStream()).getData().size(),
+          ((InMemorySinkStream)s.getStreamConnector().getInvalidSink()).getData().size() +
+          ((InMemorySinkStream)s.getStreamConnector().getSinkStream()).getData().size());
+      //System.err.println(s.getStreamConnector().getTupleTracker());
+      assertTrue(s.getStreamConnector().getTupleTracker().validateCounts());
     }
 
 

@@ -5,7 +5,7 @@ import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 public interface Scribe {
   void setStream(StreamConnector s);
   
-  StreamConnector getStream();
+  StreamConnector getStreamConnector();
   
   boolean init();
   boolean close();

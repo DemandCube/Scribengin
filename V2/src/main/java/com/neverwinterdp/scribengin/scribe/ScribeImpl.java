@@ -4,7 +4,7 @@ import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 
 public class ScribeImpl implements Scribe{
 
-  private StreamConnector stream;
+  private StreamConnector streamConnector;
   private int timeout;
   private boolean active;
   private Thread scribeThread;
@@ -14,7 +14,7 @@ public class ScribeImpl implements Scribe{
   }
   
   public ScribeImpl(StreamConnector s, int Timeout){
-    this.stream = s;
+    this.streamConnector = s;
     timeout = Timeout;
     active = false;
     
@@ -33,7 +33,7 @@ public class ScribeImpl implements Scribe{
   
   @Override
   public void setStream(StreamConnector s) {
-    stream = s;
+    streamConnector = s;
   }
 
   @Override
@@ -49,7 +49,7 @@ public class ScribeImpl implements Scribe{
   private void consumeLoop() {
     while(true){
       if(active){
-        stream.processNext();
+        streamConnector.processNext();
       }
       else{
         try {
@@ -72,8 +72,8 @@ public class ScribeImpl implements Scribe{
   }
 
   @Override
-  public StreamConnector getStream() {
-    return this.stream;
+  public StreamConnector getStreamConnector() {
+    return this.streamConnector;
   }
 
 }

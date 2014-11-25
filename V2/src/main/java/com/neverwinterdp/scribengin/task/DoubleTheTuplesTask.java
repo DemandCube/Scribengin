@@ -15,6 +15,8 @@ public class DoubleTheTuplesTask implements Task{
   public Tuple[] execute(Tuple t) {
     Tuple[] tupleArray = new Tuple[2];
     Tuple t2 = new Tuple("Generated-"+UUID.randomUUID().toString(), t.getData(), t.getCommitLogEntry());
+    t2.setTaskGenerated(true);
+    
     
     tupleArray[0] = t;
     tupleArray[1] = t2;

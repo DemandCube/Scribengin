@@ -3,9 +3,11 @@ package com.neverwinterdp.scribengin.streamconnector;
 import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
+import com.neverwinterdp.scribengin.tuple.counter.TupleCounter;
 
 public interface StreamConnector {
   
+  void setTupleCounter(TupleCounter t);
   void setSourceStream(SourceStream s);
   void setSink(SinkStream s);
   void setInvalidSink(SinkStream s);
@@ -17,4 +19,6 @@ public interface StreamConnector {
   Task getTask();
   
   boolean processNext();
+  
+  TupleCounter getTupleTracker();
 }

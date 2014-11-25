@@ -24,7 +24,8 @@ public class ScribeTest {
     Scribe scribe = new ScribeImpl(stream);
 
     assertTrue(scribe.init());
-
+    assertTrue(scribe.getStreamConnector().getTupleTracker().validateCounts());
+    
     scribe.start();
     Thread.sleep(1500);
     scribe.stop();
@@ -33,7 +34,8 @@ public class ScribeTest {
     assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getData().size(),
         ((InMemorySinkStream)stream.getInvalidSink()).getData().size() +
         ((InMemorySinkStream)stream.getSinkStream()).getData().size());
-
+    assertTrue(scribe.getStreamConnector().getTupleTracker().validateCounts());
+    
     scribe.start();
     Thread.sleep(1500);
     scribe.stop();
@@ -41,6 +43,6 @@ public class ScribeTest {
     assertEquals( ((UUIDSourceStream)stream.getSourceStream()).getData().size(),
         ((InMemorySinkStream)stream.getInvalidSink()).getData().size() +
         ((InMemorySinkStream)stream.getSinkStream()).getData().size());
-
+    assertTrue(scribe.getStreamConnector().getTupleTracker().validateCounts());
   }
 }

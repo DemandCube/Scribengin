@@ -9,6 +9,7 @@ public class Tuple {
   private byte[] data ;
   private CommitLogEntry commitLogEntry;
   private boolean invalidData;
+  private boolean taskGenerated;
   
   public Tuple() {} 
   
@@ -16,7 +17,8 @@ public class Tuple {
     this.key = key ;
     this.data = data ;
     this.setCommitLogEntry(c);
-    this.setInvalidData(false);
+    this.invalidData = false;
+    this.setTaskGenerated(false);
   }
   
   public String getKey() { return key; }
@@ -53,7 +55,8 @@ public class Tuple {
     if(Arrays.equals(t.getData(), this.getData()) &&
         t.getKey().equals(this.getKey()) &&
         t.getCommitLogEntry().equals(this.commitLogEntry) &&
-        t.isInvalidData() == this.isInvalidData()){
+        t.isInvalidData() == this.isInvalidData() &&
+        t.isTaskGenerated() == this.isTaskGenerated()){
       return true;
     }
     return false;
@@ -75,6 +78,10 @@ public class Tuple {
     result.append(String.valueOf(this.invalidData));
     result.append(NEW_LINE);
     
+    result.append("taskGenerated: ");
+    result.append(String.valueOf(this.taskGenerated));
+    result.append(NEW_LINE);
+    
     result.append("commitLog: ");
     result.append(NEW_LINE);
     String[] commitLog = this.commitLogEntry.toString().split(NEW_LINE);
@@ -87,5 +94,13 @@ public class Tuple {
     
 
     return result.toString();
+  }
+
+  public boolean isTaskGenerated() {
+    return taskGenerated;
+  }
+
+  public void setTaskGenerated(boolean taskGenerated) {
+    this.taskGenerated = taskGenerated;
   }
 }
