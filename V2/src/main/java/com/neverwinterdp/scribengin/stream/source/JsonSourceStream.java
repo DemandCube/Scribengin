@@ -4,9 +4,6 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.UUID;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
@@ -40,20 +37,13 @@ public class JsonSourceStream implements SourceStream {
       return data.get(currentOffset++);
     }
     Random rand = new Random();
-    JSONObject j = null; 
-    try {
-      String data = "{\""+this.key+"\":"+ 
-          "[{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," + 
-          "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," +
-          "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}]}";
-      j = new JSONObject(data);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    
+    String jsonString = "{\""+this.key+"\":"+ 
+        "[{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," + 
+        "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}," +
+        "{\"field1\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field2\": \""+Integer.toString(rand.nextInt(10000))+"\", \"field3\": \""+Integer.toString(rand.nextInt(10000))+"\"}]}";
     
     Tuple t = new Tuple(Integer.toString(currentOffset), 
-                      j.toString().getBytes(),
+                      jsonString.getBytes(),
                       new CommitLogEntry(this.getName(), currentOffset, currentOffset));
     data.add(t);
     
