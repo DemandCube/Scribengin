@@ -1,15 +1,16 @@
 package com.neverwinterdp.vm;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class VMDescriptor {
-  private long   id ;
-  private String storedPath;
-  private int    memory ;
-  private int    cpuCores;
-  private String hostname;
-  private String description;
-  
-  public long getId() { return id;}
-  public void setId(long id) { this.id = id; }
+  private String   storedPath;
+  private int      memory;
+  private int      cpuCores;
+  private String   hostname;
+  private VMConfig vmConfig;
+
+  @JsonIgnore
+  public String getId() { return vmConfig.getName(); }
   
   public String getStoredPath() { return storedPath; }
   public void setStoredPath(String storedPath) { this.storedPath = storedPath; }
@@ -25,8 +26,8 @@ public class VMDescriptor {
     this.hostname = hostname;
   }
   
-  public String getDescription() { return description; }
-  public void setDescription(String description) {
-    this.description = description;
+  public VMConfig getVmConfig() { return vmConfig; }
+  public void setVmConfig(VMConfig vmConfig) {
+    this.vmConfig = vmConfig;
   }
 }

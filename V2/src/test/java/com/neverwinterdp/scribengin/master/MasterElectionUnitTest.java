@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.scribengin.ScribenginUnitTest;
-import com.neverwinterdp.scribengin.client.shell.Shell;
-import com.neverwinterdp.scribengin.registry.election.LeaderElection;
+import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 
 public class MasterElectionUnitTest extends ScribenginUnitTest {
   private Master newScribenginMaster() throws Exception {
@@ -24,11 +24,11 @@ public class MasterElectionUnitTest extends ScribenginUnitTest {
       runner[i] = new ScribenginMasterRunner() ;
       executorPool.execute(runner[i]);
     }
-    Shell shell = new Shell(newRegistry().connect()) ;
+    ScribenginShell shell = new ScribenginShell(newRegistry().connect()) ;
     executorPool.shutdown();
     for(int i = 0; i < 10; i++) {
       Thread.sleep(1000);
-      shell.execute("master list");
+      shell.execute("scribengin master");
     }
     executorPool.awaitTermination(3 * 60 * 1000, TimeUnit.MILLISECONDS);
   }

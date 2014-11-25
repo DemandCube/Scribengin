@@ -8,16 +8,15 @@ import org.junit.Before;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.neverwinterdp.scribengin.client.shell.Shell;
+import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
-import com.neverwinterdp.scribengin.module.ScribenginModule;
-import com.neverwinterdp.scribengin.registry.RegistryConfig;
-import com.neverwinterdp.scribengin.registry.RegistryException;
-import com.neverwinterdp.scribengin.registry.RegistryService;
-import com.neverwinterdp.scribengin.registry.zk.RegistryServiceImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.VMService;
-import com.neverwinterdp.vm.app.VMApplication;
+import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.jvm.VMServiceImpl;
 
 abstract public class ScribenginUnitTest {
@@ -43,13 +42,13 @@ abstract public class ScribenginUnitTest {
     Map<String, String> props = new HashMap<String, String>();
     props.put("registry.connect", "127.0.0.1:2181") ;
     props.put("registry.db-domain", "/NeverwinterDP") ;
-    props.put("registry.implementation", RegistryServiceImpl.class.getName()) ;
-    props.put("vmresource.implementation", VMServiceImpl.class.getName()) ;
-    ScribenginModule module = new ScribenginModule(props) {
+    props.put("registry.implementation", RegistryImpl.class.getName()) ;
+    props.put("vm.implementation", VMServiceImpl.class.getName()) ;
+    AppModule module = new AppModule(props) {
       protected void configure(Map<String, String> properties) {
         try {
-          bindType(RegistryService.class, properties.get("registry.implementation"));
-          bindType(VMService.class, properties.get("vmresource.implementation"));
+          bindType(Registry.class, properties.get("registry.implementation"));
+          bindType(VMService.class, properties.get("vm.implementation"));
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
@@ -62,13 +61,12 @@ abstract public class ScribenginUnitTest {
     Map<String, String> props = new HashMap<String, String>();
     props.put("registry.connect", "127.0.0.1:2181") ;
     props.put("registry.db-domain", "/NeverwinterDP") ;
-    props.put("registry.implementation", RegistryServiceImpl.class.getName()) ;
+    props.put("registry.implementation", RegistryImpl.class.getName()) ;
     props.put("vmapplication.class", appType.getName()) ;
-    ScribenginModule module = new ScribenginModule(props) {
+    AppModule module = new AppModule(props) {
       protected void configure(Map<String, String> properties) {
         try {
-          bindType(RegistryService.class, properties.get("registry.implementation"));
-          bindType(VMApplication.class, properties.get("vmapplication.class"));
+          bindType(Registry.class, properties.get("registry.implementation"));
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
@@ -77,8 +75,8 @@ abstract public class ScribenginUnitTest {
     return Guice.createInjector(module);
   }
   
-  protected RegistryService newRegistry() {
-    return new RegistryServiceImpl(RegistryConfig.getDefault());
+  protected Registry newRegistry() {
+    return new RegistryImpl(RegistryConfig.getDefault());
   }
   
   protected Shell newShell() throws RegistryException {

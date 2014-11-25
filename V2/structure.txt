@@ -1,24 +1,35 @@
 NeverwinterDP
-  vm-resources/
+  vms/
     available/
       vm-1[descriptor]
       vm-2[descriptor]
       vm-3[descriptor]
     allocated/
-      vm-1[descriptor]
+      vm-1[descriptor - vm_master ]
         events[start - stop -finish]
         application
           config
           commands
-            command-id[payload: command - command result]
-            command-id[payload: command - command result]
+            request
+              command-id[payload: command - command result]
+              command-id[payload: command - command result]
+            response
+              command-id
           events[start - stop -finish]
           executors
             executor-1
               dataflow-task-report
             executor-2
-      vm-2[descriptor]
-        application
+      vm-2[descriptor - vm_master_backup]
+
+      vm-3[descriptor - scribengin_master]
+      vm-4[descriptor - scribengin_master_backup]
+
+      vm-5[descriptor - dataflow1_master]
+      vm-6[descriptor - dataflow1_master_backup]
+      vm-6[descriptor - dataflow1_worker_1]
+      vm-7[descriptor - dataflow1_worker_2]
+      vm-8[descriptor - dataflow1_worker_3]
   Scribengin/
     masters
       master-1[descriptor]
