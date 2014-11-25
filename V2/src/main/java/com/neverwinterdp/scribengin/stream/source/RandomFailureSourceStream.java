@@ -1,29 +1,28 @@
-package com.neverwinterdp.scribengin.stream.sink;
+package com.neverwinterdp.scribengin.stream.source;
 
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.UUID;
 
-import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-public class RandomFailureSink implements SinkStream{
+public class RandomFailureSourceStream implements SourceStream{
+
   private int failurePercentage;
-  private InMemorySinkStream mSink;
+  private UUIDSourceStream mSource;
   private String name;
   
-  public RandomFailureSink(){
+  public RandomFailureSourceStream(){
     this(50);
   }
   
-  public RandomFailureSink(int failurePercentage){
+  public RandomFailureSourceStream(int failurePercentage){
     if(failurePercentage < 100 && failurePercentage > -1){
       this.failurePercentage = failurePercentage;
     }
     else{
       this.failurePercentage = 50;
     }
-    this.mSink = new InMemorySinkStream();
+    this.mSource = new UUIDSourceStream();
     this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
   }
   
@@ -32,7 +31,7 @@ public class RandomFailureSink implements SinkStream{
     if(this.decideToFail()){
       return false;
     }
-    return this.mSink.prepareCommit();
+    return this.mSource.prepareCommit();
   }
 
   @Override
@@ -40,7 +39,7 @@ public class RandomFailureSink implements SinkStream{
     if(this.decideToFail()){
       return false;
     }
-    return this.mSink.commit();
+    return this.mSource.commit();
   }
 
   @Override
@@ -48,7 +47,7 @@ public class RandomFailureSink implements SinkStream{
     if(this.decideToFail()){
       return false;
     }
-    return this.mSink.clearCommit();
+    return this.mSource.clearCommit();
   }
 
   @Override
@@ -56,43 +55,22 @@ public class RandomFailureSink implements SinkStream{
     if(this.decideToFail()){
       return false;
     }
-    
-    return this.mSink.updateOffSet();
+    return this.mSource.updateOffSet();
   }
 
   @Override
-  public boolean append(Tuple t) {
-    if(this.decideToFail()){
-      return false;
-    }
-    return this.mSink.append(t);
+  public Tuple readNext() {
+    return this.mSource.readNext();
   }
 
   @Override
-  public boolean rollBack() {
-    if(this.decideToFail()){
-      return false;
-    }
-    return this.mSink.rollBack();
-  }
-
-  @Override
-  public void setSinkPartitioner(SinkPartitioner sp) {
-    this.mSink.setSinkPartitioner(sp);
+  public boolean hasNext() {
+    return this.decideToFail();
   }
 
   @Override
   public String getName() {
     return this.name;
-  }
-
-  @Override
-  public long getBufferSize() {
-    return this.mSink.getBufferSize();
-  }
-  
-  public LinkedList<Tuple> getData(){
-    return this.mSink.getData();
   }
   
   private boolean decideToFail(){

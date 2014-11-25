@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
-import com.neverwinterdp.scribengin.stream.sink.LocalFileSink;
+import com.neverwinterdp.scribengin.stream.sink.LocalFileSinkStream;
 import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
@@ -20,7 +20,7 @@ public class LocalFileSinkTest {
   @Test
   public void testStdOutSinkStream() throws IOException{
     String testDir = "./tmp/";
-    SinkStream sink = new LocalFileSink(testDir);
+    SinkStream sink = new LocalFileSinkStream(testDir);
     
     int i=0;
     for(; i<10; i++){

@@ -12,17 +12,17 @@ import java.util.UUID;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-public class LocalFileSink implements SinkStream{
+public class LocalFileSinkStream implements SinkStream{
   
   LinkedList<Tuple> buffer;
   String dir;
   String name;
   
-  public LocalFileSink(){
+  public LocalFileSinkStream(){
     this("./tmp/");
   }
   
-  public LocalFileSink(String directoryName){
+  public LocalFileSinkStream(String directoryName){
     buffer = new LinkedList<Tuple>();
     this.dir = directoryName;
     this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
