@@ -34,8 +34,8 @@ public class StreamConnectorImpl implements StreamConnector{
     this.source = y;
     this.sink = z;
     this.invalidSink = invalidSink;
-    task = t;
-    commitLog = new InMemoryCommitLog();
+    this.task = t;
+    this.commitLog = new InMemoryCommitLog();
     this.tupleTracker = c;
     this.retryTimeoutTimeLimit = retryTimeoutTimeLimit;
   }
@@ -145,20 +145,11 @@ public class StreamConnectorImpl implements StreamConnector{
           x = (boolean) m.invoke(o);
         }
         else{
-          Class<?> classOfArgs = null;
-          try {
-            //Arbitrarily cast the args object to correct type
-            classOfArgs = Class.forName(args.getClass().getName());
-            x = (boolean) m.invoke(o, classOfArgs.cast(args));
-          } catch (ClassNotFoundException e1) {
-            e1.printStackTrace();
-            return false;
-          }
-          
+          //Arbitrarily cast the args object to correct type
+          x = (boolean) m.invoke(o, args.getClass().cast(args));
         }
         if(!x){
-          //Cut it off @ 10 minutes
-          //TODO make this configurable
+          //Cut it off @ retryTimeoutTimeLimit
           if(backoff > this.retryTimeoutTimeLimit){
             return false;
           }

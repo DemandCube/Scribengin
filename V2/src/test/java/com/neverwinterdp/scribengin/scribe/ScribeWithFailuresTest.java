@@ -14,9 +14,9 @@ public class ScribeWithFailuresTest {
   @Test
   public void testScribeWithFailures() throws Exception {
 
-    StreamConnector stream = new StreamConnectorImpl(new RandomFailureSourceStream(), 
-        new RandomFailureSinkStream(25), 
-        new RandomFailureSinkStream(25), 
+    StreamConnector stream = new StreamConnectorImpl(new RandomFailureSourceStream(10), 
+        new RandomFailureSinkStream(10), 
+        new RandomFailureSinkStream(10), 
         new TenPercentInvalidTask());
 
     Scribe scribe = new ScribeImpl(stream);
