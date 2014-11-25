@@ -9,6 +9,9 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 import com.neverwinterdp.scribengin.tuple.counter.InMemoryTupleCounter;
 import com.neverwinterdp.scribengin.tuple.counter.TupleCounter;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class StreamConnectorImpl implements StreamConnector{
 
   private SourceStream source;
@@ -17,106 +20,162 @@ public class StreamConnectorImpl implements StreamConnector{
   private Task task;
   private CommitLog commitLog;
   private TupleCounter tupleTracker;
-  
+  private int retryTimeoutTimeLimit;
 
   public StreamConnectorImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter());
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), 600000);
   }
   
   public StreamConnectorImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c){
+    this(y,z,invalidSink,t, c, 600000);
+  }
+  
+  public StreamConnectorImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c, int retryTimeoutTimeLimit){
     this.source = y;
     this.sink = z;
     this.invalidSink = invalidSink;
     task = t;
     commitLog = new InMemoryCommitLog();
-    this.tupleTracker = c;    
+    this.tupleTracker = c;
+    this.retryTimeoutTimeLimit = retryTimeoutTimeLimit;
   }
   
-  public CommitLog getCommitLog(){
-    return this.commitLog;
-  }
   
-  @SuppressWarnings("unused")
-  private void setCommitLog(CommitLog c){
-    this.commitLog = c;
-  }
-
-  @Override
-  public void setTupleCounter(TupleCounter t) {
-    this.tupleTracker = t;
-  }
   
   @Override
   public boolean processNext() {
     long valid = 0;
     long invalid = 0;
     long created = 0;
+    boolean retVal = true;
     
-    while(source.hasNext() && !task.readyToCommit()){
-      Tuple[] tupleArray = task.execute(source.readNext());
-      for(Tuple t : tupleArray){
-        if(t.isInvalidData()){
-          invalid++;
-          invalidSink.append(t);
-        }
-        else{
-          if(t.isTaskGenerated()){
-            created++;
+    try {
+      while(source.hasNext() && !task.readyToCommit()){
+        Tuple[] tupleArray = task.execute(source.readNext());
+        for(Tuple t : tupleArray){
+          if(t.isInvalidData()){
+            invalid++;
+            this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("append", Tuple.class), t);
           }
           else{
-            valid++;
+            if(t.isTaskGenerated()){
+              created++;
+            }
+            else{
+              valid++;
+            }
+            this.gradualBackoff(sink, sink.getClass().getMethod("append", Tuple.class), t);
           }
-          sink.append(t);
         }
       }
-    }
     
-    //Some sort of lock on resources should likely happen here
-    //lockResources(source,sink)
-    
-    //prepareCommit is a vote to make sure both sink, invalidSink, and source
-    //are ready to commit data, otherwise rollback will occur
-    //A single & is used to not short circuit the execution of the logical statement
-    //http://stackoverflow.com/questions/8759868/java-logical-operator-short-circuiting
-    if(sink.prepareCommit() & source.prepareCommit() & invalidSink.prepareCommit()){
-      long numTuplesWritten = sink.getBufferSize() + invalidSink.getBufferSize();
-      //The actual committing of data
-      if(sink.commit() & invalidSink.commit()){
-        //update any offsets that need to be managed
-        invalidSink.updateOffSet();
-        sink.updateOffSet();
-        source.updateOffSet();
+      //Some sort of lock on resources should likely happen here
+      //lockResources(source,sink)
+      
+      //prepareCommit is a vote to make sure both sink, invalidSink, and source
+      //are ready to commit data, otherwise rollback will occur
+      //A single & is used to not short circuit the execution of the logical statement
+      //http://stackoverflow.com/questions/8759868/java-logical-operator-short-circuiting
+      if(this.gradualBackoff(sink, sink.getClass().getMethod("prepareCommit")) & 
+          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("prepareCommit")) & 
+          this.gradualBackoff(source, source.getClass().getMethod("prepareCommit"))){
+        
+        long numTuplesWritten = sink.getBufferSize() + invalidSink.getBufferSize();
         
         
-        this.tupleTracker.addCreated(created);
-        this.tupleTracker.addInvalid(invalid);
-        this.tupleTracker.addValid(valid);
-        this.tupleTracker.addWritten(numTuplesWritten);
-        
-       //send some sort of acknowledgement?
-       //write to a commitLog?
+        //The actual committing of data
+        if(this.gradualBackoff(sink, sink.getClass().getMethod("commit")) & 
+            this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("commit"))){
+          
+          //update any offsets that need to be managed
+          this.gradualBackoff(sink, sink.getClass().getMethod("updateOffSet"));
+          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("updateOffSet"));
+          this.gradualBackoff(source, source.getClass().getMethod("updateOffSet"));
+          
+          this.tupleTracker.addCreated(created);
+          this.tupleTracker.addInvalid(invalid);
+          this.tupleTracker.addValid(valid);
+          this.tupleTracker.addWritten(numTuplesWritten);
+          
+         //send some sort of acknowledgement?
+         //write to a commitLog?
+        }
+        else{
+          //Undo anything that could have gone wrong, 
+          this.gradualBackoff(sink, sink.getClass().getMethod("rollBack"));
+          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("rollBack"));
+          this.gradualBackoff(source, source.getClass().getMethod("clearCommit"));
+        }
       }
       else{
-        //Undo anything that could have gone wrong, 
-        //delete data, etc
-        source.clearCommit();
-        sink.rollBack();
-        invalidSink.rollBack();
+        //Clean up everything
+        this.gradualBackoff(sink, sink.getClass().getMethod("clearCommit"));
+        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("clearCommit"));
+        this.gradualBackoff(source, source.getClass().getMethod("clearCommit"));
       }
-    }
-    else{
-      //Clean up everything 
-      sink.clearCommit();
-      source.clearCommit();
-      invalidSink.clearCommit();
+    } catch (NoSuchMethodException | SecurityException e) {
+      e.printStackTrace();
     }
     
     //If resources are locked, unlock at end
     //releaseLocks(source,sink)
     
-    return true;
+    return retVal;
   }
 
+
+  private boolean gradualBackoff(Object o, Method m){
+    return this.gradualBackoff(o, m, null);
+  }
+
+  /**
+   * 
+   * @param o
+   * @param m
+   * @param args
+   * @return
+   */
+  private boolean gradualBackoff(Object o, Method m, Object args){
+    boolean x = false;
+    int backoff = 1;
+
+    while(!x){
+      try {
+        if(args == null){
+          x = (boolean) m.invoke(o);
+        }
+        else{
+          Class<?> classOfArgs = null;
+          try {
+            //Arbitrarily cast the args object to correct type
+            classOfArgs = Class.forName(args.getClass().getName());
+            x = (boolean) m.invoke(o, classOfArgs.cast(args));
+          } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+            return false;
+          }
+          
+        }
+        if(!x){
+          //Cut it off @ 10 minutes
+          //TODO make this configurable
+          if(backoff > this.retryTimeoutTimeLimit){
+            return false;
+          }
+          Thread.sleep(backoff);
+          backoff = backoff * 10;
+        }
+      } catch (IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | InterruptedException e) {
+        e.printStackTrace();
+        return false;
+      }
+      
+    }
+    return x;
+  }
+
+  
   @Override
   public Task getTask(){
     return this.task;
@@ -162,65 +221,20 @@ public class StreamConnectorImpl implements StreamConnector{
   public TupleCounter getTupleTracker() {
     return this.tupleTracker;
   }
+
   
-/*
-  @Override
-  public boolean verifyDataInSink() {
-    CommitLogEntry[] commitLogs = this.commitLog.getCommitLogs();
-    
-    
-    boolean isDataValid = true;
-    
-    for(int i =0; i < commitLogs.length; i++){
-      if(!commitLogs[i].isInvalidData()){
-        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
-                    this.sink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
-                  ) {
-          isDataValid = false;
-          break;
-        }
-      }
-      else{
-        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
-            this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
-          ) {
-          isDataValid = false;
-          break;
-        }
-      }
-    }
-    
-    return isDataValid;
+  public CommitLog getCommitLog(){
+    return this.commitLog;
+  }
+  
+  @SuppressWarnings("unused")
+  private void setCommitLog(CommitLog c){
+    this.commitLog = c;
   }
 
   @Override
-  public boolean fixDataInSink(){
-    CommitLogEntry[] commitLogs = this.commitLog.getCommitLogs();
-    for(int i =0; i < commitLogs.length; i++){
-      if(!commitLogs[i].isInvalidData()){
-        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
-            this.sink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
-          ) {
-          this.sink.replaceAtOffset(
-              this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
-              commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset());
-        }
-      }
-      else{
-        if(! this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()).equals(
-            this.invalidSink.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()))
-          ) {
-          this.invalidSink.replaceAtOffset(
-              this.source.readFromOffset(commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset()), 
-              commitLogs[i].getStartOffset(), commitLogs[i].getEndOffset());
-        }
-      }
-    }
-    return this.verifyDataInSink();
+  public void setTupleCounter(TupleCounter t) {
+    this.tupleTracker = t;
   }
-
-*/
-
-  
-
 }
+
