@@ -12,7 +12,7 @@ import com.neverwinterdp.scribengin.streamcoordinator.DumbStreamCoordinator;
 
 public class DataflowTest {
   @Test
-  public void testScribe() throws Exception {
+  public void testDataFlow() throws Exception {
     
     Dataflow d = new DataflowImpl("Test", new DumbStreamCoordinator(5));
     
@@ -25,11 +25,12 @@ public class DataflowTest {
 
     Scribe[] scribes = d.getScribes();
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStreamConnector().getSourceStream()).getData().size(),
-          ((InMemorySinkStream)s.getStreamConnector().getInvalidSink()).getData().size() +
-          ((InMemorySinkStream)s.getStreamConnector().getSinkStream()).getData().size());
+      assertEquals( ((UUIDSourceStream)s.getSourceStream()).getData().size(),
+          ((InMemorySinkStream)s.getInvalidSink()).getData().size() +
+          ((InMemorySinkStream)s.getSinkStream()).getData().size());
       //System.err.println(s.getStreamConnector().getTupleTracker());
-      assertTrue(s.getStreamConnector().getTupleTracker().validateCounts());
+      assertTrue(s.getTupleTracker().getWritten() > 0);
+      assertTrue(s.getTupleTracker().validateCounts());
     }
 
     d.start();
@@ -39,11 +40,12 @@ public class DataflowTest {
     Thread.sleep(100);
 
     for(Scribe s: scribes){
-      assertEquals( ((UUIDSourceStream)s.getStreamConnector().getSourceStream()).getData().size(),
-          ((InMemorySinkStream)s.getStreamConnector().getInvalidSink()).getData().size() +
-          ((InMemorySinkStream)s.getStreamConnector().getSinkStream()).getData().size());
+      assertEquals( ((UUIDSourceStream)s.getSourceStream()).getData().size(),
+          ((InMemorySinkStream)s.getInvalidSink()).getData().size() +
+          ((InMemorySinkStream)s.getSinkStream()).getData().size());
       //System.err.println(s.getStreamConnector().getTupleTracker());
-      assertTrue(s.getStreamConnector().getTupleTracker().validateCounts());
+      assertTrue(s.getTupleTracker().getWritten() > 0);
+      assertTrue(s.getTupleTracker().validateCounts());
     }
 
 

@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import com.neverwinterdp.scribengin.scribe.Scribe;
-import com.neverwinterdp.scribengin.scribe.ScribeImpl;
-import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
 import com.neverwinterdp.scribengin.streamcoordinator.StreamCoordinator;
 
 public class DataflowImpl implements Dataflow{
@@ -19,8 +17,8 @@ public class DataflowImpl implements Dataflow{
     streamCoordinator = s;
   }
 
-  public void addStream(StreamConnector s){
-    scribes.add(new ScribeImpl(s));
+  public void addStream(Scribe s){
+    scribes.add(s);
   }
   
   @Override
@@ -39,7 +37,6 @@ public class DataflowImpl implements Dataflow{
   public void stop() {
     for(Scribe s: scribes){
       s.stop();
-      s.close();
     }
   }
 
@@ -53,6 +50,9 @@ public class DataflowImpl implements Dataflow{
   @Override
   public void initScribes() {
     scribes.addAll(Arrays.asList(streamCoordinator.allocateStreams()));
+    for(Scribe s: scribes){
+      s.init();
+    }
   }
 
   @Override

@@ -4,28 +4,28 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.scribe.Scribe;
+import com.neverwinterdp.scribengin.scribe.ScribeImpl;
 import com.neverwinterdp.scribengin.stream.sink.InMemorySinkStream;
 import com.neverwinterdp.scribengin.stream.sink.StdOutSinkStream;
 import com.neverwinterdp.scribengin.stream.source.JsonSourceStream;
-import com.neverwinterdp.scribengin.streamconnector.StreamConnector;
-import com.neverwinterdp.scribengin.streamconnector.StreamConnectorImpl;
 
 public class AggregateDataTaskTest {
   
   @Test
   public void testAggregateDataTask(){
-    StreamConnector streamConn = new StreamConnectorImpl(new JsonSourceStream(), 
+    Scribe scribe = new ScribeImpl(new JsonSourceStream(), 
         new StdOutSinkStream(), 
         new InMemorySinkStream(),
         new AggregateDataTask(100));
   
   
     for(int i=0; i<10; i++){
-      streamConn.processNext();
+      scribe.processNext();
     }
     
-    assertEquals(1000L, ((InMemorySinkStream)streamConn.getInvalidSink()).getData().size());
-    assertEquals(10L, ((StdOutSinkStream)streamConn.getSinkStream()).getNumTuplesOutput());
+    assertEquals(1000L, ((InMemorySinkStream)scribe.getInvalidSink()).getData().size());
+    assertEquals(10L, ((StdOutSinkStream)scribe.getSinkStream()).getNumTuplesOutput());
     
   }
 }
