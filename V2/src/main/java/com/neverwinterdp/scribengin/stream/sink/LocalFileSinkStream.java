@@ -65,19 +65,19 @@ public class LocalFileSinkStream implements SinkStream{
   }
 
   @Override
-  public boolean clearCommit() {
+  public boolean clearBuffer() {
     buffer.clear();
     return true;
   }
 
   @Override
-  public boolean updateOffSet() {
+  public boolean completeCommit() {
     buffer.clear();
     return true;
   }
 
   @Override
-  public boolean append(Tuple t) {
+  public boolean bufferTuple(Tuple t) {
     return buffer.add(t);
   }
 

@@ -5,22 +5,25 @@ import java.util.HashMap;
 public class InMemoryTupleCounter implements TupleCounter{
   static public enum tupleStates {VALID, INVALID, CREATED, WRITTEN};
   HashMap<tupleStates, Long> counterMap;
+  HashMap<tupleStates, Long> buffer;
   
   public InMemoryTupleCounter(){
     counterMap = new HashMap<tupleStates,Long>();
+    buffer = new HashMap<tupleStates,Long>();
     for(tupleStates i: tupleStates.values()){
       counterMap.put(i, (long) 0);
+      buffer.put(i, (long) 0);
     }
   }
   
   @Override
   public void incrementValid() {
-    counterMap.put(tupleStates.VALID, counterMap.get(tupleStates.VALID) + 1);
+    buffer.put(tupleStates.VALID, buffer.get(tupleStates.VALID) + 1);
   }
 
   @Override
   public void incrementWritten() {
-    counterMap.put(tupleStates.WRITTEN, counterMap.get(tupleStates.WRITTEN) + 1);
+    buffer.put(tupleStates.WRITTEN, buffer.get(tupleStates.WRITTEN) + 1);
   }
 
   //@Override
@@ -30,22 +33,22 @@ public class InMemoryTupleCounter implements TupleCounter{
 
   @Override
   public void incrementInvalid() {
-    counterMap.put(tupleStates.INVALID, counterMap.get(tupleStates.INVALID) + 1);
+    buffer.put(tupleStates.INVALID, buffer.get(tupleStates.INVALID) + 1);
   }
 
   @Override
   public void incrementCreated() {
-    counterMap.put(tupleStates.CREATED, counterMap.get(tupleStates.CREATED) + 1);
+    buffer.put(tupleStates.CREATED, buffer.get(tupleStates.CREATED) + 1);
   }
 
   @Override
   public void addValid(long toAdd) {
-    counterMap.put(tupleStates.VALID, counterMap.get(tupleStates.VALID) + toAdd);
+    buffer.put(tupleStates.VALID, buffer.get(tupleStates.VALID) + toAdd);
   }
 
   @Override
   public void addWritten(long toAdd) {
-    counterMap.put(tupleStates.WRITTEN, counterMap.get(tupleStates.WRITTEN) + toAdd);
+    buffer.put(tupleStates.WRITTEN, buffer.get(tupleStates.WRITTEN) + toAdd);
   }
 
   //@Override
@@ -55,12 +58,12 @@ public class InMemoryTupleCounter implements TupleCounter{
 
   @Override
   public void addInvalid(long toAdd) {
-    counterMap.put(tupleStates.INVALID, counterMap.get(tupleStates.INVALID) + toAdd);
+    buffer.put(tupleStates.INVALID, buffer.get(tupleStates.INVALID) + toAdd);
   }
 
   @Override
   public void addCreated(long toAdd) {
-    counterMap.put(tupleStates.CREATED, counterMap.get(tupleStates.CREATED) + toAdd);
+    buffer.put(tupleStates.CREATED, buffer.get(tupleStates.CREATED) + toAdd);
   }
   
   @Override
@@ -119,4 +122,18 @@ public class InMemoryTupleCounter implements TupleCounter{
     return result.toString();
   }
 
+  @Override
+  public void commit() {
+    for(tupleStates i: tupleStates.values()){
+      counterMap.put(i, counterMap.get(i) + buffer.get(i));
+    }
+    this.clearBuffer();
+  }
+
+  @Override
+  public void clearBuffer(){
+    for(tupleStates i: tupleStates.values()){
+      buffer.put(i, 0L);
+    }
+  }
 }

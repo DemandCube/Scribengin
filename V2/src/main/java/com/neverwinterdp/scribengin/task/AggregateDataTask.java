@@ -48,6 +48,7 @@ public class AggregateDataTask implements Task{
       Tuple aggregateData = new Tuple("Generated-"+UUID.randomUUID().toString(),
                                       byteStream.toByteArray(),
                                       new CommitLogEntry(this.name,this.aggregateTupleCount, this.aggregateTupleCount));
+      aggregateData.setTaskGenerated(true);
       tupleArray[1] = aggregateData;
       this.aggregateTupleCount++;
     }
@@ -62,11 +63,16 @@ public class AggregateDataTask implements Task{
   @Override
   public boolean readyToCommit() {
     if(this.currentCount >= this.bufferLimit){
-      this.currentCount = 0;
-      this.buffer.clear();
       return true;
     }
     return false;
+  }
+  
+  @Override
+  public boolean commit(){
+    this.currentCount = 0;
+    this.buffer.clear();
+    return true;
   }
 
 }

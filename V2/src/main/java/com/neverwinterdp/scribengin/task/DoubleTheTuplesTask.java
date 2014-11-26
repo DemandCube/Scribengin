@@ -28,10 +28,15 @@ public class DoubleTheTuplesTask implements Task{
   @Override
   public boolean readyToCommit() {
     if(this.tupleCount > 9){
-      this.tupleCount = 0;
       return true;
     }
     
     return false;
+  }
+  
+  @Override
+  public boolean commit(){
+    this.tupleCount = 0;
+    return true;
   }
 }

@@ -22,10 +22,15 @@ public class TenPercentInvalidTask implements Task{
   @Override
   public boolean readyToCommit() {
     if(count > 9){
-      count = 0;
       return true;
     }
     return false;
+  }
+  
+  @Override
+  public boolean commit(){
+    count = 0;
+    return true;
   }
 
 }

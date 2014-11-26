@@ -43,19 +43,19 @@ public class RandomFailureSourceStream implements SourceStream{
   }
 
   @Override
-  public boolean clearCommit() {
+  public boolean clearBuffer() {
     if(this.decideToFail()){
       return false;
     }
-    return this.mSource.clearCommit();
+    return this.mSource.clearBuffer();
   }
 
   @Override
-  public boolean updateOffSet() {
+  public boolean completeCommit() {
     if(this.decideToFail()){
       return false;
     }
-    return this.mSource.updateOffSet();
+    return this.mSource.completeCommit();
   }
 
   @Override
@@ -63,6 +63,14 @@ public class RandomFailureSourceStream implements SourceStream{
     return this.mSource.readNext();
   }
 
+  @Override
+  public boolean rollBack() {
+    if(this.decideToFail()){
+      return false;
+    }
+    return this.mSource.rollBack();
+  }
+  
   @Override
   public boolean hasNext() {
     return this.decideToFail();
@@ -80,5 +88,7 @@ public class RandomFailureSourceStream implements SourceStream{
     }
     return false;
   }
+  
+  
 
 }

@@ -21,6 +21,9 @@ public interface TupleCounter {
   
   public boolean validateCounts();
   
+  public void commit();
+  public void clearBuffer();
+  
   @Override
   public String toString();
 }

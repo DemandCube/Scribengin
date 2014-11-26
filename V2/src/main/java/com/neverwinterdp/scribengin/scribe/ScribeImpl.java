@@ -24,6 +24,7 @@ public class ScribeImpl implements Scribe{
   private Thread scribeThread;
   private boolean active;
   private int processNextTimeout;
+  private ScribeState myState;
   
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
@@ -49,7 +50,9 @@ public class ScribeImpl implements Scribe{
     this.processNextTimeout = processNextTimeout;
     
     this.active = false;
+    this.myState = ScribeState.UNINITIALIZED; 
   }
+  
   
 
   private void consumeLoop() {
@@ -59,6 +62,7 @@ public class ScribeImpl implements Scribe{
       }
       else{
         try {
+          this.setState(ScribeState.STOPPED);
           Thread.sleep(processNextTimeout);
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -69,6 +73,11 @@ public class ScribeImpl implements Scribe{
 
   @Override
   public boolean init() {
+    return this.init(ScribeState.INIT);
+  }
+  
+  @Override
+  public boolean init(ScribeState state) {
     scribeThread = new Thread() {
       public void run() {
         try{
@@ -80,36 +89,18 @@ public class ScribeImpl implements Scribe{
       }
     };
     scribeThread.start();
+    this.setState(state);
     return true;
   }
   
   @Override
   public boolean processNext() {
-    long valid = 0;
-    long invalid = 0;
-    long created = 0;
     boolean retVal = true;
-    
+
     try {
-      while(source.hasNext() && !task.readyToCommit()){
-        Tuple[] tupleArray = task.execute(source.readNext());
-        for(Tuple t : tupleArray){
-          if(t.isInvalidData()){
-            invalid++;
-            this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("append", Tuple.class), t);
-          }
-          else{
-            if(t.isTaskGenerated()){
-              created++;
-            }
-            else{
-              valid++;
-            }
-            this.gradualBackoff(sink, sink.getClass().getMethod("append", Tuple.class), t);
-          }
-        }
-      }
-    
+      //Read in data from source, add to sink's buffer
+      buffer();
+
       //Some sort of lock on resources should likely happen here
       //lockResources(source,sink)
       
@@ -117,44 +108,27 @@ public class ScribeImpl implements Scribe{
       //are ready to commit data, otherwise rollback will occur
       //A single & is used to not short circuit the execution of the logical statement
       //http://stackoverflow.com/questions/8759868/java-logical-operator-short-circuiting
-      if(this.gradualBackoff(sink, sink.getClass().getMethod("prepareCommit")) & 
-          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("prepareCommit")) & 
-          this.gradualBackoff(source, source.getClass().getMethod("prepareCommit"))){
-        
-        long numTuplesWritten = sink.getBufferSize() + invalidSink.getBufferSize();
-        
-        
+      if(prepareCommit()){
         //The actual committing of data
-        if(this.gradualBackoff(sink, sink.getClass().getMethod("commit")) & 
-            this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("commit"))){
-          
-          //update any offsets that need to be managed
-          this.gradualBackoff(sink, sink.getClass().getMethod("updateOffSet"));
-          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("updateOffSet"));
-          this.gradualBackoff(source, source.getClass().getMethod("updateOffSet"));
-          
-          this.tupleTracker.addCreated(created);
-          this.tupleTracker.addInvalid(invalid);
-          this.tupleTracker.addValid(valid);
-          this.tupleTracker.addWritten(numTuplesWritten);
+        if(commit()){
+          //update any offsets that need to be managed, clear temp data
+          completeCommit();
           
          //send some sort of acknowledgement?
          //write to a commitLog?
         }
         else{
-          //Undo anything that could have gone wrong, 
-          this.gradualBackoff(sink, sink.getClass().getMethod("rollBack"));
-          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("rollBack"));
-          this.gradualBackoff(source, source.getClass().getMethod("clearCommit"));
+          //Undo anything that could have gone wrong,
+          //undo any commits, go back as if nothing happened
+          rollBack();
         }
       }
       else{
         //Clean up everything
-        this.gradualBackoff(sink, sink.getClass().getMethod("clearCommit"));
-        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("clearCommit"));
-        this.gradualBackoff(source, source.getClass().getMethod("clearCommit"));
+        clearBuffer();
       }
     } catch (NoSuchMethodException | SecurityException e) {
+      this.setState(ScribeState.ERROR);
       e.printStackTrace();
     }
     
@@ -162,6 +136,96 @@ public class ScribeImpl implements Scribe{
     //releaseLocks(source,sink)
     
     return retVal;
+  }
+
+  private void clearBuffer() throws NoSuchMethodException {
+    if(this.getState() != ScribeState.PREPARING_COMMIT){
+      return;
+    }
+    
+    this.setState(ScribeState.CLEARING_BUFFER);
+    this.tupleTracker.clearBuffer();
+    this.gradualBackoff(sink, sink.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(source, source.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+  }
+
+  private void rollBack() throws NoSuchMethodException {
+    if(this.getState() != ScribeState.COMMITTING){
+      return;
+    }
+    
+    this.setState(ScribeState.ROLLINGBACK);
+    this.tupleTracker.clearBuffer();
+    this.gradualBackoff(sink, sink.getClass().getMethod("rollBack"));
+    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("rollBack"));
+    this.gradualBackoff(source, source.getClass().getMethod("rollBack"));
+    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+  }
+
+  private void completeCommit() throws NoSuchMethodException {
+    if(this.getState() != ScribeState.COMMITTING){
+      return;
+    }
+    
+    this.setState(ScribeState.COMPLETING_COMMIT);
+    this.gradualBackoff(sink, sink.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(source, source.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+    this.tupleTracker.commit();
+  }
+
+  private boolean commit() throws NoSuchMethodException {
+    if(this.getState() != ScribeState.PREPARING_COMMIT){
+      return false;
+    }
+    
+    this.setState(ScribeState.COMMITTING);
+    this.tupleTracker.addWritten(sink.getBufferSize() + invalidSink.getBufferSize());
+    return this.gradualBackoff(sink, sink.getClass().getMethod("commit")) & 
+        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("commit"));
+  }
+
+  private void buffer() throws NoSuchMethodException {
+    ScribeState currState = this.getState();
+    if(!(currState == ScribeState.INIT || currState == ScribeState.ERROR || 
+        currState == ScribeState.CLEARING_BUFFER || currState == ScribeState.COMPLETING_COMMIT || 
+        currState == ScribeState.ROLLINGBACK || currState == ScribeState.STOPPED )){
+      return;
+    }
+    
+    this.setState(ScribeState.BUFFERING);
+    while(source.hasNext() && !task.readyToCommit()){
+      Tuple[] tupleArray = task.execute(source.readNext());
+      for(Tuple t : tupleArray){
+        if(t.isInvalidData()){
+          this.tupleTracker.incrementInvalid();
+          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("bufferTuple", Tuple.class), t);
+        }
+        else{
+          if(t.isTaskGenerated()){
+            this.tupleTracker.incrementCreated();
+          }
+          else{
+            this.tupleTracker.incrementValid();
+          }
+          this.gradualBackoff(sink, sink.getClass().getMethod("bufferTuple", Tuple.class), t);
+        }
+      }
+    }
+  }
+
+  private boolean prepareCommit() throws NoSuchMethodException {
+    if(this.getState() != ScribeState.BUFFERING){
+      return false;
+    }
+    
+    this.setState(ScribeState.PREPARING_COMMIT);
+    return this.gradualBackoff(sink, sink.getClass().getMethod("prepareCommit")) & 
+        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("prepareCommit")) & 
+        this.gradualBackoff(source, source.getClass().getMethod("prepareCommit"));
   }
 
 
@@ -280,5 +344,15 @@ public class ScribeImpl implements Scribe{
     active = false;
   }
   
+  
+  @Override
+  public ScribeState getState(){
+    return this.myState;
+  }
+  
+  @Override
+  public void setState(ScribeState s){
+    this.myState  = s;
+  }
 }
 

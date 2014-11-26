@@ -30,17 +30,17 @@ public class UUIDSourceStreamTest {
     assertTrue(list.size() == 10);
     assertTrue(s.prepareCommit());
     assertTrue(s.commit());
-    assertTrue(s.updateOffSet());
+    assertTrue(s.completeCommit());
     
     
     assertTrue(s.hasNext());
     Tuple t = s.readNext();
     assertTrue(s.prepareCommit());
-    s.clearCommit();
+    s.clearBuffer();
     Tuple t2 = s.readNext();
     assertTrue(t.equals(t2));
     assertTrue(s.commit());
-    assertTrue(s.updateOffSet());
+    assertTrue(s.completeCommit());
     
   }
 }

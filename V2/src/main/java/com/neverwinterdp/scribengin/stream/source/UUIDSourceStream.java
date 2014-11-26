@@ -39,17 +39,6 @@ public class UUIDSourceStream implements SourceStream{
     return t;
   }
   
-  /*
-  @Override
-  public Tuple readFromOffset(long startOffset, long endOffset) {
-    if(startOffset < data.size()){
-      return data.get((int)(startOffset));
-    }
-    else{
-      return null;
-    }
-  }
-   */
 
   @Override
   public boolean hasNext() {
@@ -77,15 +66,20 @@ public class UUIDSourceStream implements SourceStream{
 
 
   @Override
-  public boolean clearCommit() {
+  public boolean clearBuffer() {
     this.currentOffset = this.lastCommitted;
     return false;
   }
 
 
   @Override
-  public boolean updateOffSet() {
+  public boolean completeCommit() {
     this.lastCommitted = this.currentOffset; 
+    return true;
+  }
+
+  @Override
+  public boolean rollBack() {
     return true;
   }
 

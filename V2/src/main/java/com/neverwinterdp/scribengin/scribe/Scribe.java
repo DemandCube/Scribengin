@@ -7,24 +7,27 @@ import com.neverwinterdp.scribengin.tuple.counter.TupleCounter;
 
 public interface Scribe {
   
-  void setTupleCounter(TupleCounter t);
-  void setSourceStream(SourceStream s);
-  void setSink(SinkStream s);
-  void setInvalidSink(SinkStream s);
-  void setTask(Task t);
+  public void setTupleCounter(TupleCounter t);
+  public void setSourceStream(SourceStream s);
+  public void setSink(SinkStream s);
+  public void setInvalidSink(SinkStream s);
+  public void setTask(Task t);
   
-  SinkStream getSinkStream();
-  SinkStream getInvalidSink();
-  SourceStream getSourceStream();
-  Task getTask();
+  public SinkStream getSinkStream();
+  public SinkStream getInvalidSink();
+  public SourceStream getSourceStream();
+  public Task getTask();
   
-  boolean processNext();
+  public boolean processNext();
   
-  TupleCounter getTupleTracker();
+  public TupleCounter getTupleTracker();
   
-  boolean init();
+  public boolean init();
+  public boolean init(ScribeState state);
   
-  void start();
-  void stop();
+  public void start();
+  public void stop();
   
+  public ScribeState getState();
+  public void setState(ScribeState s);
 }

@@ -44,28 +44,28 @@ public class RandomFailureSinkStream implements SinkStream{
   }
 
   @Override
-  public boolean clearCommit() {
+  public boolean clearBuffer() {
     if(this.decideToFail()){
       return false;
     }
-    return this.mSink.clearCommit();
+    return this.mSink.clearBuffer();
   }
 
   @Override
-  public boolean updateOffSet() {
+  public boolean completeCommit() {
     if(this.decideToFail()){
       return false;
     }
     
-    return this.mSink.updateOffSet();
+    return this.mSink.completeCommit();
   }
 
   @Override
-  public boolean append(Tuple t) {
+  public boolean bufferTuple(Tuple t) {
     if(this.decideToFail()){
       return false;
     }
-    return this.mSink.append(t);
+    return this.mSink.bufferTuple(t);
   }
 
   @Override

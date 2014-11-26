@@ -6,7 +6,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public interface SinkStream extends Stream{
   
-  public boolean append(Tuple t);
+  public boolean bufferTuple(Tuple t);
   public boolean rollBack();
   
   void setSinkPartitioner(SinkPartitioner sp);

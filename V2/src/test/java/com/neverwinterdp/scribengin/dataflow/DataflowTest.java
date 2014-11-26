@@ -28,7 +28,7 @@ public class DataflowTest {
       assertEquals( ((UUIDSourceStream)s.getSourceStream()).getData().size(),
           ((InMemorySinkStream)s.getInvalidSink()).getData().size() +
           ((InMemorySinkStream)s.getSinkStream()).getData().size());
-      //System.err.println(s.getStreamConnector().getTupleTracker());
+      //System.err.println(s.getTupleTracker());
       assertTrue(s.getTupleTracker().getWritten() > 0);
       assertTrue(s.getTupleTracker().validateCounts());
     }
@@ -43,7 +43,7 @@ public class DataflowTest {
       assertEquals( ((UUIDSourceStream)s.getSourceStream()).getData().size(),
           ((InMemorySinkStream)s.getInvalidSink()).getData().size() +
           ((InMemorySinkStream)s.getSinkStream()).getData().size());
-      //System.err.println(s.getStreamConnector().getTupleTracker());
+      //System.err.println(s.getTupleTracker());
       assertTrue(s.getTupleTracker().getWritten() > 0);
       assertTrue(s.getTupleTracker().validateCounts());
     }

@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.scribe;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -22,11 +23,16 @@ public class ScribeTestWithInvalidTask {
                                       new InMemorySinkStream(new DumbSinkPartitioner()), 
                                       new TenPercentInvalidTask());
     
+    scribe.setState(ScribeState.INIT);
+    assertTrue(scribe.getTupleTracker().validateCounts());
+    
     for(int i=0; i<50; i++){
       //Processes 10 records at a time
       scribe.processNext();
     }
     
+    System.err.println(scribe.getTupleTracker());
+    assertTrue(scribe.getTupleTracker().validateCounts());
     assertEquals(450,((InMemorySinkStream)scribe.getSinkStream()).getData().size());
     assertEquals(50,((InMemorySinkStream)scribe.getInvalidSink()).getData().size());
   }

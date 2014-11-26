@@ -89,15 +89,20 @@ public class JsonSourceStream implements SourceStream {
 
 
   @Override
-  public boolean clearCommit() {
+  public boolean clearBuffer() {
     this.currentOffset = this.lastCommitted;
     return false;
   }
 
 
   @Override
-  public boolean updateOffSet() {
+  public boolean completeCommit() {
     this.lastCommitted = this.currentOffset; 
+    return true;
+  }
+
+  @Override
+  public boolean rollBack() {
     return true;
   }
 

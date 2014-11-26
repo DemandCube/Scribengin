@@ -24,7 +24,7 @@ public class LocalFileSinkTest {
     
     int i=0;
     for(; i<10; i++){
-      assertTrue(sink.append(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry("key",i,i))));
+      assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry("key",i,i))));
     }
     assertEquals(10L, sink.getBufferSize());
     
@@ -32,7 +32,7 @@ public class LocalFileSinkTest {
     assertEquals(10L, sink.getBufferSize());
     assertTrue(sink.commit());
     assertEquals(10L, sink.getBufferSize());
-    assertTrue(sink.updateOffSet());
+    assertTrue(sink.completeCommit());
     assertEquals(0L, sink.getBufferSize());
     
     for(i=0; i< 10; i++){
@@ -42,7 +42,7 @@ public class LocalFileSinkTest {
     
     
     for(i=10; i<20; i++){
-      assertTrue(sink.append(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry("key",i,i))));
+      assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry("key",i,i))));
     }
     assertEquals(10L, sink.getBufferSize());
     
