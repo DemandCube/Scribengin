@@ -78,6 +78,7 @@ public class ScribeImpl implements Scribe{
   
   @Override
   public boolean init(ScribeState state) {
+    this.setState(state);
     scribeThread = new Thread() {
       public void run() {
         try{
@@ -89,7 +90,7 @@ public class ScribeImpl implements Scribe{
       }
     };
     scribeThread.start();
-    this.setState(state);
+    
     return true;
   }
   
