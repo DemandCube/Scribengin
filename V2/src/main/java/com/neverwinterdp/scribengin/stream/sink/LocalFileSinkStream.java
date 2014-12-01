@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.FileSinkStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class LocalFileSinkStream implements SinkStream{
@@ -26,6 +28,11 @@ public class LocalFileSinkStream implements SinkStream{
     buffer = new LinkedList<Tuple>();
     this.dir = directoryName;
     this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
+  }
+  
+  public LocalFileSinkStream(FileSinkStreamDescriptor sDesc){
+    this(sDesc.getDir());
+    this.name = sDesc.getName();
   }
   
   @Override
@@ -121,4 +128,9 @@ public class LocalFileSinkStream implements SinkStream{
     return this.buffer.size();
   }
 
+  
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return new FileSinkStreamDescriptor(this.getName(), this.dir , "");
+  }
 }

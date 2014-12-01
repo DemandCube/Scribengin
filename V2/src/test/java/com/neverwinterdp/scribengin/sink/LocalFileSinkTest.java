@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -19,7 +20,8 @@ public class LocalFileSinkTest {
   
   @Test
   public void testStdOutSinkStream() throws IOException{
-    String testDir = "./tmp/";
+    String testDir = "./"+UUID.randomUUID().toString()+"/";
+    System.err.println("Working Directory = "+System.getProperty("user.dir")+testDir);
     SinkStream sink = new LocalFileSinkStream(testDir);
     
     int i=0;

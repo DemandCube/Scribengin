@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.BasicStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class RandomFailureSinkStream implements SinkStream{
@@ -101,6 +103,11 @@ public class RandomFailureSinkStream implements SinkStream{
       return true;
     }
     return false;
+  }
+  
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return mSink.getStreamDescriptor();
   }
 
 }

@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.stream.source;
 import java.util.UUID;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.OffsetStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class SequentialIntSourceStream implements SourceStream{
@@ -16,10 +18,17 @@ public class SequentialIntSourceStream implements SourceStream{
     this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
   }
   
+  public SequentialIntSourceStream(OffsetStreamDescriptor sDesc){
+    this.name = sDesc.getName();
+    this.currNum = sDesc.getCurrentOffset();
+    this.lastCommitted = sDesc.getLastCommittedOffset();
+  }
+  
   public SequentialIntSourceStream(){
     this(0);
   }
   
+
   @Override
   public boolean prepareCommit() {
     return true;
@@ -65,6 +74,11 @@ public class SequentialIntSourceStream implements SourceStream{
   @Override
   public String getName() {
     return this.name;
+  }
+
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return new OffsetStreamDescriptor(this.getName(), this.lastCommitted, this.currNum);
   }
 
 }

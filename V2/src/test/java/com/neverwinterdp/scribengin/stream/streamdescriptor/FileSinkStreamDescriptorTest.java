@@ -1,10 +1,11 @@
-package com.neverwinterdp.scribengin.scribe;
+package com.neverwinterdp.scribengin.stream.streamdescriptor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,13 +17,15 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.scribe.Scribe;
+import com.neverwinterdp.scribengin.scribe.ScribeImpl;
 import com.neverwinterdp.scribengin.stream.sink.FileSystemSinkStream;
 import com.neverwinterdp.scribengin.stream.source.SequentialIntSourceStream;
 import com.neverwinterdp.scribengin.task.CopyTask;
 
-public class ScribeFileSystemTest {
+public class FileSinkStreamDescriptorTest {
   @Test
-  public void testScribe() throws Exception {
+  public void testFileSinkStreamDescriptor() throws InterruptedException, IOException{
     int bufferLimit = 5000;
     String testDir = "./"+UUID.randomUUID().toString()+"/";
     System.err.println("Working Directory = "+System.getProperty("user.dir")+testDir);
@@ -42,16 +45,28 @@ public class ScribeFileSystemTest {
     scribe.stop();
     Thread.sleep(100);
     
+    long firstScribeTupleCount = scribe.getTupleTracker().getWritten();
+    
+    //Create the second scribe from the descriptors of the first scribe
+    Scribe secondScribe = new ScribeImpl(
+        new SequentialIntSourceStream((OffsetStreamDescriptor)scribe.getSourceStream().getStreamDescriptor()), 
+        new FileSystemSinkStream((FileSinkStreamDescriptor) scribe.getSinkStream().getStreamDescriptor()), 
+        new FileSystemSinkStream((FileSinkStreamDescriptor) scribe.getInvalidSink().getStreamDescriptor()), 
+        new CopyTask(bufferLimit));
     assertTrue(scribe.getTupleTracker().getWritten() > 0);
     assertTrue(scribe.getTupleTracker().validateCounts());
     
-    scribe.start();
+    assertTrue(secondScribe.init());
+    assertTrue(secondScribe.getTupleTracker().validateCounts());
+    
+    secondScribe.start();
     Thread.sleep(1500);
-    scribe.stop();
+    secondScribe.stop();
     Thread.sleep(100);
     
-    assertTrue(scribe.getTupleTracker().getWritten() > 0);
-    assertTrue(scribe.getTupleTracker().validateCounts());
+    assertEquals(firstScribeTupleCount, scribe.getTupleTracker().getWritten());
+    assertTrue(secondScribe.getTupleTracker().getWritten() > 0);
+    assertTrue(secondScribe.getTupleTracker().validateCounts());
     
     
     //Make sure there are no temp files and nothing committed to invalid sink

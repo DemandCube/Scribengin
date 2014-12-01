@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.JsonSourceStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class JsonSourceStream implements SourceStream {
@@ -22,9 +24,19 @@ public class JsonSourceStream implements SourceStream {
   public JsonSourceStream(String k){
     key = k;
     name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
-    data = new LinkedList<Tuple>();
     currentOffset = 0;
     lastCommitted = 0;
+    
+    data = new LinkedList<Tuple>();
+  }
+  
+  public JsonSourceStream(JsonSourceStreamDescriptor sDesc){
+    this.name = sDesc.getName();
+    this.currentOffset = sDesc.getCurrentOffset();
+    this.lastCommitted = sDesc.getLastCommittedOffset();
+    this.key = sDesc.getKey();
+    
+    data = new LinkedList<Tuple>();
   }
   
   public LinkedList<Tuple> getData(){
@@ -105,5 +117,11 @@ public class JsonSourceStream implements SourceStream {
   public boolean rollBack() {
     return true;
   }
+
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return new JsonSourceStreamDescriptor(this.getName(), this.lastCommitted, this.currentOffset,this.key);
+  }
+
 
 }

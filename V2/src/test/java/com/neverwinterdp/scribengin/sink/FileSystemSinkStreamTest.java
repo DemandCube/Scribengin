@@ -3,14 +3,13 @@ package com.neverwinterdp.scribengin.sink;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -23,8 +22,8 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public class FileSystemSinkStreamTest {
   @Test
   public void testFileSystemSinkStream() throws IOException{
-    String testDir = "./ZZZZZZ/";
-    System.err.println("Working Directory = "+System.getProperty("user.dir"));
+    String testDir = "./"+UUID.randomUUID().toString()+"/";
+    System.err.println("Working Directory = "+System.getProperty("user.dir")+testDir);
     SinkStream sink = new FileSystemSinkStream(testDir+"tmp", testDir+"commit/");
     
     int i=0;

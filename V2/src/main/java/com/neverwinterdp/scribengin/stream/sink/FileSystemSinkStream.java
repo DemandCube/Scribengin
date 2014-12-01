@@ -12,6 +12,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.FileSinkStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class FileSystemSinkStream implements SinkStream{
@@ -22,15 +24,19 @@ public class FileSystemSinkStream implements SinkStream{
   String name;
   
   public FileSystemSinkStream(){
-    this("./tmp","./commit", 0);
+    this("./tmp","./commit", "FileSystemSinkStream-"+UUID.randomUUID().toString());
   }
   
   public FileSystemSinkStream(String tmpFile, String commitDir){
-    this(tmpFile, commitDir, 0);
+    this(tmpFile, commitDir, "FileSystemSinkStream-"+UUID.randomUUID().toString());
   }
   
-  public FileSystemSinkStream(String tmpFile, String commitDir, int currTmpFile){
-    this.name = this.getClass().getSimpleName() +"-"+UUID.randomUUID().toString();
+  public FileSystemSinkStream(FileSinkStreamDescriptor sDesc){
+    this(sDesc.getFilename(), sDesc.getDir(), sDesc.getName());
+  }
+  
+  public FileSystemSinkStream(String tmpFile, String commitDir, String name){
+    this.name = name;
     this.buffer = new LinkedList<Tuple>();
     this.tmpFile = tmpFile;
     this.commitDir = commitDir;
@@ -168,6 +174,11 @@ public class FileSystemSinkStream implements SinkStream{
   
   public LinkedList<Tuple> getBuffer(){
     return this.buffer;
+  }
+  
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return new FileSinkStreamDescriptor(this.getName(), this.commitDir, this.tmpFile);
   }
 
 }

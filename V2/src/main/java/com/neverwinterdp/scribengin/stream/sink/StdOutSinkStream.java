@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.BasicStreamDescriptor;
+import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class StdOutSinkStream implements SinkStream{
@@ -71,6 +73,11 @@ public class StdOutSinkStream implements SinkStream{
   @Override
   public long getBufferSize() {
     return buffer.size();
+  }
+
+  @Override
+  public StreamDescriptor getStreamDescriptor() {
+    return new BasicStreamDescriptor(this.getName());
   }
 
 }
