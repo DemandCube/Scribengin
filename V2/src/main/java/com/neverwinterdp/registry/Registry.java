@@ -31,4 +31,9 @@ public interface Registry {
   
   public void delete(String path) throws RegistryException ;
   public void rdelete(String path) throws RegistryException ;
+  
+  /**
+   * Create a new Registry session base on the current configuration
+   */
+  public Registry newRegistry() throws RegistryException;
 }

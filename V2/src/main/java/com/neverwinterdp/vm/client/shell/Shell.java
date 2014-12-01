@@ -14,6 +14,7 @@ public class Shell {
   public Shell(Registry registry) {
     this.console = new Console() ;
     vmClient = new VMClient(registry);
+    add("registry", new RegistryCommand());
     add("vm", new VMCommand());
   }
   

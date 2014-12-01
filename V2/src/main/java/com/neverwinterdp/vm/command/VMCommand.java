@@ -1,27 +1,29 @@
 package com.neverwinterdp.vm.command;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neverwinterdp.vm.VM;
 
-public class AppCommand {
-  static public class Start extends Command {
+public class VMCommand {
+  static public class AppStart extends Command {
     @JsonProperty()
     private String   app ;
     @JsonProperty()
-    private String[] args ;
+    private Map<String, String> properties ;
 
-    public Start() { super("start") ; }
+    public AppStart() { super("AppStart") ; }
     
-    public Start(String app, String[] args) { 
+    public AppStart(String app, Map<String, String> properties) { 
       this.app = app;
-      this.args = args;
+      this.properties = properties;
     }
     
     @Override
     public CommandResult<?> execute(VM vm) {
       CommandResult<Boolean> result = new CommandResult<Boolean>() ;
       try {
-        vm.appStart(app, args);
+        vm.appStart(app, properties);
         result.setResult(true);
       } catch (Exception e) {
         result.setResult(false);
@@ -31,15 +33,32 @@ public class AppCommand {
     }
   }
   
-  static public class AppStopCommand extends Command {
+  static public class AppStop extends Command {
 
-    public AppStopCommand() { super("stop") ; }
+    public AppStop() { super("AppStop") ; }
     
     @Override
     public CommandResult<?> execute(VM vm) {
       CommandResult<Boolean> result = new CommandResult<Boolean>() ;
       try {
         vm.appStop();
+        result.setResult(true);
+      } catch (Exception e) {
+        result.setResult(false);
+        e.printStackTrace();
+      }
+      return result ;
+    }
+  }
+  
+  static public class Exit extends Command {
+    public Exit() { super("Exit") ; }
+    
+    @Override
+    public CommandResult<?> execute(VM vm) {
+      CommandResult<Boolean> result = new CommandResult<Boolean>() ;
+      try {
+        vm.exit();
         result.setResult(true);
       } catch (Exception e) {
         result.setResult(false);

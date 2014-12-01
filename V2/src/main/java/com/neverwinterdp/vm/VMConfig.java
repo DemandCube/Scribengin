@@ -3,8 +3,8 @@ package com.neverwinterdp.vm;
 public class VMConfig {
   private String   name;
   private String[] roles ;
-  private int      requestCpuCores;
-  private int      requestMemory;
+  private int      requestCpuCores = 1;
+  private int      requestMemory = 128;
   private String   description;
   
   public String getName() { return name; }

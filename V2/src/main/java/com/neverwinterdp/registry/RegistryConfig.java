@@ -12,12 +12,6 @@ public class RegistryConfig {
   @Inject @Named("registry.db-domain")
   private String dbDomain ;
   
-  @Inject @Named("registry.implementation")
-  private String implementation ;
-  
-  public String getImplementation() { return implementation; }
-  public void setImplementation(String impl) { this.implementation = impl; }
-  
   public String getConnect() { return connect; }
   public void setConnect(String connect) { this.connect = connect; }
   

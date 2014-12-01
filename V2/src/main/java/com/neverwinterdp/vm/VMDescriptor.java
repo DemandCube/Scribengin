@@ -9,6 +9,14 @@ public class VMDescriptor {
   private String   hostname;
   private VMConfig vmConfig;
 
+  public VMDescriptor() { }
+  
+  public VMDescriptor(VMConfig vmConfig) {
+    this.vmConfig = vmConfig;
+    setCpuCores(vmConfig.getRequestCpuCores());
+    setMemory(vmConfig.getRequestMemory());
+  }
+  
   @JsonIgnore
   public String getId() { return vmConfig.getName(); }
   

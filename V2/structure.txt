@@ -6,6 +6,8 @@ NeverwinterDP
       vm-3[descriptor]
     allocated/
       vm-1[descriptor - vm_master ]
+        status [ ALLOCATED - INIT - RUNNING - TERMINATED]
+          hearbeat
         events[start - stop -finish]
         application
           config

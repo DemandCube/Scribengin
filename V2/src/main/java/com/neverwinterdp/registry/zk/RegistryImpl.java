@@ -127,6 +127,7 @@ public class RegistryImpl implements Registry {
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException {
     try {
       byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
+      if(bytes == null || bytes.length == 0) return null;
       return JSONSerializer.INSTANCE.fromBytes(bytes, type);
     } catch (KeeperException | InterruptedException e) {
       throw new RegistryException(ErrorCode.Unknown, e) ;
@@ -224,7 +225,6 @@ public class RegistryImpl implements Registry {
   public void rdelete(String path) throws RegistryException {
     try {
       PathUtils.validatePath(path);
-
       List<String> tree = ZKUtil.listSubTreeBFS(zkClient, realPath(path));
       for (int i = tree.size() - 1; i >= 0 ; --i) {
         //Delete the leaves first and eventually get rid of the root
@@ -271,5 +271,10 @@ public class RegistryImpl implements Registry {
   private String realPath(String path) { 
     if(path.equals("/")) return config.getDbDomain() ;
     return config.getDbDomain() + path; 
+  }
+
+  @Override
+  public Registry newRegistry() throws RegistryException {
+    return new RegistryImpl(config);
   }
 }

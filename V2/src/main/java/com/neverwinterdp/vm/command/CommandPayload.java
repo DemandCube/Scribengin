@@ -23,9 +23,6 @@ public class CommandPayload {
   @JsonSerialize(using=JSONSerializer.GenericTypeSerializer.class)
   public void setCommand(Command command) { this.command = command; }
   
-  @JsonDeserialize(using=JSONSerializer.GenericTypeDeserializer.class)
   public CommandResult<?> getResult() { return result; }
-  
-  @JsonSerialize(using=JSONSerializer.GenericTypeSerializer.class)
   public void setResult(CommandResult<?> result) { this.result = result; }
 }

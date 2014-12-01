@@ -16,6 +16,16 @@ public class AppModule extends AbstractModule {
   
   final protected void configure() {
     configure(properties) ;
+    try {
+      for(Map.Entry<String, String> entry : properties.entrySet()) {
+        String key = entry.getKey();
+        if(!key.startsWith("implementation:")) continue;
+        String keyClassName = key.substring("implementation:".length()) ;
+        bindType(Class.forName(keyClassName), entry.getValue());
+      }
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
     bindProperties() ;
   }
   
@@ -46,6 +56,10 @@ public class AppModule extends AbstractModule {
   public <T> void bindInstance(String id, T instance) {
     Key<T> key = (Key<T>)Key.get(instance.getClass(), Names.named(id)) ;
     bind(key).toInstance(instance); 
+  }
+  
+  public <T> void bindInstance(Class<T> type, T instance) {
+    bind(type).toInstance(instance);
   }
   
   void bindProperties() {

@@ -15,9 +15,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.client.shell.Shell;
-import com.neverwinterdp.vm.jvm.VMServiceImpl;
 
 abstract public class ScribenginUnitTest {
   static {
@@ -38,40 +36,13 @@ abstract public class ScribenginUnitTest {
     zkServerLauncher.stop();
   }
 
-  protected Injector newMasterContainer() {
+  protected <T> Injector newAppContainer() {
     Map<String, String> props = new HashMap<String, String>();
     props.put("registry.connect", "127.0.0.1:2181") ;
     props.put("registry.db-domain", "/NeverwinterDP") ;
-    props.put("registry.implementation", RegistryImpl.class.getName()) ;
-    props.put("vm.implementation", VMServiceImpl.class.getName()) ;
-    AppModule module = new AppModule(props) {
-      protected void configure(Map<String, String> properties) {
-        try {
-          bindType(Registry.class, properties.get("registry.implementation"));
-          bindType(VMService.class, properties.get("vm.implementation"));
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-    return Guice.createInjector(module);
-  }
-  
-  protected <T> Injector newVMApplicationContainer(Class<T> appType) {
-    Map<String, String> props = new HashMap<String, String>();
-    props.put("registry.connect", "127.0.0.1:2181") ;
-    props.put("registry.db-domain", "/NeverwinterDP") ;
-    props.put("registry.implementation", RegistryImpl.class.getName()) ;
-    props.put("vmapplication.class", appType.getName()) ;
-    AppModule module = new AppModule(props) {
-      protected void configure(Map<String, String> properties) {
-        try {
-          bindType(Registry.class, properties.get("registry.implementation"));
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
+    
+    props.put("implementation:" + Registry.class.getName(), RegistryImpl.class.getName()) ;
+    AppModule module = new AppModule(props) ;
     return Guice.createInjector(module);
   }
   
@@ -80,6 +51,6 @@ abstract public class ScribenginUnitTest {
   }
   
   protected Shell newShell() throws RegistryException {
-    return new Shell(newRegistry().connect()) ;
+    return new Shell(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
   }
 }

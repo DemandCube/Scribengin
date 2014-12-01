@@ -9,7 +9,7 @@ import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMServiceRegistry;
+import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
@@ -21,10 +21,15 @@ public class VMClient {
     this.registry = registry;
   }
   
-  public Registry getRegistryService() { return this.registry ; }
+  public Registry getRegistry() { return this.registry ; }
   
   public List<VMDescriptor> getVMDescriptors() throws RegistryException {
-    return registry.getChildrenAs(VMServiceRegistry.ALLOCATED_PATH, VMDescriptor.class) ;
+    return registry.getChildrenAs(VMService.ALLOCATED_PATH, VMDescriptor.class) ;
+  }
+  
+  public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
+    VMDescriptor descriptor = registry.getDataAs(VMService.LEADER_PATH, VMDescriptor.class);
+    return descriptor;
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
