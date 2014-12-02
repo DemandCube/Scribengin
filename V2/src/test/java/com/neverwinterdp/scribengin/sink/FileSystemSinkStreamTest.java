@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
@@ -20,9 +21,15 @@ import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class FileSystemSinkStreamTest {
+  static String testDir = "./"+UUID.randomUUID().toString()+"/"; 
+  
+  @AfterClass
+  public static void tearDown() throws IOException{
+    FileUtils.deleteDirectory(new File(testDir));
+  }
+  
   @Test
   public void testFileSystemSinkStream() throws IOException{
-    String testDir = "./"+UUID.randomUUID().toString()+"/";
     System.err.println("Working Directory = "+System.getProperty("user.dir")+testDir);
     SinkStream sink = new FileSystemSinkStream(testDir+"tmp", testDir+"commit/");
     
@@ -60,8 +67,7 @@ public class FileSystemSinkStreamTest {
     }
     
     Path path = FileSystems.getDefault().getPath(testDir+"commit/", "0");
-    assertEquals("0123456789", new String(Files.readAllBytes(path)));
+    assertEquals("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n", new String(Files.readAllBytes(path)));
     
-    FileUtils.deleteDirectory(new File(testDir));
   }
 }

@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.scribe;
+package com.neverwinterdp.scribengin.scribe.state;
 
 public enum ScribeState {
   UNINITIALIZED,

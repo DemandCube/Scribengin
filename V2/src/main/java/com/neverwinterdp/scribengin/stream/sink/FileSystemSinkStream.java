@@ -72,6 +72,7 @@ public class FileSystemSinkStream implements SinkStream{
     for(Tuple t: buffer){
       try {
         outputStream.write( t.getData());
+        outputStream.write( "\n".getBytes());
       } catch (IOException e) {
         e.printStackTrace();
         return false;
@@ -80,7 +81,7 @@ public class FileSystemSinkStream implements SinkStream{
 
     //Write to temp file
     try {
-      FSDataOutputStream out = this.fs.create(new Path(this.tmpFile));
+      FSDataOutputStream out = this.fs.create(new Path(this.tmpFile), true);
       out.write(outputStream.toByteArray());
       out.flush();
       out.close();
@@ -104,8 +105,13 @@ public class FileSystemSinkStream implements SinkStream{
       return true;
     }
     String filename = this.getNextAvailableCommitFile();
+    Path tmpFilePath = new Path(this.tmpFile);
     
     try {
+      if(!fs.exists(tmpFilePath)){
+        buffer.clear();
+        return true;
+      }
       this.fs.rename(new Path(this.tmpFile), new Path(this.commitDir+"/"+filename));
       buffer.clear();
     } catch (IllegalArgumentException | IOException e) {
@@ -150,7 +156,11 @@ public class FileSystemSinkStream implements SinkStream{
   public boolean rollBack() {
     try {
       buffer.clear();
-      return this.fs.delete(new Path(this.tmpFile), true);
+      Path tmpFilePath = new Path(this.tmpFile);
+      if(fs.exists(tmpFilePath)){
+        return this.fs.delete(tmpFilePath, true);
+      }
+      return true;
     } catch (IllegalArgumentException | IOException e) {
       e.printStackTrace();
       return false;

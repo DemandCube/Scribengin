@@ -1,7 +1,13 @@
 package com.neverwinterdp.scribengin.scribe;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import com.neverwinterdp.scribengin.commitlog.CommitLog;
 import com.neverwinterdp.scribengin.commitlog.InMemoryCommitLog;
+import com.neverwinterdp.scribengin.scribe.state.InMemoryScribeStateTracker;
+import com.neverwinterdp.scribengin.scribe.state.ScribeState;
+import com.neverwinterdp.scribengin.scribe.state.ScribeStateTracker;
 import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
@@ -9,37 +15,39 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 import com.neverwinterdp.scribengin.tuple.counter.InMemoryTupleCounter;
 import com.neverwinterdp.scribengin.tuple.counter.TupleCounter;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class ScribeImpl implements Scribe{
 
-  private SourceStream source;
-  private SinkStream sink;
-  private SinkStream invalidSink;
-  private Task task;
+  private boolean active;
   private CommitLog commitLog;
-  private TupleCounter tupleTracker;
+  private SinkStream invalidSink;
+  private int processNextTimeout;
   private int retryTimeoutTimeLimit;
   private Thread scribeThread;
-  private boolean active;
-  private int processNextTimeout;
-  private ScribeState myState;
+  private SinkStream sink;
+  private SourceStream source;
+  //private ScribeState myState;
+  private ScribeStateTracker stateTracker;
+  private Task task;
+  private TupleCounter tupleTracker;
   
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter(), 600000, 1000);
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 1000);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, int timeout){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter(), 600000, 1000);
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 1000);
+  }
+  
+  public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, ScribeStateTracker sst){
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), sst, 600000, 1000);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c){
-    this(y,z,invalidSink,t, c, 600000, 1000);
+    this(y,z,invalidSink,t, c, new InMemoryScribeStateTracker(), 600000, 1000);
   }
   
-  public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c, int retryTimeoutTimeLimit, int processNextTimeout){
+  public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c, ScribeStateTracker sst, int retryTimeoutTimeLimit, int processNextTimeout){
     this.source = y;
     this.sink = z;
     this.invalidSink = invalidSink;
@@ -48,13 +56,77 @@ public class ScribeImpl implements Scribe{
     this.tupleTracker = c;
     this.retryTimeoutTimeLimit = retryTimeoutTimeLimit;
     this.processNextTimeout = processNextTimeout;
+    this.stateTracker = sst;
     
     this.active = false;
-    this.myState = ScribeState.UNINITIALIZED; 
   }
   
-  
+  private void buffer() throws NoSuchMethodException {
+    //ScribeState currState = this.getState();
+    //if(!(currState == ScribeState.INIT || currState == ScribeState.ERROR || 
+    //    currState == ScribeState.CLEARING_BUFFER || currState == ScribeState.COMPLETING_COMMIT || 
+    //    currState == ScribeState.ROLLINGBACK || currState == ScribeState.STOPPED )){
+    //  return;
+    //}
+    
+    this.setState(ScribeState.BUFFERING);
+    while(source.hasNext() && !task.readyToCommit()){
+      Tuple[] tupleArray = task.execute(source.readNext());
+      for(Tuple t : tupleArray){
+        if(t.isInvalidData()){
+          this.tupleTracker.incrementInvalid();
+          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("bufferTuple", Tuple.class), t);
+        }
+        else{
+          if(t.isTaskGenerated()){
+            this.tupleTracker.incrementCreated();
+          }
+          else{
+            this.tupleTracker.incrementValid();
+          }
+          this.gradualBackoff(sink, sink.getClass().getMethod("bufferTuple", Tuple.class), t);
+        }
+      }
+    }
+  }
 
+  private void clearBuffer() throws NoSuchMethodException {
+    //if(this.getState() != ScribeState.PREPARING_COMMIT){
+    //  return;
+    //}
+    
+    this.setState(ScribeState.CLEARING_BUFFER);
+    this.tupleTracker.clearBuffer();
+    this.gradualBackoff(sink, sink.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(source, source.getClass().getMethod("clearBuffer"));
+    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+  }
+
+  private boolean commit() throws NoSuchMethodException {
+    //if(this.getState() != ScribeState.PREPARING_COMMIT){
+    //  return false;
+    //}
+    
+    this.setState(ScribeState.COMMITTING);
+    this.tupleTracker.addWritten(sink.getBufferSize() + invalidSink.getBufferSize());
+    return this.gradualBackoff(sink, sink.getClass().getMethod("commit")) & 
+        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("commit"));
+  }
+  
+  private void completeCommit() throws NoSuchMethodException {
+    //if(this.getState() != ScribeState.COMMITTING){
+    //  return;
+    //}
+    
+    this.setState(ScribeState.COMPLETING_COMMIT);
+    this.gradualBackoff(sink, sink.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(source, source.getClass().getMethod("completeCommit"));
+    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+    this.tupleTracker.commit();
+  }
+  
   private void consumeLoop() {
     while(true){
       if(active){
@@ -65,17 +137,106 @@ public class ScribeImpl implements Scribe{
           this.setState(ScribeState.STOPPED);
           Thread.sleep(processNextTimeout);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          System.err.println("Scribe's sleep has been interrupted.");
+          //e.printStackTrace();
         }
       }
     }
+  }
+
+  public CommitLog getCommitLog(){
+    return this.commitLog;
+  }
+
+  @Override
+  public SinkStream getInvalidSink() {
+    return this.invalidSink;
+  }
+
+  //Only to be used for testing.
+  @SuppressWarnings("unused")
+  private ScribeState killScribeThread(){
+    this.scribeThread.interrupt();
+    this.active = false;
+    return this.stateTracker.getScribeState();
+  }
+
+  @Override
+  public SinkStream getSinkStream() {
+    return this.sink;
+  }
+
+  @Override
+  public SourceStream getSourceStream() {
+    return this.source;
+  }
+
+  @Override
+  public ScribeState getState(){
+    //return this.myState;
+    return stateTracker.getScribeState();
+  }
+
+
+  @Override
+  public Task getTask(){
+    return this.task;
+  }
+
+  @Override
+  public TupleCounter getTupleTracker() {
+    return this.tupleTracker;
+  }
+
+  
+  private boolean gradualBackoff(Object o, Method m){
+    return this.gradualBackoff(o, m, null);
+  }
+
+  /**
+   * Does a backoff on executing 
+   * @param o Object that contains Method m
+   * @param m The Method to execute
+   * @param args Any arguments to pass into the method (Automagically get cast correctly)
+   * @return true or false.  Returns true immediately once true is returned
+   */
+  private boolean gradualBackoff(Object o, Method m, Object args){
+    boolean x = false;
+    int backoff = 1;
+
+    while(!x){
+      try {
+        if(args == null){
+          x = (boolean) m.invoke(o);
+        }
+        else{
+          //Arbitrarily cast the args object to correct type
+          x = (boolean) m.invoke(o, args.getClass().cast(args));
+        }
+        if(!x){
+          //Cut it off @ retryTimeoutTimeLimit
+          if(backoff > this.retryTimeoutTimeLimit){
+            return false;
+          }
+          Thread.sleep(backoff);
+          backoff = backoff * 10;
+        }
+      } catch (IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException | InterruptedException e) {
+        e.printStackTrace();
+        return false;
+      }
+      
+    }
+    return x;
   }
 
   @Override
   public boolean init() {
     return this.init(ScribeState.INIT);
   }
-  
+
+
   @Override
   public boolean init(ScribeState state) {
     this.setState(state);
@@ -92,6 +253,17 @@ public class ScribeImpl implements Scribe{
     scribeThread.start();
     
     return true;
+  }
+  
+  private boolean prepareCommit() throws NoSuchMethodException {
+    //if(this.getState() != ScribeState.BUFFERING){
+    //  return false;
+    //}
+    
+    this.setState(ScribeState.PREPARING_COMMIT);
+    return this.gradualBackoff(sink, sink.getClass().getMethod("prepareCommit")) & 
+        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("prepareCommit")) & 
+        this.gradualBackoff(source, source.getClass().getMethod("prepareCommit"));
   }
   
   @Override
@@ -139,23 +311,55 @@ public class ScribeImpl implements Scribe{
     return retVal;
   }
 
-  private void clearBuffer() throws NoSuchMethodException {
-    if(this.getState() != ScribeState.PREPARING_COMMIT){
-      return;
+  @Override
+  public boolean recover() {
+    ScribeState state = this.getState();
+    //System.err.print("RECOVER STATE: ");
+    //System.err.println(state);
+    try {
+      switch(state){
+        case UNINITIALIZED:
+          return true;
+        case INIT:
+          return true;
+        case ERROR:
+          return true;
+        case STOPPED:
+          return true;
+          
+        case BUFFERING:
+          this.clearBuffer();
+          return true;
+        case PREPARING_COMMIT:
+          this.clearBuffer();
+          return true;
+        case CLEARING_BUFFER:
+          this.clearBuffer();
+          return true;
+          
+        case COMMITTING:
+          this.rollBack();
+          return true;
+        case COMPLETING_COMMIT:
+          this.rollBack();
+          return true;
+        case ROLLINGBACK:
+          this.rollBack();
+          return true;
+        default:
+          return false;
+      }
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+      return false;
     }
-    
-    this.setState(ScribeState.CLEARING_BUFFER);
-    this.tupleTracker.clearBuffer();
-    this.gradualBackoff(sink, sink.getClass().getMethod("clearBuffer"));
-    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("clearBuffer"));
-    this.gradualBackoff(source, source.getClass().getMethod("clearBuffer"));
-    this.gradualBackoff(task, task.getClass().getMethod("commit"));
+    //return false;
   }
 
   private void rollBack() throws NoSuchMethodException {
-    if(this.getState() != ScribeState.COMMITTING){
-      return;
-    }
+    //if(this.getState() != ScribeState.COMMITTING){
+    //  return;
+    //}
     
     this.setState(ScribeState.ROLLINGBACK);
     this.tupleTracker.clearBuffer();
@@ -164,135 +368,12 @@ public class ScribeImpl implements Scribe{
     this.gradualBackoff(source, source.getClass().getMethod("rollBack"));
     this.gradualBackoff(task, task.getClass().getMethod("commit"));
   }
-
-  private void completeCommit() throws NoSuchMethodException {
-    if(this.getState() != ScribeState.COMMITTING){
-      return;
-    }
-    
-    this.setState(ScribeState.COMPLETING_COMMIT);
-    this.gradualBackoff(sink, sink.getClass().getMethod("completeCommit"));
-    this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("completeCommit"));
-    this.gradualBackoff(source, source.getClass().getMethod("completeCommit"));
-    this.gradualBackoff(task, task.getClass().getMethod("commit"));
-    this.tupleTracker.commit();
-  }
-
-  private boolean commit() throws NoSuchMethodException {
-    if(this.getState() != ScribeState.PREPARING_COMMIT){
-      return false;
-    }
-    
-    this.setState(ScribeState.COMMITTING);
-    this.tupleTracker.addWritten(sink.getBufferSize() + invalidSink.getBufferSize());
-    return this.gradualBackoff(sink, sink.getClass().getMethod("commit")) & 
-        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("commit"));
-  }
-
-  private void buffer() throws NoSuchMethodException {
-    ScribeState currState = this.getState();
-    if(!(currState == ScribeState.INIT || currState == ScribeState.ERROR || 
-        currState == ScribeState.CLEARING_BUFFER || currState == ScribeState.COMPLETING_COMMIT || 
-        currState == ScribeState.ROLLINGBACK || currState == ScribeState.STOPPED )){
-      return;
-    }
-    
-    this.setState(ScribeState.BUFFERING);
-    while(source.hasNext() && !task.readyToCommit()){
-      Tuple[] tupleArray = task.execute(source.readNext());
-      for(Tuple t : tupleArray){
-        if(t.isInvalidData()){
-          this.tupleTracker.incrementInvalid();
-          this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("bufferTuple", Tuple.class), t);
-        }
-        else{
-          if(t.isTaskGenerated()){
-            this.tupleTracker.incrementCreated();
-          }
-          else{
-            this.tupleTracker.incrementValid();
-          }
-          this.gradualBackoff(sink, sink.getClass().getMethod("bufferTuple", Tuple.class), t);
-        }
-      }
-    }
-  }
-
-  private boolean prepareCommit() throws NoSuchMethodException {
-    if(this.getState() != ScribeState.BUFFERING){
-      return false;
-    }
-    
-    this.setState(ScribeState.PREPARING_COMMIT);
-    return this.gradualBackoff(sink, sink.getClass().getMethod("prepareCommit")) & 
-        this.gradualBackoff(invalidSink, invalidSink.getClass().getMethod("prepareCommit")) & 
-        this.gradualBackoff(source, source.getClass().getMethod("prepareCommit"));
-  }
-
-
-  private boolean gradualBackoff(Object o, Method m){
-    return this.gradualBackoff(o, m, null);
-  }
-
-  /**
-   * Does a backoff on executing 
-   * @param o Object that contains Method m
-   * @param m The Method to execute
-   * @param args Any arguments to pass into the method (Automagically get cast correctly)
-   * @return true or false.  Returns true immediately once true is returned
-   */
-  private boolean gradualBackoff(Object o, Method m, Object args){
-    boolean x = false;
-    int backoff = 1;
-
-    while(!x){
-      try {
-        if(args == null){
-          x = (boolean) m.invoke(o);
-        }
-        else{
-          //Arbitrarily cast the args object to correct type
-          x = (boolean) m.invoke(o, args.getClass().cast(args));
-        }
-        if(!x){
-          //Cut it off @ retryTimeoutTimeLimit
-          if(backoff > this.retryTimeoutTimeLimit){
-            return false;
-          }
-          Thread.sleep(backoff);
-          backoff = backoff * 10;
-        }
-      } catch (IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException | InterruptedException e) {
-        e.printStackTrace();
-        return false;
-      }
-      
-    }
-    return x;
-  }
-
   
-  @Override
-  public Task getTask(){
-    return this.task;
+  @SuppressWarnings("unused")
+  private void setCommitLog(CommitLog c){
+    this.commitLog = c;
   }
 
-  @Override
-  public SinkStream getSinkStream() {
-    return this.sink;
-  }
-
-  @Override
-  public SinkStream getInvalidSink() {
-    return this.invalidSink;
-  }
-
-
-  @Override
-  public SourceStream getSourceStream() {
-    return this.source;
-  }
   
   @Override
   public void setInvalidSink(SinkStream s) {
@@ -300,13 +381,20 @@ public class ScribeImpl implements Scribe{
   }
   
   @Override
-  public void setSourceStream(SourceStream s) {
-    this.source = s;
+  public void setSink(SinkStream s) {
+    this.sink = s;
   }
 
   @Override
-  public void setSink(SinkStream s) {
-    this.sink = s;
+  public void setSourceStream(SourceStream s) {
+    this.source = s;
+  }
+  
+
+  @Override
+  public void setState(ScribeState s){
+    //this.myState  = s;
+    stateTracker.setState(s);
   }
 
   @Override
@@ -314,27 +402,12 @@ public class ScribeImpl implements Scribe{
     this.task = t;
   }
   
-  @Override
-  public TupleCounter getTupleTracker() {
-    return this.tupleTracker;
-  }
-
   
-  public CommitLog getCommitLog(){
-    return this.commitLog;
-  }
-  
-  @SuppressWarnings("unused")
-  private void setCommitLog(CommitLog c){
-    this.commitLog = c;
-  }
-
   @Override
   public void setTupleCounter(TupleCounter t) {
     this.tupleTracker = t;
   }
   
-
   @Override
   public void start() {
     active = true;
@@ -343,17 +416,6 @@ public class ScribeImpl implements Scribe{
   @Override
   public void stop() {
     active = false;
-  }
-  
-  
-  @Override
-  public ScribeState getState(){
-    return this.myState;
-  }
-  
-  @Override
-  public void setState(ScribeState s){
-    this.myState  = s;
   }
 }
 

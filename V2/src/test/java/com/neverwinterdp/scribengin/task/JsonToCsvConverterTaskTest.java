@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.scribe.Scribe;
 import com.neverwinterdp.scribengin.scribe.ScribeImpl;
-import com.neverwinterdp.scribengin.scribe.ScribeState;
+import com.neverwinterdp.scribengin.scribe.state.ScribeState;
 import com.neverwinterdp.scribengin.stream.sink.StdOutSinkStream;
 import com.neverwinterdp.scribengin.stream.source.JsonSourceStream;
 

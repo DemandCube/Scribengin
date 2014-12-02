@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.scribe;
 
+import com.neverwinterdp.scribengin.scribe.state.ScribeState;
 import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.source.SourceStream;
 import com.neverwinterdp.scribengin.task.Task;
@@ -30,4 +31,6 @@ public interface Scribe {
   
   public ScribeState getState();
   public void setState(ScribeState s);
+  
+  public boolean recover();
 }

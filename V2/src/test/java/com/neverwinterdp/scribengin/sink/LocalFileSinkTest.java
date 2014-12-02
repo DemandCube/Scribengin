@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
@@ -17,10 +18,15 @@ import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class LocalFileSinkTest {
+  static String testDir = "./"+UUID.randomUUID().toString()+"/"; 
+  
+  @AfterClass
+  public static void tearDown() throws IOException{
+    FileUtils.deleteDirectory(new File(testDir));
+  }
   
   @Test
   public void testStdOutSinkStream() throws IOException{
-    String testDir = "./"+UUID.randomUUID().toString()+"/";
     System.err.println("Working Directory = "+System.getProperty("user.dir")+testDir);
     SinkStream sink = new LocalFileSinkStream(testDir);
     
