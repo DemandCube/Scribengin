@@ -35,19 +35,19 @@ public class ScribeImpl implements Scribe{
   
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 1000);
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 500);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, int timeout){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 1000);
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), new InMemoryScribeStateTracker(), 600000, 500);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, ScribeStateTracker sst){
-    this(y,z,invalidSink,t, new InMemoryTupleCounter(), sst, 600000, 1000);
+    this(y,z,invalidSink,t, new InMemoryTupleCounter(), sst, 600000, 500);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c){
-    this(y,z,invalidSink,t, c, new InMemoryScribeStateTracker(), 600000, 1000);
+    this(y,z,invalidSink,t, c, new InMemoryScribeStateTracker(), 600000, 500);
   }
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t, TupleCounter c, ScribeStateTracker sst, int retryTimeoutTimeLimit, int processNextTimeout){

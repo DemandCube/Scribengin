@@ -25,7 +25,7 @@ import com.neverwinterdp.scribengin.task.CopyTask;
 public class ScribeTotalFailureRestartTest {
   static String testDir; 
   static int bufferLimit = 1000;
-  static int numIterations = 10;
+  static int numIterations = 5;
   
   @AfterClass
   public static void tearDown() throws IOException{
@@ -63,7 +63,7 @@ public class ScribeTotalFailureRestartTest {
     assertTrue(scribe.getTupleTracker().validateCounts());
     
     scribe.start();
-    Thread.sleep(1500);
+    Thread.sleep(1000);
     assertFalse(ScribeState.UNINITIALIZED.equals(stateTracker.getScribeState()));
     
     assertTrue(scribe.getTupleTracker().getWritten() > 0);
@@ -99,7 +99,7 @@ public class ScribeTotalFailureRestartTest {
     Thread.sleep(500);
     assertFalse(ScribeState.UNINITIALIZED.equals(stateTracker.getScribeState()));
     recoveryScribe.stop();
-    Thread.sleep(500);
+    Thread.sleep(100);
     assertTrue(recoveryScribe.getTupleTracker().getWritten() > 0);
     //System.err.println(recoveryScribe.getTupleTracker());
     assertTrue(recoveryScribe.getTupleTracker().validateCounts());
