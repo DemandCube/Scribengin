@@ -3,7 +3,6 @@ package com.neverwinterdp.scribengin.stream.source;
 import java.util.Random;
 import java.util.UUID;
 
-import com.neverwinterdp.scribengin.stream.streamdescriptor.OffsetStreamDescriptor;
 import com.neverwinterdp.scribengin.stream.streamdescriptor.StreamDescriptor;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 

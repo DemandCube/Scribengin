@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.scribe;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.log4j.Logger;
+
 import com.neverwinterdp.scribengin.commitlog.CommitLog;
 import com.neverwinterdp.scribengin.commitlog.InMemoryCommitLog;
 import com.neverwinterdp.scribengin.scribe.state.InMemoryScribeStateTracker;
@@ -29,6 +31,7 @@ public class ScribeImpl implements Scribe{
   private ScribeStateTracker stateTracker;
   private Task task;
   private TupleCounter tupleTracker;
+  private Logger LOG;
   
   
   public ScribeImpl(SourceStream y, SinkStream z, SinkStream invalidSink, Task t){
@@ -59,6 +62,8 @@ public class ScribeImpl implements Scribe{
     this.stateTracker = sst;
     
     this.active = false;
+    
+    LOG = Logger.getLogger(this.getClass().getName());
   }
   
   private void buffer() throws NoSuchMethodException {
@@ -137,7 +142,7 @@ public class ScribeImpl implements Scribe{
           this.setState(ScribeState.STOPPED);
           Thread.sleep(processNextTimeout);
         } catch (InterruptedException e) {
-          System.err.println("Scribe's sleep has been interrupted.");
+          LOG.error("Scribe's sleep has been interrupted: " + e.getMessage());
           //e.printStackTrace();
         }
       }
@@ -223,7 +228,7 @@ public class ScribeImpl implements Scribe{
         }
       } catch (IllegalAccessException | IllegalArgumentException
           | InvocationTargetException | InterruptedException e) {
-        e.printStackTrace();
+        LOG.error(e.getMessage());
         return false;
       }
       
@@ -246,7 +251,8 @@ public class ScribeImpl implements Scribe{
           consumeLoop() ;
         }
           catch (Exception e) {
-          e.printStackTrace();
+            LOG.error(e.getMessage());
+            //e.printStackTrace();
         }
       }
     };
@@ -302,7 +308,8 @@ public class ScribeImpl implements Scribe{
       }
     } catch (NoSuchMethodException | SecurityException e) {
       this.setState(ScribeState.ERROR);
-      e.printStackTrace();
+      LOG.error(e.getMessage());
+      //e.printStackTrace();
     }
     
     //If resources are locked, unlock at end
@@ -350,7 +357,8 @@ public class ScribeImpl implements Scribe{
           return false;
       }
     } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+      LOG.error(e.getMessage());
+      //e.printStackTrace();
       return false;
     }
     //return false;
@@ -393,7 +401,7 @@ public class ScribeImpl implements Scribe{
 
   @Override
   public void setState(ScribeState s){
-    //this.myState  = s;
+    LOG.debug("Setting state: "+ s.toString());
     stateTracker.setState(s);
   }
 
@@ -410,11 +418,13 @@ public class ScribeImpl implements Scribe{
   
   @Override
   public void start() {
+    LOG.info("Start - Setting active to true");
     active = true;
   }
 
   @Override
   public void stop() {
+    LOG.info("Stop - Setting active to true");
     active = false;
   }
 }
