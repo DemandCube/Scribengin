@@ -7,7 +7,7 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.VMManagerApplication;
+import com.neverwinterdp.vm.master.VMManagerApp;
 
 public class VMMasterCommand {
   static public class Allocate extends Command {
@@ -26,7 +26,7 @@ public class VMMasterCommand {
 
     @Override
     public CommandResult<VMDescriptor> execute(VM vm) {
-      VMManagerApplication app = (VMManagerApplication) vm.getVMApplication();
+      VMManagerApp app = (VMManagerApp) vm.getVMApplication();
       VMService vmService = app.getVMService();
       CommandResult<VMDescriptor> result = new CommandResult<VMDescriptor>();
       try {
@@ -39,12 +39,12 @@ public class VMMasterCommand {
     }
   }
   
-  static public class Release extends Command {
+  static public class Kill extends Command {
     private VMDescriptor vmDescriptor;
     
-    public Release() { super("release"); }
+    public Kill() { super("kill"); }
     
-    public Release(VMDescriptor descriptor) {
+    public Kill(VMDescriptor descriptor) {
       this.vmDescriptor = descriptor;
     }
     
@@ -54,11 +54,11 @@ public class VMMasterCommand {
 
     @Override
     public CommandResult<?> execute(VM vm) {
-      VMManagerApplication app = (VMManagerApplication) vm.getVMApplication();
+      VMManagerApp app = (VMManagerApp) vm.getVMApplication();
       VMService vmService = app.getVMService();
       CommandResult<Boolean> result = new CommandResult<Boolean>();
       try {
-        vmService.release(vmDescriptor); ;
+        vmService.kill(vmDescriptor); ;
         result.setResult(true);
       } catch (Exception e) {
         result.setResult(false);
@@ -66,6 +66,5 @@ public class VMMasterCommand {
       }
       return result;
     }
-    
   }
 }

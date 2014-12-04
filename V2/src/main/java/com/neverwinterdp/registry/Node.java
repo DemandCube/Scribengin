@@ -61,6 +61,15 @@ public class Node {
   }
 
   public void unwatch() throws RegistryException {
+    throw new RegistryException(ErrorCode.Unknown, "Zookeeper does not support this method");
+  }
+  
+  public boolean hasChild(String name) throws RegistryException {
+    return registry.exists(path + "/" + name) ;
+  }
+  
+  public Node getChild(String name) throws RegistryException {
+    return new Node(registry, path + "/" + name) ;
   }
   
   public Node createChild(String name, NodeCreateMode mode) throws RegistryException {

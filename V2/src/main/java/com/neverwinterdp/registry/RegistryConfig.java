@@ -1,22 +1,32 @@
 package com.neverwinterdp.registry;
 
-import com.google.inject.Inject;
+import com.beust.jcommander.Parameter;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 @Singleton
 public class RegistryConfig {
-  @Inject @Named("registry.connect")
+  @Parameter(names = "--registry-connect", description = "The registry connect string")
+  //@Inject @Named("registry.connect")
   private String connect ;
   
-  @Inject @Named("registry.db-domain")
+  @Parameter(names = "--registry-db-domain", description = "The registry partition or table")
+  //@Inject @Named("registry.db-domain")
   private String dbDomain ;
+  
+  @Parameter(names = "--registry-implementation", description = "The registry implementation class")
+  //@Inject @Named("registry.implementation")
+  private String registryImplementation ;
   
   public String getConnect() { return connect; }
   public void setConnect(String connect) { this.connect = connect; }
   
   public String getDbDomain() { return dbDomain; }
   public void setDbDomain(String dbDomain) { this.dbDomain = dbDomain; }
+  
+  public String getRegistryImplementation() { return registryImplementation; }
+  public void setRegistryImplementation(String registryImplementation) { 
+    this.registryImplementation = registryImplementation;
+  }
   
   static public RegistryConfig getDefault() {
     RegistryConfig config = new RegistryConfig();

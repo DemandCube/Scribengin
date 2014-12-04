@@ -6,6 +6,7 @@ public interface Registry {
   public RegistryConfig getRegistryConfig() ;
   public Registry connect() throws RegistryException ;
   public void disconnect() throws RegistryException ;
+  public boolean isConnect();
   
   public String getSessionId()  ;
   

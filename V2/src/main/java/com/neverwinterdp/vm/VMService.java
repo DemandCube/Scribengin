@@ -2,7 +2,6 @@ package com.neverwinterdp.vm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -20,6 +19,7 @@ import com.neverwinterdp.vm.command.VMCommand;
 @Singleton
 public class VMService {
   final static public String ALLOCATED_PATH = "/vm/allocated";
+  final static public String HISTORY_PATH   = "/vm/history";
   final static public String LEADER_PATH    = "/vm/leader";
   
   private Registry registry;
@@ -32,11 +32,16 @@ public class VMService {
   @Inject
   public void init(Registry registry) throws Exception {
     this.registry = registry;
-    registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(LEADER_PATH) ;
+    registry.createIfNotExist(ALLOCATED_PATH) ;
+    registry.createIfNotExist(HISTORY_PATH) ;
     vmClient = new VMClient(registry) ;
     addListener(new VMServiceRegistryManagementListener());
   }
+  
+  public void close() { registry = null ; }
+  
+  public boolean isClosed() { return registry == null ; }
   
   public Registry getRegistry() { return this.registry; }
   
@@ -61,61 +66,99 @@ public class VMService {
     descriptor.setStoredPath(vmNode.getPath());
     vmNode.setData(descriptor);
     Node statusNode  = vmNode.createChild("status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
-    VMStatusNodeWatcher statusWatcher = new VMStatusNodeWatcher() ;
-    statusNode.watch(statusWatcher);
-    statusNode.watchChildren(statusWatcher);
     Node commandNode = vmNode.createChild("commands", NodeCreateMode.PERSISTENT);
+    watch(descriptor);
   }
   
   public void unregister(VMDescriptor descriptor) throws Exception {
+    //TODO: fix this check by removing the watcher
+    if(!registry.exists(descriptor.getStoredPath())) return;
+    //Copy the vm descriptor to the history path. This is not efficient, 
+    //but zookeeper does not provide the move method
+    Node vmNode = 
+        registry.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    vmNode.setData(descriptor);
+    
+    //Recursively delete the vm data in the allocated path
     registry.rdelete(descriptor.getStoredPath());
   }
   
-  public void release(VMDescriptor descriptor) throws Exception {
-    plugin.onRelease(this, descriptor);
-  }
-
-  public void allocate(VM vm) throws Exception {
-    VMDescriptor vmDescriptor = vm.getDescriptor();
-    register(vmDescriptor);
-    plugin.onRegisterVM(this, vm);
+  public void watch(VMDescriptor descriptor) throws Exception {
+    Node statusNode = registry.get(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
+    statusNode.watch(new VMStatusWatcher());
+    statusNode.watchChildren(new VMHeartbeatWatcher());
   }
   
+  public boolean isRunning(VMDescriptor descriptor) throws Exception {
+    Node statusNode = registry.get(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
+    if(!statusNode.exists()) return false;
+    VMStatus status = statusNode.getData(VMStatus.class);
+    if(status == VMStatus.ALLOCATED) {
+      return true;
+    } else {
+      return statusNode.hasChild("heartbeat");
+    }
+  }
+  
+  public void kill(VMDescriptor descriptor) throws Exception {
+    plugin.onKill(this, descriptor);
+  }
+
   public VMDescriptor allocate(VMConfig vmConfig) throws RegistryException, Exception {
     VMDescriptor vmDescriptor = new VMDescriptor(vmConfig);
     register(vmDescriptor);
-    vmDescriptor = plugin.allocate(this, vmDescriptor);
+    plugin.allocate(this, vmConfig);
     return vmDescriptor;
   }
 
-  public VMStatus appStart(VMDescriptor descriptor, String vmAppClass, Map<String, String> props) throws Exception {
-    Command startCmd = new VMCommand.AppStart(vmAppClass, props) ;
-    CommandResult<?> startCmdResult = vmClient.execute(descriptor, startCmd);
-    return startCmdResult.getResultAs(VMStatus.class);
-  }
-  
-  public VMStatus appStop(VMDescriptor descriptor) throws Exception {
-    Command stopCmd = new VMCommand.AppStop() ;
-    CommandResult<?> stopCmdResult = vmClient.execute(descriptor, stopCmd);
-    return stopCmdResult.getResultAs(VMStatus.class);
-  }
-  
   public boolean vmExit(VMDescriptor descriptor) throws Exception {
-    Command exitCmd = new VMCommand.Exit() ;
+    Command exitCmd = new VMCommand.Shutdown() ;
     CommandResult<?> exitCmdResult = vmClient.execute(descriptor, exitCmd);
     return exitCmdResult.getResultAs(Boolean.class);
   }
   
-  public class VMStatusNodeWatcher implements NodeWatcher {
+  static public void register(Registry registry, VMDescriptor descriptor) throws Exception {
+    registry.createIfNotExist(ALLOCATED_PATH) ;
+    registry.createIfNotExist(LEADER_PATH) ;
+    Node vmNode = registry.create(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName(), NodeCreateMode.PERSISTENT);
+    descriptor.setStoredPath(vmNode.getPath());
+    vmNode.setData(descriptor);
+    Node statusNode  = vmNode.createChild("status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
+    Node commandNode = vmNode.createChild("commands", NodeCreateMode.PERSISTENT);
+  }
+  
+  public class VMStatusWatcher implements NodeWatcher {
     @Override
     public void process(NodeEvent event) {
+      if(isClosed()) return;
+      try {
+        String path = event.getPath();
+        String descriptorPath = path.substring(0, path.lastIndexOf('/')) ;
+        if(event.getType() == NodeEvent.Type.MODIFY) {
+          VMDescriptor vmDescriptor = registry.getDataAs(descriptorPath, VMDescriptor.class);
+          VMStatus vmStatus = registry.getDataAs(path, VMStatus.class);
+          for(VMServiceRegistryListener sel : listeners) {
+            sel.onStatusChange(VMService.this, vmDescriptor, vmStatus);
+          }
+          registry.watch(path, this);
+        } else  if(event.getType() == NodeEvent.Type.DELETE) {
+        } else {
+          System.out.println("Unknown event: " + path + " - " + event.getType());
+        }
+      } catch(Exception ex) {
+        ex.printStackTrace();
+      }
+    }
+  }
+  
+  public class VMHeartbeatWatcher implements NodeWatcher {
+    @Override
+    public void process(NodeEvent event) {
+      if(isClosed()) return;
       try {
         String path = event.getPath();
         String descriptorPath = path.substring(0, path.lastIndexOf('/')) ;
         if(event.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
-          //TODO: need to find a way to unwatch when a vm is released
-          if(!registry.exists(descriptorPath)) return;
-          
           VMDescriptor vmDescriptor = registry.getDataAs(descriptorPath, VMDescriptor.class);
           if(registry.exists(path + "/heartbeat")) {
             for(VMServiceRegistryListener sel : listeners) {
@@ -128,13 +171,6 @@ public class VMService {
             }
             //should not register the watch since the vm node should be removed
           }
-        } else if(event.getType() == NodeEvent.Type.MODIFY) {
-          VMDescriptor vmDescriptor = registry.getDataAs(descriptorPath, VMDescriptor.class);
-          VMStatus vmStatus = registry.getDataAs(path, VMStatus.class);
-          for(VMServiceRegistryListener sel : listeners) {
-            sel.onStatusChange(VMService.this, vmDescriptor, vmStatus);
-          }
-          registry.watch(path, this);
         } else {
           System.out.println("Unknown event: " + path + " - " + event.getType());
         }

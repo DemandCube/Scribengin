@@ -58,6 +58,7 @@ public class RegistryImpl implements Registry {
     connect();
   }
   
+  @Override
   public Registry connect() throws RegistryException {
     try {
       zkClient = new ZooKeeper(config.getConnect(), 15000, new RegistryWatcher());
@@ -67,17 +68,21 @@ public class RegistryImpl implements Registry {
     zkCreateIfNotExist(config.getDbDomain()) ;
     return this ;
   }
-  
+
+  @Override
   public void disconnect() throws RegistryException {
     if(zkClient != null) {
       try {
-        zkClient.close();
+        zkClient.close();;
         zkClient = null ;
       } catch (InterruptedException e) {
         throw new RegistryException(ErrorCode.Connection, e) ;
       }
     }
   }
+
+  @Override
+  public boolean isConnect() { return zkClient != null; }
   
   @Override
   public Node create(String path, NodeCreateMode mode) throws RegistryException {
