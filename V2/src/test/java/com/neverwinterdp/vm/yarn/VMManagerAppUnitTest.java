@@ -28,7 +28,7 @@ import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.master.VMManagerApp;
 import com.neverwinterdp.vm.master.command.VMMasterCommand;
 
-public class VMManagerApplicationUnitTest {
+public class VMManagerAppUnitTest {
   
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
