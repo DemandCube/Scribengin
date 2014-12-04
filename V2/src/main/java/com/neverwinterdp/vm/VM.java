@@ -117,10 +117,6 @@ public class VM {
     logger.info("Finish appStart()");
   }
   
-  public void appStop() throws Exception {
-    
-  }
-  
   public void shutdown() throws Exception {
     if(vmApplicationRunner == null || !vmApplicationRunner.isAlive()) return;
     Thread thread = new Thread() {
@@ -133,6 +129,14 @@ public class VM {
       }
     };
     thread.start();
+  }
+
+  public synchronized void notifyComplete() {
+    notifyAll();
+  }
+  
+  public synchronized void waitForComplete() throws InterruptedException {
+    wait();
   }
   
   public class VMApplicationRunner extends Thread {
@@ -162,6 +166,7 @@ public class VM {
         } catch (RegistryException e) {
           e.printStackTrace();
         }
+        notifyComplete();
       }
     }
   }
@@ -184,9 +189,8 @@ public class VM {
   
   static public void main(String[] args) throws Exception {
     System.out.println("VM: main(..) start");
-    run(args);
-    System.out.println("VM: run(..) finish");
-    Thread.currentThread().join();
+    VM vm = run(args);
+    vm.waitForComplete();
     System.out.println("VM: main(..) finish");
   }
 }

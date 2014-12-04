@@ -78,15 +78,19 @@ public class VMManagerAppUnitTest {
     
     VMDescriptor vmDummy1 = allocateVMDummy(vmClient, "vm-dummy-1") ;
     shell.execute("vm list");
-    Thread.sleep(3000);
+    Thread.sleep(5000);
 
     VMDescriptor vmDummy2 = allocateVMDummy(vmClient, "vm-dummy-2") ;
     shell.execute("vm list");
-    Thread.sleep(3000);
+    Thread.sleep(5000);
     
     shutdown(vmClient, vmDummy1);
     shutdown(vmClient, vmDummy2);
-    Thread.sleep(3000);
+    Thread.sleep(1000);
+    shell.execute("vm list");
+    shell.execute("registry dump");
+    shutdown(vmClient, vmMaster1);
+    Thread.sleep(1000);
     shell.execute("vm list");
     shell.execute("registry dump");
   }
