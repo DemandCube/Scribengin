@@ -23,8 +23,12 @@ public class VMClient {
   
   public Registry getRegistry() { return this.registry ; }
   
-  public List<VMDescriptor> getVMDescriptors() throws RegistryException {
+  public List<VMDescriptor> getRunningVMDescriptors() throws RegistryException {
     return registry.getChildrenAs(VMService.ALLOCATED_PATH, VMDescriptor.class) ;
+  }
+  
+  public List<VMDescriptor> getHistoryVMDescriptors() throws RegistryException {
+    return registry.getChildrenAs(VMService.HISTORY_PATH, VMDescriptor.class) ;
   }
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 

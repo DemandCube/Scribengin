@@ -92,7 +92,7 @@ public class VMManagerAppUnitTest {
     shutdown(vmClient, vmMaster1);
     Thread.sleep(1000);
     shell.execute("vm list");
-    shell.execute("registry dump");
+    shell.execute("vm history");
   }
   
   private String[] createVMConfigArgs(String name) {

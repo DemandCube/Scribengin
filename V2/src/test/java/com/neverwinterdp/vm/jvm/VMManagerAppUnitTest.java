@@ -60,12 +60,13 @@ public class VMManagerAppUnitTest extends ScribenginUnitTest {
     banner("Create VM Dummy 2");
     VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
     shell.execute("vm list");
+    shell.execute("vm history");
     
     banner("Shutdown VM Dummy 2");
     Assert.assertTrue(shutdown(vmClient, vmDummy2));
     Thread.sleep(500);
     shell.execute("vm list");
-    shell.execute("registry dump");
+    shell.execute("vm history");
 
     Assert.assertTrue(shutdown(vmClient, vmDummy1));
     Thread.sleep(500);

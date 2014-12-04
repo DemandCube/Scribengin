@@ -161,7 +161,6 @@ public class VM {
           logger.error("Error in vm registry", e);
         }
         try {
-          System.out.println("shutdown vm , disconnect registry");
           vmRegistry.getRegistry().disconnect();
         } catch (RegistryException e) {
           e.printStackTrace();
