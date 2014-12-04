@@ -48,7 +48,7 @@ public class ScribeFileTestHelper {
       Path path = FileSystems.getDefault().getPath(testDir+"commit/", Integer.toString(i));
       String expectedData = "";
       for(int j = 1; j <= bufferLimit; j++){
-        expectedData +=  Integer.toString((bufferLimit*i)+j)+"\n";
+        expectedData +=  Integer.toString((bufferLimit*i)+j);
       }
       
       assertEquals(expectedData, new String(Files.readAllBytes(path)));

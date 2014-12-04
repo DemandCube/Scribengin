@@ -72,7 +72,7 @@ public class FileSystemSinkStream implements SinkStream{
     for(Tuple t: buffer){
       try {
         outputStream.write( t.getData());
-        outputStream.write( "\n".getBytes());
+        //outputStream.write( "\n".getBytes());
       } catch (IOException e) {
         e.printStackTrace();
         return false;

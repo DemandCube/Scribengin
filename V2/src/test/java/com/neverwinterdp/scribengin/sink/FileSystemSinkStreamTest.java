@@ -67,7 +67,7 @@ public class FileSystemSinkStreamTest {
     }
     
     Path path = FileSystems.getDefault().getPath(testDir+"commit/", "0");
-    assertEquals("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n", new String(Files.readAllBytes(path)));
+    assertEquals("0123456789", new String(Files.readAllBytes(path)));
     
   }
 }
