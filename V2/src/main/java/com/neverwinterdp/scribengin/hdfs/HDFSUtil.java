@@ -43,6 +43,9 @@ public class HDFSUtil {
   }
   
   static public void dump(FileSystem fs, String dir) throws IOException {
+    System.out.println("----------------------------------------------------");
+    System.out.println(dir);
+    System.out.println("----------------------------------------------------");
     Path path = new Path(dir);
     dump(fs, path, "");
   }

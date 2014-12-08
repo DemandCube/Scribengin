@@ -28,7 +28,7 @@ public class SourceUnitTest {
     fs = FileSystem.getLocal(new Configuration()) ;
     SinkImpl sink = new SinkImpl(fs, DATA_DIRECTORY);
     for(int i = 0; i < 3; i++) {
-      DataGenerator.generateNewStream(sink, 5, 10);
+      DataGenerator.generateNewStream(sink, 3, 5);
     }
   }
   

@@ -14,18 +14,23 @@ public class SinkStreamImpl implements SinkStream {
   private FileSystem fs ;
   private SinkStreamDescriptor descriptor;
   
-  public SinkStreamImpl(FileSystem fs, SinkStreamDescriptor descriptor) {
+  
+  public SinkStreamImpl(FileSystem fs, Path path) throws IOException {
+    this.fs = fs ;
+    descriptor = new SinkStreamDescriptor("HDFS", HDFSUtil.getStreamId(path), path.toString());
+    init();
+  }
+  
+  public SinkStreamImpl(FileSystem fs, SinkStreamDescriptor descriptor) throws IOException {
     this.fs = fs;
     this.descriptor = descriptor;
+    init() ;
   }
   
-  public SinkStreamImpl(FileSystem fs, Path path) {
-    this.fs = fs ;
-    descriptor = new SinkStreamDescriptor();
-    descriptor.setLocation(path.toString());
-    descriptor.setId(HDFSUtil.getStreamId(path)) ;
+  private void init() throws IOException {
+    Path path = new Path(descriptor.getLocation()) ;
+    if(!fs.exists(path)) fs.mkdirs(path);
   }
-  
   
   public SinkStreamDescriptor getDescriptor() { return this.descriptor ; }
   

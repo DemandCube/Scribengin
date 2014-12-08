@@ -11,8 +11,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.neverwinterdp.registry.RegistryConfig;
-import com.neverwinterdp.registry.zk.RegistryImpl;
 
 public class AppModuleUnitTest {
   @Test

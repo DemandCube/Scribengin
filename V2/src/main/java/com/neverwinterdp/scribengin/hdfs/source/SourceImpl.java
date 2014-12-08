@@ -1,15 +1,12 @@
 package com.neverwinterdp.scribengin.hdfs.source;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
@@ -26,6 +23,10 @@ public class SourceImpl implements Source {
   
   public SourceImpl(FileSystem fs, String location) throws Exception {
     this(fs, new SourceDescriptor("HDFS", location));
+  }
+  
+  public SourceImpl(FileSystem fs, SourceStreamDescriptor streamDescriptor) throws Exception {
+    this(fs, getSourceDescriptor(streamDescriptor)) ;
   }
   
   public SourceImpl(FileSystem fs, SourceDescriptor descriptor) throws Exception {
@@ -60,11 +61,12 @@ public class SourceImpl implements Source {
     return streams.values().toArray(array);
   }
   
-  static public List<Record> generate(int size, int dataSize) {
-    List<Record> records = new ArrayList<Record>() ;
-    for(int i = 0; i < size; i++) {
-      records.add(new Record()) ;
-    }
-    return records ;
+  static SourceDescriptor getSourceDescriptor(SourceStreamDescriptor streamDescriptor) {
+    SourceDescriptor descriptor = new SourceDescriptor();
+    descriptor.setType(streamDescriptor.getType());
+    String location = streamDescriptor.getLocation();
+    location = location.substring(0, location.lastIndexOf('/'));
+    descriptor.setLocation(location);
+    return descriptor ;
   }
 }

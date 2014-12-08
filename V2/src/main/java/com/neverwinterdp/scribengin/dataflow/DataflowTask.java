@@ -8,27 +8,28 @@ import com.neverwinterdp.scribengin.source.SourceStreamReader;
 public class DataflowTask {
   private DataflowTaskDescriptor descriptor;
   private DataProcessor processor;
+  private DataflowTaskContext context;
   
   public DataflowTaskDescriptor getDescriptor() { return descriptor ; }
   
   public void onInit(DataflowTaskDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
-    this.processor = new CopyDataProcessor();
+    Class<DataProcessor> processorType = 
+        (Class<DataProcessor>)Class.forName(descriptor.getDataProcessor());
+    processor = processorType.newInstance();
+    context = new DataflowTaskContext(descriptor);
   }
   
   public void onDestroy() throws Exception {
-    
   }
-  
+
   public void execute() throws Exception {
-    SourceStream sourceStream = null ;
-    SourceStreamReader reader = sourceStream.getReader("reader") ;
-    DataflowTaskContext ctx = null ;
+    SourceStreamReader reader = context.getSourceStreamReader() ;
     Record record = null ;
     while((record = reader.next()) != null) {
-      processor.process(record, ctx);
+      processor.process(record, context);
     }
-    ctx.commit();
+    context.close();
   }
   
   public void suspend() throws Exception {
