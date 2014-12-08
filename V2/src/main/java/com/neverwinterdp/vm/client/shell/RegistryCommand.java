@@ -3,6 +3,7 @@ package com.neverwinterdp.vm.client.shell;
 import java.io.IOException;
 import java.util.List;
 
+import com.beust.jcommander.Parameter;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.client.VMClient;
@@ -13,13 +14,16 @@ public class RegistryCommand extends Command {
   }
   
   static public class Dump extends SubCommand {
+    @Parameter(names = "--path", description = "The path to dump, the default path is the root /")
+    private String path = "/";
+    
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
       Registry registry = vmClient.getRegistry();
       List<String> nodes = registry.getChildren("/");
       for(String node : nodes) {
-        dump("/", node, registry, shell.console(), "");
+        dump(path, node, registry, shell.console(), "");
       }
     }
     

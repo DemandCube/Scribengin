@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.jvm;
+package com.neverwinterdp.scribengin;
 
 
 import org.junit.After;
@@ -8,20 +8,21 @@ import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
+import com.neverwinterdp.vm.jvm.JVMVMServicePlugin;
 import com.neverwinterdp.vm.master.VMManagerApp;
 import com.neverwinterdp.vm.master.command.VMMasterCommand;
 
-public class VMManagerAppUnitTest extends VMUnitTest {
+public class VMScribenginMasterAppUnitTest extends VMUnitTest {
 
   @Before
   public void setup() throws Exception {
@@ -38,38 +39,21 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     banner("Create VM Master 1");
     VM vmMaster1 = createVMMaster("vm-master-1");
     Thread.sleep(500);
-    banner("Create VM Master 2");
-    VM vmMaster2 = createVMMaster("vm-master-2");
    
     Thread.sleep(1000);
-    Shell shell = newShell();
+    ScribenginShell shell = new ScribenginShell(newRegistry().connect());
     VMClient vmClient = shell.getVMClient();
     shell.execute("vm list");
     shell.execute("registry dump");
 
-    banner("Create VM Dummy 1");
-    VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
+    banner("Create Scribengin Master");
+    VMDescriptor dataflowMaster1 = createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
+    Thread.sleep(2000);
     shell.execute("vm list");
+    shell.execute("registry dump --path /");
     
-    banner("Shutdown VM Master 1");
-    //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
-    vmMaster1.shutdown();
-    Thread.sleep(1000);
-    shell.execute("registry dump");
-    
-    banner("Create VM Dummy 2");
-    VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
-    shell.execute("vm list");
-    shell.execute("vm history");
-    
-    banner("Shutdown VM Dummy 2");
-    Assert.assertTrue(shutdown(vmClient, vmDummy2));
-    Thread.sleep(500);
-    shell.execute("vm list");
-    shell.execute("vm history");
-
-    Assert.assertTrue(shutdown(vmClient, vmDummy1));
-    Thread.sleep(500);
+    Assert.assertTrue(shutdown(vmClient, dataflowMaster1));
+    Thread.sleep(2000);
     shell.execute("vm list");
     shell.execute("registry dump");
   }
@@ -96,15 +80,15 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     return vm;
   }
   
-  private VMDescriptor allocate(VMClient vmClient, String name) throws Exception {
+  private VMDescriptor createVMScribenginMaster(VMClient vmClient, String name) throws Exception {
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     String[] args = {
       "--name", name,
-      "--roles", "dummy",
+      "--roles", "scribengin-master",
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application", VMDummyApp.class.getName()
+      "--vm-application", VMScribenginMasterApp.class.getName()
     };
     VMConfig vmConfig = new VMConfig() ;
     new JCommander(vmConfig, args);

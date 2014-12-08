@@ -9,4 +9,12 @@ abstract public class VMApp {
   public void setVM(VM vm) { this.vm = vm ; }
   
   abstract public void run() throws Exception ;
+  
+  synchronized public void waitForShutdown() throws InterruptedException {
+    wait(0);
+  }
+  
+  synchronized public void notifyShutdown() {
+    notify();
+  }
 }

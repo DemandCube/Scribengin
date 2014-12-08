@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.master;
+package com.neverwinterdp.scribengin.dataflow;
 
 import java.util.Map;
 
@@ -10,18 +10,13 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
-import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMService;
 
 
-public class VMManagerApp extends VMApp {
+public class VMDataflowMasterApp extends VMApp {
   private LeaderElection election ;
-  
   private Injector  appContainer ;
-  private VMService vmService;
   
-  public VMService getVMService() { return this.vmService; }
- 
   @Override
   public void run() throws Exception {
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
@@ -31,14 +26,12 @@ public class VMManagerApp extends VMApp {
       waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
-      if(vmService != null) vmService.close();
       if(election != null && election.getLeaderId() != null) {
-        vmService.close();
         election.stop();
       }
     }
   }
-  
+ 
   class MasterLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
@@ -58,12 +51,6 @@ public class VMManagerApp extends VMApp {
           };
         };
         appContainer = Guice.createInjector(module);
-        vmService = appContainer.getInstance(VMService.class);
-        VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
-        for(VMDescriptor sel : vmDescriptor) {
-          if(vmService.isRunning(sel)) vmService.watch(sel);
-          else vmService.unregister(sel);
-        }
       } catch(Exception e) {
         e.printStackTrace();
       }

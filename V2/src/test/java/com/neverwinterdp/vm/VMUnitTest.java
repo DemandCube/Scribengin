@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.vm;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.shell.Shell;
 
-abstract public class ScribenginUnitTest {
+abstract public class VMUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
   }

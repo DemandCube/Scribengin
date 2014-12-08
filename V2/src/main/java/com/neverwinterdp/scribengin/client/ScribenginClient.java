@@ -4,24 +4,19 @@ import java.util.List;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
-import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowMaster;
 
 public class ScribenginClient {
   private Registry registry;
-  private VMClient vmClient ;
 
   public ScribenginClient(Registry registry) {
     this.registry = registry;
-    this.vmClient = new VMClient(registry) ;
   }
 
   public Registry getRegistry() { return this.registry; }
   
-  public VMClient getVMClient() { return this.vmClient; }
-  
-  public List<VMDescriptor> getVMResourceDescriptors() throws RegistryException {
-    return registry.getChildrenAs(VMService.ALLOCATED_PATH, VMDescriptor.class) ;
+  public List<DataflowDescriptor> getDataflowDescriptor() throws RegistryException {
+    return registry.getChildrenAs(DataflowMaster.SCRIBENGIN_DATAFLOWS, DataflowDescriptor.class) ;
   }
 }
