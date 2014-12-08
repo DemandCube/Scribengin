@@ -13,6 +13,4 @@ public class DataflowWorkerDescriptor {
   public void setProcessId(int processId) {
     this.processId = processId;
   }
-  
-  
 }

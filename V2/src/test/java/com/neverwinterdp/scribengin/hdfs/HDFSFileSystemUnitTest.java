@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink.hdfs;
+package com.neverwinterdp.scribengin.hdfs;
 
 
 import org.apache.hadoop.conf.Configuration;
@@ -7,10 +7,11 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
+import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.util.IOUtil;
 
 public class HDFSFileSystemUnitTest {
@@ -18,6 +19,7 @@ public class HDFSFileSystemUnitTest {
   
   @Before
   public void setup() throws Exception {
+    FileUtil.removeIfExist("./build/hdfs", false);
     fs = FileSystem.getLocal(new Configuration()) ;
   }
   
@@ -41,6 +43,23 @@ public class HDFSFileSystemUnitTest {
   
   @Test
   public void testConcat() throws Exception {
-    //TODO: create file1 and file2, test concat file1 file2
+    Path[] path = new Path[10];
+    for(int i = 0; i < path.length; i++) {
+      path[i] = new Path("./build/hdfs/file-" + i + ".txt");
+      String TEXT = "file content " + i ;
+      FSDataOutputStream os = fs.create(path[i]) ;
+      os.write(TEXT.getBytes());
+      os.close();
+    }
+    
+    Path concatPath = new Path("./build/hdfs/concat.txt");
+    try {
+      fs.concat(concatPath, path);
+    } catch(UnsupportedOperationException ex) {
+      //TODO
+      System.err.println("TODO: test concat method with real HDFS");
+    }
+    
+    HDFSUtil.concat(fs, concatPath, path, true);
   }
 }

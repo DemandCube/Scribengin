@@ -8,5 +8,5 @@ public class SinkStreamDescriptor {
   public void setId(int id) { this.id = id ; }
 
   public String getLocation() { return location; }
-  public void setLocation(String location) { this.location = location; }
+  public void   setLocation(String location) { this.location = location; }
 }

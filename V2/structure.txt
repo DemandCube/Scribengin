@@ -47,3 +47,29 @@ NeverwinterDP
      workers
        worker-vm-reference-1[descriptor]
        worker-vm-reference-2[descriptor]
+
+
+HDFS Sink
+
+  sink
+    stream-0
+      data-1.dat   
+      data-2.dat
+      .buffer-uuid/
+         buffer-1.complete  
+         buffer-2.complete  
+         buffer-3.writing  
+    stream-1
+      ...
+    stream-2
+      ...
+    stream-3
+      ...
+
+    The data is stored in multiple *.dat file, we can provide method such compact or merge to optomize the data, 
+    maybe need to have uuid in each dat file to allow concurrent write]
+
+    When the stream write or append the data, a new buffer should be created with the writing extension.  
+    When the writer commit, the buffer should be flush and rename to complete. A new buffer should be created e 
+    and prepare for the next append. If the writer call rollback, the buffer should be deleted and recreate.
+    The buffer 1, 2, ... n should be merged and create the next dat file in the second phase of commit.
