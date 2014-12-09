@@ -1,24 +1,24 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.neverwinterdp.registry.Registry;
 
 
 public class DataflowMaster {
-  final static public String SCRIBENGIN_DATAFLOWS = "/scribengin/dataflows" ;
+  @Inject @Named("dataflow.registry.path")
+  private String dataflowRegistryPath;
   
+  @Inject
   private Registry registry;
   
   @Inject
-  public void onInit(Registry registry) throws Exception {
-    this.registry = registry;
-    registry.createIfNotExist(SCRIBENGIN_DATAFLOWS);
+  public void onInit() throws Exception {
+    System.out.println("onInit()");
+    System.out.println("  dataflow.registry.path = " + registry);
+    System.out.println("  registry               = " + dataflowRegistryPath);
   }
   
   public void onDestroy() throws Exception {
-  }
-  
-  public void deploy(DataflowConfig config) throws Exception {
-    
   }
 }

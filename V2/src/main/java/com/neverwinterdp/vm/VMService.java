@@ -20,7 +20,7 @@ import com.neverwinterdp.vm.command.VMCommand;
 public class VMService {
   final static public String ALLOCATED_PATH = "/vm/allocated";
   final static public String HISTORY_PATH   = "/vm/history";
-  final static public String LEADER_PATH    = "/vm/leader";
+  final static public String LEADER_PATH    = "/vm/master/leader";
   
   private Registry registry;
   private VMClient vmClient;

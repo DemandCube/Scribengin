@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.dataflow;
+package com.neverwinterdp.scribengin.dataflow.vm;
 
 import com.neverwinterdp.vm.VMApp;
 

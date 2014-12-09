@@ -9,13 +9,16 @@ import org.junit.Test;
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
+import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
-import com.neverwinterdp.vm.client.shell.Shell;
+import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.jvm.JVMVMServicePlugin;
@@ -47,15 +50,26 @@ public class VMScribenginMasterAppUnitTest extends VMUnitTest {
     shell.execute("registry dump");
 
     banner("Create Scribengin Master");
-    VMDescriptor dataflowMaster1 = createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
+    VMDescriptor scribenginMaster1 = createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
     Thread.sleep(2000);
     shell.execute("vm list");
     shell.execute("registry dump --path /");
     
-    Assert.assertTrue(shutdown(vmClient, dataflowMaster1));
+    banner("Create Scribengin Master");
+    VMDescriptor scribenginMaster2 = createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
     Thread.sleep(2000);
+    
+    VMDescriptor scribenginMaster = shell.getScribenginClient().getScribenginMaster();
+    DataflowDescriptor dflDescriptor = new DataflowDescriptor();
+    dflDescriptor.setName("test-dataflow");
+    Command deployCmd = new VMScribenginCommand.DataflowDeployCommand(dflDescriptor) ;
+    CommandResult<Boolean> result = 
+        (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
+    Assert.assertTrue(result.getResult());
+    
+    Thread.sleep(1000);
     shell.execute("vm list");
-    shell.execute("registry dump");
+    shell.execute("registry dump --path /");
   }
 
   private void banner(String title) {

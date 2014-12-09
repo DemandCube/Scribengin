@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.dataflow.vm;
 
 import java.util.Map;
 
@@ -9,25 +9,26 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
+import com.neverwinterdp.scribengin.dataflow.DataflowMaster;
 import com.neverwinterdp.vm.VMApp;
+import com.neverwinterdp.vm.VMConfig;
 
 
-public class VMScribenginMasterApp extends VMApp {
-  private LeaderElection election ;
-  private Injector  appContainer ;
-  private ScribenginMaster scribenginMaster;
-  
-  public ScribenginMaster getScribenginMaster() { return this.scribenginMaster ; }
-  
+public class VMDataflowMasterApp extends VMApp {
+  private String         dataflowRegistryPath;
+  private LeaderElection election;
+  private DataflowMaster dataflowMaster;
+  private Injector       appContainer;
+
   @Override
   public void run() throws Exception {
-    getVM().getVMRegistry().getRegistry().createIfNotExist(ScribenginMaster.LEADER_PATH) ;
-    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), ScribenginMaster.LEADER_PATH) ;
+    VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
+    dataflowRegistryPath = vmConfig.getProperties().get("dataflow.registry.path");
+    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), dataflowRegistryPath + "/master/leader") ;
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     try {
-      //waitForShutdown();
-      Thread.sleep(100000000);
+      waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
       if(election != null && election.getLeaderId() != null) {
@@ -41,6 +42,7 @@ public class VMScribenginMasterApp extends VMApp {
     public void onElected() {
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
+        registry.setData(dataflowRegistryPath + "/master/leader", getVM().getDescriptor());
         AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
@@ -54,8 +56,7 @@ public class VMScribenginMasterApp extends VMApp {
           };
         };
         appContainer = Guice.createInjector(module);
-        scribenginMaster = appContainer.getInstance(ScribenginMaster.class);
-        registry.setData(ScribenginMaster.LEADER_PATH, getVM().getDescriptor());
+        dataflowMaster = appContainer.getInstance(DataflowMaster.class);
       } catch(Exception e) {
         e.printStackTrace();
       }

@@ -33,14 +33,12 @@ NeverwinterDP
       vm-7[descriptor - dataflow1_worker_2]
       vm-8[descriptor - dataflow1_worker_3]
   Scribengin/
-    masters
-      master-1[descriptor]
-         vm-reference
-      master-2[descriptor]
-         vm-reference
+    master
+      leader
     dataflows
       dataflow-1[descriptor]
-        dataflow-master
+        master
+          leader
         dataflow-tasks
           dataflow-task-1[descriptor]
             data-flow-executor-ref
