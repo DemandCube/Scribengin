@@ -10,9 +10,9 @@ public class DumbSinkPartitioner implements SinkPartitioner{
   }
 
   @Override
-  public String getPartition(long startOffset) {
+  public String getPartition(long startOffset, long endOffset) {
     // TODO Auto-generated method stub
-    return "";
+    return null;
   }
 
 }

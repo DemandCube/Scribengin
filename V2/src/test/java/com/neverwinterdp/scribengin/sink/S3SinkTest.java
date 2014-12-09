@@ -1,11 +1,8 @@
 package com.neverwinterdp.scribengin.sink;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-
-import junit.framework.Assert;
 
 import org.junit.Test;
 
@@ -20,41 +17,64 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.stream.sink.S3SinkStream;
 import com.neverwinterdp.scribengin.stream.sink.SinkListner;
-import com.neverwinterdp.scribengin.stream.sink.SinkStream;
-import com.neverwinterdp.scribengin.stream.sink.partitioner.OffsetPartionner;
+import com.neverwinterdp.scribengin.stream.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
+/**
+ * The Class S3SinkTest.
+ */
 public class S3SinkTest {
+  
+  /** The s3. */
   private AmazonS3 s3;
 
+  /**
+   * Test s3 sink stream.
+   *
+   * @throws IOException the IO exception
+   */
   @Test
-  public void testStdOutSinkStream() throws IOException {
+  public void testS3SinkStream() throws IOException {
+    String localTmpDir = "/tmp";
     String bucketName = "kafka-bucket";
     String topic = "topicTest";
     int partition = 1;
+    int offsetPerPartition = 1000;
+    // create the partitioner
+    SinkPartitioner sp = new OffsetPartitioner(offsetPerPartition, localTmpDir, bucketName, topic, partition);
+    //create the sink
+    final S3SinkStream sink = new S3SinkStream(sp, bucketName, localTmpDir, Regions.US_WEST_2, 5);
+    // set the max of tuples in memory to 10
+    sink.setMaxTupplesInMemory(10);
+    // if the number of tuples in memory  reached 10, then the callback will execute the bufferToDisk method
+    sink.addOnMaxTuplesInMomoryListner(new SinkListner() {
 
-    final S3SinkStream sink = new S3SinkStream(bucketName, Regions.US_WEST_2,5, 20, 60);
-    sink.addOnMaxTuplesNumberListner(new SinkListner() {
-      
       @Override
       public void run() {
         sink.bufferToDisk();
-        
+
       }
     });
-    SinkPartitioner sp = new OffsetPartionner(bucketName, topic, partition, ".log");
-    sink.setSinkPartitioner(sp);
+    // the max tuples stored on disk are 20
+    sink.setMaxTupplesInDisk(20);
+    // if the number of tuples on disk reach 20 then the the callback will run and execute the commit process
+    sink.addOnMaxTuplesInDiskListner(new SinkListner() {
+
+      @Override
+      public void run() {
+        sink.prepareCommit();
+        sink.commit();
+        sink.completeCommit();
+
+      }
+    });
+    // adding tuples to sink
     int i = 0;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 20; i++) {
       assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry(
           "key", i, i))));
     }
-    assertEquals(10L, sink.getBufferSize());
-
-    assertTrue(sink.prepareCommit());
-    assertTrue(sink.commit());
-    assertTrue(sink.completeCommit());
 
     AWSCredentials credentials = null;
     try {
@@ -62,14 +82,14 @@ public class S3SinkTest {
     } catch (Exception e) {
       throw new AmazonClientException("Cannot load the credentials from the credential profiles file. ", e);
     }
-/*
+
     s3 = new AmazonS3Client(credentials);
     Region usWest2 = Region.getRegion(Regions.US_WEST_2);
     s3.setRegion(usWest2);
-    S3Object s3Object1 = s3.getObject(bucketName, "topicTest/0_9");
+    //check if one of the file exist
+    S3Object s3Object1 = s3.getObject(bucketName, "topicTest/1/offset=0/0_4");
     assertTrue(s3Object1 != null);
-    s3.deleteObject(bucketName, "topicTest/0_9");*/
-    
+
 
   }
 }
