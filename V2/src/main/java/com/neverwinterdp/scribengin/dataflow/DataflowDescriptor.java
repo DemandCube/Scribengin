@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
@@ -18,6 +19,11 @@ public class DataflowDescriptor {
   
   public SourceDescriptor getSourceDescriptor() { return sourceDescriptor;}
   public void setSourceDescriptor(SourceDescriptor sourceDescriptor) { this.sourceDescriptor = sourceDescriptor;}
+
+  public void addSinkDescriptor(String name, SinkDescriptor descriptor) {
+    if(sinkDescriptors == null) sinkDescriptors = new HashMap<String, SinkDescriptor>();
+    sinkDescriptors.put(name, descriptor);
+  }
   
   public Map<String, SinkDescriptor> getSinkDescriptors() { return sinkDescriptors; }
   public void setSinkDescriptors(Map<String, SinkDescriptor> sinkDescriptors) {
