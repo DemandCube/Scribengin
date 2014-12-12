@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.stream.sink.partitioner;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Class OffsetPartitioner.
@@ -21,6 +23,7 @@ public class OffsetPartitioner implements SinkPartitioner {
   /** The local tmp dir. */
   private String localTmpDir;
 
+  
   /**
    * The Constructor.
    *
@@ -55,13 +58,13 @@ public class OffsetPartitioner implements SinkPartitioner {
   }
 
   /**
-   * Gets the log file basename.
+   * Gets the log file base name.
    *
    * @param startOffset the start offset
    * @param endOffset the end offset
    * @return the log file basename
    */
-  public String getLogFileBasename(long startOffset, long endOffset) {
+  public String getLogFileBaseName(long startOffset, long endOffset) {
     ArrayList<String> basenameElements = new ArrayList<String>();
     basenameElements.add(Long.toString(startOffset));
     basenameElements.add(Long.toString(endOffset));
@@ -81,7 +84,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    */
   @Override
   public String getPartition(long startOffset, long endOffset) {
-    return localTmpDir + "/" + getLogFilePath(startOffset) + "/" + getLogFileBasename(startOffset, endOffset);
+    return localTmpDir + "/" + getLogFilePath(startOffset) + "/" + getLogFileBaseName(startOffset, endOffset);
   }
 
 }
