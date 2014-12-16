@@ -26,8 +26,8 @@ public class KafkaServerLauncher {
   
   public KafkaServerLauncher(int id, String dataDir) {
     Map<String, String> props = new HashMap<String, String>() ;
-    properties.put("broker.id", Integer.toString(id));
-    properties.put("log.dirs", dataDir);
+    props.put("broker.id", Integer.toString(id));
+    props.put("log.dirs", dataDir);
     init(props) ;
   }
   

@@ -10,8 +10,8 @@ public class DataflowDescriptor {
   private String                      name;
   private SourceDescriptor            sourceDescriptor;
   private Map<String, SinkDescriptor> sinkDescriptors;
-  private int                         numberOfWorkers;
-  private int                         numberOfTasks;
+  private int                         numberOfWorkers =  1;
+  private int                         numberOfExecutorsPerWorker = 1;
   private String                      dataProcessor;
   
   public String getName() { return name; }
@@ -33,9 +33,9 @@ public class DataflowDescriptor {
   public int getNumberOfWorkers() { return numberOfWorkers; }
   public void setNumberOfWorkers(int numberOfWorkers) { this.numberOfWorkers = numberOfWorkers; }
   
-  public int getNumberOfTasks() { return numberOfTasks; }
-  public void setNumberOfTasks(int numberOfTasks) {
-    this.numberOfTasks = numberOfTasks;
+  public int getNumberOfExecutorsPerWorker() { return numberOfExecutorsPerWorker; }
+  public void setNumberOfExecutorsPerWorker(int number) {
+    this.numberOfExecutorsPerWorker = number;
   }
   
   public String getDataProcessor() { return dataProcessor; }

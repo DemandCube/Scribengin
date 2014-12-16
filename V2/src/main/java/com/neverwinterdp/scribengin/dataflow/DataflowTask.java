@@ -1,7 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
 
@@ -10,19 +9,16 @@ public class DataflowTask {
   private DataProcessor processor;
   private DataflowTaskContext context;
   
-  public DataflowTaskDescriptor getDescriptor() { return descriptor ; }
-  
-  public void onInit(DataflowTaskDescriptor descriptor) throws Exception {
+  public DataflowTask(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
     Class<DataProcessor> processorType = 
-        (Class<DataProcessor>)Class.forName(descriptor.getDataProcessor());
+        (Class<DataProcessor>) Class.forName(descriptor.getDataProcessor());
     processor = processorType.newInstance();
-    context = new DataflowTaskContext(descriptor);
+    context = new DataflowTaskContext(container, descriptor);
   }
   
-  public void onDestroy() throws Exception {
-  }
-
+  public DataflowTaskDescriptor getDescriptor() { return descriptor ; }
+  
   public void execute() throws Exception {
     SourceStreamReader reader = context.getSourceStreamReader() ;
     Record record = null ;
@@ -33,6 +29,5 @@ public class DataflowTask {
   }
   
   public void suspend() throws Exception {
-    
   }
 }

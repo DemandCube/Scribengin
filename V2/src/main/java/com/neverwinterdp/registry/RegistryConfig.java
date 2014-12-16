@@ -2,6 +2,7 @@ package com.neverwinterdp.registry;
 
 import com.beust.jcommander.Parameter;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.zk.RegistryImpl;
 
 @Singleton
 public class RegistryConfig {
@@ -32,6 +33,7 @@ public class RegistryConfig {
     RegistryConfig config = new RegistryConfig();
     config.setConnect("127.0.0.1:2181");
     config.setDbDomain("/NeverwinterDP");
+    config.setRegistryImplementation(RegistryImpl.class.getName());
     return config ;
   }
 }

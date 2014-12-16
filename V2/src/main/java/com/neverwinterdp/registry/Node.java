@@ -1,5 +1,7 @@
 package com.neverwinterdp.registry;
 
+import java.util.List;
+
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.util.JSONSerializer;
@@ -70,6 +72,10 @@ public class Node {
   
   public Node getChild(String name) throws RegistryException {
     return new Node(registry, path + "/" + name) ;
+  }
+  
+  public List<String> getChildren() throws RegistryException {
+    return registry.getChildren(path) ;
   }
   
   public Node createChild(String name, NodeCreateMode mode) throws RegistryException {

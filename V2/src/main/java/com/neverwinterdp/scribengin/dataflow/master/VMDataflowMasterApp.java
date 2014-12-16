@@ -1,6 +1,9 @@
-package com.neverwinterdp.scribengin.dataflow.vm;
+package com.neverwinterdp.scribengin.dataflow.master;
 
 import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -9,7 +12,6 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
-import com.neverwinterdp.scribengin.dataflow.DataflowMaster;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 
@@ -42,19 +44,21 @@ public class VMDataflowMasterApp extends VMApp {
     public void onElected() {
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
-        registry.setData(dataflowRegistryPath + "/master/leader", getVM().getDescriptor());
         AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
             bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
               bindType(Registry.class, registry.getClass().getName());
-            } catch (ClassNotFoundException e) {
+              FileSystem fs = FileSystem.getLocal(new Configuration()) ;
+              bindInstance(FileSystem.class, fs);
+            } catch (Exception e) {
               //TODO: use logger
               e.printStackTrace();
             }
           };
         };
+        registry.setData(dataflowRegistryPath + "/master/leader", getVM().getDescriptor());
         appContainer = Guice.createInjector(module);
         dataflowMaster = appContainer.getInstance(DataflowMaster.class);
       } catch(Exception e) {

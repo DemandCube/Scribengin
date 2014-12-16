@@ -2,17 +2,22 @@ package com.neverwinterdp.vm.client;
 
 import java.util.List;
 
+import org.junit.Assert;
+
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
+import com.neverwinterdp.vm.command.VMCommand;
+import com.neverwinterdp.vm.master.command.VMMasterCommand;
 
 public class VMClient {
   private Registry registry;
@@ -49,6 +54,21 @@ public class VMClient {
   }
   
   public void execute(VMDescriptor vmDescriptor, Command command, CommandCallback callback) {
+  }
+  
+  public VMDescriptor allocate(VMConfig vmConfig) throws Exception {
+    VMDescriptor masterVMDescriptor = getMasterVMDescriptor();
+    CommandResult<VMDescriptor> result = 
+        (CommandResult<VMDescriptor>) execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+    if(result.getErrorStacktrace() != null) {
+      throw new Exception(result.getErrorStacktrace());
+    }
+    return result.getResult();
+  }
+  
+  public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
+    return result.getResultAs(Boolean.class);
   }
   
   public class CommandReponseWatcher implements NodeWatcher {

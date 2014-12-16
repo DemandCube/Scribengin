@@ -186,6 +186,12 @@ public class VM {
     return vm;
   }
   
+  static public VM run(VMConfig vmConfig) throws Exception {
+    VM vm = new VM(vmConfig);
+    vm.run();
+    return vm;
+  }
+  
   static public void main(String[] args) throws Exception {
     System.out.println("VM: main(..) start");
     VM vm = run(args);

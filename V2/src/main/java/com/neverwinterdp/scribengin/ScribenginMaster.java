@@ -7,7 +7,7 @@ import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.vm.VMDataflowMasterApp;
+import com.neverwinterdp.scribengin.dataflow.master.VMDataflowMasterApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;

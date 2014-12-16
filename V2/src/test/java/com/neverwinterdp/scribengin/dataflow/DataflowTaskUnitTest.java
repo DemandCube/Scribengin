@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,12 +28,17 @@ public class DataflowTaskUnitTest {
   static String      INVALID_SINK_DIRECTORY = "./build/hdfs/invalid-sink";
 
   private FileSystem fs ;
+  private DataflowContainer dataflowContainer;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/hdfs", false);
+    
+    dataflowContainer = new DataflowContainer(new HashMap<String, String>());
+
     fs = FileSystem.getLocal(new Configuration()) ;
-    SinkImpl sink = new SinkImpl(fs, SOURCE_DIRECTORY);
+    Sink sink = new SinkImpl(fs, SOURCE_DIRECTORY);
+    
     for(int i = 0; i < 3; i++) {
       DataGenerator.generateNewStream(sink, 3, 5);
     }
@@ -55,7 +61,7 @@ public class DataflowTaskUnitTest {
     for(int i = 0; i < sourceStream.length; i++) {
       DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
       descriptor.setId(i);
-      descriptor.setDataProcessor(TestCopyDataProcessor.class);
+      descriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
       descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
       descriptor.add("default", sink.newStream().getDescriptor());
       descriptor.add("invalid", invalidSink.newStream().getDescriptor());
@@ -81,10 +87,8 @@ public class DataflowTaskUnitTest {
     @Override
     public void run() {
       try {
-        DataflowTask task = new DataflowTask();
-        task.onInit(descriptor);
+        DataflowTask task = new DataflowTask(dataflowContainer, descriptor);
         task.execute();
-        task.onDestroy();
       } catch(Exception ex) {
         ex.printStackTrace();
       }

@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.beust.jcommander.JCommander;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.CopyDataProcessor;
@@ -18,9 +17,12 @@ import com.neverwinterdp.scribengin.dataflow.DataProcessor;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
-import com.neverwinterdp.scribengin.hdfs.sink.SinkImpl;
+import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
+import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
+import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
 import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
 import com.neverwinterdp.util.FileUtil;
@@ -32,24 +34,25 @@ import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.jvm.JVMVMServicePlugin;
 import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
 
 public class VMScribenginMasterAppUnitTest extends VMUnitTest {
   static String      SOURCE_DIRECTORY       = "./build/hdfs/source";
   static String      SINK_DIRECTORY         = "./build/hdfs/sink";
   static String      INVALID_SINK_DIRECTORY = "./build/hdfs/invalid-sink";
 
-  private FileSystem fs ;
+  private SinkFactory sinkFactory;
+  private FileSystem fs;
   
   @Before
   public void setup() throws Exception {
-    super.setup();
     FileUtil.removeIfExist("./build/hdfs", false);
-    fs = FileSystem.getLocal(new Configuration()) ;
-    SinkImpl sink = new SinkImpl(fs, SOURCE_DIRECTORY);
+    super.setup();
+    fs = FileSystem.get(new Configuration());
+    sinkFactory = new SinkFactory(fs);
+    SinkDescriptor sinkDescriptor = new SinkDescriptor("hdfs", SOURCE_DIRECTORY);
+    Sink sink = sinkFactory.create(sinkDescriptor);;
     for(int i = 0; i < 15; i++) {
       DataGenerator.generateNewStream(sink, 3, 5);
     }
@@ -85,22 +88,26 @@ public class VMScribenginMasterAppUnitTest extends VMUnitTest {
     VMDescriptor scribenginMaster = shell.getScribenginClient().getScribenginMaster();
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("test-dataflow");
+    dflDescriptor.setNumberOfWorkers(3);
+    dflDescriptor.setNumberOfExecutorsPerWorker(3);
+    dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
     SourceDescriptor sourceDescriptor = new SourceDescriptor("HDFS", SOURCE_DIRECTORY) ;
     dflDescriptor.setSourceDescriptor(sourceDescriptor);
     SinkDescriptor defaultSink = new SinkDescriptor("HDFS", SINK_DIRECTORY);
     dflDescriptor.addSinkDescriptor("default", defaultSink);
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", INVALID_SINK_DIRECTORY);
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
-    dflDescriptor.setDataProcessor(CopyDataProcessor.class.getName());
     
     Command deployCmd = new VMScribenginCommand.DataflowDeployCommand(dflDescriptor) ;
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
     
-    Thread.sleep(1000);
+    Thread.sleep(5000);
     shell.execute("vm list");
     shell.execute("registry dump --path /");
+    HDFSUtil.dump(fs, SINK_DIRECTORY);
+    HDFSUtil.dump(fs, INVALID_SINK_DIRECTORY);
   }
 
   private void banner(String title) {
@@ -121,33 +128,24 @@ public class VMScribenginMasterAppUnitTest extends VMUnitTest {
       "--vm-application",VMManagerApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + JVMVMServicePlugin.class.getName()
     };
+    VMConfig vmConfig = new VMConfig();
+    vmConfig.
+      setName("vm-master").
+      setSelfRegistration(true);
     VM vm = VM.run(args);
     return vm;
   }
   
   private VMDescriptor createVMScribenginMaster(VMClient vmClient, String name) throws Exception {
-    VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
-    String[] args = {
-      "--name", name,
-      "--roles", "scribengin-master",
-      "--registry-connect", "127.0.0.1:2181", 
-      "--registry-db-domain", "/NeverwinterDP", 
-      "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application", VMScribenginMasterApp.class.getName()
-    };
     VMConfig vmConfig = new VMConfig() ;
-    new JCommander(vmConfig, args);
-    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
-    Assert.assertNull(result.getErrorStacktrace());
-    VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
+    vmConfig.
+      setName(name).
+      addRoles("scribengin-master").
+      setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
+      setVmApplication(VMScribenginMasterApp.class.getName());
+    VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;
-  }
-  
-  private boolean shutdown(VMClient vmClient, VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = vmClient.execute(vmDescriptor, new VMCommand.Shutdown());
-    Assert.assertNull(result.getErrorStacktrace());
-    return result.getResultAs(Boolean.class);
   }
   
   static public class TestCopyDataProcessor implements DataProcessor {
@@ -156,8 +154,13 @@ public class VMScribenginMasterAppUnitTest extends VMUnitTest {
     
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
-      if(random.nextDouble() < 0.8) ctx.write(record);
-      else ctx.write("invalid", record);
+      if(random.nextDouble() < 0.8) {
+        ctx.write(record);
+        //System.out.println("Write default");
+      } else {
+        ctx.write("invalid", record);
+        //System.out.println("Write invalid");
+      }
       count++ ;
       if(count == 100) {
         ctx.commit();

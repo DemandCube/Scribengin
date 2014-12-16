@@ -10,6 +10,7 @@ import org.apache.hadoop.conf.Configuration;
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.util.text.StringUtil;
 
@@ -53,43 +54,90 @@ public class VMConfig {
   private boolean             miniClusterEnv = false;
   
   public String getName() { return name; }
-  public void setName(String name) { this.name = name; }
+  public VMConfig setName(String name) { 
+    this.name = name;
+    return this;
+  }
   
   public List<String> getRoles() { return roles; }
-  public void setRoles(List<String> roles) { this.roles = roles; }
-  public void addRoles(String ... role) {
+  
+  public VMConfig setRoles(List<String> roles) { 
+    this.roles = roles; 
+    return this;
+  }
+  
+  public VMConfig addRoles(String ... role) {
     if(roles == null) roles = StringUtil.toList(role);
     else StringUtil.addList(roles, role);
+    return this;
   }
   
   public int getRequestCpuCores() { return requestCpuCores; }
-  public void setRequestCpuCores(int requestCpuCores) { this.requestCpuCores = requestCpuCores; }
+  public VMConfig setRequestCpuCores(int requestCpuCores) { 
+    this.requestCpuCores = requestCpuCores; 
+    return this;
+  }
   
   public int getRequestMemory() { return requestMemory; }
-  public void setRequestMemory(int requestMemory) { this.requestMemory = requestMemory; }
+  public VMConfig setRequestMemory(int requestMemory) { 
+    this.requestMemory = requestMemory; 
+    return this;
+  }
   
   public String getLocalHome() { return localHome;}
-  public void setLocalHome(String localHome) { this.localHome = localHome; }
+  public VMConfig setLocalHome(String localHome) { 
+    this.localHome = localHome;
+    return this;
+  }
   
   public String getDfsHome() { return dfsHome; }
-  public void setDfsHome(String dfsHome) { this.dfsHome = dfsHome;}
+  public VMConfig setDfsHome(String dfsHome) { 
+    this.dfsHome = dfsHome;
+    return this;
+  }
   
   public RegistryConfig getRegistryConfig() { return registryConfig;}
-  public void setRegistryConfig(RegistryConfig registryConfig) { this.registryConfig = registryConfig;}
+  public VMConfig setRegistryConfig(RegistryConfig registryConfig) { 
+    this.registryConfig = registryConfig;
+    return this;
+  }
   
   public boolean isSelfRegistration() { return selfRegistration; }
-  public void setSelfRegistration(boolean selfRegistration) { this.selfRegistration = selfRegistration; }
+  public VMConfig setSelfRegistration(boolean selfRegistration) { 
+    this.selfRegistration = selfRegistration;
+    return this;
+  }
   
   public String getVmApplication() { return vmApplication;}
-  public void setVmApplication(String vmApplication) { this.vmApplication = vmApplication;}
+  public VMConfig setVmApplication(String vmApplication) { 
+    this.vmApplication = vmApplication;
+    return this;
+  }
   
   public Map<String, String> getProperties() { return properties;}
-  public void setProperties(Map<String, String> appProperties) { this.properties = appProperties; }
+  public VMConfig setProperties(Map<String, String> appProperties) { 
+    this.properties = appProperties;
+    return this;
+  }
+  
+  public VMConfig addProperty(String name, String value) {
+    if(properties == null) properties = new HashMap<String, String>();
+    properties.put(name, value);
+    return this;
+  }
   
   public Map<String, String> getYarnConf() { return yarnConf; }
-  public void setYarnConf(Map<String, String> yarnConf) {
+  public VMConfig setYarnConf(Map<String, String> yarnConf) {
     this.yarnConf = yarnConf;
+    return this;
   }
+  
+  public VMConfig addYarnProperty(String name, String value) {
+    if(yarnConf == null) yarnConf = new HashMap<String, String>();
+    yarnConf.put(name, value);
+    return this;
+  }
+  
   
   public void overrideYarnConfiguration(Configuration aconf) {
     for(Map.Entry<String, String> entry : yarnConf.entrySet()) {
@@ -98,11 +146,15 @@ public class VMConfig {
   }
   
   public String getDescription() { return description; }
-  public void setDescription(String description) { this.description = description; }
+  public VMConfig setDescription(String description) { 
+    this.description = description; 
+    return this;
+  }
   
   public boolean isMiniClusterEnv() { return miniClusterEnv; }
-  public void setMiniClusterEnv(boolean miniClusterEnv) {
+  public VMConfig setMiniClusterEnv(boolean miniClusterEnv) {
     this.miniClusterEnv = miniClusterEnv;
+    return this;
   }
   
   public String buildCommand() {

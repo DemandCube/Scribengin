@@ -14,7 +14,8 @@ public class DataflowTaskDescriptor {
   private String                            dataProcessor;
   private SourceStreamDescriptor            sourceStreamDescriptor;
   private Map<String, SinkStreamDescriptor> sinkStreamDescriptors;
-
+  private String storedPath;
+  
   public int getId() { return id; }
   public void setId(int id) { this.id = id; }
 
@@ -24,10 +25,6 @@ public class DataflowTaskDescriptor {
   public String getDataProcessor() { return dataProcessor;}
   public void setDataProcessor(String dataflowProcessor) {
     this.dataProcessor = dataflowProcessor;
-  }
-  
-  public void setDataProcessor(Class<? extends DataProcessor> type) {
-    this.dataProcessor = type.getName();
   }
   
   public SourceStreamDescriptor getSourceStreamDescriptor() { return sourceStreamDescriptor; }
@@ -47,5 +44,15 @@ public class DataflowTaskDescriptor {
     this.sinkStreamDescriptors = sinkStreamDescriptors;
   }
   
+  public String getStoredPath() { return storedPath; }
+  public void setStoredPath(String storedPath) { this.storedPath = storedPath; }
   
+  public String storedName() {
+    if(this.storedPath == null) {
+      throw new RuntimeException("Stored path is not available") ;
+    }
+    int idx = storedPath.lastIndexOf("/") ;
+    String storedName = storedPath.substring(idx + 1);
+    return storedName;
+  }
 }

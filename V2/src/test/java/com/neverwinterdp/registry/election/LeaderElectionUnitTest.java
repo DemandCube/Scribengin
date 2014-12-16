@@ -57,14 +57,14 @@ public class LeaderElectionUnitTest {
     registry.disconnect();
     
     Leader[] leader = new Leader[10];
-    ExecutorService executorPool = Executors.newFixedThreadPool(leader.length);
+    ExecutorService executorService = Executors.newFixedThreadPool(leader.length);
     for(int i = 0; i < leader.length; i++) {
       leader[i] = new Leader("worker-" + (i + 1)) ;
-      executorPool.execute(leader[i]);
+      executorService.execute(leader[i]);
       if(i % 10 == 0) Thread.sleep(new Random().nextInt(50));
     }
-    executorPool.shutdown();
-    executorPool.awaitTermination(3 * 60 * 1000, TimeUnit.MILLISECONDS);
+    executorService.shutdown();
+    executorService.awaitTermination(3 * 60 * 1000, TimeUnit.MILLISECONDS);
   }
   
   public class Leader implements Runnable {
