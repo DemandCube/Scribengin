@@ -1,15 +1,15 @@
 package com.neverwinterdp.scribengin.stream.sink;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class S3SinkConfig {
 
   private final PropertiesConfiguration properties;
+  private String credentialsPath;
 
   /**
    * Exposed for testability
@@ -35,6 +35,12 @@ public class S3SinkConfig {
     return getString("bucketName");
   }
   
+  public String getCredentialsPath() {
+    return getString("credentialsPath");
+  }
+  public int getMappedByteBufferSize(){
+    return getInt("diskBuffer.mappedByteBufferSize");
+  }
   public String getRegionName() {
     return getString("regionName");
   }
@@ -74,6 +80,14 @@ public class S3SinkConfig {
     return getInt("partitionner.offsetPerPartition");
   }
   
+  public boolean isMemoryBufferingEnabled() {
+    return getBoolean("memoryBuffer.enabled");
+  }
+  public boolean isDiskBufferingEnabled() {
+    return getBoolean("memoryBuffer.enabled");
+  }
+  
+  
   
   private void checkProperty(String name) {
     if (!properties.containsKey(name)) {
@@ -91,11 +105,13 @@ public class S3SinkConfig {
     return properties.getInt(name);
   }
 
-  private long getLong(String name) {
-    return properties.getLong(name);
+  private boolean getBoolean(String name) {
+    return properties.getBoolean(name);
   }
 
-  private String[] getStringArray(String name) {
-    return properties.getStringArray(name);
+  public void setCredentialPath(String credentialsPath) {
+    this.credentialsPath=credentialsPath;
+    
   }
+
 }

@@ -19,7 +19,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
 import com.neverwinterdp.scribengin.stream.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.stream.sink.S3SinkStream;
-import com.neverwinterdp.scribengin.stream.sink.SinkListner;
+import com.neverwinterdp.scribengin.stream.sink.SinkStream;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
@@ -44,7 +44,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
     offsetPerPartition = s3SinkConfig.getOffsetPerPartition();
 
     if(bucketName.equals("DefaultBucketName")){
-      assertTrue("You need to update your bucket", false);
+      assertTrue("You need to change the default bucket Name in the sink.s3.properties", false);
     }
     
   }
@@ -61,7 +61,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
     // create the partitioner
     SinkPartitioner sp = new OffsetPartitioner(offsetPerPartition, localTmpDir, bucketName, topic, kafkaPartition);
     //create the sink
-    final S3SinkStream sink = new S3SinkStream(sp, s3SinkConfig);
+    SinkStream sink = new S3SinkStream(sp, s3SinkConfig);
 
     // adding tuples to sink
     int i = 0;
@@ -69,9 +69,10 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
       assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry(
           "key", i, i))));
     }
-    sink.prepareCommit();
-    sink.commit();
-    sink.completeCommit(); 
+    assertTrue(sink.prepareCommit());
+    assertTrue(sink.commit());
+    assertTrue(sink.completeCommit());
+    
     AWSCredentials credentials = null;
     try {
       credentials = new ProfileCredentialsProvider().getCredentials();
@@ -80,8 +81,9 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
     }
 
     s3 = new AmazonS3Client(credentials);
-    Region usWest2 = Region.getRegion(Regions.US_WEST_2);
-    s3.setRegion(usWest2);
+    Regions regionName = Regions.fromName(s3SinkConfig.getRegionName());
+    Region region = Region.getRegion(regionName);
+    s3.setRegion(region);
     ObjectListing list = s3.listObjects(bucketName, "topicTest/1/offset=0/");
     assertTrue(list.getObjectSummaries().size()==4);
     //check if one of the file exist
@@ -92,7 +94,38 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
       assertTrue(s3Object1 != null);
 
     }
-    
+  }
+  @Test
+    public void testFullBuffer() throws IOException {
+      
+      String topic = "topicTest";
+      int kafkaPartition = 1;
+      // create the partitioner
+      SinkPartitioner sp = new OffsetPartitioner(offsetPerPartition, localTmpDir, bucketName, topic, kafkaPartition);
+      //create the sink
+      final S3SinkStream sink = new S3SinkStream(sp, s3SinkConfig);
 
+      // adding tuples to sink
+      int i = 0;
+      for (i = 0; i < 40; i++) {
+        assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry(
+            "key", i, i))));
+      }
+      assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry(
+          "key", i, i)))==false);
+
+  }
+  @Test(expected=AmazonClientException.class)
+  public void testS3BadCredentials() throws IOException {
+    
+    String topic = "topicTest";
+    int kafkaPartition = 1;
+    // create the partitioner
+    SinkPartitioner sp = new OffsetPartitioner(offsetPerPartition, localTmpDir, bucketName, topic, kafkaPartition);
+    s3SinkConfig.setCredentialPath("");
+    //create the sink
+    final S3SinkStream sink = new S3SinkStream(sp, s3SinkConfig);
+
+    
   }
 }

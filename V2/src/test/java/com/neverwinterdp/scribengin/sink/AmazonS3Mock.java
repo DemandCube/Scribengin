@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin.sink;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -50,6 +51,9 @@ import com.amazonaws.services.s3.model.GetBucketPolicyRequest;
 import com.amazonaws.services.s3.model.GetBucketWebsiteConfigurationRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.Grant;
+import com.amazonaws.services.s3.model.Grantee;
+import com.amazonaws.services.s3.model.GroupGrantee;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ListBucketsRequest;
@@ -62,6 +66,7 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Owner;
 import com.amazonaws.services.s3.model.PartListing;
+import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
@@ -81,24 +86,88 @@ import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.model.VersionListing;
 
 public class AmazonS3Mock implements AmazonS3 {
-  private boolean credentialsNotFoundError;
-  private boolean badCredentialsError;
-  private boolean bucketPermissionError;
+
+  public enum ExceptionType{None, AmazonServiceException,AmazonClientException};
   
+  ExceptionType doesBucketExistException;
+  ExceptionType createBucketException;
+  ExceptionType getBucketAclException;
+  ExceptionType putObjectException;
+  ExceptionType deleteObjectException;
+  boolean bucketExist;
+  
+  public void clear(){
+    doesBucketExistException= ExceptionType.None;
+    createBucketException= ExceptionType.None;
+    getBucketAclException= ExceptionType.None;
+    putObjectException= ExceptionType.None;
+    deleteObjectException= ExceptionType.None;
+  }
+
+  public void simulateDoesBucketExistException(ExceptionType exception, boolean bucketExist) {
+    this.doesBucketExistException = exception;
+    this.bucketExist = bucketExist;
+  }
+  public void simulateCreateBucketException(ExceptionType exception) {
+    this.createBucketException = exception;
+  }
+  public void simulateGetBucketAclException(ExceptionType exception) {
+    this.getBucketAclException = exception;
+  }
+  public void simulatePutObjectException(ExceptionType exception) {
+    this.putObjectException = exception;
+  }
+  public void simulateDeleteObjectException(ExceptionType exception) {
+    this.deleteObjectException = exception;
+  }
+
+  private void throwException(ExceptionType exception) {
+    // TODO Auto-generated method stub
+    if(exception.equals(ExceptionType.AmazonClientException)){
+      throw new AmazonClientException("");
+    }
+    if(exception.equals(ExceptionType.AmazonServiceException)){
+      throw new AmazonServiceException("");
+    }
+  }
+  
+  @Override
+  public boolean doesBucketExist(String bucketName) throws AmazonClientException, AmazonServiceException {
+    throwException(doesBucketExistException);
+    return bucketExist;
+  }
+  @Override
+  public Bucket createBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
+    throwException(createBucketException);
+    return null;
+  }
+  @Override
+  public AccessControlList getBucketAcl(String bucketName) throws AmazonClientException, AmazonServiceException {
+    throwException(getBucketAclException);
+    AccessControlList acl = new AccessControlList();
+    acl.grantPermission(GroupGrantee.AllUsers, Permission.FullControl);
+    return acl;
+  }
+  @Override
+  public PutObjectResult putObject(PutObjectRequest putObjectRequest) throws AmazonClientException,
+      AmazonServiceException {
+     throwException(putObjectException);
+    return null;
+  }
+
   
 
-  public void simulateCredentialsNotFoundError() {
-    this.credentialsNotFoundError = true;
-  }
+  @Override
+  public void deleteObject(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
+    throwException(deleteObjectException);
 
-  public void simulateBadCredentialsError() {
-    this.badCredentialsError = true;
   }
-
-  public void simulateBucketPermissionError() {
-    this.bucketPermissionError = true;
+  
+  @Override
+  public PutObjectResult putObject(String bucketName, String key, InputStream input, ObjectMetadata metadata)
+      throws AmazonClientException, AmazonServiceException {
+    return null;
   }
-
   @Override
   public void setEndpoint(String endpoint) {
     // TODO Auto-generated method stub
@@ -192,11 +261,7 @@ public class AmazonS3Mock implements AmazonS3 {
     return null;
   }
 
-  @Override
-  public boolean doesBucketExist(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
-    return false;
-  }
+
 
   @Override
   public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException {
@@ -231,13 +296,7 @@ public class AmazonS3Mock implements AmazonS3 {
     return null;
   }
 
-  @Override
-  public Bucket createBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
-    if(bucketPermissionError){
-      throw new AmazonServiceException("");
-    }
-    return null;
-  }
+
 
   @Override
   public Bucket createBucket(String bucketName, com.amazonaws.services.s3.model.Region region)
@@ -294,11 +353,7 @@ public class AmazonS3Mock implements AmazonS3 {
 
   }
 
-  @Override
-  public AccessControlList getBucketAcl(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
+
 
   @Override
   public void setBucketAcl(SetBucketAclRequest setBucketAclRequest) throws AmazonClientException,
@@ -374,12 +429,7 @@ public class AmazonS3Mock implements AmazonS3 {
 
   }
 
-  @Override
-  public PutObjectResult putObject(PutObjectRequest putObjectRequest) throws AmazonClientException,
-      AmazonServiceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
+
 
   @Override
   public PutObjectResult putObject(String bucketName, String key, File file) throws AmazonClientException,
@@ -388,12 +438,7 @@ public class AmazonS3Mock implements AmazonS3 {
     return null;
   }
 
-  @Override
-  public PutObjectResult putObject(String bucketName, String key, InputStream input, ObjectMetadata metadata)
-      throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
+
 
   @Override
   public CopyObjectResult copyObject(String sourceBucketName, String sourceKey, String destinationBucketName,
@@ -415,11 +460,6 @@ public class AmazonS3Mock implements AmazonS3 {
     return null;
   }
 
-  @Override
-  public void deleteObject(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
-
-  }
 
   @Override
   public void deleteObject(DeleteObjectRequest deleteObjectRequest) throws AmazonClientException,

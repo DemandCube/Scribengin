@@ -16,6 +16,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.S3Object;
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
+import com.neverwinterdp.scribengin.sink.AmazonS3Mock.ExceptionType;
 import com.neverwinterdp.scribengin.stream.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.stream.sink.S3SinkStream;
 import com.neverwinterdp.scribengin.stream.sink.SinkListner;
@@ -42,10 +43,6 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
     localTmpDir = s3SinkConfig.getLocalTmpDir();
     bucketName = s3SinkConfig.getBucketName();
     offsetPerPartition = s3SinkConfig.getOffsetPerPartition();
-
-    if(bucketName.equals("DefaultBucketName")){
-      assertTrue("You need to update your bucket", false);
-    }
     
   }
   /**
@@ -63,7 +60,6 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
     //create the sink
     final S3SinkStream sink = new S3SinkStream(sp, s3SinkConfig);
     AmazonS3Mock s3Mock = new AmazonS3Mock();
-    
     sink.setS3Client(s3Mock);
     
     // adding tuples to sink
@@ -72,9 +68,30 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
       assertTrue(sink.bufferTuple(new Tuple(Integer.toString(i), Integer.toString(i).getBytes(), new CommitLogEntry(
           "key", i, i))));
     }
-    
+    s3Mock.simulateDoesBucketExistException(ExceptionType.AmazonClientException, true);
     assertTrue(sink.prepareCommit()==false);
-
+    s3Mock.clear();
+    
+    s3Mock.simulateDoesBucketExistException(ExceptionType.AmazonClientException, true);
+    s3Mock.simulateCreateBucketException(ExceptionType.AmazonClientException);
+    assertTrue(sink.prepareCommit()==false);
+    s3Mock.clear();
+    
+    s3Mock.simulateGetBucketAclException(ExceptionType.AmazonClientException);
+    assertTrue(sink.prepareCommit()==false);
+    s3Mock.clear();
+    
+    s3Mock.clear();
+    s3Mock.simulatePutObjectException(ExceptionType.AmazonClientException);
+    assertTrue(sink.prepareCommit());
+    assertTrue(sink.commit()==false);
+    
+    s3Mock.clear();
+    s3Mock.simulateDeleteObjectException(ExceptionType.AmazonClientException);
+    assertTrue(sink.prepareCommit());
+    assertTrue(sink.commit());
+    assertTrue(sink.rollBack()==false);
+    
 
   }
 }

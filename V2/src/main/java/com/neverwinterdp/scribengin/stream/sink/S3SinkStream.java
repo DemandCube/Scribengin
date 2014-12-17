@@ -2,10 +2,7 @@ package com.neverwinterdp.scribengin.stream.sink;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +16,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
-import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.Grant;
 import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -43,14 +39,8 @@ public class S3SinkStream implements SinkStream {
   /** The partitioner. */
   private SinkPartitioner partitioner;
 
-  /** The disk buffer. */
-  private DiskBuffer diskBuffer;
-
   /** The memory buffer. */
-  private MemoryBuffer memoryBuffer;
-
-  /** The memory buffer. */
-  private boolean useMemory = true;
+  private Buffer buffer;
 
   /** The local tmp dir. */
   private String localTmpDir;
@@ -70,6 +60,7 @@ public class S3SinkStream implements SinkStream {
   /** The uploaded files path. */
   private List<String> uploadedFilesPath = new ArrayList<>();
 
+  private AWSCredentials credentials;
   /**
    * The Constructor.
    *
@@ -86,12 +77,15 @@ public class S3SinkStream implements SinkStream {
    */
   public S3SinkStream(SinkPartitioner partitioner, S3SinkConfig config) {
     logger = LoggerFactory.getLogger("S3SinkStream");
-    this.regionName = Regions.fromName(config.getRegionName());
     this.partitioner = partitioner;
     this.bucketName = config.getBucketName();
     this.localTmpDir = config.getLocalTmpDir();
-    this.diskBuffer = new DiskBuffer(this.partitioner,config);
-    this.memoryBuffer = new MemoryBuffer(config);
+    this.buffer = new Buffer(partitioner, config);
+    credentials = new ProfileCredentialsProvider().getCredentials();
+    s3Client = new AmazonS3Client(credentials);
+    this.regionName = Regions.fromName(config.getRegionName());
+    Region region = Region.getRegion(regionName);
+    s3Client.setRegion(region);
   }
 
   /**
@@ -121,12 +115,8 @@ public class S3SinkStream implements SinkStream {
   public boolean prepareCommit() {
 
     if (!validS3Sink) {
-      AWSCredentials credentials = null;
+
       try {
-        credentials = new ProfileCredentialsProvider().getCredentials();
-        s3Client = new AmazonS3Client(credentials);
-        Region region = Region.getRegion(regionName);
-        s3Client.setRegion(region);
         // check if bucket exist
         if (!s3Client.doesBucketExist(bucketName)) {
           s3Client.createBucket(bucketName);
@@ -159,15 +149,12 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean commit() {
-    if (memoryBuffer.getTuplesCount() > 0)
-      bufferToDisk();
-
     String path;
     File file;
-    while (diskBuffer.getFilesSize() > 0) {
+    while (buffer.getFilesSize() > 0) {
       // the file path on local is similar to its path on s3, just change tmp
       // folder by bucket name
-      file = diskBuffer.poll();
+      file = buffer.pollFromDisk();
       path = file.getPath();
       String key = path.substring(path.lastIndexOf("/") + 1, path.length());
       String folder = path.substring(0, path.lastIndexOf("/"));
@@ -180,9 +167,10 @@ public class S3SinkStream implements SinkStream {
         uploadedFilesPath.add(folder + "/" + key);
       } catch (AmazonServiceException ase) {
         logger.error("Caught an AmazonServiceException. " + ase.getMessage());
+        return false;
       } catch (AmazonClientException ace) {
         logger.error("Caught an AmazonClientException. " + ace.getMessage());
-
+        return false;
       }
     }
 
@@ -196,7 +184,7 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean clearBuffer() {
-    memoryBuffer.clean();
+    buffer.clean();
     return true;
   }
 
@@ -207,8 +195,8 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean completeCommit() {
-    memoryBuffer.clean();
-    diskBuffer.clean();
+    buffer.clean();
+    uploadedFilesPath.clear();
     return true;
   }
 
@@ -220,37 +208,11 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean bufferTuple(Tuple tuple) {
-
-    // if buffering is in memory
-    if (useMemory && !memoryBuffer.getState().equals(Buffer.State.Full)) {
-      // add tuple to buffer
-      memoryBuffer.add(tuple);
-      // set the total size of data in bytes
-      if (memoryBuffer.getState().equals(Buffer.State.Full)) {
-        bufferToDisk();
-      }
-    } else {
-
-      diskBuffer.add(tuple);
-      if (diskBuffer.getState().equals(Buffer.State.Full)) {
-        full = true;
-        return false;
-      }
-    }
-
+    buffer.add(tuple);
     return true;
-
   }
 
-  /**
-   * Buffer to disk.
-   */
-  private void bufferToDisk() {
-    // loop tuples in memory and write them to disk
-    while (memoryBuffer.getTuplesCount() > 0) {
-      diskBuffer.add(memoryBuffer.poll());
-    }
-  }
+
 
   /*
    * (non-Javadoc)
@@ -259,15 +221,18 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean rollBack() {
-    try {
-      for (String path : uploadedFilesPath) {
+    boolean retVal = true;
+    for (String path : uploadedFilesPath) {
+      try{
         s3Client.deleteObject(bucketName, path);
       }
-      return true;
-    } catch (Exception e) {
-      logger.error("Caught Exception when rolling back " + e.getMessage());
-      return false;
+      catch(Exception e){
+        logger.error("Caught Exception when rolling back " + e.getMessage());
+        retVal = false;
+      }
     }
+    uploadedFilesPath.clear();
+    return retVal;
 
   }
 
@@ -291,7 +256,7 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public long getBufferSize() {
-    return memoryBuffer.getTuplesCount() + diskBuffer.getTuplesCount();
+    return buffer.getTuplesCount();
   }
 
   /*
