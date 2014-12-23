@@ -95,6 +95,7 @@ public class InMemoryTupleCounter implements TupleCounter{
   //READ + CREATED + INVALID + PROCESSED + CREATED == WRITTEN) should always be true
   @Override
   public boolean validateCounts() {
+    System.out.println(this.getValid() + " "+ this.getCreated() +" "+ this.getInvalid()+" "+this.getWritten());
     return (this.getValid() + this.getCreated() + this.getInvalid()) == this.getWritten();
   }
 

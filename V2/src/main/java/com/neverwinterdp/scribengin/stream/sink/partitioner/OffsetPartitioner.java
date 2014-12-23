@@ -3,8 +3,6 @@ package com.neverwinterdp.scribengin.stream.sink.partitioner;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The Class OffsetPartitioner.
@@ -20,8 +18,7 @@ public class OffsetPartitioner implements SinkPartitioner {
   /** The offset per partition. */
   private int offsetPerPartition;
   
-  /** The local tmp dir. */
-  private String localTmpDir;
+
 
   
   /**
@@ -33,8 +30,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    * @param topic the topic
    * @param kafkaPartition the kafka partition
    */
-  public OffsetPartitioner(int offsetPerPartition, String localTmpDir, String bucketName, String topic, int kafkaPartition) {
-    this.localTmpDir = localTmpDir;
+  public OffsetPartitioner(int offsetPerPartition, String topic, int kafkaPartition) {
     this.offsetPerPartition = offsetPerPartition;
     this.topic = topic;
     this.kafkaPartition = kafkaPartition;
@@ -84,7 +80,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    */
   @Override
   public String getPartition(long startOffset, long endOffset) {
-    return localTmpDir + "/" + getLogFilePath(startOffset) + "/" + getLogFileBaseName(startOffset, endOffset);
+    return getLogFilePath(startOffset) + "/" + getLogFileBaseName(startOffset, endOffset);
   }
 
 }

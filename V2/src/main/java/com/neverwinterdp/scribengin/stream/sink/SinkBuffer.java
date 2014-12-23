@@ -14,7 +14,11 @@ import org.slf4j.LoggerFactory;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-public class Buffer {
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SinkBuffer.
+ */
+public class SinkBuffer {
 
   /** The max tuples. */
   private long maxTuplesInMemory;
@@ -37,11 +41,13 @@ public class Buffer {
   /** The tuples count. */
   private int tuplesCountInMemory;
 
+  /** The tuples size in memory. */
   private int tuplesSizeInMemory;
 
   /** The start time. */
   private long startBufferingTimeInMemory;
 
+  /** The tuples count on disk. */
   private int tuplesCountOnDisk;
 
   /** The tuples size. */
@@ -66,17 +72,31 @@ public class Buffer {
   /** The tuples chunk. */
   LinkedList<Tuple> tuplesChunk = new LinkedList<>();
 
+  /** The disk buffering enabled. */
   private boolean diskBufferingEnabled;
 
+  /** The memory buffering enabled. */
   private boolean memoryBufferingEnabled;
+
+  /** The saturated. */
+  private boolean saturated = false;
   /** The logger. */
   private static Logger logger;
   /** The buffer. */
   private LinkedList<Tuple> tuples = new LinkedList<Tuple>();
+  
+  /** The local tmp dir. */
+  private String localTmpDir;
 
-  private int maxPurgingTimes;
 
-  public Buffer(SinkPartitioner partitioner, S3SinkConfig config) {
+  /**
+   * The Constructor.
+   *
+   * @param partitioner the partitioner
+   * @param config the configuration
+   */
+  public SinkBuffer(SinkPartitioner partitioner, S3SinkConfig config) {
+    this.localTmpDir = config.getLocalTmpDir();
     this.maxTuplesSizeInMemory = config.getMemoryMaxBufferSize();
     this.maxBufferingTimeInMemory = config.getMemoryMaxBufferingTime();
     this.maxTuplesOnDisk = config.getMemoryMaxTuples();
@@ -88,41 +108,41 @@ public class Buffer {
     this.chunkSize = config.getChunkSize();
     diskBufferingEnabled = config.isDiskBufferingEnabled();
     memoryBufferingEnabled = config.isMemoryBufferingEnabled();
-    maxPurgingTimes = maxBufferSizeOnDisk / maxTuplesSizeInMemory;
     logger = LoggerFactory.getLogger("FileChannelBuffer");
   }
 
-  public boolean add(Tuple tuple) {
-    // if disk space is full return false
-    if (maxPurgingTimes == 0) {
-      return false;
-    }
+  /**
+   * Adds the Tuple to the buffer.
+   *
+   * @param tuple the tuple
+   */
+  public void add(Tuple tuple) {
+
     if (memoryBufferingEnabled) {
-      if (checkMemoryAvailability(tuple.getData().length)) {
-        tuples.add(tuple);
-        tuplesCountInMemory++;
-        tuplesSizeInMemory += tuple.getData().length;
-      }
-      if (!checkMemoryAvailability(0)) {
+      if (!checkMemoryAvailability(tuple.getData().length)) {
         purgeMemoryToDisk();
         tuplesCountInMemory = 0;
+        tuplesSizeInMemory = 0;
       }
+      tuples.add(tuple);
+      tuplesCountInMemory++;
+      tuplesSizeInMemory += tuple.getData().length;
     } else {
-      if (diskBufferingEnabled) {
-        if (checkDiskAvailability(tuple.getData().length)) {
-          return addOnDisk(tuple);
-        } else {
-          return false;
-        }
-      } else {
-        return false;
+      if (diskBufferingEnabled) { 
+        addToDisk(tuple);
+        updateDiskState();
       }
-
     }
-    return true;
+
   }
 
-  public boolean addOnDisk(Tuple tuple) {
+  /**
+   * Adds the to disk.
+   *
+   * @param tuple the tuple
+   * @return true, if adds the to disk
+   */
+  private boolean addToDisk(Tuple tuple) {
 
     try {
       tuplesChunk.add(tuple);
@@ -133,13 +153,13 @@ public class Buffer {
         // call partitioner to get the path of the file depending of the
         // offset
         // the path will be later used to deduce the s3 path
-        String path = partitioner.getPartition(startOffset, endOffset);
+        String path = localTmpDir + "/" +partitioner.getPartition(startOffset, endOffset);
         // create file using the path
         File file = new File(path);
         File parent = file.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
           throw new IllegalStateException("Couldn't create dir: " + parent);
-        }
+        } 
         // write a memory mapped file
         int start = 0;
         FileChannel fc = new RandomAccessFile(file, "rw").getChannel();
@@ -170,62 +190,100 @@ public class Buffer {
   /**
    * Buffer to disk.
    */
-  private void purgeMemoryToDisk() {
-
+  public void purgeMemoryToDisk() {
+    logger.info("purge Memory To Disk");
     LinkedList<Tuple> tempTuples = tuples;
     tuples = new LinkedList<Tuple>();
     while (tempTuples.size() > 0) {
-      addOnDisk(tempTuples.poll());
+      addToDisk(tempTuples.poll());
     }
-    maxPurgingTimes--;
+    updateDiskState();
+    
 
   }
 
   /**
-   * Check state.
-   * 
-   * @param length
+   * Check memory availability.
+   *
+   * @param newTupleSize the new tuple size
+   * @return true, if check memory availability
    */
   public boolean checkMemoryAvailability(int newTupleSize) {
 
     if (startBufferingTimeInMemory == 0) {
       startBufferingTimeInMemory = System.currentTimeMillis();
     }
-    if (tuplesCountInMemory + 1 > maxTuplesInMemory || tuplesSizeInMemory + newTupleSize > maxTuplesSizeInMemory
+    if (tuplesCountInMemory == maxTuplesInMemory || tuplesSizeInMemory + newTupleSize > maxTuplesSizeInMemory
         || (System.currentTimeMillis() - startBufferingTimeInMemory) > maxBufferingTimeInMemory
-        || tuplesSizeInMemory + newTupleSize > (maxBufferSizeOnDisk - tuplesSizeOnDisk)) {
+        ) {
       return false;
     }
     return true;
   }
 
-  public boolean checkDiskAvailability(int newTupleSize) {
+  /**
+   * Update disk state.
+   */
+  public void updateDiskState() {
 
     if (startBufferingTimeOnDisk == 0) {
       startBufferingTimeOnDisk = System.currentTimeMillis();
     }
-    if (tuplesCountOnDisk + 1 > maxTuplesOnDisk || tuplesSizeOnDisk + newTupleSize > maxBufferSizeOnDisk
+    if (tuplesCountOnDisk  > maxTuplesOnDisk || tuplesSizeOnDisk > maxBufferSizeOnDisk
         || (System.currentTimeMillis() - startBufferingTimeOnDisk) > maxBufferingTimeOnDisk) {
-      return false;
+      saturated = true;
     }
-    return true;
   }
 
+  /**
+   * Clean.
+   */
   public void clean() {
+    tuples.clear();
     for (File file : files) {
       file.delete();
     }
+    tuplesCountInMemory =0;
+    tuplesSizeInMemory =0;
+    startBufferingTimeInMemory =0;
+    tuplesCountOnDisk =0;
+    tuplesSizeOnDisk =0;
+    startBufferingTimeOnDisk=0;
 
   }
 
+  /**
+   * Gets the files size.
+   *
+   * @return the files size
+   */
   public int getFilesSize() {
     return files.size();
   }
 
+  /**
+   * Poll from disk.
+   *
+   * @return the file
+   */
   public File pollFromDisk() {
     return files.poll();
   }
 
+  /**
+   * Checks if is saturated.
+   *
+   * @return true, if checks if is saturated
+   */
+  public boolean isSaturated() {
+    return saturated;
+  }
+
+  /**
+   * Gets the tuples count.
+   *
+   * @return the tuples count
+   */
   public long getTuplesCount() {
     return tuplesCountInMemory + tuplesCountOnDisk;
   }

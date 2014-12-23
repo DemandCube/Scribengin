@@ -18,13 +18,14 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.Grant;
 import com.amazonaws.services.s3.model.Permission;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
 /**
  * The Class S3SinkStream.
  */
+
 public class S3SinkStream implements SinkStream {
 
   /** The name. */
@@ -40,7 +41,7 @@ public class S3SinkStream implements SinkStream {
   private SinkPartitioner partitioner;
 
   /** The memory buffer. */
-  private Buffer buffer;
+  private SinkBuffer buffer;
 
   /** The local tmp dir. */
   private String localTmpDir;
@@ -54,38 +55,30 @@ public class S3SinkStream implements SinkStream {
   /** The valid s3 sink. */
   private boolean validS3Sink = false;
 
-  /** The time to commit. */
-  private boolean full = false;
-
   /** The uploaded files path. */
   private List<String> uploadedFilesPath = new ArrayList<>();
 
-  private AWSCredentials credentials;
   /**
    * The Constructor.
    *
+   * @param s3Client
+   *          the s3 client
    * @param partitioner
    *          the partitioner
-   * @param bucketName
-   *          the bucket name
-   * @param localTmpDir
-   *          the local temporary directory
-   * @param regionName
-   *          the region name
-   * @param chunkSize
-   *          the number of Tuples per file
+   * @param config
+   *          the configuration
    */
-  public S3SinkStream(SinkPartitioner partitioner, S3SinkConfig config) {
-    logger = LoggerFactory.getLogger("S3SinkStream");
+  @Inject
+  public S3SinkStream(AmazonS3 s3Client, SinkPartitioner partitioner, S3SinkConfig config) {
+    logger = LoggerFactory.getLogger("FileChannelBuffer");
     this.partitioner = partitioner;
     this.bucketName = config.getBucketName();
     this.localTmpDir = config.getLocalTmpDir();
-    this.buffer = new Buffer(partitioner, config);
-    credentials = new ProfileCredentialsProvider().getCredentials();
-    s3Client = new AmazonS3Client(credentials);
+    this.buffer = new SinkBuffer(this.partitioner, config);
+    this.s3Client = s3Client;
     this.regionName = Regions.fromName(config.getRegionName());
     Region region = Region.getRegion(regionName);
-    s3Client.setRegion(region);
+    this.s3Client.setRegion(region);
   }
 
   /**
@@ -93,17 +86,8 @@ public class S3SinkStream implements SinkStream {
    *
    * @return true, if checks if is time to commit
    */
-  public boolean isFull() {
-    return full;
-  }
-
-  /**
-   * Sets the s3 client.
-   *
-   * @param s3Client the s3 client
-   */
-  public void setS3Client(AmazonS3 s3Client) {
-    this.s3Client = s3Client;
+  public boolean isSaturated() {
+    return buffer.isSaturated();
   }
 
   /*
@@ -113,15 +97,18 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean prepareCommit() {
-
+    logger.info("prepareCommit");
     if (!validS3Sink) {
 
       try {
         // check if bucket exist
+
         if (!s3Client.doesBucketExist(bucketName)) {
+          logger.info("Bucket do not Exist");
           s3Client.createBucket(bucketName);
           validS3Sink = true;
         } else {
+          logger.info("Bucket Exist");
           AccessControlList acl = s3Client.getBucketAcl(bucketName);
           List<Permission> permissions = new ArrayList<Permission>();
           for (Grant grant : acl.getGrants()) {
@@ -137,8 +124,8 @@ public class S3SinkStream implements SinkStream {
       }
     } else {
       validS3Sink = true;
-      ;
     }
+    logger.info("validS3Sink = " + validS3Sink);
     return validS3Sink;
   }
 
@@ -149,6 +136,9 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean commit() {
+
+    logger.info("commit");
+    buffer.purgeMemoryToDisk();
     String path;
     File file;
     while (buffer.getFilesSize() > 0) {
@@ -156,14 +146,14 @@ public class S3SinkStream implements SinkStream {
       // folder by bucket name
       file = buffer.pollFromDisk();
       path = file.getPath();
+      logger.info("file path " + path);
       String key = path.substring(path.lastIndexOf("/") + 1, path.length());
       String folder = path.substring(0, path.lastIndexOf("/"));
       folder = folder.replaceFirst(localTmpDir, bucketName);
       logger.info("Uploading a new object to S3 from a file\n");
-      PutObjectRequest object = new PutObjectRequest(folder, key, file);
       try {
         // upload to S3
-        s3Client.putObject(object);
+        s3Client.putObject(folder, key, file);
         uploadedFilesPath.add(folder + "/" + key);
       } catch (AmazonServiceException ase) {
         logger.error("Caught an AmazonServiceException. " + ase.getMessage());
@@ -184,6 +174,7 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean clearBuffer() {
+    logger.info("clen buffer");
     buffer.clean();
     return true;
   }
@@ -195,6 +186,7 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean completeCommit() {
+    logger.info("completeCommit");
     buffer.clean();
     uploadedFilesPath.clear();
     return true;
@@ -208,11 +200,16 @@ public class S3SinkStream implements SinkStream {
    */
   @Override
   public boolean bufferTuple(Tuple tuple) {
-    buffer.add(tuple);
-    return true;
+    logger.info("bufferTuple");
+    try {
+      buffer.add(tuple);
+      return true;
+    } catch (Exception e) {
+      logger.error("Caught Exception when  buffering Tuple" + e.getMessage());
+      return false;
+    }
+
   }
-
-
 
   /*
    * (non-Javadoc)
@@ -223,10 +220,9 @@ public class S3SinkStream implements SinkStream {
   public boolean rollBack() {
     boolean retVal = true;
     for (String path : uploadedFilesPath) {
-      try{
+      try {
         s3Client.deleteObject(bucketName, path);
-      }
-      catch(Exception e){
+      } catch (Exception e) {
         logger.error("Caught Exception when rolling back " + e.getMessage());
         retVal = false;
       }
