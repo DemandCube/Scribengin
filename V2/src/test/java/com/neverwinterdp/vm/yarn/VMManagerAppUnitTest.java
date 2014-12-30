@@ -60,7 +60,7 @@ public class VMManagerAppUnitTest {
   public void teardown() throws Exception {
     miniYarnCluster.stop();
     miniYarnCluster.close();
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
 
   @Test

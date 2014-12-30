@@ -2,6 +2,7 @@ package com.neverwinterdp.vm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -135,6 +136,20 @@ public class VMConfig {
   public VMConfig addYarnProperty(String name, String value) {
     if(yarnConf == null) yarnConf = new HashMap<String, String>();
     yarnConf.put(name, value);
+    return this;
+  }
+  
+  public VMConfig addYarnProperty(Map<String, String> conf) {
+    if(yarnConf == null) yarnConf = new HashMap<String, String>();
+    Iterator<Map.Entry<String, String>> i = conf.entrySet().iterator();
+    while(i.hasNext()) {
+      Map.Entry<String, String> entry = i.next();
+      String key = entry.getKey();
+      String value = conf.get(key);
+      if(value.length() == 0) continue;
+      else if(value.indexOf(' ') > 0) continue;
+      yarnConf.put(key, value);
+    }
     return this;
   }
   

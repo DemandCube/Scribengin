@@ -61,6 +61,9 @@ public class SourceImpl implements Source {
     return streams.values().toArray(array);
   }
   
+  public void close() throws Exception {
+  }
+  
   static SourceDescriptor getSourceDescriptor(SourceStreamDescriptor streamDescriptor) {
     SourceDescriptor descriptor = new SourceDescriptor();
     descriptor.setType(streamDescriptor.getType());

@@ -33,7 +33,7 @@ public class DistributedQueueUnitTest {
   @After
   public void teardown() throws Exception {
     registry.disconnect();
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
   
   @Test

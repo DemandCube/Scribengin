@@ -30,6 +30,8 @@ public class VMMasterCommand {
       VMService vmService = app.getVMService();
       CommandResult<VMDescriptor> result = new CommandResult<VMDescriptor>();
       try {
+        //TODO: REVIEW this yarn configuration settings
+        vmConfig.addYarnProperty(app.getVM().getDescriptor().getVmConfig().getYarnConf());
         VMDescriptor descriptor = vmService.allocate(vmConfig) ;
         result.setResult(descriptor);
       } catch (Exception e) {

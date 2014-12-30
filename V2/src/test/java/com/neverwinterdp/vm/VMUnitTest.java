@@ -33,7 +33,7 @@ abstract public class VMUnitTest {
   
   @After
   public void teardown() throws Exception {
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
 
   protected <T> Injector newAppContainer() {

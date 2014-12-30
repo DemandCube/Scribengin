@@ -8,4 +8,6 @@ public interface Source {
   public SourceStream   getStream(SourceStreamDescriptor descriptor) ;
   
   public SourceStream[] getStreams() ;
+  
+  public void close() throws Exception ;
 }

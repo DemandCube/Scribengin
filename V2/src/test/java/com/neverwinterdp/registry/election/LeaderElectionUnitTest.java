@@ -42,7 +42,7 @@ public class LeaderElectionUnitTest {
   
   @After
   public void teardown() throws Exception {
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
 
   private Registry newRegistry() {

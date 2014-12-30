@@ -1,26 +1,22 @@
 package com.neverwinterdp.scribengin.sink;
 
-public class SinkStreamDescriptor {
-  private String type;
-  private int    id;
-  private String location;
+import java.util.Map;
 
-  public SinkStreamDescriptor() { }
+public class SinkStreamDescriptor extends SinkDescriptor {
+  public SinkStreamDescriptor() { 
+  }
+  
+  public SinkStreamDescriptor(Map<String, String> props) { 
+    putAll(props);
+  }
   
   public SinkStreamDescriptor(String type, int id, String location) {
-    this.type = type;
-    this.id = id;
-    this.location = location;
+    super(type, location);
+    setId(id);
   }
   
-  public String getType() { return this.type; }
-  public void setType(String type) {
-    this.type = type ;
-  }
-  
-  public int getId() { return id; }
-  public void setId(int id) { this.id = id ; }
+  public int getId() { return intAttribute("id"); }
+  public void setId(int id) { attribute("id", id); }
 
-  public String getLocation() { return location; }
-  public void   setLocation(String location) { this.location = location; }
+  
 }

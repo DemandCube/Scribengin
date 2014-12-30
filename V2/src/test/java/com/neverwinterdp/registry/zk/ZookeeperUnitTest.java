@@ -45,7 +45,7 @@ public class ZookeeperUnitTest {
   @After
   public void teardown() throws Exception {
     zkClient.close();
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
 
   @Test

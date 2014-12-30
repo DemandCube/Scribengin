@@ -32,7 +32,7 @@ public class RegistryUnitTest {
   
   @After
   public void teardown() throws Exception {
-    zkServerLauncher.stop();
+    zkServerLauncher.shutdown();
   }
 
   @Test

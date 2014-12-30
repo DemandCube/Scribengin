@@ -14,11 +14,10 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 
 public class SinkImpl implements Sink {
-  private int idTracker = 0;
-  
   private FileSystem fs;
   private SinkDescriptor descriptor;
-  
+
+  private int idTracker = 0;
   private LinkedHashMap<Integer, SinkStreamImpl> streams = new LinkedHashMap<Integer, SinkStreamImpl>() ;
   
   public SinkImpl(FileSystem fs, String location) throws FileNotFoundException, IllegalArgumentException, IOException {

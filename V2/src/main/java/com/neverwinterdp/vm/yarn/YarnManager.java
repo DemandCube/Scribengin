@@ -3,7 +3,6 @@ package com.neverwinterdp.vm.yarn;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +39,16 @@ import com.neverwinterdp.vm.VMConfig;
 @Singleton
 public class YarnManager {
   private Logger logger = LoggerFactory.getLogger(YarnManager.class.getName());
-  
+
+  private Map<String, String> yarnConfig;
+
+  private Configuration conf ;
   private AMRMClient<ContainerRequest> amrmClient ;
   private AMRMClientAsync<ContainerRequest> amrmClientAsync ;
   private NMClient nmClient;
-  private Configuration conf;
   private ContainerRequestQueue containerRequestQueue = new ContainerRequestQueue ();
-
-  public Configuration getConfiguration() { return this.conf ; }
+  
+  public Map<String, String> getYarnConfig() { return this.yarnConfig ; }
   
   public AMRMClient<ContainerRequest> getAMRMClient() { return this.amrmClient ; }
   
@@ -57,10 +58,10 @@ public class YarnManager {
   public void onInit(VMConfig vmConfig) throws Exception {
     logger.info("Start init(VMConfig vmConfig)");
     try {
+      this.yarnConfig = vmConfig.getYarnConf();
       conf = new YarnConfiguration() ;
       vmConfig.overrideYarnConfiguration(conf);
-      Iterator<Map.Entry<String, String>> i = conf.iterator();
-
+      
       amrmClient = AMRMClient.createAMRMClient();
       amrmClientAsync = AMRMClientAsync.createAMRMClientAsync(amrmClient, 1000, new AMRMCallbackHandler());
       amrmClientAsync.init(conf);
@@ -102,6 +103,8 @@ public class YarnManager {
   
   public void asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback) {
     logger.info("Start asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
+    
+    callback.onRequest(YarnManager.this, containerReq);
     containerRequestQueue.offer(containerReq, callback);
     amrmClientAsync.addContainerRequest(containerReq);
     logger.info("Finish asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
@@ -147,7 +150,9 @@ public class YarnManager {
       logger.info("Start onContainersAllocated(List<Container> containers)");
       for (int i = 0; i < containers.size(); i++) {
         Container container = containers.get(i) ;
-        containerRequestQueue.onAllocate(container);
+        ContainerRequestCallback callback = containerRequestQueue.take(container);
+        callback.onAllocate(YarnManager.this, container);
+        amrmClientAsync.removeContainerRequest(callback.getContainerRequest());
       }
       logger.info("Finish onContainersAllocated(List<Container> containers)");
     }
@@ -168,8 +173,9 @@ public class YarnManager {
   }
   
   static public interface ContainerRequestCallback {
-    public void onRequest(ContainerRequest request) ;
-    public void onAllocate(Container container) ;
+    public ContainerRequest getContainerRequest() ;
+    public void onRequest(YarnManager manager, ContainerRequest request) ;
+    public void onAllocate(YarnManager manager, Container container) ;
   }
   
   static public class ContainerRequestQueue {
@@ -185,15 +191,16 @@ public class YarnManager {
       queue.offer(callback);
     }
     
-    synchronized public void onAllocate(Container container) {
-      Queue<ContainerRequestCallback> queue = multiQueues.get(key(container.getResource()));
+    synchronized public ContainerRequestCallback take(Container container) {
+      String key =  key(container.getResource()) ;
+      Queue<ContainerRequestCallback> queue = multiQueues.get(key);
       ContainerRequestCallback callback = queue.poll();
-      callback.onAllocate(container);
+      return callback;
     }
+    
     
     private String key(Resource res) {
       String key = "cpu=" + res.getVirtualCores() + ",memory=" + res.getMemory();
-      System.err.println("create key: " + key);
       return key;
     }
   }

@@ -1,16 +1,17 @@
 package com.neverwinterdp.scribengin.source;
 
-public class SourceStreamDescriptor {
-  private int id;
-  private String type;
-  private String location ;
+import java.util.Map;
 
-  public int getId() { return id; }
-  public void   setId(int id) { this.id = id ; }
+public class SourceStreamDescriptor extends SourceDescriptor {
+
+  public SourceStreamDescriptor() {
+  }
   
-  public String getType() { return type;}
-  public void setType(String type) { this.type = type; }
+  public SourceStreamDescriptor(Map<String, String> props) {
+    putAll(props);
+  }
   
-  public String getLocation() { return location; }
-  public void setLocation(String location) { this.location = location; }
+  public int  getId() { return intAttribute("id"); }
+  public void setId(int id) { attribute("id", id); }
+  
 }

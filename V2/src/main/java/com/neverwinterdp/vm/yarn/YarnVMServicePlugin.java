@@ -27,23 +27,37 @@ public class YarnVMServicePlugin implements VMServicePlugin {
   @Override
   synchronized public void allocate(VMService vmService, final VMConfig vmConfig) throws RegistryException, Exception {
     logger.info("Start allocate(VMService vmService, VMDescriptor vmDescriptor)");
-    ContainerRequest containerReq = 
+    final ContainerRequest containerReq = 
         yarnManager.createContainerRequest(0, vmConfig.getRequestCpuCores(), vmConfig.getRequestMemory());
     YarnManager.ContainerRequestCallback callback = new YarnManager.ContainerRequestCallback() {
+      private ContainerRequest containerRequest;
+
       @Override
-      public void onRequest(ContainerRequest request) {
+      public ContainerRequest getContainerRequest() { return containerRequest; }
+      
+      @Override
+      public void onRequest(YarnManager manager, ContainerRequest request) {
+        this.containerRequest = request;
       }
 
       @Override
-      public void onAllocate(Container container) {
+      public void onAllocate(YarnManager manager, Container container) {
         logger.info("Start onAllocate(Container container)");
-        vmConfig.setSelfRegistration(false);
+        vmConfig.
+          setSelfRegistration(false).
+          addYarnProperty(manager.getYarnConfig());
         try {
           yarnManager.startContainer(container, vmConfig.buildCommand());
         } catch (YarnException | IOException e) {
           logger.error("Cannot start the container", e);
         }
         logger.info("Finish onAllocate(Container container)");
+      }
+      
+      public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("Command: " + vmConfig.buildCommand());
+        return b.toString();
       }
     };
     yarnManager.asyncAdd(containerReq, callback);
