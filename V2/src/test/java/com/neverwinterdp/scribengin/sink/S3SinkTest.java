@@ -32,12 +32,12 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
   private static SinkStream sink;
 
   /**
-   * Inits the.
+   * Initialize the s3 module.
    *
    * @param propFilePath the prop file path
    */
   public  void init(String propFilePath){
-    Injector injector = Guice.createInjector(new S3Module(propFilePath, "topicTest", 1));
+    Injector injector = Guice.createInjector(new S3Module(propFilePath, "topicTest", 1, true));
     sink = injector.getInstance(S3SinkStream.class);
     s3 = injector.getInstance(AmazonS3.class);
     s3SinkConfig = injector.getInstance(S3SinkConfig.class); 

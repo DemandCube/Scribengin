@@ -21,6 +21,7 @@ import com.amazonaws.services.s3.model.Permission;
 import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
+import com.neverwinterdp.scribengin.util.SinkBuffer;
 
 /**
  * The Class S3SinkStream.

@@ -163,16 +163,6 @@ public class S3SinkConfig {
     return getBoolean("memoryBuffer.enabled");
   }
   
-  /**
-   * Checks if is disk buffering enabled.
-   *
-   * @return true, if checks if is disk buffering enabled
-   */
-  public boolean isDiskBufferingEnabled() {
-    return getBoolean("memoryBuffer.enabled");
-  }
-  
-  
   
   /**
    * Check property.

@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.stream.sink;
+package com.neverwinterdp.scribengin.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,11 +6,13 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.neverwinterdp.scribengin.stream.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
@@ -18,7 +20,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 /**
  * The Class SinkBuffer.
  */
-public class SinkBuffer {
+public class SinkBuffer implements Iterable<Tuple> {
 
   /** The max tuples. */
   private long maxTuplesInMemory;
@@ -72,9 +74,6 @@ public class SinkBuffer {
   /** The tuples chunk. */
   LinkedList<Tuple> tuplesChunk = new LinkedList<>();
 
-  /** The disk buffering enabled. */
-  private boolean diskBufferingEnabled;
-
   /** The memory buffering enabled. */
   private boolean memoryBufferingEnabled;
 
@@ -84,16 +83,17 @@ public class SinkBuffer {
   private static Logger logger;
   /** The buffer. */
   private LinkedList<Tuple> tuples = new LinkedList<Tuple>();
-  
+
   /** The local tmp dir. */
   private String localTmpDir;
-
 
   /**
    * The Constructor.
    *
-   * @param partitioner the partitioner
-   * @param config the configuration
+   * @param partitioner
+   *          the partitioner
+   * @param config
+   *          the configuration
    */
   public SinkBuffer(SinkPartitioner partitioner, S3SinkConfig config) {
     this.localTmpDir = config.getLocalTmpDir();
@@ -106,16 +106,17 @@ public class SinkBuffer {
     this.mappedByteBufferSize = config.getMappedByteBufferSize();
     this.partitioner = partitioner;
     this.chunkSize = config.getChunkSize();
-    diskBufferingEnabled = config.isDiskBufferingEnabled();
     memoryBufferingEnabled = config.isMemoryBufferingEnabled();
-    logger = LoggerFactory.getLogger("FileChannelBuffer");
+    logger = LoggerFactory.getLogger(SinkBuffer.class);
   }
 
   /**
    * Adds the Tuple to the buffer.
    *
-   * @param tuple the tuple
+   * @param tuple
+   *          the tuple
    */
+
   public void add(Tuple tuple) {
 
     if (memoryBufferingEnabled) {
@@ -128,10 +129,9 @@ public class SinkBuffer {
       tuplesCountInMemory++;
       tuplesSizeInMemory += tuple.getData().length;
     } else {
-      if (diskBufferingEnabled) { 
-        addToDisk(tuple);
-        updateDiskState();
-      }
+      addToDisk(tuple);
+      updateDiskState();
+
     }
 
   }
@@ -139,7 +139,8 @@ public class SinkBuffer {
   /**
    * Adds the to disk.
    *
-   * @param tuple the tuple
+   * @param tuple
+   *          the tuple
    * @return true, if adds the to disk
    */
   private boolean addToDisk(Tuple tuple) {
@@ -153,13 +154,13 @@ public class SinkBuffer {
         // call partitioner to get the path of the file depending of the
         // offset
         // the path will be later used to deduce the s3 path
-        String path = localTmpDir + "/" +partitioner.getPartition(startOffset, endOffset);
+        String path = localTmpDir + "/" + partitioner.getPartition(startOffset, endOffset);
         // create file using the path
         File file = new File(path);
         File parent = file.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
           throw new IllegalStateException("Couldn't create dir: " + parent);
-        } 
+        }
         // write a memory mapped file
         int start = 0;
         FileChannel fc = new RandomAccessFile(file, "rw").getChannel();
@@ -175,6 +176,7 @@ public class SinkBuffer {
         // add the file to the liste of file created
         files.add(file);
         tuplesChunk.clear();
+        fc.close();
       }
       tuplesCountOnDisk++;
 
@@ -198,14 +200,14 @@ public class SinkBuffer {
       addToDisk(tempTuples.poll());
     }
     updateDiskState();
-    
 
   }
 
   /**
    * Check memory availability.
    *
-   * @param newTupleSize the new tuple size
+   * @param newTupleSize
+   *          the new tuple size
    * @return true, if check memory availability
    */
   public boolean checkMemoryAvailability(int newTupleSize) {
@@ -214,8 +216,7 @@ public class SinkBuffer {
       startBufferingTimeInMemory = System.currentTimeMillis();
     }
     if (tuplesCountInMemory == maxTuplesInMemory || tuplesSizeInMemory + newTupleSize > maxTuplesSizeInMemory
-        || (System.currentTimeMillis() - startBufferingTimeInMemory) > maxBufferingTimeInMemory
-        ) {
+        || (System.currentTimeMillis() - startBufferingTimeInMemory) > maxBufferingTimeInMemory) {
       return false;
     }
     return true;
@@ -229,7 +230,7 @@ public class SinkBuffer {
     if (startBufferingTimeOnDisk == 0) {
       startBufferingTimeOnDisk = System.currentTimeMillis();
     }
-    if (tuplesCountOnDisk  > maxTuplesOnDisk || tuplesSizeOnDisk > maxBufferSizeOnDisk
+    if (tuplesCountOnDisk > maxTuplesOnDisk || tuplesSizeOnDisk > maxBufferSizeOnDisk
         || (System.currentTimeMillis() - startBufferingTimeOnDisk) > maxBufferingTimeOnDisk) {
       saturated = true;
     }
@@ -243,12 +244,12 @@ public class SinkBuffer {
     for (File file : files) {
       file.delete();
     }
-    tuplesCountInMemory =0;
-    tuplesSizeInMemory =0;
-    startBufferingTimeInMemory =0;
-    tuplesCountOnDisk =0;
-    tuplesSizeOnDisk =0;
-    startBufferingTimeOnDisk=0;
+    tuplesCountInMemory = 0;
+    tuplesSizeInMemory = 0;
+    startBufferingTimeInMemory = 0;
+    tuplesCountOnDisk = 0;
+    tuplesSizeOnDisk = 0;
+    startBufferingTimeOnDisk = 0;
 
   }
 
@@ -286,6 +287,11 @@ public class SinkBuffer {
    */
   public long getTuplesCount() {
     return tuplesCountInMemory + tuplesCountOnDisk;
+  }
+
+  @Override
+  public Iterator<Tuple> iterator() {
+    return tuples.iterator();
   }
 
 }

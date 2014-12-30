@@ -21,7 +21,7 @@ public class ScribeS3Test {
   public void testScribe() throws Exception {
     int bufferLimit = 30;
 
-    Injector injector = Guice.createInjector(new S3Module("s3.default.properties","topicTest",1));
+    Injector injector = Guice.createInjector(new S3Module("s3.default.properties","topicTest",1,true));
     SinkStream sink = injector.getInstance(S3SinkStream.class);
     Scribe scribe = new ScribeImpl(new SequentialIntSourceStream(), sink, new InMemorySinkStream(new DumbSinkPartitioner()), new CopyTask(bufferLimit));
     assertTrue(scribe.init());
