@@ -89,6 +89,29 @@ function cluster_sync() {
   done
 }
 
+function cluster_start() {
+  printHeader "Start hadoop dfs"
+  /opt/hadoop/sbin/start-dfs.sh
+
+  printHeader "Start hadoop yarn"
+  /opt/hadoop/sbin/start-yarn.sh
+}
+
+function cluster_stop() {
+  printHeader "Stop hadoop yarn"
+  /opt/hadoop/sbin/stop-yarn.sh
+
+  printHeader "Stop hadoop dfs"
+  /opt/hadoop/sbin/stop-dfs.sh
+}
+
+function cluster_clean() {
+  printHeader "Clean hadoop data and logs"
+  rm -rf /opt/hadoop/data
+  rm -rf /opt/hadoop/logs
+  /opt/hadoop/bin/hadoop namenode -format
+}
+
 parseHostsFile 
 
 # get sub command
@@ -110,6 +133,12 @@ if [ "$COMMAND" = "exec" ] ; then
 elif [ "$COMMAND" = "sync" ] ; then
   confirmYN "Do you want to sync this program with the other members(Y/N)?"
   cluster_sync
+elif [ "$COMMAND" = "start" ] ; then
+  cluster_start
+elif [ "$COMMAND" = "stop" ] ; then
+  cluster_stop
+elif [ "$COMMAND" = "clean" ] ; then
+  cluster_clean
 else
   echo "cluster command options: "
   echo "  exec                  : To execute the shell command on all the servers or a group of servers"
