@@ -2,11 +2,11 @@
 <configuration>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>hadoop1</value>
+    <value>hadoop-master</value>
   </property>
 
   <property>
     <name>yarn.nodemanager.hostname</name>
-    <value>hadoop1</value>
+    <value>hadoop-master</value>
   </property>
 </configuration>

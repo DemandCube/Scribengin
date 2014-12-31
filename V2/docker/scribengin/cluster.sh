@@ -39,13 +39,26 @@ function clean_image() {
   docker rmi -f ubuntu:scribengin
 }
 
-function runHadoop() {
-  printHeader "Run hadoop vm machines"
-  VMS="hadoop-master hadoop-worker-1 hadoop-worker-2 hadoop4-worker-3 zookeeper kafka-1 kafka-2 kafka-3"
-  for NAME in $VMS
+function launch_containers() {
+  printHeader "Launch hadoop containers"
+  docker run -d -p 22 -p 50070:50070 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
+  
+  HADOOP_WORKERS="hadoop-worker-1 hadoop-worker-2 hadoop-worker-3"
+  for NAME in $HADOOP_WORKERS
   do
-    docker run -d -P --privileged -h "$NAME" --name "$NAME" ubuntu:scribengin
+    docker run -d -p 22 --privileged -h "$NAME" --name "$NAME" ubuntu:scribengin
   done
+  
+  printHeader "Launch zookeeper containers"
+  docker run -d -p 22 -p 2181 --privileged -h zookeeper --name zookeeper  ubuntu:scribengin
+
+  printHeader "Launch kafka containers"
+  KAFKA_SERVERS="kafka-1 kafka-2 kafka-3"
+  for NAME in $KAFKA_SERVERS
+  do
+    docker run -d -p 22 -p 9092 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+  done
+
   docker ps
 }
 
@@ -109,7 +122,7 @@ function container_update_hosts() {
     container_ip=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $container_id)
     #extract the container running state
     container_running=$(docker inspect -f {{.State.Running}} $container_id)
-    HOSTS+="$container_ip $container_name $container_name.$container_domain"
+    HOSTS+="$container_ip $container_name"
     HOSTS+=$'\n'
     echo "container id = $container_id, container name = $container_name, container ip = $container_ip, container running = $container_running"
   done
@@ -164,7 +177,7 @@ elif [ "$COMMAND" = "container" ] ; then
   if [ "$SUB_COMMAND" = "clean" ] ; then
     container_clean $@
   elif [ "$SUB_COMMAND" = "run" ] ; then
-    runHadoop
+    launch_containers
     container_update_hosts $@
   elif [ "$SUB_COMMAND" = "update-hosts" ] ; then
     container_update_hosts $@
