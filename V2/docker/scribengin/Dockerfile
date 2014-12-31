@@ -11,8 +11,10 @@ MAINTAINER Tuan Nguyen <tuan@demandcube.com>
 #Update and installl the dependencies
 RUN echo "Update and install the requirement software"
 RUN apt-get update 
-RUN apt-get install -y wget openssh-server openssh-client vim
+RUN apt-get install -y wget openssh-server openssh-client rsync vim
+
 RUN apt-get install -y openjdk-7-jdk
+RUN echo 'JAVA_HOME="/usr/lib/jvm/java-7-openjdk-amd64"' >> /etc/environment
 
 #Configure root Account
 RUN mkdir /var/run/sshd
@@ -40,15 +42,20 @@ RUN echo "Create neverwinterdp user account and setup home directory"
 #RUN echo "neverwinterdp ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 #A bug with file creation permission, need to create a template ssh configuration and copy to the account in the post installation
-RUN mkdir -p        /opt/ssh-config
-ADD tmp/id_rsa*     /opt/ssh-config/
-RUN cat             /opt/ssh-config/id_rsa.pub > /opt/ssh-config/authorized_keys
-#RUN chmod   600     /home/neverwinterdp/.ssh/id_rsa
-#RUN chmod   600     /home/neverwinterdp/.ssh/id_rsa.pub
-RUN chmod -R 700    /opt/ssh-config && chmod 644 /opt/ssh-config/authorized_keys
-#RUN chgrp -R  neverwinterdp /home/neverwinterdp/.ssh
 
-EXPOSE 22
+#ssh login port
+#EXPOSE 22 
+EXPOSE 22 2181 9092 9093 9094 50070 50075 8088 9000
+
+#zookeeper port
+#EXPOSE 2181
+
+#kafka port
+#EXPOSE 9092 9093 9094
+
+#hadoop port
+#EXPOSE 50070 50075 8088 9000
+
 CMD ["/usr/sbin/sshd", "-D"]
 
 #Download java opensource projects
@@ -67,6 +74,12 @@ RUN mv /opt/hadoop-2.6.0 /opt/hadoop
 
 
 #Run Post installation
-ADD bootstrap/post-install.sh /opt/post-install.sh
-RUN chmod +x /opt/post-install.sh
-RUN /opt/post-install.sh
+ADD bootstrap/post-install /tmp/post-install
+RUN chmod +x /tmp/post-install/post-install.sh
+
+RUN mkdir -p        /tmp/post-install/ssh-config
+ADD tmp/id_rsa*     /tmp/post-install/ssh-config/
+RUN cat             /tmp/post-install/ssh-config/id_rsa.pub > /tmp/post-install/ssh-config/authorized_keys
+RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/ssh-config/authorized_keys
+
+RUN /tmp/post-install/post-install.sh

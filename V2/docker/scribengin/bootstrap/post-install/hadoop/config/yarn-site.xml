@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<configuration>
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>hadoop1</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.hostname</name>
+    <value>hadoop1</value>
+  </property>
+</configuration>

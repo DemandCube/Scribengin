@@ -41,7 +41,7 @@ function runHadoop() {
   for NAME in $HADOOP_VMS
   do
     VM_NAME="${NAME}.scribengin"
-    docker run -d -p 22 --privileged -h "$VM_NAME" --name "$VM_NAME" ubuntu:scribengin
+    docker run -d -p 22 -p 50070 --privileged -h "$VM_NAME" --name "$VM_NAME" ubuntu:scribengin
   done
   docker ps
 }
@@ -98,7 +98,7 @@ function container_ids() {
 
 function container_update_hosts() {
   printHeader "Update /etc/hosts file"
-  HOSTS=$'#Custom hosts file for scribengin vm\n'
+  HOSTS=$'## scribengin server ##\n'
   HOSTS+=$'127.0.0.1 localhost\n'
   for container_id in $(container_ids); do
     #extract the container name

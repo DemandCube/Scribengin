@@ -1,18 +1,12 @@
 package com.neverwinterdp.scribengin.kafka;
 
 
-import java.util.List;
-
-import kafka.javaapi.TopicMetadata;
-
 import org.apache.zookeeper.ZooKeeper;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.dependency.KafkaCluster;
-import com.neverwinterdp.scribengin.kafka.sink.KafkaWriter;
 import com.neverwinterdp.scribengin.kafka.sink.SinkImpl;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;

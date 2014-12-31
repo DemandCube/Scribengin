@@ -30,6 +30,7 @@ public class KafkaPartitionReaderUnitTest {
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/kafka", false);
     cluster = new KafkaCluster("./build/Kafka", 1, 3);
+    cluster.setNumOfPartition(5);
     cluster.start();
   }
   
