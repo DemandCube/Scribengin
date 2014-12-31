@@ -43,18 +43,8 @@ RUN echo "Create neverwinterdp user account and setup home directory"
 
 #A bug with file creation permission, need to create a template ssh configuration and copy to the account in the post installation
 
-#ssh login port
-#EXPOSE 22 
-EXPOSE 22 2181 9092 9093 9094 50070 50075 8088 9000
-
-#zookeeper port
-#EXPOSE 2181
-
-#kafka port
-#EXPOSE 9092 9093 9094
-
-#hadoop port
-#EXPOSE 50070 50075 8088 9000
+#EXPOSE Ports
+EXPOSE 22 2181 9092 50070 8088 
 
 CMD ["/usr/sbin/sshd", "-D"]
 
