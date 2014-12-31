@@ -3,6 +3,18 @@
 BIN_DIR=`dirname "$0"`
 BIN_DIR=`cd "$BIN_DIR"; pwd`
 
+HOST_IP="127.0.0.1"
+
+OS=`uname`
+if [[ "$OS" == 'Linux' ]]; then
+   OS='linux'
+elif [[ "$OS" == 'FreeBSD' ]]; then
+   platform='freebsd'
+elif [[ "$OS" == 'Darwin' ]]; then
+   platform='macos'
+   HOST_IP=$(boot2docker ip)
+fi
+
 function printHeader() {
   echo ""
   echo "###########################################################################################################"
@@ -60,7 +72,7 @@ function do_ssh() {
   arr=(${1//@/ })
 
   port=$(login_ssh_port ${arr[1]})
-  ssh ${arr[0]}@$(boot2docker ip) -p $port
+  ssh -p $port ${arr[0]}@$HOST_IP
 }
 
 function do_scp() {
@@ -68,10 +80,8 @@ function do_scp() {
 
   HOST=$(echo "$@" | sed "s/.*@\(.*\):.*$/\1/")
   PORT=$(login_ssh_port $HOST)
-  BOOT2DOCKER_IP=$(boot2docker ip)
-  NEW_ARGS=$(echo "$@" | sed "s/@\(.*\):/@$BOOT2DOCKER_IP:/")
+  NEW_ARGS=$(echo "$@" | sed "s/@\(.*\):/@$HOST_IP:/")
   echo "NEW ARGS = $NEW_ARGS" 
-  #scp -P $PORT ${arr[0]}@$(boot2docker ip)
   echo "scp -P $PORT $NEW_ARGS"
   scp -P $PORT $NEW_ARGS
 }
@@ -117,7 +127,7 @@ function container_update_hosts() {
     #extract the container name
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
     echo "Update /etc/hosts for $container_name"
-    ssh -o StrictHostKeyChecking=no -p $(login_ssh_port $container_id) root@$(boot2docker ip) "echo '$HOSTS'  > /etc/hosts"
+    ssh -o StrictHostKeyChecking=no -p $(login_ssh_port $container_id) root@$HOST_IP "echo '$HOSTS'  > /etc/hosts"
   done
 }
 
