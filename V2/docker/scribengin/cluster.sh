@@ -39,21 +39,12 @@ function clean_image() {
   docker rmi -f ubuntu:scribengin
 }
 
-function runCluster() {
-  printHeader "Run the cluster"
-  NAME="hadoop"
-  #docker run -d -p 22 --privileged -h hadoop --name $NAME ubuntu:scribengin /bin/sh -c "while true; do echo Hello world; sleep 1; done"
-  docker run -d -p 22 --privileged -h hadoop --name $NAME ubuntu:scribengin
-  docker port $NAME
-}
-
 function runHadoop() {
   printHeader "Run hadoop vm machines"
-  HADOOP_VMS="hadoop1 hadoop2 hadoop3 hadoop4"
-  for NAME in $HADOOP_VMS
+  VMS="hadoop-master hadoop-worker-1 hadoop-worker-2 hadoop4-worker-3 zookeeper kafka-1 kafka-2 kafka-3"
+  for NAME in $VMS
   do
-    VM_NAME="${NAME}.scribengin"
-    docker run -d -p 22 -p 50070 --privileged -h "$VM_NAME" --name "$VM_NAME" ubuntu:scribengin
+    docker run -d -P --privileged -h "$NAME" --name "$NAME" ubuntu:scribengin
   done
   docker ps
 }
