@@ -17,6 +17,7 @@ chown -R neverwinterdp:neverwinterdp /home/neverwinterdp/.ssh
 
 cp -r /tmp/post-install/cluster.sh /opt
 cp -r /tmp/post-install/hadoop/config/* /opt/hadoop/etc/hadoop
+cp -r /tmp/post-install/zookeeper/conf/* /opt/zookeeper/conf
 
 echo "Change /opt ownership and permission to neverwinterdp user"
 chown -R neverwinterdp:neverwinterdp /opt
