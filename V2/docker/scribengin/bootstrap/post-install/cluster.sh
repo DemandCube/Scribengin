@@ -64,7 +64,7 @@ function inst() {
 }
 
 #Parse /etc/hosts file to get the cluster hostname
-function parseHostsFile() {
+function parse_hosts_file() {
   FILENAME="/etc/hosts"
   while read LINE
   do
@@ -147,6 +147,16 @@ function servers_exec() {
   done
 }
 
+function hadoop_clean() {
+  h1 "Clean hadoop data and logs"
+  inst "this step will remove the data directory(/opt/hadoop/data) and the log directory(/opt/hadoop/logs)"
+  servers_exec "$HADOOP_SERVERS" "rm -rf /opt/hadoop/data && rm -rf /opt/hadoop/logs"
+
+  h1 "Reformat the dfs"
+  inst "this step will run the command: /opt/hadoop/bin/hdfs namenode -format"
+  servers_exec "$HADOOP_MASTER_SERVERS" "/opt/hadoop/bin/hdfs namenode -format"
+}
+
 function hadoop_start() {
   #Par the parameters
   clean=false
@@ -164,35 +174,95 @@ function hadoop_start() {
   done
 
   #clean the hadoop data and logs if clean = true
-  if [ $clean ] ; then
-    h1 "Clean hadoop data and logs directory"
-    inst $'this step will remove the following directory: \n
-           1. The hadoop data directory - /opt/hadoop/data \n
-           2. The hadoop logs directory - /opt/hadoop/logs'
-    servers_exec "$HADOOP_SERVERS" "rm -rf /opt/hadoop/data && rm -rf /opt/hadoop/logs"
-
-    h1 "Reformat the dfs"
-    inst $'this step will run the command: \n
-           1.  /opt/hadoop/bin/hdfs namenode -format'
-    servers_exec "$HADOOP_MASTER_SERVERS" "/opt/hadoop/bin/hdfs namenode -format"
+  if  $clean  ; then
+    hadoop_clean
   fi
 
   h1 "Start hadoop dfs"
-  ssh  $USER@hadoop-master "/opt/hadoop/sbin/start-dfs.sh"
+  servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/start-dfs.sh"
 
   h1 "Start hadoop yarn"
-  ssh  $USER@hadoop-master "/opt/hadoop/sbin/start-yarn.sh"
+  servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/start-yarn.sh"
 }
 
 function hadoop_stop() {
   h1 "Stop hadoop yarn"
-  /opt/hadoop/sbin/stop-yarn.sh
+  servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/stop-yarn.sh"
 
   h1 "Stop hadoop dfs"
-  /opt/hadoop/sbin/stop-dfs.sh
+  servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/stop-dfs.sh"
 }
 
-parseHostsFile 
+function zookeeper_clean() {
+  h1 "Clean zookeeper data and logs"
+  inst $'This step will:\n
+         1.  Remove the data directory(/opt/zookeeper/data) \n
+         2.  Remove the log file(/opt/zookeeper/logs/zookeeper.out)'
+  servers_exec "$ZOOKEEPER_SERVERS" "rm -rf /opt/zookeeper/data && rm -rf /opt/zookeeper/zookeeper.out"
+}
+
+function zookeeper_start() {
+  #Par the parameters
+  clean=false
+  for i in "$@"; do
+    case $i in
+      -c|--clean)
+      clean=true 
+      ;;
+      #unknown option
+    esac
+  done
+
+  #clean the hadoop data and logs if clean = true
+  if  $clean  ; then
+    zookeeper_clean
+  fi
+
+  h1 "Start zookeeper"
+  servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/zkServer.sh start"
+}
+
+function zookeeper_stop() {
+  h1 "Stop the zookeeper servers"
+  servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/zkServer.sh stop"
+}
+
+function kafka_clean() {
+  h1 "Clean kafka data and logs"
+  inst $'This step will: \n
+         1.  Remove the data directory /opt/kafka/data \n
+         2.  Remove the log file /opt/kafka/logs'
+  servers_exec "$KAFKA_SERVERS" "rm -rf /opt/kafka/data && rm -rf /opt/kafka/logs"
+}
+
+function kafka_start() {
+  #Par the parameters
+  clean=false
+  for i in "$@"; do
+    case $i in
+      -c|--clean)
+      clean=true 
+      ;;
+      #unknown option
+    esac
+  done
+
+  #clean the hadoop data and logs if clean = true
+  if  $clean  ; then
+    kafka_clean
+  fi
+
+  h1 "Start kafka"
+  servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh"
+  servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
+}
+
+function kafka_stop() {
+  h1 "Stop the kafka servers"
+  servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-stop.sh"
+}
+
+parse_hosts_file 
 
 # get sub command
 COMMAND=$1
@@ -201,7 +271,7 @@ shift
 
 echo ""
 echo "************************************************************************************************************"
-echo "Server hadoop role   : $GENERIC_SERVERS"
+echo "Server hadoop role   : $HADOOP_SERVERS"
 echo "Server zookeeper role: $ZOOKEEPER_SERVERS"
 echo "Server kafka role    : $KAFKA_SERVERS"
 echo "All Server           : $ALL_SERVERS"
@@ -214,9 +284,47 @@ elif [ "$COMMAND" = "sync" ] ; then
   confirmYN "Do you want to sync this program with the other members(Y/N)?"
   cluster_sync
 elif [ "$COMMAND" = "start" ] ; then
-  hadoop_start
+  zookeeper_start $@
+  kafka_start $@
+  hadoop_start $@
 elif [ "$COMMAND" = "stop" ] ; then
-  hadoop_stop
+  hadoop_stop $@
+  kafka_stop $@
+  zookeeper_stop $@
+elif [ "$COMMAND" = "clean" ] ; then
+  hadoop_clean $@
+  kafka_clean $@
+  zookeeper_clean $@
+elif [ "$COMMAND" = "zookeeper" ] ; then
+  SUB_COMMAND=$1
+  shift
+  if [ "$SUB_COMMAND" = "start" ] ; then
+    zookeeper_start $@
+  elif [ "$SUB_COMMAND" = "stop" ] ; then
+    zookeeper_stop $@
+  elif [ "$SUB_COMMAND" = "clean" ] ; then
+    zookeeper_clean
+  fi
+elif [ "$COMMAND" = "kafka" ] ; then
+  SUB_COMMAND=$1
+  shift
+  if [ "$SUB_COMMAND" = "start" ] ; then
+    kafka_start $@
+  elif [ "$SUB_COMMAND" = "stop" ] ; then
+    kafka_stop $@
+  elif [ "$SUB_COMMAND" = "clean" ] ; then
+    kafka_clean
+  fi
+elif [ "$COMMAND" = "hadoop" ] ; then
+  SUB_COMMAND=$1
+  shift
+  if [ "$SUB_COMMAND" = "start" ] ; then
+    hadoop_start $@
+  elif [ "$SUB_COMMAND" = "stop" ] ; then
+    hadoop_stop $@
+  elif [ "$SUB_COMMAND" = "clean" ] ; then
+    hadoop_clean
+  fi
 else
   echo "cluster command options: "
   echo "  exec                  : To execute the shell command on all the servers or a group of servers"
