@@ -145,14 +145,17 @@ function container_clean() {
 
 function printUsage() {
   echo "Cluster command options: "
-  echo "  Command image: "
-  echo "    build                 : To build the ubuntu os image with the preinstalled requirement"
+  echo "  Command image consists of the sub commands: "
+  echo "    build                 : To build the ubuntu os image with the required components"
   echo "    clean                 : To remove the image"
-  echo "  Command container:"
-  echo "    run                   : To run the containers"
+  echo "  Command container consists of the sub commands: "
+  echo "    run                   : To run the containers(hadoop, zookeeper, kafka...)"
   echo "    clean                 : To remove and destroy all the running containers"
-  echo "    login                 : To login the given container with the root user"
+  echo "    login                 : To login the given containeri name or id  with the root user"
   echo "    update-hosts          : To update the /etc/hosts in all the running containers"
+  echo "  Other commands:"
+  echo "    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command"
+  echo "    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
 }
 
 # get command
@@ -191,8 +194,6 @@ elif [ "$COMMAND" = "ssh" ] ; then
 elif [ "$COMMAND" = "scp" ] ; then
   do_scp $@
 else
-  echo "cluster command options: "
-  echo "  build                 : To build the ubuntu os image with the preinstalled requirement"
-  echo "  run                   : To run the cluster"
+  printUsage
 fi
 
