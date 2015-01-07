@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMService;

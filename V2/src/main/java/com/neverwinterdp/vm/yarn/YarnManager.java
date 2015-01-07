@@ -1,6 +1,8 @@
 package com.neverwinterdp.vm.yarn;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -71,9 +73,13 @@ public class YarnManager {
       nmClient.init(conf);
       nmClient.start();
       // Register with RM
-      RegisterApplicationMasterResponse registerResponse = amrmClientAsync.registerApplicationMaster("localhost", 0, "");
+      String appHostName = InetAddress.getLocalHost().getHostAddress()  ;
+
+      RegisterApplicationMasterResponse registerResponse = amrmClientAsync.registerApplicationMaster(appHostName, 0, "");
+      System.out.println("amrmClientAsync.registerApplicationMaster");
     } catch(Throwable t) {
       logger.error("Error: " , t);
+      t.printStackTrace();
     }
     logger.info("Finish init(VMConfig vmConfig)");
   }
@@ -178,30 +184,45 @@ public class YarnManager {
     public void onAllocate(YarnManager manager, Container container) ;
   }
   
-  static public class ContainerRequestQueue {
-    private Map<String, Queue<ContainerRequestCallback>> multiQueues = new HashMap<String, Queue<ContainerRequestCallback>>();
+  class ContainerRequestQueue {
+    private List<ContainerRequestCallback> queues = new ArrayList<>();
     
     synchronized public void offer(ContainerRequest request, ContainerRequestCallback callback) {
-      String key = key(request.getCapability());
-      Queue<ContainerRequestCallback> queue = multiQueues.get(key);
-      if(queue == null) {
-        queue = new LinkedList<ContainerRequestCallback>();
-        multiQueues.put(key, queue);
-      }
-      queue.offer(callback);
+      queues.add(callback);
     }
     
     synchronized public ContainerRequestCallback take(Container container) {
-      String key =  key(container.getResource()) ;
-      Queue<ContainerRequestCallback> queue = multiQueues.get(key);
-      ContainerRequestCallback callback = queue.poll();
+      ContainerRequestCallback callback = null ;
+      for(int i = 0; i < queues.size(); i++) {
+        int cpuCores = container.getResource().getVirtualCores();
+        int memory = container.getResource().getMemory();
+        
+        ContainerRequestCallback sel = queues.get(i);
+        if(cpuCores < sel.getContainerRequest().getCapability().getVirtualCores()) continue;
+        if(memory < sel.getContainerRequest().getCapability().getMemory()) continue;
+        if(callback == null) {
+          callback = sel;
+        } else {
+          int callbackMemory = callback.getContainerRequest().getCapability().getMemory();
+          int callbackCpuCores = callback.getContainerRequest().getCapability().getVirtualCores();
+          //Select closest match memory and cpu cores requirement
+          if(sel.getContainerRequest().getCapability().getMemory() < callbackMemory && 
+             sel.getContainerRequest().getCapability().getVirtualCores() < callbackCpuCores) {
+            callback = sel;
+            continue;
+          }
+          if(sel.getContainerRequest().getCapability().getVirtualCores() < callbackCpuCores) {
+            callback = sel;
+            continue;
+          }
+          if(sel.getContainerRequest().getCapability().getMemory() < callbackMemory) {
+            callback = sel;
+            continue;
+          }
+        }
+      }
+      if(callback != null) queues.remove(callback);
       return callback;
-    }
-    
-    
-    private String key(Resource res) {
-      String key = "cpu=" + res.getVirtualCores() + ",memory=" + res.getMemory();
-      return key;
     }
   }
 }

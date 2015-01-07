@@ -7,6 +7,6 @@
 
   <property>
     <name>yarn.nodemanager.hostname</name>
-    <value>hadoop-master</value>
+    <value>0.0.0.0</value>
   </property>
 </configuration>

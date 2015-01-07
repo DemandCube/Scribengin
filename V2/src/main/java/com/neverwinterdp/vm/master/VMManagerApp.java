@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
+import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMService;
 
@@ -48,23 +49,26 @@ public class VMManagerApp extends VMApp {
         AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
+            bindInstance(VMConfig.class, getVM().getDescriptor().getVmConfig());
             bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
               bindType(Registry.class, registry.getClass().getName());
-            } catch (ClassNotFoundException e) {
+            } catch (Throwable e) {
               //TODO: use logger
               e.printStackTrace();
             }
           };
         };
         appContainer = Guice.createInjector(module);
+        System.out.println("Before get VMService") ;
         vmService = appContainer.getInstance(VMService.class);
+        System.out.println("After get VMService = " + vmService) ;
         VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
         for(VMDescriptor sel : vmDescriptor) {
           if(vmService.isRunning(sel)) vmService.watch(sel);
           else vmService.unregister(sel);
         }
-      } catch(Exception e) {
+      } catch(Throwable e) {
         e.printStackTrace();
       }
     }

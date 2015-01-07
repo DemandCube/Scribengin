@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 BIN_DIR=`dirname "$0"`
 BIN_DIR=`cd "$BIN_DIR"; pwd`
 
@@ -15,7 +16,7 @@ elif [[ "$OS" == 'Darwin' ]]; then
    HOST_IP=$(boot2docker ip)
 fi
 
-function printHeader() {
+function h1() {
   echo ""
   echo "###########################################################################################################"
   echo "$@"
@@ -23,7 +24,7 @@ function printHeader() {
 }
 
 function build_image() {
-  printHeader "Build the os image with the preinstalled requirements"
+  h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
   mkdir ./tmp
   cat ~/.ssh/id_rsa.pub > ./tmp/authorized_keys
@@ -35,13 +36,13 @@ function build_image() {
 }
 
 function clean_image() {
-  printHeader "Clean the images"
+  h1 "Clean the images"
   docker rmi -f ubuntu:scribengin
 }
 
 function launch_containers() {
-  printHeader "Launch hadoop containers"
-  docker run -d -p 22 -p 50070:50070 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
+  h1 "Launch hadoop containers"
+  docker run -d -p 22 -p 50070:50070 -p 9000:9000 -p 8030:8030 -p 8032:8032 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
   
   HADOOP_WORKERS="hadoop-worker-1 hadoop-worker-2 hadoop-worker-3"
   for NAME in $HADOOP_WORKERS
@@ -49,10 +50,10 @@ function launch_containers() {
     docker run -d -p 22 --privileged -h "$NAME" --name "$NAME" ubuntu:scribengin
   done
   
-  printHeader "Launch zookeeper containers"
+  h1 "Launch zookeeper containers"
   docker run -d -p 22 -p 2181 --privileged -h zookeeper --name zookeeper  ubuntu:scribengin
 
-  printHeader "Launch kafka containers"
+  h1 "Launch kafka containers"
   KAFKA_SERVERS="kafka-1 kafka-2 kafka-3"
   for NAME in $KAFKA_SERVERS
   do
@@ -63,7 +64,7 @@ function launch_containers() {
 }
 
 function container_login() {
-  printHeader "Login to the instance $@"
+  h1 "Login to the instance $@"
   docker exec -i -t $1 bash 
 }
 
@@ -72,7 +73,7 @@ function login_ssh_port() {
 }
 
 function do_ssh() {
-  printHeader "Login to the instance $@"
+  h1 "Login to the instance $@"
   arr=(${1//@/ })
 
   port=$(login_ssh_port ${arr[1]})
@@ -80,7 +81,7 @@ function do_ssh() {
 }
 
 function do_scp() {
-  printHeader "scp $@"
+  h1 "scp $@"
 
   HOST=$(echo "$@" | sed "s/.*@\(.*\):.*$/\1/")
   PORT=$(login_ssh_port $HOST)
@@ -111,9 +112,9 @@ function container_ids() {
 }
 
 function container_update_hosts() {
-  printHeader "Update /etc/hosts file"
+  h1 "Update /etc/hosts file"
   HOSTS=$'## scribengin server ##\n'
-  HOSTS+=$'127.0.0.1 localhost\n'
+  HOSTS+=$'127.0.0.1 localhost\n\n'
   for container_id in $(container_ids); do
     #extract the container name
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
@@ -124,9 +125,15 @@ function container_update_hosts() {
     container_running=$(docker inspect -f {{.State.Running}} $container_id)
     HOSTS+="$container_ip $container_name"
     HOSTS+=$'\n'
-    echo "container id = $container_id, container name = $container_name, container ip = $container_ip, container running = $container_running"
+    #echo "container id = $container_id, container name = $container_name, container ip = $container_ip, container running = $container_running"
   done
 
+  echo ""
+  echo "Insert Content:"
+  echo ""
+  echo "-----------------------------------------------------------------------------------------------"
+  echo "$HOSTS"
+  echo "-----------------------------------------------------------------------------------------------"
   for container_id in $(container_ids); do
     #extract the container name
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
@@ -156,6 +163,7 @@ function printUsage() {
   echo "  Other commands:"
   echo "    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command"
   echo "    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
+  echo "    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
 }
 
 # get command
@@ -193,7 +201,14 @@ elif [ "$COMMAND" = "ssh" ] ; then
   do_ssh $@
 elif [ "$COMMAND" = "scp" ] ; then
   do_scp $@
+elif [ "$COMMAND" = "ip-route" ] ; then
+  sudo route -n add 172.17.0.0/16 `boot2docker ip`
 else
+  h1 "Docker Images"
+  docker images
+  h1 "Docker Running Containers"
+  docker ps
+  h1 "docker.sh usage"
   printUsage
 fi
 

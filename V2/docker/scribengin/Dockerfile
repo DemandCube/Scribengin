@@ -4,7 +4,7 @@
 # To run:   docker run -t -i ubuntu:scribengin  /bin/bash                            #
 #                                                                                    #
 ######################################################################################
-FROM ubuntu:14.04
+FROM ubuntu:latest
 #FROM ubuntu:latest
 MAINTAINER Tuan Nguyen <tuan@demandcube.com>
 
@@ -44,7 +44,7 @@ RUN echo "Create neverwinterdp user account and setup home directory"
 #A bug with file creation permission, need to create a template ssh configuration and copy to the account in the post installation
 
 #EXPOSE Ports
-EXPOSE 22 2181 9092 50070 8088 
+EXPOSE 22 2181 9092 50070 8088 9000
 
 CMD ["/usr/sbin/sshd", "-D"]
 
@@ -57,9 +57,9 @@ RUN wget -q http://apache.01link.hk/kafka/0.8.1.1/kafka_2.9.2-0.8.1.1.tgz -O /tm
 RUN tar xfz /tmp/kafka_2.9.2-0.8.1.1.tgz -C /opt
 RUN mv /opt/kafka_2.9.2-0.8.1.1 /opt/kafka
 
-RUN wget -q  http://mirrors.digipower.vn/apache/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz -O /tmp/hadoop-2.6.0.tar.gz
-RUN tar xfz /tmp/hadoop-2.6.0.tar.gz -C /opt
-RUN mv /opt/hadoop-2.6.0 /opt/hadoop
+RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
+RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
+RUN mv /opt/hadoop-2.4.0 /opt/hadoop
 
 
 
@@ -73,3 +73,6 @@ RUN cat             /tmp/post-install/ssh-config/id_rsa.pub > /tmp/post-install/
 RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/ssh-config/authorized_keys
 
 RUN /tmp/post-install/post-install.sh
+
+RUN rm -rf          /tmp/*.tgz
+RUN rm -rf          /tmp/post-install

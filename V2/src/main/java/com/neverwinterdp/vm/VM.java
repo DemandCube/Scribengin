@@ -14,6 +14,7 @@ import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.command.VMCommandWatcher;
 
 public class VM {
@@ -33,6 +34,8 @@ public class VM {
   private VMApplicationRunner vmApplicationRunner ;
   
   public VM(VMConfig vmConfig) throws Exception {
+    logger.info("Create VM with VMConfig:");
+    logger.info(JSONSerializer.INSTANCE.toString(vmConfig));
     vmContainer = createVMContainer(vmConfig);
     vmRegistry = vmContainer.getInstance(VMRegistry.class);
     if(vmConfig.isSelfRegistration()) {

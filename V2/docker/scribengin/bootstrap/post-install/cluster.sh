@@ -193,12 +193,23 @@ function hadoop_stop() {
   servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/stop-dfs.sh"
 }
 
+function hadoop_log_grep() {
+  h1 "Hadoop Logs"
+  servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name '*.log' -exec grep $@ {} \; -print"
+}
+
+function hadoop_std_grep() {
+  h1 "Hadoop Container stdout/stderr"
+  servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stdout' -exec grep $@ {} \; -print"
+  servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stderr' -exec grep $@ {} \; -print"
+}
+
 function zookeeper_clean() {
   h1 "Clean zookeeper data and logs"
   inst $'This step will:\n
          1.  Remove the data directory(/opt/zookeeper/data) \n
          2.  Remove the log file(/opt/zookeeper/logs/zookeeper.out)'
-  servers_exec "$ZOOKEEPER_SERVERS" "rm -rf /opt/zookeeper/data && rm -rf /opt/zookeeper/zookeeper.out"
+  servers_exec "$ZOOKEEPER_SERVERS" "rm -rf /opt/zookeeper/data && rm -rf /opt/zookeeper/zookeeper.out && rm -rf /opt/zookeeper/logs"
 }
 
 function zookeeper_start() {
@@ -219,12 +230,17 @@ function zookeeper_start() {
   fi
 
   h1 "Start zookeeper"
-  servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/zkServer.sh start"
+  servers_exec  "$ZOOKEEPER_SERVERS" "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR=/opt/zookeeper/logs  /opt/zookeeper/bin/zkServer.sh start"
 }
 
 function zookeeper_stop() {
   h1 "Stop the zookeeper servers"
   servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/zkServer.sh stop"
+}
+
+function zookeeper_log_grep() {
+  h1 "Zookeeper Logs"
+  servers_exec "$ZOOKEEPER_SERVERS" "find  /opt/zookeeper/logs -name '*' -exec grep $@ {} \; -print"
 }
 
 function kafka_clean() {
@@ -262,6 +278,11 @@ function kafka_stop() {
   servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-stop.sh"
 }
 
+function kafka_log_grep() {
+  h1 "kafka Logs"
+  servers_exec "$KAFKA_SERVERS" "find  /opt/kafka/logs -name '*.log' -exec grep $@ {} \; -print"
+}
+
 parse_hosts_file 
 
 # get sub command
@@ -295,6 +316,10 @@ elif [ "$COMMAND" = "clean" ] ; then
   hadoop_clean $@
   kafka_clean $@
   zookeeper_clean $@
+elif [ "$COMMAND" = "log-grep" ] ; then
+  hadoop_log_grep $@
+  kafka_log_grep $@
+  zookeeper_log_grep $@
 elif [ "$COMMAND" = "zookeeper" ] ; then
   SUB_COMMAND=$1
   shift
@@ -304,6 +329,8 @@ elif [ "$COMMAND" = "zookeeper" ] ; then
     zookeeper_stop $@
   elif [ "$SUB_COMMAND" = "clean" ] ; then
     zookeeper_clean
+  elif [ "$SUB_COMMAND" = "log-grep" ] ; then
+    zookeeper_log_grep $@
   fi
 elif [ "$COMMAND" = "kafka" ] ; then
   SUB_COMMAND=$1
@@ -314,6 +341,8 @@ elif [ "$COMMAND" = "kafka" ] ; then
     kafka_stop $@
   elif [ "$SUB_COMMAND" = "clean" ] ; then
     kafka_clean
+  elif [ "$SUB_COMMAND" = "log-grep" ] ; then
+    kafka_log_grep $@
   fi
 elif [ "$COMMAND" = "hadoop" ] ; then
   SUB_COMMAND=$1
@@ -324,6 +353,10 @@ elif [ "$COMMAND" = "hadoop" ] ; then
     hadoop_stop $@
   elif [ "$SUB_COMMAND" = "clean" ] ; then
     hadoop_clean
+  elif [ "$SUB_COMMAND" = "log-grep" ] ; then
+    hadoop_log_grep $@
+  elif [ "$SUB_COMMAND" = "std-grep" ] ; then
+    hadoop_std_grep $@
   fi
 else
   echo "cluster command options: "

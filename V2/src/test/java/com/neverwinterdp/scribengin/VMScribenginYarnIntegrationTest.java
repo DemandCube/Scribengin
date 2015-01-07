@@ -41,10 +41,10 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
 
   @After
   public void teardown() throws Exception {
-    super.teardown();
     miniYarnCluster.stop();
     miniYarnCluster.close();
     miniDFSCluster.shutdown();
+    super.teardown();
   }
   
   protected void createVMMaster(String name) throws Exception {
@@ -59,16 +59,15 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
       "--registry-implementation", RegistryImpl.class.getName(),
       "--vm-application",VMManagerApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
-      "--yarn:yarn.resourcemanager.scheduler.address=0.0.0.0:8030",
-      "--yarn:fs.defaultFS=" + miniDFSCluster.getURI(),
-      "--yarn:fs.default.name=" + miniDFSCluster.getURI(),
+      "--yarn:yarn.resourcemanager.scheduler.address=localhost:8030",
+      "--yarn:fs.defaultFS=" + miniDFSCluster.getURI()
     };
     AppClient appClient = new AppClient() ;
     appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
   }
   
   @Override
-  protected FileSystem getFileSystem() throws Exception {
+  protected FileSystem getFileSystem() throws Exception { 
     return miniDFSCluster.getFileSystem();
   }
 
