@@ -16,7 +16,6 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.dependency.KafkaCluster;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaWriter;
-import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 public class KafkaPartitionReaderUnitTest {
@@ -28,10 +27,10 @@ public class KafkaPartitionReaderUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    FileUtil.removeIfExist("./build/kafka", false);
-    cluster = new KafkaCluster("./build/Kafka", 1, 3);
+    cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.setNumOfPartition(5);
     cluster.start();
+    Thread.sleep(2000);
   }
   
   @After

@@ -1,6 +1,8 @@
 package com.neverwinterdp.scribengin.dependency;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,20 +119,30 @@ public class KafkaCluster {
   }
 
   public String getZKConnect() {
+    String ipAddress = "127.0.0.1";
+    try {
+      ipAddress = InetAddress.getLocalHost().getHostAddress()  ;
+    } catch (UnknownHostException e) {
+    }
     StringBuilder b = new StringBuilder();
     for (Server server : zookeeperServers.values()) {
       if (b.length() > 0) b.append(",");
-      b.append("127.0.0.1:").append(server.getPort());
+      b.append(ipAddress).append(":").append(server.getPort());
     }
     return b.toString();
   }
 
   public String getKafkaConnect() {
+    String ipAddress = "127.0.0.1";
+    try {
+      ipAddress = InetAddress.getLocalHost().getHostAddress()  ;
+    } catch (UnknownHostException e) {
+    }
     StringBuilder b = new StringBuilder();
     for (Server server : kafkaServers.values()) {
       if (b.length() > 0)
         b.append(",");
-      b.append("127.0.0.1:").append(server.getPort());
+      b.append(ipAddress).append(":").append(server.getPort());
     }
     return b.toString();
   }

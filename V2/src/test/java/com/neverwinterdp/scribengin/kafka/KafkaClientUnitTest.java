@@ -10,7 +10,6 @@ import com.neverwinterdp.scribengin.dependency.KafkaCluster;
 import com.neverwinterdp.scribengin.kafka.sink.SinkImpl;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
-import com.neverwinterdp.util.FileUtil;
 
 public class KafkaClientUnitTest {
   static {
@@ -21,10 +20,9 @@ public class KafkaClientUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    FileUtil.removeIfExist("./build/kafka", false);
-    cluster = new KafkaCluster("./build/Kafka", 1, 1);
+    cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.start();
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
   
   @After
@@ -34,7 +32,7 @@ public class KafkaClientUnitTest {
 
   @Test
   public void testKafkaClient() throws Exception {
-    SinkImpl sink = new SinkImpl("writer", cluster.getKafkaConnect(), "hello");
+    SinkImpl sink = new SinkImpl("writer", cluster.getZKConnect(), "hello");
     SinkStream stream = sink.newStream();
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < 10; i++) {

@@ -13,7 +13,6 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
-import com.neverwinterdp.util.FileUtil;
 
 public class SinkSourceUnitTest {
   static {
@@ -24,11 +23,10 @@ public class SinkSourceUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    FileUtil.removeIfExist("./build/kafka", false);
-    cluster = new KafkaCluster("./build/Kafka", 1, 1);
+    cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.setNumOfPartition(5);
     cluster.start();
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
   
   @After
@@ -38,7 +36,7 @@ public class SinkSourceUnitTest {
 
   @Test
   public void testKafkaSource() throws Exception {
-    SinkImpl sink = new SinkImpl("hello", "127.0.0.1:2181", "hello") ;
+    SinkImpl sink = new SinkImpl("hello", cluster.getZKConnect(), "hello") ;
     SinkStream stream = sink.newStream();
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < 10; i++) {
@@ -48,7 +46,7 @@ public class SinkSourceUnitTest {
     }
     writer.close();
     
-    SourceImpl source = new SourceImpl("hello", "127.0.0.1:2181", "hello");
+    SourceImpl source = new SourceImpl("hello", cluster.getZKConnect(), "hello");
     SourceStream[] streams = source.getStreams();
     Assert.assertEquals(5, streams.length);
     for(int i = 0; i < streams.length; i++) {
