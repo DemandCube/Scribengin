@@ -44,9 +44,16 @@ configurations.all {
 
 dependencies {
   compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
 
-  testCompile group: 'junit', name: 'junit', version: '4.11'
+  //TODO: move to use jackson
+  compile 'org.json:json:20090211'
+  //compile group: 'com.google.guava', name: 'guava', version: '18.0'
+  compile group: 'com.google.guava', name: 'guava', version: '13.0'
+
+  compile group: 'junit', name: 'junit', version: '4.11'
+  //testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
 test {
@@ -56,4 +63,81 @@ test {
   testLogging {
     events "passed", "skipped", "failed"
   }
+
+  filter {
+    includeTestsMatching "*UnitTest"
+  }
+}
+
+task release (dependsOn: 'build') << {
+  def releaseDir = "${buildDir}/release/Scribengin.V2"
+  doRelease(releaseDir) ;
+}
+
+def doRelease(String releaseDir) {
+  println "\n\n"
+  println "*************************************************"
+  println "Preparing the release directory ${releaseDir}"
+  println "*************************************************"
+
+  def dependencyJars = [ 
+    "commons.utils", "commons.api", "commons.buffer", "commons.yara",
+    "commons.hadoop-framework", "commons.zookeeper", "scribengin.v2",
+
+    "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
+    //"jcommander", "reflections", "guava-16.0.1", "javassist",
+    "jcommander", "reflections", "guava-13.0", "javassist",
+    'guice', 'javax.inject', 'hazelcast', 'aopalliance',
+    "kafka", "scala-library",
+    'zookeeper', 'zkclient',
+    "netty-all", 'jzlib', 
+    'chronicle', "lang-6.4.6", "compiler-2.2.0",
+    
+    "hadoop-common", "hadoop-hdfs", "hadoop-auth", 
+    "hadoop-yarn-api", "hadoop-yarn-common", "hadoop-yarn-client",
+    "protobuf",
+
+    //codahale metric is required by kafka
+    "metrics-core-2.2.0",
+    "commons-collections", "commons-configuration","commons-lang3-3.1", "commons-lang-2.6", "commons-cli",
+    "log4j", "slf4j-api", "slf4j-log4j12", "commons-logging",
+    "junit-4.11"
+  ] ;
+
+  println "Copy the dependency library"
+  configurations.compile.each { File file -> 
+    if(isIn(dependencyJars, file)) {
+      println "  Copy $file.name to NeverwinterDP/libs"
+      copy {
+        from file
+        into "${releaseDir}/libs"
+      }
+    } else {
+      //println "Ignore $file.name "
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}/libs"
+  }
+
+  println "Copy and override app"
+  copy {
+    from "src/app"
+    into "${releaseDir}"
+  }
+
+  println "Copy and override webapp"
+  copy {
+    from "src/main/webapp"
+    into "${releaseDir}/webapp"
+  }
+}
+
+def isIn(set, File file) {
+  for(item in set) {
+    if(file.name.startsWith(item)) return true ;
+  }
+  return false ;
 }

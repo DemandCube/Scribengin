@@ -1,15 +1,33 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-import com.neverwinterdp.scribengin.source.SourceStream;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.source.Source;
+import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
-public interface DataflowTask {
-  public DataflowTaskDescriptor getDescriptor() ;
+
+public class DataflowTask {
+  private DataflowTaskDescriptor descriptor;
+  private DataProcessor processor;
+  private DataflowTaskContext context;
   
-  public Source getSource();
-  public Sink getSink();
-
-  public void execute(SourceStream[] in, SinkStream[] out) ;
+  public DataflowTask(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
+    this.descriptor = descriptor;
+    Class<DataProcessor> processorType = 
+        (Class<DataProcessor>) Class.forName(descriptor.getDataProcessor());
+    processor = processorType.newInstance();
+    context = new DataflowTaskContext(container, descriptor);
+  }
+  
+  public DataflowTaskDescriptor getDescriptor() { return descriptor ; }
+  
+  public void execute() throws Exception {
+    SourceStreamReader reader = context.getSourceStreamReader() ;
+    Record record = null ;
+    while((record = reader.next()) != null) {
+      processor.process(record, context);
+    }
+    context.close();
+  }
+  
+  public void suspend() throws Exception {
+  }
 }

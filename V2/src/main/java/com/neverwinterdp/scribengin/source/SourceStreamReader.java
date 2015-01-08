@@ -8,8 +8,6 @@ import com.neverwinterdp.scribengin.Record;
 public interface SourceStreamReader {
   public String getName() ;
   
-  public SourceStream getDataStream() ;
-  
   public Record next() throws Exception;
   
   public Record[] next(int size) throws Exception ;

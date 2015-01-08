@@ -3,9 +3,11 @@ package com.neverwinterdp.scribengin.source;
  * @author Tuan Nguyen
  */
 public interface Source {
-  public SourceDescriptor   getSourceConfig() ;
-  public SourceStream   getSourceStream(int id) ;
-  public SourceStream   getSourceStream(SourceStreamDescriptor descriptor) ;
+  public SourceDescriptor getDescriptor() ;
+  public SourceStream   getStream(int id) ;
+  public SourceStream   getStream(SourceStreamDescriptor descriptor) ;
   
-  public SourceStream[] getSourceStreams() ;
+  public SourceStream[] getStreams() ;
+  
+  public void close() throws Exception ;
 }

@@ -15,45 +15,53 @@ import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 import com.neverwinterdp.util.JSONSerializer;
 /**
  * @author Tuan Nguyen
- * @email  tuan08@gmail.com
+ * @email tuan08@gmail.com
  */
-public class ZookeeperServerLauncher  {
-  private ZookeeperLaucher launcher ;
-  private Thread zkThread ;
-  private Properties zkProperties = new Properties() ;
-  
+public class ZookeeperServerLauncher implements Server {
+  private ZookeeperLaucher launcher;
+  private Thread zkThread;
+  private Properties zkProperties = new Properties();
+  private int port;
+
   public ZookeeperServerLauncher(Map<String, String> overrideProperties) {
-    init(overrideProperties) ;
+    init(overrideProperties);
+  }
+
+  public ZookeeperServerLauncher(String dataDir, int port) {
+    Map<String, String> props = new HashMap<String, String>();
+    props.put("dataDir", dataDir);
+    this.port = port;
+    props.put("clientPort", Integer.toString(port));
+
+    init(props);
   }
   
   public ZookeeperServerLauncher(String dataDir) {
-    Map<String, String> props = new HashMap<String, String>() ;
-    props.put("dataDir", dataDir) ;
-    init(props) ;
+    this(dataDir, 2181);
   }
-  
+
   void init(Map<String, String> overrideProperties) {
-    zkProperties.put("dataDir", "./build/data/zookeeper") ;
-    //the port at which the clients will connect
-    zkProperties.put("clientPort", "2181") ;
-    //disable the per-ip limit on the number of connections since this is a non-production config
-    zkProperties.put("maxClientCnxns", "0") ;
-    if(overrideProperties != null) {
+    zkProperties.put("dataDir", "./build/data/zookeeper");
+    // the port at which the clients will connect
+    zkProperties.put("clientPort", "2181");
+    // disable the per-ip limit on the number of connections since this is a non-production config
+    zkProperties.put("maxClientCnxns", "0");
+    if (overrideProperties != null) {
       zkProperties.putAll(overrideProperties);
     }
   }
-  
+
   public void start() throws Exception {
     if (launcher != null) {
       throw new IllegalStateException("ZookeeperLaucher should be null");
     }
     System.out.println("zookeeper config zkProperties: \n" + JSONSerializer.INSTANCE.toString(zkProperties));
-    
+
     zkThread = new Thread() {
       public void run() {
         try {
-          launcher = create(zkProperties) ;
-          launcher.start() ;
+          launcher = create(zkProperties);
+          launcher.start();
         } catch (Exception ex) {
           launcher = null;
           System.err.println("Cannot lauch the ZookeeperServerLauncher" + ex);
@@ -61,72 +69,98 @@ public class ZookeeperServerLauncher  {
         }
       }
     };
-    zkThread.start() ;
-    //wait to make sure the server is launched
-    Thread.sleep(1000);
-  }
-
-  public void stop() {
-    if (launcher != null) {
-      launcher.shutdown();
-      launcher = null;
-    }
+    zkThread.start();
+    // wait to make sure the server is launched
+    Thread.sleep(3000);
   }
 
   ZookeeperLaucher create(Properties zkProperties) throws ConfigException, IOException {
     QuorumPeerConfig zkConfig = new QuorumPeerConfig();
     zkConfig.parseProperties(zkProperties);
-    DatadirCleanupManager purgeMgr = new DatadirCleanupManager(
-        zkConfig.getDataDir(), 
-        zkConfig.getDataLogDir(), 
-        zkConfig.getSnapRetainCount(), 
-        zkConfig.getPurgeInterval());
+    DatadirCleanupManager purgeMgr =
+        new DatadirCleanupManager(zkConfig.getDataDir(), zkConfig.getDataLogDir(),
+            zkConfig.getSnapRetainCount(), zkConfig.getPurgeInterval());
     purgeMgr.start();
 
     if (zkConfig.getServers().size() > 0) {
       return new QuorumPeerMainExt(zkConfig);
     } else {
-      System.out.println(
-        "Either no config or no quorum defined in config, running in standalone mode"
-      );
+      System.out
+          .println("Either no config or no quorum defined in config, running in standalone mode");
       // there is only server in the quorum -- run as standalone
-      return new ZooKeeperServerMainExt(zkConfig) ;
+      return new ZooKeeperServerMainExt(zkConfig);
     }
   }
-  
+
   static public interface ZookeeperLaucher {
-    public void start() throws Exception ;
-    public void shutdown() ;
+    void start() throws Exception;
+
+    void shutdown();
+
+    QuorumPeerConfig getConfig();
   }
-  
+
   public class QuorumPeerMainExt extends QuorumPeerMain implements ZookeeperLaucher {
-    private QuorumPeerConfig zkConfig ;
-    
+    private QuorumPeerConfig zkConfig;
+
     public QuorumPeerMainExt(QuorumPeerConfig zkConfig) {
-      this.zkConfig = zkConfig ;
+      this.zkConfig = zkConfig;
     }
-    
-    public void start() throws Exception { runFromConfig(zkConfig); }
-    
-    public void shutdown() { quorumPeer.shutdown(); }
+
+    public void start() throws Exception {
+      runFromConfig(zkConfig);
+    }
+
+    public void shutdown() {
+      quorumPeer.shutdown();
+    }
+
+    @Override
+    public QuorumPeerConfig getConfig() {
+
+      return zkConfig;
+    }
   }
-  
+
   public class ZooKeeperServerMainExt extends ZooKeeperServerMain implements ZookeeperLaucher {
-    private QuorumPeerConfig qConfig ;
-    
-    public  ZooKeeperServerMainExt(QuorumPeerConfig qConfig) {
-      this.qConfig = qConfig ;
+    private QuorumPeerConfig qConfig;
+
+    public ZooKeeperServerMainExt(QuorumPeerConfig qConfig) {
+      this.qConfig = qConfig;
     }
-    
+
     public void start() throws Exception {
       ServerConfig config = new ServerConfig();
       config.readFrom(qConfig);
-      //ManagedUtil.registerLog4jMBeans();
+      // ManagedUtil.registerLog4jMBeans();
       runFromConfig(config);
     }
 
     public void shutdown() {
       super.shutdown();
-    } 
+    }
+
+    @Override
+    public QuorumPeerConfig getConfig() {
+      return qConfig;
+    }
+  }
+
+  @Override
+  public String getHost() {
+    return "127.0.0.1";
+  }
+
+  @Override
+  public int getPort() {
+    return this.port;
+  }
+
+  @Override
+  public void shutdown() {
+    if (launcher != null) {
+      launcher.shutdown();
+      launcher = null;
+    }
   }
 }

@@ -6,8 +6,5 @@ public interface SinkStreamWriter {
   public void append(Record record) throws Exception ;
   public void commit() throws Exception ;
   public void close()  throws  Exception ;
-  public boolean verifyLastCommit() throws Exception;
-  
-  //Used to rollback or discard a commit that has failed
-  public boolean discard() throws Exception;
+  public boolean rollback() throws Exception;
 }

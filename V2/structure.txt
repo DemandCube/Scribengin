@@ -1,0 +1,73 @@
+NeverwinterDP
+  vms/
+    available/
+      vm-1[descriptor]
+      vm-2[descriptor]
+      vm-3[descriptor]
+    allocated/
+      vm-1[descriptor - vm_master ]
+        status [ ALLOCATED - INIT - RUNNING - TERMINATED]
+          hearbeat
+        events[start - stop -finish]
+        application
+          config
+          commands
+            request
+              command-id[payload: command - command result]
+              command-id[payload: command - command result]
+            response
+              command-id
+          events[start - stop -finish]
+          executors
+            executor-1
+              dataflow-task-report
+            executor-2
+      vm-2[descriptor - vm_master_backup]
+
+      vm-3[descriptor - scribengin_master]
+      vm-4[descriptor - scribengin_master_backup]
+
+      vm-5[descriptor - dataflow1_master]
+      vm-6[descriptor - dataflow1_master_backup]
+      vm-6[descriptor - dataflow1_worker_1]
+      vm-7[descriptor - dataflow1_worker_2]
+      vm-8[descriptor - dataflow1_worker_3]
+  Scribengin/
+    master
+      leader
+    dataflows
+      dataflow-1[descriptor]
+        master
+          leader
+        dataflow-tasks
+          dataflow-task-1[descriptor]
+            data-flow-executor-ref
+     workers
+       worker-vm-reference-1[descriptor]
+       worker-vm-reference-2[descriptor]
+
+
+HDFS Sink
+
+  sink
+    stream-0
+      data-1.dat   
+      data-2.dat
+      .buffer-uuid/
+         buffer-1.complete  
+         buffer-2.complete  
+         buffer-3.writing  
+    stream-1
+      ...
+    stream-2
+      ...
+    stream-3
+      ...
+
+    The data is stored in multiple *.dat file, we can provide method such compact or merge to optomize the data, 
+    maybe need to have uuid in each dat file to allow concurrent write]
+
+    When the stream write or append the data, a new buffer should be created with the writing extension.  
+    When the writer commit, the buffer should be flush and rename to complete. A new buffer should be created e 
+    and prepare for the next append. If the writer call rollback, the buffer should be deleted and recreate.
+    The buffer 1, 2, ... n should be merged and create the next dat file in the second phase of commit.
