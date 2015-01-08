@@ -43,7 +43,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    * @param offset the offset
    * @return the log file path
    */
-  public String getLogFilePath(long offset) {
+  private String getLogFilePath(long offset) {
     int partition = (int) ((offset / offsetPerPartition) * offsetPerPartition);
     ArrayList<String> pathElements = new ArrayList<String>();
     pathElements.add(topic);
@@ -60,7 +60,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    * @param endOffset the end offset
    * @return the log file basename
    */
-  public String getLogFileBaseName(long startOffset, long endOffset) {
+  private String getLogFileBaseName(long startOffset, long endOffset) {
     ArrayList<String> basenameElements = new ArrayList<String>();
     basenameElements.add(Long.toString(startOffset));
     basenameElements.add(Long.toString(endOffset));

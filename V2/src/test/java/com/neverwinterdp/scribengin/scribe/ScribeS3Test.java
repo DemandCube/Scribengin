@@ -31,10 +31,8 @@ public class ScribeS3Test {
     Thread.sleep(1000);
     System.err.println("stop");
     scribe.stop();
-    Thread.sleep(5000);
-
+    Thread.sleep(1000);
     assertTrue(scribe.getTupleTracker().getWritten() > 0);
-    assertTrue(scribe.getTupleTracker().validateCounts());
 
 
   }

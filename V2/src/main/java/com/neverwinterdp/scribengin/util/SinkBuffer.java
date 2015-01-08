@@ -16,7 +16,6 @@ import com.neverwinterdp.scribengin.stream.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.tuple.Tuple;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class SinkBuffer.
  */
@@ -87,6 +86,10 @@ public class SinkBuffer implements Iterable<Tuple> {
   /** The local tmp dir. */
   private String localTmpDir;
 
+  private Thread bufferThread;
+
+  private boolean active = true;
+
   /**
    * The Constructor.
    *
@@ -107,7 +110,21 @@ public class SinkBuffer implements Iterable<Tuple> {
     this.partitioner = partitioner;
     this.chunkSize = config.getChunkSize();
     memoryBufferingEnabled = config.isMemoryBufferingEnabled();
+    bufferThread = new Thread() {
+      public void run() {
+        try {
+          runProcessLoop();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    };
+    bufferThread.start();
     logger = LoggerFactory.getLogger(SinkBuffer.class);
+  }
+
+  private void setProcessLoopActive(boolean x) {
+    this.active = x;
   }
 
   /**
@@ -121,7 +138,7 @@ public class SinkBuffer implements Iterable<Tuple> {
 
     if (memoryBufferingEnabled) {
       if (!checkMemoryAvailability(tuple.getData().length)) {
-        purgeMemoryToDisk();
+        setProcessLoopActive(true);
         tuplesCountInMemory = 0;
         tuplesSizeInMemory = 0;
       }
@@ -189,6 +206,15 @@ public class SinkBuffer implements Iterable<Tuple> {
     return true;
   }
 
+  private void runProcessLoop() throws InterruptedException {
+    while (true) {
+      if (active) {
+        purgeMemoryToDisk();
+      }
+      Thread.sleep(1000);
+    }
+  }
+
   /**
    * Buffer to disk.
    */
@@ -200,6 +226,7 @@ public class SinkBuffer implements Iterable<Tuple> {
       addToDisk(tempTuples.poll());
     }
     updateDiskState();
+    setProcessLoopActive(false);
 
   }
 
@@ -210,7 +237,7 @@ public class SinkBuffer implements Iterable<Tuple> {
    *          the new tuple size
    * @return true, if check memory availability
    */
-  public boolean checkMemoryAvailability(int newTupleSize) {
+  private boolean checkMemoryAvailability(int newTupleSize) {
 
     if (startBufferingTimeInMemory == 0) {
       startBufferingTimeInMemory = System.currentTimeMillis();
@@ -225,7 +252,7 @@ public class SinkBuffer implements Iterable<Tuple> {
   /**
    * Update disk state.
    */
-  public void updateDiskState() {
+  private void updateDiskState() {
 
     if (startBufferingTimeOnDisk == 0) {
       startBufferingTimeOnDisk = System.currentTimeMillis();
