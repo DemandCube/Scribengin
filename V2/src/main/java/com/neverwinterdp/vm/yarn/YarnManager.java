@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.yarn;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -9,6 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
@@ -18,6 +24,9 @@ import org.apache.hadoop.yarn.api.records.ContainerLaunchContext;
 import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
+import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
@@ -27,6 +36,7 @@ import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +50,7 @@ import com.neverwinterdp.vm.VMConfig;
 public class YarnManager {
   private Logger logger = LoggerFactory.getLogger(YarnManager.class.getName());
 
+  private VMConfig vmConfig ;
   private Map<String, String> yarnConfig;
 
   private Configuration conf ;
@@ -57,6 +68,7 @@ public class YarnManager {
   @Inject
   public void onInit(VMConfig vmConfig) throws Exception {
     logger.info("Start init(VMConfig vmConfig)");
+    this.vmConfig = vmConfig;
     try {
       this.yarnConfig = vmConfig.getYarnConf();
       conf = new YarnConfiguration() ;
@@ -119,10 +131,31 @@ public class YarnManager {
     return response.getAllocatedContainers() ;
   }
   
+  Map<String, LocalResource> createLocalResources(Configuration conf, VMConfig appConfig) throws FileNotFoundException, IllegalArgumentException, IOException {
+    Map<String, LocalResource> libs = new HashMap<String, LocalResource>() ;
+    FileSystem fs = FileSystem.get(conf) ;
+    RemoteIterator<LocatedFileStatus> itr = fs.listFiles(new Path(appConfig.getDfsHome() + "/libs"), true) ;
+    while(itr.hasNext()) {
+      FileStatus fstatus = itr.next() ;
+      Path fpath = fstatus.getPath() ;
+      LocalResource libJar = Records.newRecord(LocalResource.class);
+      libJar.setResource(ConverterUtils.getYarnUrlFromPath(fpath));
+      libJar.setSize(fstatus.getLen());
+      libJar.setTimestamp(fstatus.getModificationTime());
+      libJar.setType(LocalResourceType.FILE);
+      libJar.setVisibility(LocalResourceVisibility.PUBLIC);
+      libs.put(fpath.getName(), libJar) ;
+    }
+    return libs ;
+  }
+  
   public void startContainer(Container container, String command) throws YarnException, IOException {
     ContainerLaunchContext ctx = Records.newRecord(ContainerLaunchContext.class);
+    if(vmConfig.getDfsHome() != null) {
+      ctx.setLocalResources(createLocalResources(conf, vmConfig));
+    }
     Map<String, String> appMasterEnv = new HashMap<String, String>();
-    Util.setupAppMasterEnv(true, conf, appMasterEnv);
+    Util.setupAppMasterEnv(vmConfig.isMiniClusterEnv(), conf, appMasterEnv);
     ctx.setEnvironment(appMasterEnv);
     
     StringBuilder sb = new StringBuilder();
