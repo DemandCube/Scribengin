@@ -97,7 +97,7 @@ public class VMManagerAppUnitTest {
   
   private String[] createVMConfigArgs(String name) {
     String[] args = { 
-        "--mini-cluster-env",
+        "--environment", "YARN_MINICLUSTER",
         "--name", name,
         "--roles", "vm-master",
         "--self-registration",
@@ -131,7 +131,7 @@ public class VMManagerAppUnitTest {
   
   private VMDescriptor allocateVMDummy(VMClient vmClient, String name) throws Exception {
     String[] args = { 
-        "--mini-cluster-env",
+        "--environment", "YARN_MINICLUSTER",
         "--name", name,
         "--roles", "dummy",
         "--self-registration",
