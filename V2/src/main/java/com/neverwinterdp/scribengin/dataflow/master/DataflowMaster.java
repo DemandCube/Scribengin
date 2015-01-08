@@ -7,9 +7,13 @@ import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
+import com.neverwinterdp.vm.VMConfig;
 
 
 public class DataflowMaster {
+  @Inject
+  private VMConfig vmConfig;
+ 
   @Inject
   private DataflowRegistry dataflowRegistry;
   
@@ -20,6 +24,8 @@ public class DataflowMaster {
   private SinkFactory sinkFactory ;
   
   private List<EventListener> listeners = new ArrayList<EventListener>();
+  
+  public VMConfig getVMConfig() { return this.vmConfig ; }
   
   public DataflowRegistry getDataflowRegistry() { return dataflowRegistry; }
 

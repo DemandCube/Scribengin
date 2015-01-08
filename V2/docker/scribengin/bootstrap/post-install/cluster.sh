@@ -215,7 +215,7 @@ function zookeeper_clean() {
   inst $'This step will:\n
          1.  Remove the data directory(/opt/zookeeper/data) \n
          2.  Remove the log file(/opt/zookeeper/logs/zookeeper.out)'
-  servers_exec "$ZOOKEEPER_SERVERS" "rm -rf /opt/zookeeper/data && rm -rf /opt/zookeeper/zookeeper.out"
+  servers_exec "$ZOOKEEPER_SERVERS" "rm -rf /opt/zookeeper/data && rm -rf /opt/zookeeper/zookeeper.out && rm -rf /opt/zookeeper/logs"
 }
 
 function zookeeper_start() {

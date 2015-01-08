@@ -21,6 +21,7 @@ public class VMScribenginSingleJVMUnitTest extends VMScribenginUnitTest {
   
   protected void createVMMaster(String name) throws Exception {
     String[] args = {
+      "--environment", "JVM",
       "--name", name,
       "--roles", "vm-master",
       "--self-registration",
@@ -30,11 +31,11 @@ public class VMScribenginSingleJVMUnitTest extends VMScribenginUnitTest {
       "--vm-application",VMManagerApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + JVMVMServicePlugin.class.getName()
     };
-    VMConfig vmConfig = new VMConfig();
-    vmConfig.
-      setName("vm-master").
-      setSelfRegistration(true);
     VM vm = VM.run(args);
+  }
+  
+  protected void configureEnvironment(VMConfig vmConfig) {
+    vmConfig.setEnvironment(VMConfig.Environment.JVM);
   }
 
   @Override

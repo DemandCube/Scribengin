@@ -66,11 +66,13 @@ public class InitEventListener implements EventListener {
     for(int i = 0; i < dataflowDescriptor.getNumberOfWorkers(); i++) {
       VMConfig vmConfig = 
         new VMConfig().
+        setEnvironment(master.getVMConfig().getEnvironment()).
         setName(dataflowDescriptor.getName() + "-worker-" + (i + 1)).
         addRoles("dataflow-worker").
         setRegistryConfig(registryConfig).
         setVmApplication(VMDataflowWorkerApp.class.getName()).
-        addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath());
+        addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath()).
+        setYarnConf(master.getVMConfig().getYarnConf());
         VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
       dataflowRegistry.addWorker(vmDescriptor);
     }

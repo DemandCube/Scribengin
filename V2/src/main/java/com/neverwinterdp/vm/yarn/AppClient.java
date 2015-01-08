@@ -73,7 +73,8 @@ public class AppClient  {
       
       System.out.println("Setup the classpath for ApplicationMaster") ;
       Map<String, String> appMasterEnv = new HashMap<String, String>();
-      Util.setupAppMasterEnv(vmConfig.isMiniClusterEnv(), conf, appMasterEnv);
+      boolean jvmEnv = vmConfig.getEnvironment() != VMConfig.Environment.YARN;
+      Util.setupAppMasterEnv(jvmEnv , conf, appMasterEnv);
       amContainer.setEnvironment(appMasterEnv);
 
       System.out.println("Set up resource type requirements for ApplicationMaster") ;

@@ -50,6 +50,7 @@ public class VMDataflowMasterApp extends VMApp {
         AppModule module = new AppModule(vmConfig.getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
+            bindInstance(VMConfig.class, vmConfig);
             bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
               bindType(Registry.class, registry.getClass().getName());

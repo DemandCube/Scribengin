@@ -21,6 +21,7 @@ import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
 import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMUnitTest;
@@ -119,10 +120,15 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
       setVmApplication(VMScribenginMasterApp.class.getName());
+    configureEnvironment(vmConfig);
+    System.out.println("VMConfig:");
+    System.out.println(JSONSerializer.INSTANCE.toString(vmConfig));
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;
   }
+  
+  abstract protected void configureEnvironment(VMConfig vmConfig) ;
   
   static public class TestCopyDataProcessor implements DataProcessor {
     private int count = 0;

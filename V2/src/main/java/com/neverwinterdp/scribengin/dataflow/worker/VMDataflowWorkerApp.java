@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class VMDataflowWorkerApp extends VMApp {
   
   @Override
   public void run() throws Exception {
-    VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
+    final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
     final Registry registry = getVM().getVMRegistry().getRegistry();
     AppModule module = new AppModule(vmConfig.getProperties()) {
       @Override
@@ -35,7 +36,16 @@ public class VMDataflowWorkerApp extends VMApp {
         bindInstance(RegistryConfig.class, registry.getRegistryConfig());
         try {
           bindType(Registry.class, registry.getClass().getName());
-          FileSystem fs = FileSystem.getLocal(new Configuration()) ;
+          FileSystem fs = null; 
+          VMConfig.Environment env = vmConfig.getEnvironment();
+          System.out.println("VMConfig.Environment = " + env);
+          if(env == VMConfig.Environment.YARN || env == VMConfig.Environment.YARN_MINICLUSTER) {
+            YarnConfiguration conf = new YarnConfiguration();
+            vmConfig.overrideYarnConfiguration(conf);
+            fs = FileSystem.get(conf) ;
+          } else {
+            fs = FileSystem.getLocal(new Configuration());
+          }
           bindInstance(FileSystem.class, fs);
         } catch (Exception e) {
           logger.error("Error:", e);;

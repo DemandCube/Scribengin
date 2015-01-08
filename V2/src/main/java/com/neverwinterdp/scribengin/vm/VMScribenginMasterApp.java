@@ -11,6 +11,7 @@ import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.scribengin.ScribenginMaster;
 import com.neverwinterdp.vm.VMApp;
+import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class VMScribenginMasterApp extends VMApp {
@@ -48,6 +49,7 @@ public class VMScribenginMasterApp extends VMApp {
             bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
               bindType(Registry.class, registry.getClass().getName());
+              bindInstance(VMConfig.class, getVM().getDescriptor().getVmConfig());
               bindInstance(VMClient.class, new VMClient(registry));
             } catch (ClassNotFoundException e) {
               //TODO: use logger

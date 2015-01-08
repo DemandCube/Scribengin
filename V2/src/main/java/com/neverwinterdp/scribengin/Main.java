@@ -63,6 +63,7 @@ public class Main {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
     String[] runArgs = {
       //"--local-home", "build/release/Scribengin.V2",
+      "--environment", "YARN",
       "--local-home", ".",
       "--dfs-home", "/tmp/apps/Scribengin.V2",
       "--name", "VMMaster",
@@ -160,6 +161,9 @@ public class Main {
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
       setVmApplication(VMScribenginMasterApp.class.getName());
+    vmConfig.setEnvironment(VMConfig.Environment.YARN);
+    vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
+    vmConfig.addYarnProperty("fs.defaultFS", "hdfs://hadoop-master:9000");
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;

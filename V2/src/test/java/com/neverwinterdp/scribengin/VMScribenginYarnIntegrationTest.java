@@ -11,6 +11,7 @@ import org.junit.Before;
 import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.master.VMManagerApp;
 import com.neverwinterdp.vm.yarn.AppClient;
@@ -36,7 +37,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
     super.setup();
-    vmLaunchTime = 7500;
+    vmLaunchTime = 10000;
   }
 
   @After
@@ -50,7 +51,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   protected void createVMMaster(String name) throws Exception {
     System.out.println("fs.defaultFS = " + miniDFSCluster.getURI());
     String[] args = {
-      "--mini-cluster-env",
+      "--environment", "YARN_MINICLUSTER",
       "--name", name,
       "--roles", "vm-master",
       "--self-registration",
@@ -64,6 +65,12 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     };
     AppClient appClient = new AppClient() ;
     appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
+  }
+  
+  protected void configureEnvironment(VMConfig vmConfig) {
+    vmConfig.setEnvironment(VMConfig.Environment.YARN_MINICLUSTER);
+    vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
+    vmConfig.addYarnProperty("fs.defaultFS", miniDFSCluster.getURI().toString());
   }
   
   @Override
