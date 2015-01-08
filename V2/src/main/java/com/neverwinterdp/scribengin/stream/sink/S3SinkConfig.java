@@ -151,7 +151,7 @@ public class S3SinkConfig {
    * @return the offset per partition
    */
   public int getOffsetPerPartition() {
-    return getInt("partitionner.offsetPerPartition");
+    return getInt("partitionner.chunkPerPartition") * getChunkSize();
   }
   
   /**

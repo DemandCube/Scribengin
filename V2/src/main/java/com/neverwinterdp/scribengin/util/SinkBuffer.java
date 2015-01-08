@@ -222,9 +222,17 @@ public class SinkBuffer implements Iterable<Tuple> {
     logger.info("purge Memory To Disk");
     LinkedList<Tuple> tempTuples = tuples;
     tuples = new LinkedList<Tuple>();
-    while (tempTuples.size() > 0) {
+    int mustRemain = tuples.size() % chunkSize;
+    if (mustRemain != 0) {
+      for (int i = mustRemain; i < 1; i--) {
+        tuples.add(tempTuples.get(tempTuples.size() - i));
+      }
+    }
+    while (tempTuples.size() > mustRemain) {
       addToDisk(tempTuples.poll());
     }
+    tempTuples.clear();
+    tempTuples = null;
     updateDiskState();
     setProcessLoopActive(false);
 
