@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+
+import com.neverwinterdp.util.FileUtil;
+
 public class KafkaCluster {
   private int baseZKPort = 2181;
   private int baseKafkaPort = 9092;
@@ -19,18 +23,19 @@ public class KafkaCluster {
   private Map<String, Server> kafkaServers;
   private Map<String, Server> zookeeperServers;
 
-  public KafkaCluster(String serverDir) {
+  public KafkaCluster(String serverDir) throws Exception {
     this(serverDir, 1, 3);
   }
 
 
-  public KafkaCluster(String serverDir, int numOfZkInstances, int numOfKafkaInstances) {
+  public KafkaCluster(String serverDir, int numOfZkInstances, int numOfKafkaInstances) throws Exception {
+    FileUtil.removeIfExist(serverDir, false);
+    //deleteDirectory(new File(serverDir));
     this.serverDir = serverDir;
     this.numOfZkInstances = numOfZkInstances;
     this.numOfKafkaInstances = numOfKafkaInstances;
     zookeeperServers = new HashMap<String, Server>();
     kafkaServers = new HashMap<String, Server>();
-    deleteDirectory(new File(serverDir));
   }
 
   public KafkaCluster setBaseZKPort(int port) {
@@ -61,7 +66,9 @@ public class KafkaCluster {
       zookeeper.start();
       zookeeperServers.put(serverName, zookeeper);
     }
-
+    
+    Thread.sleep(2000);
+    
     for (int i = 0; i < numOfKafkaInstances; i++) {
       if(replication <= 0) {
         replication = 1;
@@ -120,10 +127,6 @@ public class KafkaCluster {
 
   public String getZKConnect() {
     String ipAddress = "127.0.0.1";
-    try {
-      ipAddress = InetAddress.getLocalHost().getHostAddress()  ;
-    } catch (UnknownHostException e) {
-    }
     StringBuilder b = new StringBuilder();
     for (Server server : zookeeperServers.values()) {
       if (b.length() > 0) b.append(",");
@@ -134,10 +137,6 @@ public class KafkaCluster {
 
   public String getKafkaConnect() {
     String ipAddress = "127.0.0.1";
-    try {
-      ipAddress = InetAddress.getLocalHost().getHostAddress()  ;
-    } catch (UnknownHostException e) {
-    }
     StringBuilder b = new StringBuilder();
     for (Server server : kafkaServers.values()) {
       if (b.length() > 0)

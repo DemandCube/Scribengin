@@ -44,6 +44,7 @@ configurations.all {
 
 dependencies {
   compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
 
   //TODO: move to use jackson

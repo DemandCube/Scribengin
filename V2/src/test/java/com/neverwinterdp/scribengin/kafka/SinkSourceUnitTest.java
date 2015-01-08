@@ -26,7 +26,7 @@ public class SinkSourceUnitTest {
     cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.setNumOfPartition(5);
     cluster.start();
-    Thread.sleep(2000);
+    //Thread.sleep(000);
   }
   
   @After
@@ -36,7 +36,9 @@ public class SinkSourceUnitTest {
 
   @Test
   public void testKafkaSource() throws Exception {
-    SinkImpl sink = new SinkImpl("hello", cluster.getZKConnect(), "hello") ;
+    String zkConnect = cluster.getZKConnect();
+    System.out.println("zkConnect = " + zkConnect);
+    SinkImpl sink = new SinkImpl("hello", zkConnect, "hello") ;
     SinkStream stream = sink.newStream();
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < 10; i++) {

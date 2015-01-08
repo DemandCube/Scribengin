@@ -19,15 +19,17 @@ public class KafkaServerLauncher implements Server {
   ThreadGroup kafkaGroup;
   int kafkaGroupTracker = 1;
   private Properties properties = new Properties();
+  private Thread thread;
 
   public KafkaServerLauncher() {
     properties.put("port", "9092");
     properties.put("broker.id", "1");
     properties.put("auto.create.topics.enable", "true");
     properties.put("log.dirs", "./build/data/kafka");
-    // props.setProperty("enable.zookeeper", "true");
+    properties.put("enable.zookeeper", "true");
     properties.put("zookeeper.connect", "127.0.0.1:2181");
     properties.put("default.replication.factor", "1");
+    
     properties.put("controlled.shutdown.enable", "true");
     properties.put("auto.leader.rebalance.enable", "true");
     properties.put("controller.socket.timeout.ms", "90000");
@@ -55,6 +57,11 @@ public class KafkaServerLauncher implements Server {
     return this;
   }
   
+  public KafkaServerLauncher setZkConnect(String zkConnect) {
+    properties.put("zookeeper.connect", zkConnect);
+    return this;
+  }
+  
   public KafkaServerLauncher setNumOfPartition(int number) {
     properties.put("num.partitions", Integer.toString(number));
     return this;
@@ -68,8 +75,7 @@ public class KafkaServerLauncher implements Server {
     properties.setProperty("log.dirs", logDir);
 
     System.out.println("kafka properties:\n" + JSONSerializer.INSTANCE.toString(properties));
-
-    Thread thread = new Thread(kafkaGroup, "KafkaLauncher") {
+    thread = new Thread(kafkaGroup, "KafkaLauncher") {
       public void run() {
         server = new KafkaServer(new KafkaConfig(properties), new SystemTime());
         server.startup();
@@ -77,7 +83,7 @@ public class KafkaServerLauncher implements Server {
     };
     thread.start();
     // Wait to make sure the server is launched
-    Thread.sleep(1000);
+    Thread.sleep(2000);
   }
 
   @Override

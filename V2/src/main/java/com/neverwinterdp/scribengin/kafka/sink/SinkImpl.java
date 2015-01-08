@@ -2,8 +2,6 @@ package com.neverwinterdp.scribengin.kafka.sink;
 
 import java.util.LinkedHashMap;
 
-import org.apache.zookeeper.KeeperException;
-
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
