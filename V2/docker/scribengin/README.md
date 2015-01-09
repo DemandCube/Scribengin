@@ -134,9 +134,10 @@ Launch the containers to run hadoop, zookeeper, kafka
   ./docker.sh container run
 ````
 
-The ./docker.sh container run command should print out the name and the information about the hostnames and ip of the containers. Copy those to /etc/hosts
+The ```./docker.sh container run``` command should print out the name and the information about the hostnames and ip of the containers. Copy the output from your console to /etc/hosts.  The following is an example of what you're looking for (Don't actually copy the following into your hosts file)
 ````
 #Copy this print out to your /etc/hosts
+#DON'T ACTUALLY COPY THIS SNIPPET, GRAB THE OUTPUT FROM YOUR CONSOLE!!
 172.17.0.81 kafka-3
 172.17.0.80 kafka-2
 172.17.0.79 kafka-1
