@@ -38,7 +38,6 @@ public class VMDataflowWorkerApp extends VMApp {
           bindType(Registry.class, registry.getClass().getName());
           FileSystem fs = null; 
           VMConfig.Environment env = vmConfig.getEnvironment();
-          System.out.println("VMConfig.Environment = " + env);
           if(env == VMConfig.Environment.YARN || env == VMConfig.Environment.YARN_MINICLUSTER) {
             YarnConfiguration conf = new YarnConfiguration();
             vmConfig.overrideYarnConfiguration(conf);

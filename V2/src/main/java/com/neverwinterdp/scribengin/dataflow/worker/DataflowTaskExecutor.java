@@ -25,6 +25,11 @@ public class DataflowTaskExecutor {
     this.interruptEvent = event;
     executorThread.interrupt();
   }
+
+  public boolean isAlive() {
+    if(executorThread == null) return false;
+    return executorThread.isAlive();
+  }
   
   public void execute() { 
     DataflowTask dataflowTask = null;
@@ -48,8 +53,6 @@ public class DataflowTaskExecutor {
       }
     }
   }
-  
-  
   
   public class ExecutorThread extends Thread {
     public void run() {

@@ -65,7 +65,7 @@ public class Main {
       //"--local-home", "build/release/Scribengin.V2",
       "--environment", "YARN",
       "--local-home", ".",
-      "--dfs-home", "/tmp/apps/Scribengin.V2",
+      "--dfs-home", "/apps/scribengin.v2",
       "--name", "VMMaster",
       "--roles", "vm-master",
       "--self-registration",

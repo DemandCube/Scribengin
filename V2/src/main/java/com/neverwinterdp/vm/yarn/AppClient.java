@@ -36,15 +36,16 @@ public class AppClient  {
   public void run(String[] args) throws Exception {
     run(args, new YarnConfiguration()) ;
   }
-  
   public void run(String[] args, Configuration conf) throws Exception {
+    VMConfig vmConfig = new VMConfig() ;
+    new JCommander(vmConfig, args) ;
+    run(vmConfig, conf);
+  }
+  
+  public void run(VMConfig vmConfig, Configuration conf) throws Exception {
     try {
-      VMConfig vmConfig = new VMConfig() ;
-      new JCommander(vmConfig, args) ;
       vmConfig.overrideYarnConfiguration(conf);
-      
       uploadApp(vmConfig);
-      
       System.out.println("Create YarnClient") ;
       YarnClient yarnClient = YarnClient.createYarnClient();
       yarnClient.init(conf);
