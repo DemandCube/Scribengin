@@ -7,8 +7,6 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public interface SinkStream extends Stream{
   
   public boolean bufferTuple(Tuple t);
-  public boolean rollBack();
-  
   void setSinkPartitioner(SinkPartitioner sp);
   String getName();
   

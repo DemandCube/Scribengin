@@ -3,69 +3,58 @@ package com.neverwinterdp.scribengin.stream.sink;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import com.neverwinterdp.scribengin.util.PropertyUtils;
 
-// TODO: Auto-generated Javadoc
-/**
- * The Class S3SinkConfig.
- */
 public class S3SinkConfig {
 
-  /** The properties. */
-  private final PropertiesConfiguration properties;
+  private final Properties props;
+
+
+  public S3SinkConfig(Properties props) {
+    this.props = props;
+  }
 
   /**
-   * Exposed for testability.
-   *
-   * @param properties the properties
-   */
-  public S3SinkConfig(PropertiesConfiguration properties) {
-    this.properties = properties;
-  }
-  
-  /**
    * The Constructor.
-   *
+   * 
    * @param configProperty the config property
    */
   public S3SinkConfig(String configProperty) {
     Properties systemProperties = System.getProperties();
-    systemProperties.getProperty("config");
     try {
-      properties = new PropertiesConfiguration(configProperty);
-
-    } catch (ConfigurationException e) {
-      throw new RuntimeException("Error loading configuration from " + configProperty);
+      props = new PropertyUtils(configProperty).getProperties();
+    } catch (Exception e) {
+      throw new RuntimeException("Error loading configuration from " + configProperty + " was "
+          + e.getMessage());
     }
-
     for (final Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
-      properties.setProperty(entry.getKey().toString(), entry.getValue());
+      props.put(entry.getKey().toString(), entry.getValue());
     }
+
   }
 
   /**
    * Gets the bucket name.
-   *
+   * 
    * @return the bucket name
    */
   public String getBucketName() {
     return getString("bucketName");
   }
-  
-  
+
+
   /**
    * Gets the mapped byte buffer size.
-   *
+   * 
    * @return the mapped byte buffer size
    */
-  public int getMappedByteBufferSize(){
+  public int getMappedByteBufferSize() {
     return getInt("diskBuffer.mappedByteBufferSize");
   }
-  
+
   /**
    * Gets the region name.
-   *
+   * 
    * @return the region name
    */
   public String getRegionName() {
@@ -74,137 +63,139 @@ public class S3SinkConfig {
 
   /**
    * Gets the local tmp dir.
-   *
+   * 
    * @return the local tmp dir
    */
   public String getLocalTmpDir() {
     return getString("localTmpDir");
   }
-  
+
   /**
    * Gets the chunk size.
-   *
+   * 
    * @return the chunk size
    */
   public int getChunkSize() {
     return getInt("chunkSize");
   }
-  
+
   /**
    * Gets the memory max buffer size.
-   *
+   * 
    * @return the memory max buffer size
    */
   public int getMemoryMaxBufferSize() {
     return getInt("memoryBuffer.maxBufferSize") * 1024;
   }
- 
+
   /**
    * Gets the memory max buffering time.
-   *
+   * 
    * @return the memory max buffering time
    */
   public int getMemoryMaxBufferingTime() {
-    return getInt("memoryBuffer.maxBufferingTime") *1000;
+    return getInt("memoryBuffer.maxBufferingTime") * 1000;
   }
-  
+
   /**
    * Gets the memory max tuples.
-   *
+   * 
    * @return the memory max tuples
    */
   public int getMemoryMaxTuples() {
     return getInt("memoryBuffer.maxTuples");
   }
-  
+
   /**
    * Gets the disk max buffer size.
-   *
+   * 
    * @return the disk max buffer size
    */
   public int getDiskMaxBufferSize() {
     return getInt("diskBuffer.maxBufferSize") * 1024;
   }
- 
+
   /**
    * Gets the disk max buffering time.
-   *
+   * 
    * @return the disk max buffering time
    */
   public int getDiskMaxBufferingTime() {
-    return getInt("diskBuffer.maxBufferingTime") *1000;
+    return getInt("diskBuffer.maxBufferingTime") * 1000;
   }
-  
+
   /**
    * Gets the disk max tuples.
-   *
+   * 
    * @return the disk max tuples
    */
   public int getDiskMaxTuples() {
     return getInt("diskBuffer.maxTuples");
   }
 
-  
   /**
    * Gets the offset per partition.
-   *
+   * 
    * @return the offset per partition
    */
   public int getOffsetPerPartition() {
     return getInt("partitionner.chunkPerPartition") * getChunkSize();
   }
-  
+
   /**
    * Checks if is memory buffering enabled.
-   *
+   * 
    * @return true, if checks if is memory buffering enabled
    */
   public boolean isMemoryBufferingEnabled() {
     return getBoolean("memoryBuffer.enabled");
   }
-  
-  
+
+
   /**
    * Check property.
-   *
+   * 
    * @param name the name
    */
   private void checkProperty(String name) {
-    if (!properties.containsKey(name)) {
-      throw new RuntimeException("Failed to find required configuration option '" + name + "'.");
+    if (!props.containsKey(name)) {
+      throw new IllegalArgumentException("Failed to find required configuration option '" + name
+          + "'.");
     }
   }
 
   /**
    * Gets the string.
-   *
+   * 
    * @param name the name
    * @return the string
    */
   private String getString(String name) {
     checkProperty(name);
-    return properties.getString(name);
+    return props.getProperty(name);
   }
 
   /**
    * Gets the int.
-   *
+   * 
    * @param name the name
    * @return the int
    */
   private int getInt(String name) {
     checkProperty(name);
-    return properties.getInt(name);
+    String property = props.getProperty(name);
+    return Integer.parseInt(property);
   }
 
   /**
    * Gets the boolean.
-   *
+   * 
    * @param name the name
    * @return the boolean
    */
   private boolean getBoolean(String name) {
-    return properties.getBoolean(name);
+    checkProperty(name);
+    String property = props.getProperty(name);
+    return Boolean.getBoolean(property);
   }
-
 }
