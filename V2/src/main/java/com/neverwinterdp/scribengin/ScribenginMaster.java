@@ -17,7 +17,7 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
+import com.neverwinterdp.vm.service.command.VMServiceCommand;
 
 @Singleton
 public class ScribenginMaster {
@@ -63,7 +63,7 @@ public class ScribenginMaster {
     System.out.println(JSONSerializer.INSTANCE.toString(dfVMConfig));
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
-        (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(dfVMConfig));
+        (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
     System.out.println(result.getErrorStacktrace());
     return result.getResult();
   }

@@ -25,13 +25,13 @@ import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
 import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.yarn.AppClient;
-import com.neverwinterdp.vm.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class Main {
   private long vmLaunchTime = 30 * 1000; //30s
@@ -72,7 +72,7 @@ public class Main {
       "--registry-connect", "zookeeper:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMManagerApp.class.getName(),
+      "--vm-application",VMServiceApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
       "--yarn:yarn.resourcemanager.scheduler.address=hadoop-master:8030",
       "--yarn:yarn.resourcemanager.address=hadoop-master:8032",

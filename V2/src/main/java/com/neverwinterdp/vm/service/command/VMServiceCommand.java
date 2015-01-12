@@ -1,15 +1,15 @@
-package com.neverwinterdp.vm.master.command;
+package com.neverwinterdp.vm.service.command;
 
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.VMManagerApp;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMService;
 
-public class VMMasterCommand {
+public class VMServiceCommand {
   static public class Allocate extends Command {
     private VMConfig vmConfig ;
     
@@ -26,7 +26,7 @@ public class VMMasterCommand {
 
     @Override
     public CommandResult<VMDescriptor> execute(VM vm) {
-      VMManagerApp app = (VMManagerApp) vm.getVMApplication();
+      VMServiceApp app = (VMServiceApp) vm.getVMApplication();
       VMService vmService = app.getVMService();
       CommandResult<VMDescriptor> result = new CommandResult<VMDescriptor>();
       try {
@@ -56,7 +56,7 @@ public class VMMasterCommand {
 
     @Override
     public CommandResult<?> execute(VM vm) {
-      VMManagerApp app = (VMManagerApp) vm.getVMApplication();
+      VMServiceApp app = (VMServiceApp) vm.getVMApplication();
       VMService vmService = app.getVMService();
       CommandResult<Boolean> result = new CommandResult<Boolean>();
       try {

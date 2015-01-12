@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.master;
+package com.neverwinterdp.vm.service;
 
 import java.util.Map;
 
@@ -12,10 +12,9 @@ import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
 
 
-public class VMManagerApp extends VMApp {
+public class VMServiceApp extends VMApp {
   private LeaderElection election ;
   
   private Injector  appContainer ;
@@ -26,7 +25,7 @@ public class VMManagerApp extends VMApp {
   @Override
   public void run() throws Exception {
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
-    election.setListener(new MasterLeaderElectionListener());
+    election.setListener(new VMServiceLeaderElectionListener());
     election.start();
     try {
       waitForShutdown();
@@ -40,7 +39,7 @@ public class VMManagerApp extends VMApp {
     }
   }
   
-  class MasterLeaderElectionListener implements LeaderElectionListener {
+  class VMServiceLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
       try {
@@ -63,7 +62,7 @@ public class VMManagerApp extends VMApp {
         vmService = appContainer.getInstance(VMService.class);
         VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
         for(VMDescriptor sel : vmDescriptor) {
-          if(vmService.isRunning(sel)) vmService.watch(sel);
+          if(vmService.isRunning(sel)) vmService.getVMListenerManager().watch(sel);
           else vmService.unregister(sel);
         }
       } catch(Throwable e) {

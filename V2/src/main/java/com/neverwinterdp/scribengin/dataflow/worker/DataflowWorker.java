@@ -40,9 +40,23 @@ public class DataflowWorker {
     logger.info("Finish onInit()");
   }
   
-  public void onDestroy() {
-    logger.info("Start onDestroy()");
-    logger.info("Finish onDestroy()");
+  public void shutdown() {
+    logger.info("Start shutdown()");
+    //TODO: Use dataflowRegistry to mark the status and notify
+    logger.info("Finish shutdown()");
+  }
+  
+  public boolean isAlive() {
+    for(DataflowTaskExecutor sel : taskExecutors) {
+      if(sel.isAlive()) return true;
+    }
+    return false;
+  }
+  
+  public void waitForTermination(long checkPeriod) throws InterruptedException {
+    while(isAlive()) {
+      Thread.sleep(1000);
+    }
   }
   
   public DataflowWorkerDescriptor getDescriptor() {

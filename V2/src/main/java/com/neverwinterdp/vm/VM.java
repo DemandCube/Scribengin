@@ -16,6 +16,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.command.VMCommandWatcher;
+import com.neverwinterdp.vm.service.VMService;
 
 public class VM {
   static {
@@ -24,14 +25,14 @@ public class VM {
   
   static private Map<String, VM> vms = new ConcurrentHashMap<String, VM>() ;
   
-  private Logger logger = LoggerFactory.getLogger(VM.class);
-  
-  private VMDescriptor descriptor ;
-  private VMStatus     vmStatus = VMStatus.INIT;
-  
-  private Injector vmContainer;
-  private VMRegistry vmRegistry ;
-  private VMApplicationRunner vmApplicationRunner ;
+  private Logger                 logger   = LoggerFactory.getLogger(VM.class);
+
+  private VMDescriptor           descriptor;
+  private VMStatus               vmStatus = VMStatus.INIT;
+
+  private Injector               vmContainer;
+  private VMRegistry             vmRegistry;
+  private VMApplicationRunner    vmApplicationRunner;
   
   public VM(VMConfig vmConfig) throws Exception {
     logger.info("Create VM with VMConfig:");
@@ -47,16 +48,16 @@ public class VM {
     } else {
       descriptor = vmRegistry.getVMDescriptor();
     }
-    watchCommand();
-    setVMStatus(VMStatus.INIT);
+    
+    init();
   }
   
   public VM(VMDescriptor vmDescriptor) throws RegistryException {
     descriptor = vmDescriptor ;
     vmContainer = createVMContainer(vmDescriptor.getVmConfig());
     vmRegistry = vmContainer.getInstance(VMRegistry.class);
-    watchCommand();
-    setVMStatus(VMStatus.INIT);
+    
+    init();
   }
   
   private Injector createVMContainer(final VMConfig vmConfig) {
@@ -97,16 +98,16 @@ public class VM {
   }
   
   
-  public void watchCommand() throws RegistryException {
-    logger.info("Start watchCommand(...)");
-    VMCommandWatcher vmCommandWatcher = new VMCommandWatcher(this);
-    vmRegistry.addCommandWatcher(vmCommandWatcher);
+  public void init() throws RegistryException {
+    logger.info("Start init(...)");
+    setVMStatus(VMStatus.INIT);
+    vmRegistry.addCommandWatcher(new VMCommandWatcher(this));
     vmRegistry.createHeartbeat();
-    logger.info("Finish watchCommand(...)");
+    logger.info("Finish init(...)");
   }
   
   public void run() throws Exception {
-    logger.info("Start appStart()");
+    logger.info("Start run()");
     if(vmApplicationRunner != null) {
       throw new Exception("VM Application is already started");
     }
@@ -117,7 +118,7 @@ public class VM {
     setVMStatus(VMStatus.RUNNING);
     vmApplicationRunner = new VMApplicationRunner(vmApp, vmConfig.getProperties()) ;
     vmApplicationRunner.start();
-    logger.info("Finish appStart()");
+    logger.info("Finish run()");
   }
   
   public void shutdown() throws Exception {

@@ -75,6 +75,7 @@ public class InitEventListener implements EventListener {
         setYarnConf(master.getVMConfig().getYarnConf());
         VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
       dataflowRegistry.addWorker(vmDescriptor);
+      vmDescriptor.getStoredPath();
     }
   }
 }

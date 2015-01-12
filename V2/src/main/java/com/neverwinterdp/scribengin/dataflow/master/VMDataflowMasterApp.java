@@ -12,8 +12,6 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
-import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 
