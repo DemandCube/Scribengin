@@ -107,7 +107,7 @@ public class Lock {
     public void watch(SortedSet<LockId> currentLockIds) throws RegistryException {
       SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
       LockId previousLock = lessThanMe.last();
-      registry.watch(previousLock.getPath(), this);
+      registry.watchModify(previousLock.getPath(), this);
     }
     
     public void waitForLock() throws RegistryException {

@@ -21,6 +21,7 @@ import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
@@ -90,6 +91,13 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
+  public void createRef(String path, String toPath, NodeCreateMode mode) throws RegistryException {
+    RefNode refNode = new RefNode();
+    refNode.setPath(toPath);
+    create(path, refNode, mode);
+  }
+  
+  @Override
   public  Node create(String path, byte[] data, NodeCreateMode mode) throws RegistryException {
     try {
       String retPath = zkClient.create(realPath(path), data, DEFAULT_ACL, toCreateMode(mode)) ;
@@ -117,6 +125,12 @@ public class RegistryImpl implements Registry {
   @Override
   public Node get(String path) throws RegistryException {
     return new Node(this, path) ;
+  }
+  
+  @Override
+  public Node getRef(String path) throws RegistryException {
+    RefNode refNode = this.getDataAs(path, RefNode.class);
+    return new Node(this, refNode.getPath()) ;
   }
   
   @Override
@@ -196,15 +210,27 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
-  public void watch(String path, NodeWatcher watcher) throws RegistryException {
+  public void watchModify(String path, NodeWatcher watcher) throws RegistryException {
     try {
-      Stat stat = zkClient.exists(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher)) ;
+      zkClient.getData(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher), new Stat()) ;
     } catch (KeeperException e) {
       throw new RegistryException(ErrorCode.Unknown, e) ;
     } catch (InterruptedException e) {
       throw new RegistryException(ErrorCode.Unknown, e) ;
     }
   }
+  
+  @Override
+  public void watchExists(String path, NodeWatcher watcher) throws RegistryException {
+    try {
+      zkClient.exists(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher)) ;
+    } catch (KeeperException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    } catch (InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
+  
   
   @Override
   public void watchChildren(String path, NodeWatcher watcher) throws RegistryException {

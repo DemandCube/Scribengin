@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.yarn;
+package com.neverwinterdp.vm.environment.yarn;
 
 import java.util.Collections;
 import java.util.HashMap;

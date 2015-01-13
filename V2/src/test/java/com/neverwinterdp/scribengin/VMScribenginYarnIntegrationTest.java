@@ -12,10 +12,10 @@ import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.VMConfig;
-import com.neverwinterdp.vm.VMServicePlugin;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.yarn.AppClient;
-import com.neverwinterdp.vm.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   
@@ -58,7 +58,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMManagerApp.class.getName(),
+      "--vm-application",VMServiceApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
       "--yarn:yarn.resourcemanager.scheduler.address=localhost:8030",
       "--yarn:fs.defaultFS=" + miniDFSCluster.getURI()

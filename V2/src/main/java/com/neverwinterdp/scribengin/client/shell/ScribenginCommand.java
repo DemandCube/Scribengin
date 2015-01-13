@@ -18,7 +18,6 @@ public class ScribenginCommand extends Command {
     }
   }
   
-  
   static public class DataflowDeploy extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {

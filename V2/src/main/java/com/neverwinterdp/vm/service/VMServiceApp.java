@@ -1,10 +1,11 @@
-package com.neverwinterdp.vm.master;
+package com.neverwinterdp.vm.service;
 
 import java.util.Map;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
@@ -12,10 +13,9 @@ import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
 
 
-public class VMManagerApp extends VMApp {
+public class VMServiceApp extends VMApp {
   private LeaderElection election ;
   
   private Injector  appContainer ;
@@ -26,7 +26,7 @@ public class VMManagerApp extends VMApp {
   @Override
   public void run() throws Exception {
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
-    election.setListener(new MasterLeaderElectionListener());
+    election.setListener(new VMServiceLeaderElectionListener());
     election.start();
     try {
       waitForShutdown();
@@ -40,12 +40,14 @@ public class VMManagerApp extends VMApp {
     }
   }
   
-  class MasterLeaderElectionListener implements LeaderElectionListener {
+  class VMServiceLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
-        registry.setData(VMService.LEADER_PATH, getVM().getDescriptor());
+        RefNode refNode = new RefNode();
+        refNode.setPath(getVM().getDescriptor().getStoredPath());
+        registry.setData(VMService.LEADER_PATH, refNode);
         AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
@@ -63,7 +65,7 @@ public class VMManagerApp extends VMApp {
         vmService = appContainer.getInstance(VMService.class);
         VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
         for(VMDescriptor sel : vmDescriptor) {
-          if(vmService.isRunning(sel)) vmService.watch(sel);
+          if(vmService.isRunning(sel)) vmService.getVMListenerManager().watch(sel);
           else vmService.unregister(sel);
         }
       } catch(Throwable e) {

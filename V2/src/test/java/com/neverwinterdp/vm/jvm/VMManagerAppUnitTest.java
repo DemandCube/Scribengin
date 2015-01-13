@@ -12,20 +12,28 @@ import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
-import com.neverwinterdp.vm.VMServicePlugin;
+import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
+import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
+import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServicePlugin;
+import com.neverwinterdp.vm.service.command.VMServiceCommand;
 
 public class VMManagerAppUnitTest extends VMUnitTest {
-
+  Shell shell;
+  VMClient vmClient;
+  
   @Before
   public void setup() throws Exception {
     super.setup();
+    Thread.sleep(2000);
+    shell = newShell();
+    vmClient = shell.getVMClient();
   }
   
   @After
@@ -35,20 +43,22 @@ public class VMManagerAppUnitTest extends VMUnitTest {
   
   @Test
   public void testMaster() throws Exception {
-    banner("Create VM Master 1");
+    VMAssert vmAssert = new VMAssert(shell.getVMClient());
+    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING, true);
+    vmAssert.assertVMStatus("Expect vm-master-2 with running status", "vm-master-2", VMStatus.RUNNING, true);
+    
+    banner("Create Masters");
     VM vmMaster1 = createVMMaster("vm-master-1");
-    Thread.sleep(500);
-    banner("Create VM Master 2");
     VM vmMaster2 = createVMMaster("vm-master-2");
-   
-    Thread.sleep(1000);
-    Shell shell = newShell();
-    VMClient vmClient = shell.getVMClient();
+    vmAssert.waitForEvents(5000);
+    
     shell.execute("vm list");
     shell.execute("registry dump");
 
     banner("Create VM Dummy 1");
+    vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING, true);
     VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
+    vmAssert.waitForEvents(5000);
     shell.execute("vm list");
     
     banner("Shutdown VM Master 1");
@@ -69,7 +79,7 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     shell.execute("vm history");
 
     Assert.assertTrue(shutdown(vmClient, vmDummy1));
-    Thread.sleep(500);
+    Thread.sleep(3000);
     shell.execute("vm list");
     shell.execute("registry dump");
   }
@@ -89,7 +99,7 @@ public class VMManagerAppUnitTest extends VMUnitTest {
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMManagerApp.class.getName(),
+      "--vm-application",VMServiceApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + JVMVMServicePlugin.class.getName()
     };
     VM vm = VM.run(args);
@@ -108,7 +118,7 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     };
     VMConfig vmConfig = new VMConfig() ;
     new JCommander(vmConfig, args);
-    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
     Assert.assertNull(result.getErrorStacktrace());
     VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
     Assert.assertNotNull(vmDescriptor);

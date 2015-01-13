@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.yarn;
+package com.neverwinterdp.vm.environment.yarn;
 
 import java.io.IOException;
 
@@ -13,8 +13,8 @@ import com.google.inject.Singleton;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
-import com.neverwinterdp.vm.VMServicePlugin;
+import com.neverwinterdp.vm.service.VMService;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 @Singleton
 public class YarnVMServicePlugin implements VMServicePlugin {
@@ -24,7 +24,7 @@ public class YarnVMServicePlugin implements VMServicePlugin {
   private YarnManager yarnManager;
   
   @Override
-  synchronized public void allocate(VMService vmService, final VMConfig vmConfig) throws RegistryException, Exception {
+  synchronized public void allocateVM(VMService vmService, final VMConfig vmConfig) throws RegistryException, Exception {
     logger.info("Start allocate(VMService vmService, VMDescriptor vmDescriptor)");
     final ContainerRequest containerReq = 
         yarnManager.createContainerRequest(0, vmConfig.getRequestCpuCores(), vmConfig.getRequestMemory());
@@ -64,7 +64,7 @@ public class YarnVMServicePlugin implements VMServicePlugin {
   }
 
   @Override
-  synchronized public void onKill(VMService vmService, VMDescriptor vmDescriptor) throws Exception {
+  synchronized public void killVM(VMService vmService, VMDescriptor vmDescriptor) throws Exception {
     logger.info("Start onKill(VMService vmService, VMDescriptor vmDescriptor)");
     logger.info("Finish onKill(VMService vmService, VMDescriptor vmDescriptor)");
   }

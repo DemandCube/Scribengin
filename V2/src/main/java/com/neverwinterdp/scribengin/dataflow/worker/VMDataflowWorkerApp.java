@@ -56,8 +56,11 @@ public class VMDataflowWorkerApp extends VMApp {
     dataflowWorker = container.getInstance(DataflowWorker.class);
     
     try {
-      waitForShutdown();
+      dataflowWorker.waitForTermination(1000);
+      dataflowWorker.shutdown();
+      //waitForShutdown();
     } catch(InterruptedException ex) {
+      dataflowWorker.shutdown();
     } finally {
     }
   }
