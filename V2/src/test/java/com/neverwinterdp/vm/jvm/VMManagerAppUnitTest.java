@@ -79,7 +79,7 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     shell.execute("vm history");
 
     Assert.assertTrue(shutdown(vmClient, vmDummy1));
-    Thread.sleep(500);
+    Thread.sleep(3000);
     shell.execute("vm list");
     shell.execute("registry dump");
   }
