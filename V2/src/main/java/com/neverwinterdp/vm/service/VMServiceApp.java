@@ -5,6 +5,7 @@ import java.util.Map;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
@@ -44,7 +45,9 @@ public class VMServiceApp extends VMApp {
     public void onElected() {
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
-        registry.setData(VMService.LEADER_PATH, getVM().getDescriptor());
+        RefNode refNode = new RefNode();
+        refNode.setPath(getVM().getDescriptor().getStoredPath());
+        registry.setData(VMService.LEADER_PATH, refNode);
         AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {

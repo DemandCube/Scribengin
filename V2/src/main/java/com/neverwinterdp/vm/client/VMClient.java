@@ -35,8 +35,8 @@ public class VMClient {
   }
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
-    VMDescriptor descriptor = registry.getDataAs(VMService.LEADER_PATH, VMDescriptor.class);
-    return descriptor;
+    Node vmNode = registry.getRef(VMService.LEADER_PATH);
+    return vmNode.getData(VMDescriptor.class);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {

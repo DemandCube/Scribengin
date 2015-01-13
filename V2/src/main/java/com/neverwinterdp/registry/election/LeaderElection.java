@@ -88,7 +88,7 @@ public class LeaderElection {
       }
       SortedSet<LeaderId> lessThanMe = leaderIds.headSet(leaderId);
       LeaderId previousLock = lessThanMe.last();
-      registry.watch(previousLock.getPath(), this);
+      registry.watchModify(previousLock.getPath(), this);
     }
   }
 }

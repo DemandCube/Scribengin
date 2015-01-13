@@ -6,11 +6,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMHeartBeatListener;
 import com.neverwinterdp.vm.VMListener;
 import com.neverwinterdp.vm.VMStatus;
 
@@ -33,7 +33,7 @@ public class VMService {
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
     vmListener = new VMListener(registry);
-    vmListener.addListener(new VMHeartBeatManagementListener());
+    vmListener.add(new HeartBeatManagementListener());
   }
   
   public void close() { registry = null ; }
@@ -65,6 +65,7 @@ public class VMService {
   
   public void unregister(VMDescriptor descriptor) throws Exception {
     //TODO: fix this check by removing the watcher
+    if(isClosed()) return;
     if(!registry.exists(descriptor.getStoredPath())) return;
     //Copy the vm descriptor to the history path. This is not efficient, 
     //but zookeeper does not provide the move method
@@ -98,13 +99,13 @@ public class VMService {
     return vmDescriptor;
   }
 
-  public class VMHeartBeatManagementListener implements VMHeartBeatListener {
+  public class HeartBeatManagementListener implements VMListener.HeartBeatListener {
     @Override
-    public void onConnected(VMDescriptor vmDescriptor) {
+    public void onConnected(NodeEvent event, VMDescriptor vmDescriptor, VMStatus status) {
     }
 
     @Override
-    public void onDisconnected(VMDescriptor vmDescriptor) {
+    public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor, VMStatus status) {
       try {
         unregister(vmDescriptor);
       } catch (Exception e) {
