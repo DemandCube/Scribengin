@@ -47,6 +47,10 @@ dependencies {
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
 
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
   //TODO: move to use jackson
   compile 'org.json:json:20090211'
   //compile group: 'com.google.guava', name: 'guava', version: '18.0'
