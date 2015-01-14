@@ -3,6 +3,9 @@ package com.neverwinterdp.vm.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.NodeWatcher;
@@ -11,12 +14,28 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class VMServiceListener {
+  private Logger logger = LoggerFactory.getLogger(VMServiceListener.class) ;
   private Registry registry;
   private List<LeaderListener> leaderListeners = new ArrayList<>();
   
   public VMServiceListener(Registry registry) throws RegistryException {
     this.registry = registry;
-    registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
+    if(registry.exists(VMService.LEADER_PATH)) {
+      registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
+    } else {
+      registry.watchExists(VMService.LEADER_PATH, new NodeWatcher() {
+        @Override
+        public void process(NodeEvent event) {
+          if(event.getType() == NodeEvent.Type.CREATE) {
+            try {
+              VMServiceListener.this.registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
+            } catch (RegistryException e) {
+              logger.error("Cannot register the leader node watcher", e);
+            }
+          }
+        }
+      });
+    }
   }
   
   public void add(LeaderListener listener) {

@@ -36,8 +36,13 @@ public class RegistryAssert {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
     } finally {
       if(assertUnits.size() > 0) {
+        for(AssertUnit sel : assertUnits) {
+          System.err.println("Expect: " + sel.getDescription());
+        }
         throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
       }
     }
   }
+  
+  public void reset() { assertUnits.clear(); }
 }
