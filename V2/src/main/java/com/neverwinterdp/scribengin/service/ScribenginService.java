@@ -1,26 +1,22 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.service;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
-import com.beust.jcommander.JCommander;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.master.VMDataflowMasterApp;
+import com.neverwinterdp.scribengin.dataflow.service.VMDataflowServiceApp;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.service.command.VMServiceCommand;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
-public class ScribenginMaster {
+public class ScribenginService {
   final static public String SCRIBENGIN_PATH = "/scribengin";
   final static public String LEADER_PATH     = "/scribengin/master/leader";
   final static public String DATAFLOWS_PATH  = "/scribengin/dataflows";
@@ -56,7 +52,7 @@ public class ScribenginMaster {
     dfVMConfig.setName(descriptor.getName() + "-master-" + id);
     dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
     dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
-    dfVMConfig.setVmApplication(VMDataflowMasterApp.class.getName());
+    dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
     dfVMConfig.addProperty("dataflow.registry.path", dataflowPath);
     dfVMConfig.setYarnConf(vmConfig.getYarnConf());
     System.out.println("VMConfig dfVMConfig");

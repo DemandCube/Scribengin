@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.vm;
+package com.neverwinterdp.scribengin.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
@@ -7,7 +7,7 @@ import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
 
-public class VMScribenginCommand {
+public class VMScribenginServiceCommand {
   static public class DataflowDeployCommand extends Command {
     @JsonProperty
     private DataflowDescriptor descriptor ;
@@ -20,9 +20,9 @@ public class VMScribenginCommand {
     
     @Override
     public CommandResult<Boolean> execute(VM vm) {
-      System.out.println("Call VMScribenginCommand");
+      System.out.println("Call VMScribenginServiceCommand");
       CommandResult<Boolean> result = new CommandResult<Boolean>();
-      VMScribenginMasterApp app = (VMScribenginMasterApp) vm.getVMApplication();
+      VMScribenginServiceApp app = (VMScribenginServiceApp) vm.getVMApplication();
       try {
         app.getScribenginMaster().deploy(descriptor);
         result.setResult(true);

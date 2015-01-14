@@ -4,7 +4,7 @@ import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.junit.AssertEvent;
 
 public class VMAssertEvent extends AssertEvent {
-  static public enum Attr { vmdescriptor, vmstatus, heartbeat, master_leader}
+  static public enum VMAttr { vmdescriptor, vmstatus, heartbeat, master_leader}
   
   final static public String VM_STATUS          = "vm-status" ;
   final static public String VM_HEARTBEAT       = "vm-heartbeat" ;
@@ -14,11 +14,11 @@ public class VMAssertEvent extends AssertEvent {
     super(name, event);
   }
   
-  public void attr(Attr attr, Object value) {
+  public void attr(VMAttr attr, Object value) {
     attr(attr.toString(), value);
   }
   
-  public <T> T attr(Attr attr) {
+  public <T> T attr(VMAttr attr) {
     return (T) attr(attr.toString());
   }
 }

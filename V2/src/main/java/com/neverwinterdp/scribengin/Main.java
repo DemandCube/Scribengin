@@ -17,12 +17,12 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
-import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
-import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -126,7 +126,7 @@ public class Main {
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", getDataDir() + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
-    Command deployCmd = new VMScribenginCommand.DataflowDeployCommand(dflDescriptor) ;
+    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(dflDescriptor) ;
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
@@ -160,7 +160,7 @@ public class Main {
       setName(name).
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
-      setVmApplication(VMScribenginMasterApp.class.getName());
+      setVmApplication(VMScribenginServiceApp.class.getName());
     vmConfig.setEnvironment(VMConfig.Environment.YARN);
     vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
     vmConfig.addYarnProperty("fs.defaultFS", "hdfs://hadoop-master:9000");
