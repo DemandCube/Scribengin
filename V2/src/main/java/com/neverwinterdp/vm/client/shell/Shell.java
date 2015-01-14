@@ -12,7 +12,11 @@ public class Shell {
   private Map<String, Command> commands = new HashMap<String, Command>() ;
   
   public Shell(Registry registry) {
-    this.console = new Console() ;
+    this(registry, new Console());
+  }
+  
+  public Shell(Registry registry, Console console){
+    this.console = console ;
     vmClient = new VMClient(registry);
     add("registry", new RegistryCommand());
     add("vm", new VMCommand());

@@ -32,7 +32,7 @@ def listvms():
   logging.debug("Listing VMs")
   payload = {'command': 'listvms'}
   res = sendRequest(payload)
-  click.echo(res.text)
+  click.echo(res)
 
 
 def sendRequest(params):
@@ -45,7 +45,7 @@ def sendRequest(params):
       r = requests.post(_host, data=params)
     except Exception, e:
       return "Error handling request: "+str(e)
-    return r
+    return r.text
 
 
 if __name__ == '__main__':

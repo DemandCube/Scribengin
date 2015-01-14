@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<web-app> 
+
+  <Configure id="TestCommandServer" class="com.neverwinterdp.command.server.TestCommandServer"></Configure>
+
+  <servlet>
+    <servlet-name>CommandServlet</servlet-name>
+    <servlet-class>com.neverwinterdp.command.server.CommandServlet</servlet-class>
+    <init-param>
+      <param-name>host</param-name>
+      <param-value>127.0.0.1:2181</param-value>
+    </init-param>
+    <init-param>
+      <param-name>dbdomain</param-name>
+      <param-value>/NeverwinterDP</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+    <async-supported>true</async-supported>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>CommandServlet</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+
+</web-app>
