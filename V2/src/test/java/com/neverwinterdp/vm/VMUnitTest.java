@@ -3,9 +3,6 @@ package com.neverwinterdp.vm;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
@@ -17,21 +14,21 @@ import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.shell.Shell;
 
-abstract public class VMUnitTest {
+public class VMUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
   }
   
   protected ZookeeperServerLauncher zkServerLauncher ;
   
-  @Before
+  //@Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
     zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
   
-  @After
+  //@After
   public void teardown() throws Exception {
     zkServerLauncher.shutdown();
   }
@@ -50,7 +47,7 @@ abstract public class VMUnitTest {
     return new RegistryImpl(RegistryConfig.getDefault());
   }
   
-  protected Shell newShell() throws RegistryException {
+  public Shell newShell() throws RegistryException {
     return new Shell(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
   }
 }

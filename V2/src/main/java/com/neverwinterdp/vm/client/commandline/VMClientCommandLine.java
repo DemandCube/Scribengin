@@ -12,7 +12,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
+import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.client.VMClient;
 
 
