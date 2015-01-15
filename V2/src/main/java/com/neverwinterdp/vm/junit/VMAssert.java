@@ -7,6 +7,7 @@ import static com.neverwinterdp.vm.junit.VMAssertEvent.VM_STATUS;
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.election.RegistryLeaderElectionListener;
 import com.neverwinterdp.registry.junit.RegistryAssert;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMRegistryListener;
@@ -79,7 +80,7 @@ public class VMAssert extends RegistryAssert {
     }
   }
   
-  public class VMServiceMasterListener implements VMServiceRegistryListener.LeaderListener {
+  public class VMServiceMasterListener implements RegistryLeaderElectionListener.LeaderListener<VMDescriptor> {
     @Override
     public void onElected(NodeEvent event, VMDescriptor learderVMDescriptor) {
       VMAssertEvent vmEvent = new VMAssertEvent(VM_MASTER_ELECTION, event);

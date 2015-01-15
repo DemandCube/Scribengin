@@ -1,11 +1,12 @@
 package com.neverwinterdp.scribengin.junit;
 
-import static com.neverwinterdp.vm.junit.VMAssertEvent.VM_MASTER_ELECTION;
+import static com.neverwinterdp.scribengin.junit.ScribenginAssertEvent.*;
 
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import static com.neverwinterdp.scribengin.junit.ScribenginAssertEvent.*;
+import com.neverwinterdp.registry.election.RegistryLeaderElectionListener;
+import com.neverwinterdp.scribengin.junit.ScribenginAssertEvent.ScribenginAttr;
 import com.neverwinterdp.scribengin.service.ScribenginServiceRegistryListener;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.junit.VMAssert;
@@ -25,7 +26,7 @@ public class ScribenginAssert extends VMAssert {
     add(new ScribenginAssertMasterElection(desc, vmName));
   }
   
-  public class LeaderListenerImpl implements ScribenginServiceRegistryListener.LeaderListener {
+  public class LeaderListenerImpl implements RegistryLeaderElectionListener.LeaderListener<VMDescriptor> {
     @Override
     public void onElected(NodeEvent event, VMDescriptor learderVMDescriptor) {
       ScribenginAssertEvent saEvent = new ScribenginAssertEvent(SCRIBENGIN_MASTER_ELECTION, event);

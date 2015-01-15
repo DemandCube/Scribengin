@@ -1,73 +1,26 @@
 package com.neverwinterdp.vm.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.neverwinterdp.registry.Node;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.election.RegistryLeaderElectionListener;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class VMServiceRegistryListener {
   private Logger logger = LoggerFactory.getLogger(VMServiceRegistryListener.class) ;
+  
   private Registry registry;
-  private List<LeaderListener> leaderListeners = new ArrayList<>();
+  private RegistryLeaderElectionListener<VMDescriptor> leaderListener;
   
   public VMServiceRegistryListener(Registry registry) throws RegistryException {
     this.registry = registry;
-    
-    if(registry.exists(VMService.LEADER_PATH)) {
-      registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
-    } else {
-      registry.watchExists(VMService.LEADER_PATH, new NodeWatcher() {
-        @Override
-        public void process(NodeEvent event) {
-          if(event.getType() == NodeEvent.Type.CREATE) {
-            try {
-              VMServiceRegistryListener.this.registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
-            } catch (RegistryException e) {
-              logger.error("Cannot register the leader node watcher", e);
-            }
-          }
-        }
-      });
-    }
+    leaderListener = 
+        new RegistryLeaderElectionListener<VMDescriptor>(registry, VMDescriptor.class, VMService.LEADER_PATH);
   }
   
-  public void add(LeaderListener listener) {
-    leaderListeners.add(listener);
-  }
-  
-  public void close() { registry = null ; }
-  
-  public boolean isClosed() { return registry == null ; }
-
-  public class LeaderNodeWatcher implements NodeWatcher {
-    @Override
-    public void process(NodeEvent event) {
-      if(isClosed()) return;
-      try {
-        String path = event.getPath();
-        if(event.getType() == NodeEvent.Type.MODIFY) {
-          registry.watchModify(path, this);
-          Node node = registry.getRef(path);
-          VMDescriptor vmDescriptor = node.getData(VMDescriptor.class);
-          for(LeaderListener sel : leaderListeners) {
-            sel.onElected(event, vmDescriptor);
-          }
-        }
-      } catch(Exception ex) {
-        ex.printStackTrace();
-      }
-    }
-  }
-  
-  static public interface LeaderListener {
-    public void onElected(NodeEvent event, VMDescriptor vmDescriptor) ;
+  public void add(RegistryLeaderElectionListener.LeaderListener<VMDescriptor> listener) {
+    leaderListener.add(listener);
   }
 }
