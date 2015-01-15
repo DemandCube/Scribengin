@@ -1,6 +1,9 @@
-package com.neverwinterdp.vm.master;
+package com.neverwinterdp.scribengin.dataflow.service;
 
 import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -11,64 +14,58 @@ import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
 
 
-public class VMManagerApp extends VMApp {
-  private LeaderElection election ;
-  
-  private Injector  appContainer ;
-  private VMService vmService;
-  
-  public VMService getVMService() { return this.vmService; }
- 
+public class VMDataflowServiceApp extends VMApp {
+  private String         dataflowRegistryPath;
+  private LeaderElection election;
+  private DataflowService dataflowMaster;
+  private Injector       appContainer;
+
   @Override
   public void run() throws Exception {
-    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
+    VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
+    dataflowRegistryPath = vmConfig.getProperties().get("dataflow.registry.path");
+    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), dataflowRegistryPath + "/master/leader") ;
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     try {
       waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
-      if(vmService != null) vmService.close();
       if(election != null && election.getLeaderId() != null) {
-        vmService.close();
         election.stop();
       }
     }
   }
-  
+ 
   class MasterLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
-        registry.setData(VMService.LEADER_PATH, getVM().getDescriptor());
-        AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
+        final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
+        AppModule module = new AppModule(vmConfig.getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
-            bindInstance(VMConfig.class, getVM().getDescriptor().getVmConfig());
+            bindInstance(VMConfig.class, vmConfig);
             bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
               bindType(Registry.class, registry.getClass().getName());
-            } catch (Throwable e) {
+              Configuration conf = new Configuration();
+              vmConfig.overrideYarnConfiguration(conf);
+              FileSystem fs = FileSystem.get(conf);
+              bindInstance(FileSystem.class, fs);
+            } catch (Exception e) {
               //TODO: use logger
               e.printStackTrace();
             }
           };
         };
+        registry.setData(dataflowRegistryPath + "/master/leader", getVM().getDescriptor());
         appContainer = Guice.createInjector(module);
-        System.out.println("Before get VMService") ;
-        vmService = appContainer.getInstance(VMService.class);
-        System.out.println("After get VMService = " + vmService) ;
-        VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
-        for(VMDescriptor sel : vmDescriptor) {
-          if(vmService.isRunning(sel)) vmService.watch(sel);
-          else vmService.unregister(sel);
-        }
-      } catch(Throwable e) {
+        dataflowMaster = appContainer.getInstance(DataflowService.class);
+      } catch(Exception e) {
         e.printStackTrace();
       }
     }

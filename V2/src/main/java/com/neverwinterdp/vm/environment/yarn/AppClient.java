@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.yarn;
+package com.neverwinterdp.vm.environment.yarn;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,15 +36,16 @@ public class AppClient  {
   public void run(String[] args) throws Exception {
     run(args, new YarnConfiguration()) ;
   }
-  
   public void run(String[] args, Configuration conf) throws Exception {
+    VMConfig vmConfig = new VMConfig() ;
+    new JCommander(vmConfig, args) ;
+    run(vmConfig, conf);
+  }
+  
+  public void run(VMConfig vmConfig, Configuration conf) throws Exception {
     try {
-      VMConfig vmConfig = new VMConfig() ;
-      new JCommander(vmConfig, args) ;
       vmConfig.overrideYarnConfiguration(conf);
-      
       uploadApp(vmConfig);
-      
       System.out.println("Create YarnClient") ;
       YarnClient yarnClient = YarnClient.createYarnClient();
       yarnClient.init(conf);
@@ -73,7 +74,8 @@ public class AppClient  {
       
       System.out.println("Setup the classpath for ApplicationMaster") ;
       Map<String, String> appMasterEnv = new HashMap<String, String>();
-      Util.setupAppMasterEnv(vmConfig.isMiniClusterEnv(), conf, appMasterEnv);
+      boolean jvmEnv = vmConfig.getEnvironment() != VMConfig.Environment.YARN;
+      Util.setupAppMasterEnv(jvmEnv , conf, appMasterEnv);
       amContainer.setEnvironment(appMasterEnv);
 
       System.out.println("Set up resource type requirements for ApplicationMaster") ;

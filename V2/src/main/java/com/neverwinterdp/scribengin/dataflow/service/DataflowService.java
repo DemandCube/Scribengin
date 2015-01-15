@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.dataflow.master;
+package com.neverwinterdp.scribengin.dataflow.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,13 @@ import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
+import com.neverwinterdp.vm.VMConfig;
 
 
-public class DataflowMaster {
+public class DataflowService {
+  @Inject
+  private VMConfig vmConfig;
+ 
   @Inject
   private DataflowRegistry dataflowRegistry;
   
@@ -19,7 +23,9 @@ public class DataflowMaster {
   @Inject
   private SinkFactory sinkFactory ;
   
-  private List<EventListener> listeners = new ArrayList<EventListener>();
+  private List<DataflowServiceEventListener> listeners = new ArrayList<DataflowServiceEventListener>();
+  
+  public VMConfig getVMConfig() { return this.vmConfig ; }
   
   public DataflowRegistry getDataflowRegistry() { return dataflowRegistry; }
 
@@ -29,17 +35,17 @@ public class DataflowMaster {
   
   @Inject
   public void onInit() throws Exception {
-    listeners.add(new InitEventListener());
+    listeners.add(new DataflowServiceInitEventListener());
     
-    onEvent(EventListener.Event.INIT);
+    onEvent(DataflowServiceEventListener.Event.INIT);
   }
   
   public void onDestroy() throws Exception {
   }
   
-  private void onEvent(EventListener.Event event) throws Exception {
+  private void onEvent(DataflowServiceEventListener.Event event) throws Exception {
     for(int i = 0; i < listeners.size(); i++) {
-      EventListener listener = listeners.get(i) ;
+      DataflowServiceEventListener listener = listeners.get(i) ;
       listener.onEvent(this, event);
     }
   }

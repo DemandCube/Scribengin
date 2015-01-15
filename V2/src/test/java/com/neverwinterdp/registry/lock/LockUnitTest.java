@@ -62,7 +62,7 @@ public class LockUnitTest {
       if(i % 10 == 0) Thread.sleep(new Random().nextInt(50));
     }
     executorPool.shutdown();
-    executorPool.awaitTermination(3 * 60 * 1000, TimeUnit.MILLISECONDS);
+    executorPool.awaitTermination(5 * 60 * 1000, TimeUnit.MILLISECONDS);
     for(int i = 0; i < worker.length; i++) {
       Assert.assertNotNull(worker[i].lockId);
       Assert.assertTrue(worker[i].complete);

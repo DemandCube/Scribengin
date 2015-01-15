@@ -17,21 +17,21 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
-import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
-import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.yarn.AppClient;
-import com.neverwinterdp.vm.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class Main {
   private long vmLaunchTime = 30 * 1000; //30s
@@ -63,15 +63,16 @@ public class Main {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
     String[] runArgs = {
       //"--local-home", "build/release/Scribengin.V2",
+      "--environment", "YARN",
       "--local-home", ".",
-      "--dfs-home", "/tmp/apps/Scribengin.V2",
+      "--dfs-home", "/apps/scribengin.v2",
       "--name", "VMMaster",
       "--roles", "vm-master",
       "--self-registration",
       "--registry-connect", "zookeeper:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMManagerApp.class.getName(),
+      "--vm-application",VMServiceApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
       "--yarn:yarn.resourcemanager.scheduler.address=hadoop-master:8030",
       "--yarn:yarn.resourcemanager.address=hadoop-master:8032",
@@ -125,7 +126,7 @@ public class Main {
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", getDataDir() + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
-    Command deployCmd = new VMScribenginCommand.DataflowDeployCommand(dflDescriptor) ;
+    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(dflDescriptor) ;
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
@@ -159,7 +160,10 @@ public class Main {
       setName(name).
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
-      setVmApplication(VMScribenginMasterApp.class.getName());
+      setVmApplication(VMScribenginServiceApp.class.getName());
+    vmConfig.setEnvironment(VMConfig.Environment.YARN);
+    vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
+    vmConfig.addYarnProperty("fs.defaultFS", "hdfs://hadoop-master:9000");
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;

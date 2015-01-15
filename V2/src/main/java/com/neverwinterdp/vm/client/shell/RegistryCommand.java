@@ -28,9 +28,15 @@ public class RegistryCommand extends Command {
     }
     
     private void dump(String parent, String node, Registry registry, Console console, String indentation) throws IOException, RegistryException {
+      //During the recursive traverse, a node can be added or removed by the other process
+      //So we can ignore all the No node exists exception
       String path = parent + "/" + node;
       if("/".equals(parent)) path = "/" + node;
-      byte[] data = registry.getData(path);
+      byte[] data = {};
+      try {
+        data = registry.getData(path);
+      } catch(RegistryException ex) {
+      }
       String stringData = "";
       if(data != null && data.length > 0) {
         stringData = " - " + new String(data);
@@ -41,9 +47,15 @@ public class RegistryCommand extends Command {
         }
       }
       console.println(indentation + node + stringData);
-      List<String> children = registry.getChildren(path);
-      for(String child : children) {
-        dump(path, child, registry, console, indentation + "  ");
+      List<String > children = null ;
+      try {
+        children = registry.getChildren(path);
+      } catch(RegistryException ex) {
+      }
+      if(children != null) {
+        for(String child : children) {
+          dump(path, child, registry, console, indentation + "  ");
+        }
       }
     }
   }

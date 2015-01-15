@@ -1,7 +1,5 @@
 package com.neverwinterdp.vm;
 
-
-
 abstract public class VMApp {
   private VM vm;
   

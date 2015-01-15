@@ -11,11 +11,22 @@ import org.apache.hadoop.conf.Configuration;
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.util.text.StringUtil;
 
 public class VMConfig {
+  public enum Environment {
+    YARN, YARN_MINICLUSTER, JVM;
+    
+    public static Environment fromString(String code) {
+      for(Environment output : Environment.values()) {
+        if(output.toString().equalsIgnoreCase(code)) return output;
+      }
+      return null;
+    }
+  }
+
+  
   @Parameter(names = "--name", description = "The registry partition or table")
   private String              name;
   
@@ -51,8 +62,8 @@ public class VMConfig {
   @Parameter(names = "--description", description = "Description")
   private String              description;
   
-  @Parameter(names = "--mini-cluster-env", description = "Mini cluster env")
-  private boolean             miniClusterEnv = false;
+  @Parameter(names = "--environment", description = "Environement YARN, YARN_MINICLUSTER, JVM")
+  private Environment  environment = Environment.JVM;
   
   public String getName() { return name; }
   public VMConfig setName(String name) { 
@@ -166,9 +177,9 @@ public class VMConfig {
     return this;
   }
   
-  public boolean isMiniClusterEnv() { return miniClusterEnv; }
-  public VMConfig setMiniClusterEnv(boolean miniClusterEnv) {
-    this.miniClusterEnv = miniClusterEnv;
+  public Environment getEnvironment() { return this.environment; }
+  public VMConfig setEnvironment(Environment env) { 
+    this.environment = env; 
     return this;
   }
   
@@ -214,16 +225,14 @@ public class VMConfig {
     b.append(" --registry-db-domain ").append(registryConfig.getDbDomain()) ;
     b.append(" --registry-implementation ").append(registryConfig.getRegistryImplementation()) ;
     
+    b.append(" --environment ").append(environment) ;
+    
     for(Map.Entry<String, String> entry : properties.entrySet()) {
       b.append(" --prop:").append(entry.getKey()).append("=").append(entry.getValue()) ;
     }
     
     for(Map.Entry<String, String> entry : yarnConf.entrySet()) {
       b.append(" --yarn:").append(entry.getKey()).append("=").append(entry.getValue()) ;
-    }
-    
-    if(this.miniClusterEnv) {
-      b.append(" --mini-cluster-env ") ;
     }
   }
 }

@@ -15,14 +15,17 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
+import com.neverwinterdp.scribengin.junit.ScribenginAssert;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
-import com.neverwinterdp.scribengin.vm.VMScribenginCommand;
-import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.Command;
@@ -54,24 +57,25 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
   
   @Test
   public void testMaster() throws Exception {
-    banner("Create VM Master 1");
-    createVMMaster("vm-master-1");
-   
-    Thread.sleep(vmLaunchTime);
     ScribenginShell shell = new ScribenginShell(newRegistry().connect());
     VMClient vmClient = shell.getVMClient();
+    
+    banner("Create VM Master 1");
+    ScribenginAssert sribenginAssert = new ScribenginAssert(shell.getScribenginClient().getRegistry());
+    sribenginAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
+    sribenginAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
+    createVMMaster("vm-master-1");
+    sribenginAssert.waitForEvents(10000);
+    
     shell.execute("vm list");
     shell.execute("registry dump");
     
-    banner("Create Scribengin Master");
+    banner("Create Scribengin Master 1 and 2");
+    sribenginAssert.assertScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     VMDescriptor scribenginMaster1 = createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
-    Thread.sleep(vmLaunchTime);
-    shell.execute("vm list");
-    shell.execute("registry dump --path /");
-    
-    banner("Create Scribengin Master");
+    Thread.sleep(100);
     VMDescriptor scribenginMaster2 = createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
-    Thread.sleep(vmLaunchTime);
+    sribenginAssert.waitForEvents(5000);
     
     VMDescriptor scribenginMaster = shell.getScribenginClient().getScribenginMaster();
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
@@ -86,7 +90,7 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", getDataDir() + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
-    Command deployCmd = new VMScribenginCommand.DataflowDeployCommand(dflDescriptor) ;
+    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(dflDescriptor) ;
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
@@ -118,11 +122,16 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
       setName(name).
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
-      setVmApplication(VMScribenginMasterApp.class.getName());
+      setVmApplication(VMScribenginServiceApp.class.getName());
+    configureEnvironment(vmConfig);
+    System.out.println("VMConfig:");
+    System.out.println(JSONSerializer.INSTANCE.toString(vmConfig));
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;
   }
+  
+  abstract protected void configureEnvironment(VMConfig vmConfig) ;
   
   static public class TestCopyDataProcessor implements DataProcessor {
     private int count = 0;

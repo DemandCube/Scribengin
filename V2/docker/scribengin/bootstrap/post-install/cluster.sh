@@ -204,6 +204,12 @@ function hadoop_std_grep() {
   servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stderr' -exec grep $@ {} \; -print"
 }
 
+function hadoop_console_tail() {
+  h1 "Hadoop Container stdout/stderr"
+  servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stdout' -exec tail $@ {} \; -print"
+  servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stderr' -exec tail $@ {} \; -print"
+}
+
 function zookeeper_clean() {
   h1 "Clean zookeeper data and logs"
   inst $'This step will:\n
@@ -357,6 +363,8 @@ elif [ "$COMMAND" = "hadoop" ] ; then
     hadoop_log_grep $@
   elif [ "$SUB_COMMAND" = "std-grep" ] ; then
     hadoop_std_grep $@
+  elif [ "$SUB_COMMAND" = "console-tail" ] ; then
+    hadoop_console_tail $@
   fi
 else
   echo "cluster command options: "

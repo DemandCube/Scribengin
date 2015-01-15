@@ -112,4 +112,66 @@ To stop the cluster
 ````
 $./cluster.sh stop
 ````
+#Run Scribengin#
 
+Checkout Scribengin from github
+````
+  git pull
+````
+
+Go to Scribengin/V2/docker/scribengin
+````
+  cd path-to/Scribengin/V2/docker/scribengin
+````
+
+Build the docker image base on the latest ubuntu. Check the Dockerfile for more information
+````
+  ./docker.sh image build
+````
+
+Launch the containers to run hadoop, zookeeper, kafka
+````
+  ./docker.sh container run
+````
+
+The ```./docker.sh container run``` command should print out the name and the information about the hostnames and ip of the containers. Copy the output from your console to /etc/hosts.  The following is an example of what you're looking for (Don't actually copy the following into your hosts file)
+````
+#Copy this print out to your /etc/hosts
+#DON'T ACTUALLY COPY THIS SNIPPET, GRAB THE OUTPUT FROM YOUR CONSOLE!!
+172.17.0.81 kafka-3
+172.17.0.80 kafka-2
+172.17.0.79 kafka-1
+172.17.0.78 zookeeper
+172.17.0.77 hadoop-worker-3
+172.17.0.76 hadoop-worker-2
+172.17.0.75 hadoop-worker-1
+172.17.0.74 hadoop-master
+````
+
+If you use the MAC OS, you need to route the ip
+````
+  ./docker.sh ip-route
+````
+
+Login to the hadoop-master or any container. The password is 'neverwinterdp'
+````
+  ssh neverwinterdp@hadoop-master
+````
+
+Go to /opt directory, you should have the cluster.sh script , hadoop, zookeeper, kafka installed here.
+````
+  cd /opt
+````
+
+Launch zookeeper, kafka and hadoop
+````
+  ./cluster.sh start --clean
+````
+
+
+Build and run Scribengin
+````
+ cd path-to/Scribengin/V2
+ gradle clean build install release -x test
+ ./build/release/Scribengin.V2/bin/scribengin.sh
+````

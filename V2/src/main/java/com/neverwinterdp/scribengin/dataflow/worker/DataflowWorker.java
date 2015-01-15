@@ -27,6 +27,7 @@ public class DataflowWorker {
 
   @Inject
   public void onInit() throws Exception {
+    logger.info("Start onInit()");
     DataflowRegistry dataflowRegistry = container.getDataflowRegistry();
     dataflowDescriptor = dataflowRegistry.getDataflowDescriptor();
     int numOfExecutors = dataflowDescriptor.getNumberOfExecutorsPerWorker();
@@ -36,17 +37,31 @@ public class DataflowWorker {
       executor.start();
       taskExecutors.add(executor);
     }
+    logger.info("Finish onInit()");
   }
   
-  public void onDestroy() {
-    System.out.println("onDestroy() DataflowWorker............");
+  public void shutdown() {
+    logger.info("Start shutdown()");
+    //TODO: Use dataflowRegistry to mark the status and notify
+    logger.info("Finish shutdown()");
+  }
+  
+  public boolean isAlive() {
+    for(DataflowTaskExecutor sel : taskExecutors) {
+      if(sel.isAlive()) return true;
+    }
+    return false;
+  }
+  
+  public void waitForTermination(long checkPeriod) throws InterruptedException {
+    while(isAlive()) {
+      Thread.sleep(1000);
+    }
   }
   
   public DataflowWorkerDescriptor getDescriptor() {
     return null ;
   }
   
-  public DataflowTaskExecutor[] getExecutors() {
-    return null;
-  }
+  public List<DataflowTaskExecutor> getExecutors() { return taskExecutors; }
 }

@@ -1,25 +1,28 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.service;
 
-import com.beust.jcommander.JCommander;
+import java.util.Arrays;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.master.VMDataflowMasterApp;
+import com.neverwinterdp.scribengin.dataflow.service.VMDataflowServiceApp;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
-public class ScribenginMaster {
+public class ScribenginService {
   final static public String SCRIBENGIN_PATH = "/scribengin";
   final static public String LEADER_PATH     = "/scribengin/master/leader";
   final static public String DATAFLOWS_PATH  = "/scribengin/dataflows";
   
+  @Inject
+  private VMConfig vmConfig; 
   private Registry registry;
   private VMClient vmClient ;
   
@@ -44,21 +47,19 @@ public class ScribenginMaster {
   
   private VMDescriptor createDataflowMaster(DataflowDescriptor descriptor, int id) throws Exception {
     String dataflowPath = DATAFLOWS_PATH + "/" + descriptor.getName();
-    RegistryConfig config = registry.getRegistryConfig();
-    String[] args = {
-        "--name", descriptor.getName() + "-master-" + id,
-        "--roles", "dataflow-master",
-        "--registry-connect", config.getConnect(), 
-        "--registry-db-domain", config.getDbDomain(), 
-        "--registry-implementation", config.getRegistryImplementation(),
-        "--vm-application", VMDataflowMasterApp.class.getName(),
-        "--prop:dataflow.registry.path=" + dataflowPath
-    };
-    VMConfig vmConfig = new VMConfig() ;
-    new JCommander(vmConfig, args);
+    VMConfig dfVMConfig = new VMConfig() ;
+    dfVMConfig.setEnvironment(vmConfig.getEnvironment());
+    dfVMConfig.setName(descriptor.getName() + "-master-" + id);
+    dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
+    dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
+    dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
+    dfVMConfig.addProperty("dataflow.registry.path", dataflowPath);
+    dfVMConfig.setYarnConf(vmConfig.getYarnConf());
+    System.out.println("VMConfig dfVMConfig");
+    System.out.println(JSONSerializer.INSTANCE.toString(dfVMConfig));
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
-        (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+        (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
     System.out.println(result.getErrorStacktrace());
     return result.getResult();
   }
@@ -73,7 +74,7 @@ public class ScribenginMaster {
     public void run() {
       try {
         VMDescriptor master1 = createDataflowMaster(descriptor, 1);
-        VMDescriptor master2 = createDataflowMaster(descriptor, 2);
+        //VMDescriptor master2 = createDataflowMaster(descriptor, 2);
       } catch(Exception ex) {
         ex.printStackTrace();
       }

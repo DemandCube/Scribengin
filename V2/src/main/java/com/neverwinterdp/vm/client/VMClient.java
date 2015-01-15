@@ -2,8 +2,6 @@ package com.neverwinterdp.vm.client;
 
 import java.util.List;
 
-import org.junit.Assert;
-
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeEvent;
@@ -12,12 +10,12 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMService;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
+import com.neverwinterdp.vm.service.VMService;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 
 public class VMClient {
   private Registry registry;
@@ -37,8 +35,8 @@ public class VMClient {
   }
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
-    VMDescriptor descriptor = registry.getDataAs(VMService.LEADER_PATH, VMDescriptor.class);
-    return descriptor;
+    Node vmNode = registry.getRef(VMService.LEADER_PATH);
+    return vmNode.getData(VMDescriptor.class);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
@@ -59,7 +57,7 @@ public class VMClient {
   public VMDescriptor allocate(VMConfig vmConfig) throws Exception {
     VMDescriptor masterVMDescriptor = getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
-        (CommandResult<VMDescriptor>) execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+        (CommandResult<VMDescriptor>) execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
     if(result.getErrorStacktrace() != null) {
       throw new Exception(result.getErrorStacktrace());
     }

@@ -11,10 +11,11 @@ import org.junit.Before;
 import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.VMServicePlugin;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.yarn.AppClient;
-import com.neverwinterdp.vm.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.VMConfig;
+import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   
@@ -36,7 +37,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
     super.setup();
-    vmLaunchTime = 7500;
+    vmLaunchTime = 10000;
   }
 
   @After
@@ -50,20 +51,26 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   protected void createVMMaster(String name) throws Exception {
     System.out.println("fs.defaultFS = " + miniDFSCluster.getURI());
     String[] args = {
-      "--mini-cluster-env",
+      "--environment", "YARN_MINICLUSTER",
       "--name", name,
       "--roles", "vm-master",
       "--self-registration",
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMManagerApp.class.getName(),
+      "--vm-application",VMServiceApp.class.getName(),
       "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
       "--yarn:yarn.resourcemanager.scheduler.address=localhost:8030",
       "--yarn:fs.defaultFS=" + miniDFSCluster.getURI()
     };
     AppClient appClient = new AppClient() ;
     appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
+  }
+  
+  protected void configureEnvironment(VMConfig vmConfig) {
+    vmConfig.setEnvironment(VMConfig.Environment.YARN_MINICLUSTER);
+    vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
+    vmConfig.addYarnProperty("fs.defaultFS", miniDFSCluster.getURI().toString());
   }
   
   @Override

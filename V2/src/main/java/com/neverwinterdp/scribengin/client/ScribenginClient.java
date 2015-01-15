@@ -2,10 +2,11 @@ package com.neverwinterdp.scribengin.client;
 
 import java.util.List;
 
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.scribengin.ScribenginMaster;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class ScribenginClient {
@@ -18,11 +19,12 @@ public class ScribenginClient {
   public Registry getRegistry() { return this.registry; }
   
   public VMDescriptor getScribenginMaster() throws RegistryException {
-    VMDescriptor descriptor = registry.getDataAs(ScribenginMaster.LEADER_PATH, VMDescriptor.class);
+    Node node = registry.getRef(ScribenginService.LEADER_PATH);
+    VMDescriptor descriptor = node.getData(VMDescriptor.class);
     return descriptor;
   }
   
   public List<DataflowDescriptor> getDataflowDescriptor() throws RegistryException {
-    return registry.getChildrenAs(ScribenginMaster.DATAFLOWS_PATH, DataflowDescriptor.class) ;
+    return registry.getChildrenAs(ScribenginService.DATAFLOWS_PATH, DataflowDescriptor.class) ;
   }
 }

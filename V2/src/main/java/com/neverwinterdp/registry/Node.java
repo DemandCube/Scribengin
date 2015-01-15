@@ -55,7 +55,7 @@ public class Node {
   public LeaderElection getLeaderElection() { return new LeaderElection(registry, path) ; }
 
   public void watch(NodeWatcher watcher) throws RegistryException {
-    registry.watch(path, watcher);
+    registry.watchExists(path, watcher);
   }
   
   public void watchChildren(NodeWatcher watcher) throws RegistryException {

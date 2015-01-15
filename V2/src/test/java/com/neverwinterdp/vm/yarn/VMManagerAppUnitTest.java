@@ -20,13 +20,15 @@ import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMServicePlugin;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.master.VMManagerApp;
-import com.neverwinterdp.vm.master.command.VMMasterCommand;
+import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServiceCommand;
+import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMManagerAppUnitTest {
   
@@ -97,14 +99,14 @@ public class VMManagerAppUnitTest {
   
   private String[] createVMConfigArgs(String name) {
     String[] args = { 
-        "--mini-cluster-env",
+        "--environment", "YARN_MINICLUSTER",
         "--name", name,
         "--roles", "vm-master",
         "--self-registration",
         "--registry-connect", "127.0.0.1:2181", 
         "--registry-db-domain", "/NeverwinterDP", 
         "--registry-implementation", RegistryImpl.class.getName(),
-        "--vm-application",VMManagerApp.class.getName(),
+        "--vm-application",VMServiceApp.class.getName(),
         "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
         "--yarn:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
     } ;
@@ -122,7 +124,7 @@ public class VMManagerAppUnitTest {
       Map.Entry<String, String> entry =  i.next();
       //vmConfig.getYarnConf().put(entry.getKey(), entry.getValue());
     }
-    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
     Assert.assertNull(result.getErrorStacktrace());
     VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
     Assert.assertNotNull(vmDescriptor);
@@ -131,7 +133,7 @@ public class VMManagerAppUnitTest {
   
   private VMDescriptor allocateVMDummy(VMClient vmClient, String name) throws Exception {
     String[] args = { 
-        "--mini-cluster-env",
+        "--environment", "YARN_MINICLUSTER",
         "--name", name,
         "--roles", "dummy",
         "--self-registration",
@@ -144,7 +146,7 @@ public class VMManagerAppUnitTest {
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     VMConfig vmConfig = new VMConfig() ;
     new JCommander(vmConfig, args);
-    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMMasterCommand.Allocate(vmConfig));
+    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
     Assert.assertNull(result.getErrorStacktrace());
     VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
     Assert.assertNotNull(vmDescriptor);
