@@ -44,43 +44,49 @@ public class VMManagerAppUnitTest extends VMUnitTest {
   @Test
   public void testMaster() throws Exception {
     VMAssert vmAssert = new VMAssert(shell.getVMClient());
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING, true);
-    vmAssert.assertVMStatus("Expect vm-master-2 with running status", "vm-master-2", VMStatus.RUNNING, true);
+    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
+    vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
+    vmAssert.assertVMStatus("Expect vm-master-2 with running status", "vm-master-2", VMStatus.RUNNING);
+    vmAssert.assertHeartbeat("Expect vm-master-2 has connected heartbeat", "vm-master-2", true);
     
     banner("Create Masters");
     VM vmMaster1 = createVMMaster("vm-master-1");
+    Thread.sleep(1000);
     VM vmMaster2 = createVMMaster("vm-master-2");
-    vmAssert.waitForEvents(5000);
-    
-    shell.execute("vm list");
+    try {
+      vmAssert.waitForEvents(5000);
+    } catch(Exception ex) {
+      vmAssert.reset();
+      ex.printStackTrace();
+    }
     shell.execute("registry dump");
 
     banner("Create VM Dummy 1");
-    vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING, true);
+    vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
+    vmAssert.assertHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
     VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
     vmAssert.waitForEvents(5000);
-    shell.execute("vm list");
+    shell.execute("registry dump");
     
     banner("Shutdown VM Master 1");
     //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
+    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
+    vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
+    vmAssert.assertMasterElection("Expect the vm-master-2 will be elected", "vm-master-2");
     vmMaster1.shutdown();
-    Thread.sleep(1000);
+    vmAssert.waitForEvents(5000);
     shell.execute("registry dump");
     
     banner("Create VM Dummy 2");
     VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
-    shell.execute("vm list");
-    shell.execute("vm history");
+    shell.execute("registry dump");
     
-    banner("Shutdown VM Dummy 2");
+    banner("Shutdown VM Dummy 1 and 2");
+    vmAssert.assertVMStatus("Expect vm-dummy-1 running status", "vm-dummy-1", VMStatus.TERMINATED);
+    vmAssert.assertVMStatus("Expect vm-dummy-2 running status", "vm-dummy-2", VMStatus.TERMINATED);
     Assert.assertTrue(shutdown(vmClient, vmDummy2));
-    Thread.sleep(500);
-    shell.execute("vm list");
-    shell.execute("vm history");
-
     Assert.assertTrue(shutdown(vmClient, vmDummy1));
-    Thread.sleep(3000);
-    shell.execute("vm list");
+    vmAssert.waitForEvents(5000);
     shell.execute("registry dump");
   }
 

@@ -10,7 +10,8 @@ public class AssertEvent {
   private NodeEvent nodeEvent;
   private Map<String, Object> attributes = new HashMap<String, Object>() ;
   
-  public AssertEvent(NodeEvent nodeEvent) {
+  public AssertEvent(String name, NodeEvent nodeEvent) {
+    this.name = name;
     this.nodeEvent = nodeEvent;
   }
 

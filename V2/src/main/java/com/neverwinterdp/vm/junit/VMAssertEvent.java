@@ -2,24 +2,23 @@ package com.neverwinterdp.vm.junit;
 
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.junit.AssertEvent;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMStatus;
 
 public class VMAssertEvent extends AssertEvent {
-  private VMDescriptor vmDescriptor;
-  private VMStatus     vmStatus;
-  private boolean      heartBeat;
+  static public enum Attr { vmdescriptor, vmstatus, heartbeat, master_leader}
   
-  public VMAssertEvent(NodeEvent event, VMDescriptor vmDescriptor, VMStatus vmStatus, boolean heartBeat) {
-    super(event);
-    this.vmDescriptor = vmDescriptor;
-    this.vmStatus = vmStatus;
-    this.heartBeat = heartBeat;
+  final static public String VM_STATUS          = "vm-status" ;
+  final static public String VM_HEARTBEAT       = "vm-heartbeat" ;
+  final static public String VM_MASTER_ELECTION = "vm-master-election" ;
+  
+  public VMAssertEvent(String name, NodeEvent event) {
+    super(name, event);
   }
-
-  public VMDescriptor getVmDescriptor() { return vmDescriptor; }
-
-  public VMStatus getVmStatus() { return vmStatus; }
   
-  public boolean getHeartBeat() { return this.heartBeat; }
+  public void attr(Attr attr, Object value) {
+    attr(attr.toString(), value);
+  }
+  
+  public <T> T attr(Attr attr) {
+    return (T) attr(attr.toString());
+  }
 }

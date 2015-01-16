@@ -101,11 +101,11 @@ public class VMService {
 
   public class HeartBeatManagementListener implements VMListener.HeartBeatListener {
     @Override
-    public void onConnected(NodeEvent event, VMDescriptor vmDescriptor, VMStatus status) {
+    public void onConnected(NodeEvent event, VMDescriptor vmDescriptor) {
     }
 
     @Override
-    public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor, VMStatus status) {
+    public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor) {
       try {
         unregister(vmDescriptor);
       } catch (Exception e) {
