@@ -11,6 +11,9 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.neverwinterdp.jetty.JettyServer;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMStatus;
@@ -43,9 +46,16 @@ public class CommandServletUnitTest {
     testHelper = new VMUnitTest();
     testHelper.setup();
 
+    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    try {
+      registry.connect();
+    } catch (RegistryException e) {
+      e.printStackTrace();
+    }
+    
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(shell.getVMClient());
+    VMAssert vmAssert = new VMAssert(registry);
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     createVMMaster("vm-master-1");

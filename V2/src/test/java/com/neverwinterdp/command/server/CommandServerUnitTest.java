@@ -4,6 +4,10 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.junit.VMAssert;
@@ -17,9 +21,16 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
     testHelper = new VMUnitTest();
     testHelper.setup();
 
+    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    try {
+      registry.connect();
+    } catch (RegistryException e) {
+      e.printStackTrace();
+    }
+    
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(shell.getVMClient());
+    VMAssert vmAssert = new VMAssert(registry);
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     createVMMaster("vm-master-1");

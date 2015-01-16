@@ -46,9 +46,16 @@ public class CommandProxyServletRetryUnitTest {
     testHelper = new VMUnitTest();
     testHelper.setup();
 
+    registry = new RegistryImpl(RegistryConfig.getDefault());
+    try {
+      registry.connect();
+    } catch (RegistryException e) {
+      e.printStackTrace();
+    }
+    
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(shell.getVMClient());
+    VMAssert vmAssert = new VMAssert(registry);
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     CommandServletUnitTest.createVMMaster("vm-master-1");
@@ -56,12 +63,6 @@ public class CommandProxyServletRetryUnitTest {
     
     
     //Add the entry to tell the proxy server where to go to find the commandServer
-    registry = new RegistryImpl(RegistryConfig.getDefault());
-    try {
-      registry.connect();
-    } catch (RegistryException e) {
-      e.printStackTrace();
-    }
     registry.create(registryPath, ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);
     
     //Start proxy

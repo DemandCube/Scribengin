@@ -22,23 +22,24 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
   //Bring up ZK and all that jazz
     testHelper = new VMUnitTest();
     testHelper.setup();
-
-    //Launch a single VM
-    shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(shell.getVMClient());
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    //VM vmMaster1 = createVMMaster("vm-master-1");
-    CommandServletUnitTest.createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(5000);
     
-    
-    //Add the entry to tell the proxy server where to go to find the commandServer
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     try {
       registry.connect();
     } catch (RegistryException e) {
       e.printStackTrace();
     }
+    
+    //Launch a single VM
+    shell = testHelper.newShell();
+    VMAssert vmAssert = new VMAssert(registry);
+    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
+    //VM vmMaster1 = createVMMaster("vm-master-1");
+    CommandServletUnitTest.createVMMaster("vm-master-1");
+    vmAssert.waitForEvents(5000);
+    
+    
+    
     registry.create("/vm/commandServer", ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);
     
     //Point our context to our web.xml we want to use for testing
