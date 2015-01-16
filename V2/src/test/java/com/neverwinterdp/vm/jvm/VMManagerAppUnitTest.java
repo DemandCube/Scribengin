@@ -21,8 +21,8 @@ import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
 import com.neverwinterdp.vm.junit.VMAssert;
 import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
-import com.neverwinterdp.vm.service.command.VMServiceCommand;
 
 public class VMManagerAppUnitTest extends VMUnitTest {
   Shell shell;
@@ -43,7 +43,7 @@ public class VMManagerAppUnitTest extends VMUnitTest {
   
   @Test
   public void testMaster() throws Exception {
-    VMAssert vmAssert = new VMAssert(shell.getVMClient());
+    VMAssert vmAssert = new VMAssert(shell.getVMClient().getRegistry());
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
     vmAssert.assertVMStatus("Expect vm-master-2 with running status", "vm-master-2", VMStatus.RUNNING);

@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.service;
+package com.neverwinterdp.scribengin.dataflow.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,31 +11,18 @@ import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.vm.VMDescriptor;
 
-public class VMServiceListener {
-  private Logger logger = LoggerFactory.getLogger(VMServiceListener.class) ;
-  private Registry registry;
+public class DataflowServiceRegistryListener {
+  private Logger logger = LoggerFactory.getLogger(DataflowServiceRegistryListener.class) ;
+  
+  private Registry registry ;
   private List<LeaderListener> leaderListeners = new ArrayList<>();
   
-  public VMServiceListener(Registry registry) throws RegistryException {
+  public DataflowServiceRegistryListener(Registry registry) throws RegistryException {
     this.registry = registry;
-    if(registry.exists(VMService.LEADER_PATH)) {
-      registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
-    } else {
-      registry.watchExists(VMService.LEADER_PATH, new NodeWatcher() {
-        @Override
-        public void process(NodeEvent event) {
-          if(event.getType() == NodeEvent.Type.CREATE) {
-            try {
-              VMServiceListener.this.registry.watchModify(VMService.LEADER_PATH, new LeaderNodeWatcher());
-            } catch (RegistryException e) {
-              logger.error("Cannot register the leader node watcher", e);
-            }
-          }
-        }
-      });
-    }
+    registerLeaderWatcher();
   }
   
   public void add(LeaderListener listener) {
@@ -46,6 +33,25 @@ public class VMServiceListener {
   
   public boolean isClosed() { return registry == null ; }
 
+  private void registerLeaderWatcher() throws RegistryException {
+    if(registry.exists(ScribenginService.LEADER_PATH)) {
+      registry.watchModify(ScribenginService.LEADER_PATH, new LeaderNodeWatcher());
+    } else {
+      registry.watchExists(ScribenginService.LEADER_PATH, new NodeWatcher() {
+        @Override
+        public void process(NodeEvent event) {
+          if(event.getType() == NodeEvent.Type.CREATE) {
+            try {
+              registry.watchModify(ScribenginService.LEADER_PATH, new LeaderNodeWatcher());
+            } catch (RegistryException e) {
+              logger.error("Cannot register the leader node watcher", e);
+            }
+          }
+        }
+      });
+    }
+  }
+  
   public class LeaderNodeWatcher implements NodeWatcher {
     @Override
     public void process(NodeEvent event) {

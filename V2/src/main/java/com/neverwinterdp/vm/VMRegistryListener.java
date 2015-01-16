@@ -10,14 +10,14 @@ import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.vm.service.VMService;
 
-public class VMListener {
+public class VMRegistryListener {
   private List<HeartBeatListener> vmHeartBeatListeners = new ArrayList<>();
   private List<StatusListener>    vmStatusListeners    = new ArrayList<>();
   private Set<String> watchedVMs = new HashSet<>();
   
   private Registry registry;
   
-  public VMListener(Registry registry) {
+  public VMRegistryListener(Registry registry) {
     this.registry = registry;
   }
   

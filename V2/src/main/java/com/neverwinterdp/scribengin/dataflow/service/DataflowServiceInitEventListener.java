@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.dataflow.master;
+package com.neverwinterdp.scribengin.dataflow.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,10 +19,10 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class InitEventListener implements EventListener {
+public class DataflowServiceInitEventListener implements DataflowServiceEventListener {
 
   @Override
-  public void onEvent(DataflowMaster master, Event event) throws Exception {
+  public void onEvent(DataflowService master, Event event) throws Exception {
     if(event !=  Event.INIT) return;
     
     DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
@@ -33,7 +33,7 @@ public class InitEventListener implements EventListener {
     initWorkers(master, dataflowDescriptor);
   }
   
-  private void initTaskDescriptors(DataflowMaster master, DataflowDescriptor dataflowDescriptor) throws Exception {
+  private void initTaskDescriptors(DataflowService master, DataflowDescriptor dataflowDescriptor) throws Exception {
     DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
     SourceFactory sourceFactory = master.getSourceFactory();
     SinkFactory sinkFactory = master.getSinkFactory() ;
@@ -58,7 +58,7 @@ public class InitEventListener implements EventListener {
     }
   }
   
-  private void initWorkers(DataflowMaster master, DataflowDescriptor dataflowDescriptor) throws Exception {
+  private void initWorkers(DataflowService master, DataflowDescriptor dataflowDescriptor) throws Exception {
     DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
     Registry registry = dataflowRegistry.getRegistry();
     VMClient vmClient = new VMClient(registry);

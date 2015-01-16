@@ -11,7 +11,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMListener;
+import com.neverwinterdp.vm.VMRegistryListener;
 import com.neverwinterdp.vm.VMStatus;
 
 @Singleton
@@ -21,7 +21,7 @@ public class VMService {
   final static public String LEADER_PATH    = "/vm/master/leader";
   
   private Registry registry;
-  private VMListener vmListener ;
+  private VMRegistryListener vmListener ;
   
   @Inject
   private VMServicePlugin plugin ;
@@ -32,7 +32,7 @@ public class VMService {
     registry.createIfNotExist(LEADER_PATH) ;
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
-    vmListener = new VMListener(registry);
+    vmListener = new VMRegistryListener(registry);
     vmListener.add(new HeartBeatManagementListener());
   }
   
@@ -42,7 +42,7 @@ public class VMService {
   
   public Registry getRegistry() { return this.registry; }
   
-  public VMListener getVMListenerManager() { return this.vmListener ; }
+  public VMRegistryListener getVMListenerManager() { return this.vmListener ; }
   
   public VMDescriptor[] getAllocatedVMDescriptors() throws RegistryException {
     List<String> names = registry.getChildren(ALLOCATED_PATH) ;
@@ -99,7 +99,7 @@ public class VMService {
     return vmDescriptor;
   }
 
-  public class HeartBeatManagementListener implements VMListener.HeartBeatListener {
+  public class HeartBeatManagementListener implements VMRegistryListener.HeartBeatListener {
     @Override
     public void onConnected(NodeEvent event, VMDescriptor vmDescriptor) {
     }

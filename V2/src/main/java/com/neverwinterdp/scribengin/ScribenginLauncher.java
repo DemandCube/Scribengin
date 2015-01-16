@@ -6,7 +6,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.vm.VMScribenginMasterApp;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -88,7 +88,7 @@ public class ScribenginLauncher {
       setName(name).
       addRoles("scribengin-master").
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
-      setVmApplication(VMScribenginMasterApp.class.getName());
+      setVmApplication(VMScribenginServiceApp.class.getName());
     vmConfig.
       addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030").
       addYarnProperty("fs.defaultFS", "hdfs://hadoop-master:9000");

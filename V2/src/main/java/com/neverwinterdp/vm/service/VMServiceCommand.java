@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.service.command;
+package com.neverwinterdp.vm.service;
 
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VM;
@@ -6,8 +6,6 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.service.VMServiceApp;
-import com.neverwinterdp.vm.service.VMService;
 
 public class VMServiceCommand {
   static public class Allocate extends Command {

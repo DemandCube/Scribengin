@@ -15,7 +15,7 @@ import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.service.VMService;
-import com.neverwinterdp.vm.service.command.VMServiceCommand;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 
 public class VMClient {
   private Registry registry;

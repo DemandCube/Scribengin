@@ -27,8 +27,8 @@ import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.yarn.AppClient;
 import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
 import com.neverwinterdp.vm.service.VMServiceApp;
+import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
-import com.neverwinterdp.vm.service.command.VMServiceCommand;
 
 public class VMManagerAppUnitTest {
   
