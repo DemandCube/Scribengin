@@ -46,7 +46,7 @@ public class CommandServletUnitTest {
     //Launch a single VM
     shell = testHelper.newShell();
     VMAssert vmAssert = new VMAssert(shell.getVMClient());
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING, true);
+    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     createVMMaster("vm-master-1");
     vmAssert.waitForEvents(5000);
