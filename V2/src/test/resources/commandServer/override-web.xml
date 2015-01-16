@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
 <web-app> 
-
-  <Configure id="TestCommandServer" class="com.neverwinterdp.command.server.TestCommandServer"></Configure>
-
   <servlet>
     <servlet-name>CommandServlet</servlet-name>
     <servlet-class>com.neverwinterdp.command.server.CommandServlet</servlet-class>
@@ -22,5 +19,4 @@
     <servlet-name>CommandServlet</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
-
 </web-app>
