@@ -36,6 +36,11 @@ repositories {
 configurations.all {
   exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
   exclude(group: 'storm', name: 'storm', version: '0.8.1')
+  
+  //This is because hadoop uses and older version of jetty,
+  //and the proxy server needs version 3
+  exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
+  
 
   resolutionStrategy {
     force 'com.google.guava:guava:13.0'
@@ -43,9 +48,17 @@ configurations.all {
 }
 
 dependencies {
+  //Make sure to have this line before commons.hadoop-framework, otherwise might have 
+  //jetty version issues 
+  compile group: 'com.neverwinterdp', name: 'commons.jetty', version: '1.0-SNAPSHOT'
+  
   compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
+
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
 
   //TODO: move to use jackson
   compile 'org.json:json:20090211'
@@ -54,6 +67,12 @@ dependencies {
 
   compile group: 'junit', name: 'junit', version: '4.11'
   //testCompile group: 'junit', name: 'junit', version: '4.11'
+  
+  compile 'org.eclipse.jetty:jetty-server:9.2.0.RC0'
+  compile 'org.eclipse.jetty:jetty-servlet:9.2.0.RC0'
+  compile 'org.eclipse.jetty:jetty-proxy:9.2.0.RC0'
+  compile 'org.eclipse.jetty:jetty-webapp:9.2.0.RC0'
+  compile 'com.mashape.unirest:unirest-java:1.3.1'
 }
 
 test {
