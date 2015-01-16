@@ -39,7 +39,7 @@ configurations.all {
   
   //This is because hadoop uses and older version of jetty,
   //and the proxy server needs version 3
-  exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
+  //exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
   
 
   resolutionStrategy {
