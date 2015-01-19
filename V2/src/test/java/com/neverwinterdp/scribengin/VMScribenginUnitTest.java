@@ -99,13 +99,9 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
-    try {
-      sribenginAssert.waitForEvents(60000);
-    } catch(Exception ex) {
-      System.err.println(ex.getMessage());
-      shell.getVMClient().getRegistry().get("/").dump(System.err);
-    }
+    sribenginAssert.waitForEvents(60000);
     
+    Thread.sleep(3000);
     shell.execute("vm list");
     shell.execute("registry dump --path /");
     HDFSUtil.dump(fs, getDataDir() + "/sink");
