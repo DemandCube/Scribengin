@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.service;
 
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
+
 public interface DataflowServiceEventListener {
-  static public enum Event { INIT }
-  
-  public void onEvent(DataflowService service, Event event) throws Exception ;
+  public void onEvent(DataflowService service, DataflowLifecycleStatus event) throws Exception ;
 }

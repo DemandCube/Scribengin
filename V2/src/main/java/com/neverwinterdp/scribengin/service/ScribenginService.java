@@ -55,12 +55,11 @@ public class ScribenginService {
     dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
     dfVMConfig.addProperty("dataflow.registry.path", dataflowPath);
     dfVMConfig.setYarnConf(vmConfig.getYarnConf());
-    System.out.println("VMConfig dfVMConfig");
-    System.out.println(JSONSerializer.INSTANCE.toString(dfVMConfig));
+    //System.out.println("VMConfig dfVMConfig");
+    //System.out.println(JSONSerializer.INSTANCE.toString(dfVMConfig));
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
         (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
-    System.out.println(result.getErrorStacktrace());
     return result.getResult();
   }
   
@@ -80,4 +79,10 @@ public class ScribenginService {
       }
     }
   }
+  
+  static public String getDataflowPath(String dataflowName) { return DATAFLOWS_PATH + "/" + dataflowName; }
+  
+  static public String getDataflowStatusPath(String dataflowName) { return getDataflowPath(dataflowName) + "/status" ; }
+  
+  static public String getDataflowLeaderPath(String dataflowName) { return getDataflowPath(dataflowName) + "/master/leader" ; }
 }

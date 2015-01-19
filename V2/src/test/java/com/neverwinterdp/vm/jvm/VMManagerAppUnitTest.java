@@ -65,14 +65,19 @@ public class VMManagerAppUnitTest extends VMUnitTest {
     vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
     vmAssert.assertHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
     VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
-    vmAssert.waitForEvents(5000);
+    try {
+      vmAssert.waitForEvents(5000);
+    } catch(Exception ex) {
+      vmAssert.reset();
+      ex.printStackTrace();
+    }
     shell.execute("registry dump");
     
     banner("Shutdown VM Master 1");
     //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
     vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
-    vmAssert.assertMasterElection("Expect the vm-master-2 will be elected", "vm-master-2");
+    vmAssert.assertVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
     vmMaster1.shutdown();
     vmAssert.waitForEvents(5000);
     shell.execute("registry dump");

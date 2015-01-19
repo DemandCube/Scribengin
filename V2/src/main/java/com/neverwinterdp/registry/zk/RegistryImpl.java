@@ -213,10 +213,8 @@ public class RegistryImpl implements Registry {
   public void watchModify(String path, NodeWatcher watcher) throws RegistryException {
     try {
       zkClient.getData(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher), new Stat()) ;
-    } catch (KeeperException e) {
-      throw new RegistryException(ErrorCode.Unknown, e) ;
-    } catch (InterruptedException e) {
-      throw new RegistryException(ErrorCode.Unknown, e) ;
+    } catch (InterruptedException | KeeperException e) {
+      throw toRegistryException("Cannot watch the node " + path, e) ;
     }
   }
   
@@ -224,13 +222,10 @@ public class RegistryImpl implements Registry {
   public void watchExists(String path, NodeWatcher watcher) throws RegistryException {
     try {
       zkClient.exists(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher)) ;
-    } catch (KeeperException e) {
-      throw new RegistryException(ErrorCode.Unknown, e) ;
-    } catch (InterruptedException e) {
-      throw new RegistryException(ErrorCode.Unknown, e) ;
-    }
+    } catch (InterruptedException | KeeperException e) {
+      throw toRegistryException("Cannot watch the node " + path, e) ;
+    } 
   }
-  
   
   @Override
   public void watchChildren(String path, NodeWatcher watcher) throws RegistryException {
@@ -266,7 +261,10 @@ public class RegistryImpl implements Registry {
     }
   }
  
-  
+  @Override
+  public Registry newRegistry() throws RegistryException {
+    return new RegistryImpl(config);
+  }
   private void zkCreateIfNotExist(String path) throws RegistryException {
     try {
       if (zkClient.exists(path, false) != null) new Node(this, path);
@@ -303,9 +301,16 @@ public class RegistryImpl implements Registry {
     if(path.equals("/")) return config.getDbDomain() ;
     return config.getDbDomain() + path; 
   }
-
-  @Override
-  public Registry newRegistry() throws RegistryException {
-    return new RegistryImpl(config);
+  
+  private RegistryException toRegistryException(String message, Throwable t) {
+    if(t instanceof InterruptedException) {
+      return new RegistryException(ErrorCode.Timeout, message, t) ;
+    } else if(t instanceof KeeperException) {
+      KeeperException kEx = (KeeperException) t;
+      if(kEx.code() ==  KeeperException.Code.NONODE) {
+        return new RegistryException(ErrorCode.NoNode, message, t) ;
+      }
+    }
+    return new RegistryException(ErrorCode.Unknown, message, t) ;
   }
 }

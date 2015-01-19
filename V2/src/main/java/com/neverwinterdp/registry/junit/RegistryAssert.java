@@ -11,7 +11,7 @@ public class RegistryAssert {
     assertUnits.add(unit);
   }
   
-  synchronized public void process(AssertEvent event) {
+  synchronized public void assertEvent(AssertEvent event) {
     Iterator<AssertUnit> i = assertUnits.iterator();
     while(i.hasNext()) {
       AssertUnit unit = i.next();

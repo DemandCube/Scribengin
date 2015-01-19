@@ -87,7 +87,7 @@ public class LockUnitTest {
         Lock lock = lockDir.getLock("write") ;
         lockId = lock.lock(3 * 60 * 1000) ; //wait max 3 min for lock
         System.out.println("\nWorker " + name + " acquires the lock: " + lockId);
-        long execTime = random.nextInt(200) ;
+        long execTime = random.nextInt(100) ;
         Thread.sleep(execTime);
         System.out.println(" Process in " + execTime);
         Assert.assertEquals(lockOrder.getAndIncrement(), lockId.getSequence()) ;

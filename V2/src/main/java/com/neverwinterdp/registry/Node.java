@@ -1,10 +1,12 @@
 package com.neverwinterdp.registry;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.util.JSONSerializer;
+import com.neverwinterdp.vm.client.shell.Console;
 
 public class Node {
   private Registry  registry ;
@@ -24,6 +26,8 @@ public class Node {
     int idx = path.lastIndexOf('/') ;
     return path.substring(0, idx) ; 
   }
+  
+  public Node getParentNode() { return new Node(registry, getParentPath()); }
 
   public boolean exists() throws RegistryException {
     return registry.exists(path) ;
@@ -48,6 +52,10 @@ public class Node {
 
   public void delete() throws RegistryException {
     registry.delete(path);
+  }
+  
+  public void rdelete() throws RegistryException {
+    registry.rdelete(path);
   }
 
   public Lock getLock(String name) { return new Lock(registry, path, name) ; }
@@ -91,5 +99,44 @@ public class Node {
   public <T> Node createChild(String name, T data, NodeCreateMode mode) throws RegistryException {
     Node child = registry.create(path + "/" + name, data, mode);
     return child;
+  }
+  
+  public void dump(Appendable out) throws RegistryException, IOException  {
+    List<String> nodes = registry.getChildren(path);
+    for(String node : nodes) {
+      dump(out, path, node, registry, "");
+    }
+  }
+  
+  private void dump(Appendable out, String parent, String node, Registry registry, String indentation) throws IOException, RegistryException {
+    //During the recursive traverse, a node can be added or removed by the other process
+    //So we can ignore all the No node exists exception
+    String path = parent + "/" + node;
+    if("/".equals(parent)) path = "/" + node;
+    byte[] data = {};
+    try {
+      data = registry.getData(path);
+    } catch(RegistryException ex) {
+    }
+    String stringData = "";
+    if(data != null && data.length > 0) {
+      stringData = " - " + new String(data);
+      stringData = stringData.replace("\r\n", " ");
+      stringData = stringData.replace("\n", " ");
+      if(stringData.length() > 80) {
+        stringData = stringData.substring(0, 80);
+      }
+    }
+    out.append(indentation + node + stringData).append('\n');
+    List<String > children = null ;
+    try {
+      children = registry.getChildren(path);
+    } catch(RegistryException ex) {
+    }
+    if(children != null) {
+      for(String child : children) {
+        dump(out, path, child, registry, indentation + "  ");
+      }
+    }
   }
 }

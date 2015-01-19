@@ -119,10 +119,11 @@ public class YarnManager {
   
   public void asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback) {
     logger.info("Start asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
-    
+    System.err.println("Start asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
     callback.onRequest(YarnManager.this, containerReq);
     containerRequestQueue.offer(containerReq, callback);
     amrmClientAsync.addContainerRequest(containerReq);
+    System.err.println("Finish asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
     logger.info("Finish asyncAdd(ContainerRequest containerReq, ContainerRequestCallback callback)");
   }
   
@@ -186,12 +187,21 @@ public class YarnManager {
 
     public void onContainersAllocated(List<Container> containers) {
       logger.info("Start onContainersAllocated(List<Container> containers)");
-      for (int i = 0; i < containers.size(); i++) {
-        Container container = containers.get(i) ;
-        ContainerRequestCallback callback = containerRequestQueue.take(container);
-        callback.onAllocate(YarnManager.this, container);
-        amrmClientAsync.removeContainerRequest(callback.getContainerRequest());
-      }
+      System.err.println("Start onContainersAllocated(List<Container> containers)");
+      //TODO: review on allocated container code
+      Container container = containers.get(0) ;
+      ContainerRequestCallback callback = containerRequestQueue.take(container);
+      callback.onAllocate(YarnManager.this, container);
+      amrmClientAsync.removeContainerRequest(callback.getContainerRequest());
+      
+//      for (int i = 0; i < containers.size(); i++) {
+//        System.err.println("  container " + i);
+//        Container container = containers.get(i) ;
+//        ContainerRequestCallback callback = containerRequestQueue.take(container);
+//        callback.onAllocate(YarnManager.this, container);
+//        amrmClientAsync.removeContainerRequest(callback.getContainerRequest());
+//      }
+      System.err.println("Finish onContainersAllocated(List<Container> containers)");
       logger.info("Finish onContainersAllocated(List<Container> containers)");
     }
 
@@ -225,12 +235,17 @@ public class YarnManager {
     
     synchronized public ContainerRequestCallback take(Container container) {
       ContainerRequestCallback callback = null ;
+      System.err.println("  take for container " + container) ;
+      System.err.println("    callback in queues " + queues.size()) ;
+      int cpuCores = container.getResource().getVirtualCores();
+      int memory = container.getResource().getMemory();
+      System.err.println("    container allocate cpu  " + cpuCores) ;
+      System.err.println("    container allocate memory " + memory) ;
       for(int i = 0; i < queues.size(); i++) {
-        int cpuCores = container.getResource().getVirtualCores();
-        int memory = container.getResource().getMemory();
-        
         ContainerRequestCallback sel = queues.get(i);
+        System.err.println("    check container request cpu = " + sel.getContainerRequest().getCapability().getVirtualCores()) ;
         if(cpuCores < sel.getContainerRequest().getCapability().getVirtualCores()) continue;
+        System.err.println("    check container request memory = " + sel.getContainerRequest().getCapability().getMemory()) ;
         if(memory < sel.getContainerRequest().getCapability().getMemory()) continue;
         if(callback == null) {
           callback = sel;

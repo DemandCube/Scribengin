@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataProcessor;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
@@ -34,7 +35,7 @@ import com.neverwinterdp.vm.command.CommandResult;
 abstract public class VMScribenginUnitTest extends VMUnitTest {
   private SinkFactory sinkFactory;
   private FileSystem fs;
-  protected long vmLaunchTime = 1000;
+  protected long vmLaunchTime = 100;
   
   @Before
   public void setup() throws Exception {
@@ -66,17 +67,21 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
     sribenginAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
     createVMMaster("vm-master-1");
     sribenginAssert.waitForEvents(10000);
+    Thread.sleep(vmLaunchTime); //wait to make sure service on the vm running. Need to fix
     
-    shell.execute("vm list");
-    shell.execute("registry dump");
+    shell.execute("registry dump --path /vm");
     
     banner("Create Scribengin Master 1 and 2");
     sribenginAssert.assertScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     VMDescriptor scribenginMaster1 = createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
-    Thread.sleep(100);
     VMDescriptor scribenginMaster2 = createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
-    sribenginAssert.waitForEvents(5000);
+    sribenginAssert.waitForEvents(30000);
     
+    sribenginAssert.watchDataflow("test-dataflow");
+    sribenginAssert.assertDataflowMaster("Expect test-dataflow-master-1 as the leader", "test-dataflow-master-1");
+    sribenginAssert.assertDataflowStatus("Expect dataflow init status", "test-dataflow", DataflowLifecycleStatus.INIT);
+    sribenginAssert.assertDataflowStatus("Expect dataflow running status", "test-dataflow", DataflowLifecycleStatus.RUNNING);
+    sribenginAssert.assertDataflowStatus("Expect dataflow  finish status", "test-dataflow", DataflowLifecycleStatus.FINISH);
     VMDescriptor scribenginMaster = shell.getScribenginClient().getScribenginMaster();
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("test-dataflow");
@@ -94,8 +99,12 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
     CommandResult<Boolean> result = 
         (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     Assert.assertTrue(result.getResult());
-    
-    Thread.sleep(vmLaunchTime * 3);
+    try {
+      sribenginAssert.waitForEvents(60000);
+    } catch(Exception ex) {
+      System.err.println(ex.getMessage());
+      shell.getVMClient().getRegistry().get("/").dump(System.err);
+    }
     
     shell.execute("vm list");
     shell.execute("registry dump --path /");

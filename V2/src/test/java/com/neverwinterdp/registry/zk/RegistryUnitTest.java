@@ -2,7 +2,6 @@ package com.neverwinterdp.registry.zk;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -12,11 +11,9 @@ import org.junit.Test;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeEventCatcher;
 import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
-import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 
@@ -108,36 +105,57 @@ public class RegistryUnitTest {
   }
   
   @Test
-  public void testWatcher() throws Exception {
-    String path = "/node/exists" ;
+  public void testExistsWatcher() throws Exception {
+    String watchPath = "/node/watch" ;
     final CountDownLatch existsSignal = new CountDownLatch(1);
-    final CountDownLatch modifySignal = new CountDownLatch(1);
     Registry registry = newRegistry().connect(); 
-    registry.watchExists(path, new NodeWatcher() {
+    registry.watchExists(watchPath, new NodeWatcher() {
       @Override
       public void process(NodeEvent event) {
         existsSignal.countDown();
       }
     });
-    registry.create("/node", NodeCreateMode.PERSISTENT);
-    registry.create(path, NodeCreateMode.PERSISTENT);
+    registry.createIfNotExist(watchPath);
     existsSignal.await(1, TimeUnit.SECONDS);
-    registry.watchModify(path, new NodeWatcher() {
+    Assert.assertEquals(0,existsSignal.getCount());
+    registry.disconnect();
+  }
+  
+  
+  @Test
+  public void testModifyWatcher() throws Exception {
+    final String path = "/node/exists" ;
+    final CountDownLatch modifySignal = new CountDownLatch(2);
+    final Registry registry = newRegistry().connect(); 
+    registry.createIfNotExist(path);
+    NodeWatcher watcher = new NodeWatcher() {
       @Override
       public void process(NodeEvent event) {
         modifySignal.countDown();
+        System.out.println("got event.....");
       }
-    });
+    };
+    registry.watchModify(path, watcher);
     registry.setData(path, new byte[10]);
-    modifySignal.await(1, TimeUnit.SECONDS);
-    
-    Assert.assertEquals(0,existsSignal.getCount());
-    Assert.assertEquals(0, modifySignal.getCount());
+    //the watcher suppose to trigger once
+    registry.setData(path, new byte[10]);
+    modifySignal.await(500, TimeUnit.MILLISECONDS);
+    Assert.assertEquals(1, modifySignal.getCount());
     
     registry.disconnect();
   }
   
   private Registry newRegistry() {
     return new RegistryImpl(RegistryConfig.getDefault()) ;
+  }
+  
+  public class NodeEventCatcher extends NodeWatcher {
+    private NodeEvent nodeEvent ;
+    
+    public void process(NodeEvent event) {
+      this.nodeEvent = event ;
+    }
+    
+    public NodeEvent getNodeEvent() { return this.nodeEvent ; }
   }
 }

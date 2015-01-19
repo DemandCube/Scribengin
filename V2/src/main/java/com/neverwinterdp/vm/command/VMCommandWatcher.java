@@ -7,7 +7,7 @@ import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.vm.VM;
 
-public class VMCommandWatcher implements NodeWatcher {
+public class VMCommandWatcher extends NodeWatcher {
   private VM vm;
   
   public VMCommandWatcher(VM vm) {

@@ -21,9 +21,10 @@ public class RegistryCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
       Registry registry = vmClient.getRegistry();
-      List<String> nodes = registry.getChildren("/");
+      List<String> nodes = registry.getChildren(path);
+      shell.console().println(path);
       for(String node : nodes) {
-        dump(path, node, registry, shell.console(), "");
+        dump(path, node, registry, shell.console(), "  ");
       }
     }
     

@@ -9,9 +9,10 @@ import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.RegistryListener;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMRegistryListener;
+import com.neverwinterdp.vm.VMHeartbeatNodeWatcher;
 import com.neverwinterdp.vm.VMStatus;
 
 @Singleton
@@ -20,20 +21,20 @@ public class VMService {
   final static public String HISTORY_PATH   = "/vm/history";
   final static public String LEADER_PATH    = "/vm/master/leader";
   
+  @Inject
   private Registry registry;
-  private VMRegistryListener vmListener ;
+  @Inject
+  private RegistryListener registryListener;
   
   @Inject
   private VMServicePlugin plugin ;
   
   @Inject
-  public void init(Registry registry) throws Exception {
-    this.registry = registry;
+  public void onInit() throws Exception {
     registry.createIfNotExist(LEADER_PATH) ;
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
-    vmListener = new VMRegistryListener(registry);
-    vmListener.add(new HeartBeatManagementListener());
+    
   }
   
   public void close() { registry = null ; }
@@ -41,8 +42,6 @@ public class VMService {
   public boolean isClosed() { return registry == null ; }
   
   public Registry getRegistry() { return this.registry; }
-  
-  public VMRegistryListener getVMListenerManager() { return this.vmListener ; }
   
   public VMDescriptor[] getAllocatedVMDescriptors() throws RegistryException {
     List<String> names = registry.getChildren(ALLOCATED_PATH) ;
@@ -60,7 +59,22 @@ public class VMService {
     vmNode.setData(descriptor);
     vmNode.createChild("status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
     vmNode.createChild("commands", NodeCreateMode.PERSISTENT);
-    vmListener.watch(descriptor);
+    watch(descriptor);
+  }
+  
+  public void watch(VMDescriptor vmDescriptor) throws Exception {
+    VMHeartbeatNodeWatcher heartbeatWatcher = new VMHeartbeatNodeWatcher(registry) {
+      @Override
+      public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor) {
+        try {
+          unregister(vmDescriptor);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    };
+    String heartbeatPath = getVMHeartbeatPath(vmDescriptor.getVmConfig().getName());
+    registryListener.watch(heartbeatPath, heartbeatWatcher, true);
   }
   
   public void unregister(VMDescriptor descriptor) throws Exception {
@@ -98,21 +112,10 @@ public class VMService {
     plugin.allocateVM(this, vmConfig);
     return vmDescriptor;
   }
-
-  public class HeartBeatManagementListener implements VMRegistryListener.HeartBeatListener {
-    @Override
-    public void onConnected(NodeEvent event, VMDescriptor vmDescriptor) {
-    }
-
-    @Override
-    public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor) {
-      try {
-        unregister(vmDescriptor);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-  }
+  
+  static public String getVMStatusPath(String vmName) { return ALLOCATED_PATH + "/" + vmName + "/status" ; }
+  
+  static public String getVMHeartbeatPath(String vmName) { return ALLOCATED_PATH + "/" + vmName + "/status/heartbeat" ; }
   
   static public void register(Registry registry, VMDescriptor descriptor) throws Exception {
     registry.createIfNotExist(ALLOCATED_PATH) ;

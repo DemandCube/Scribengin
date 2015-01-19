@@ -77,7 +77,7 @@ public class Lock {
     return sortedLockIds;
   }
   
-  class LockWatcher implements NodeWatcher {
+  class LockWatcher extends NodeWatcher {
     long startTime;
     long timeout ;
     
@@ -89,6 +89,7 @@ public class Lock {
     @Override
     public void process(NodeEvent event) {
       try {
+        if(event.getType() != NodeEvent.Type.DELETE) return ;
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
         LockId ownerId = currentLockIds.first() ;
         if(ownerId.equals(lockId)) {
@@ -107,7 +108,7 @@ public class Lock {
     public void watch(SortedSet<LockId> currentLockIds) throws RegistryException {
       SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
       LockId previousLock = lessThanMe.last();
-      registry.watchModify(previousLock.getPath(), this);
+      registry.watchExists(previousLock.getPath(), this);
     }
     
     public void waitForLock() throws RegistryException {
