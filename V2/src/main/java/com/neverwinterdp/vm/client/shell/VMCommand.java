@@ -1,7 +1,9 @@
 package com.neverwinterdp.vm.client.shell;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.text.StringUtil;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -15,9 +17,15 @@ public class VMCommand extends Command {
   
   static public class ListRunning extends SubCommand {
     @Override
-    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+    public void execute(Shell shell, CommandInput cmdInput) throws IOException  {
       VMClient vmClient = shell.getVMClient();
-      printVMDescriptors("Running VM", shell, vmClient.getRunningVMDescriptors());
+      try {
+        printVMDescriptors("Running VM", shell, vmClient.getRunningVMDescriptors());
+      } catch (RegistryException e) {
+        shell.console().println("Error caught: "+e.getMessage());
+      } catch (Exception e) {
+        shell.console().println("Error caught: "+e.getMessage());
+      }
     }
   }
   

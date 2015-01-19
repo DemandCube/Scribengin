@@ -4,7 +4,7 @@ import java.io.IOException;
 
 
 public class Console {
-  private Appendable out ;
+   protected Appendable out ;
   
   public Console() {
     this.out = System.out ;
