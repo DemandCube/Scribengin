@@ -6,6 +6,7 @@ import java.util.Map;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.VMDataflowWorkerApp;
@@ -22,15 +23,12 @@ import com.neverwinterdp.vm.client.VMClient;
 public class DataflowServiceInitEventListener implements DataflowServiceEventListener {
 
   @Override
-  public void onEvent(DataflowService master, Event event) throws Exception {
-    if(event !=  Event.INIT) return;
-    
-    DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
+  public void onEvent(DataflowService service, DataflowLifecycleStatus event) throws Exception {
+    if(event !=  DataflowLifecycleStatus.INIT) return;
+    DataflowRegistry dataflowRegistry = service.getDataflowRegistry();
     DataflowDescriptor dataflowDescriptor = dataflowRegistry.getDataflowDescriptor();
-    dataflowRegistry.createRegistryStructure();
-    
-    initTaskDescriptors(master, dataflowDescriptor);
-    initWorkers(master, dataflowDescriptor);
+    initTaskDescriptors(service, dataflowDescriptor);
+    initWorkers(service, dataflowDescriptor);
   }
   
   private void initTaskDescriptors(DataflowService master, DataflowDescriptor dataflowDescriptor) throws Exception {

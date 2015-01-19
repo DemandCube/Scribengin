@@ -14,6 +14,7 @@ import com.neverwinterdp.registry.lock.LockId;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowRegistry {
+  
   final static public String TASKS_PATH = "tasks";
   final static public String TASKS_AVAILABLE_PATH = TASKS_PATH + "/available";
   final static public String TASKS_ASSIGNED_PATH  = TASKS_PATH + "/assigned" ;
@@ -29,6 +30,7 @@ public class DataflowRegistry {
   private String             dataflowPath;
   @Inject
   private Registry           registry;
+  private Node               status;
   private Node               tasksAvailable;
   private Node               tasksAssigned;
   private Node               tasksFinished;
@@ -39,6 +41,8 @@ public class DataflowRegistry {
   
   public String getDataflowPath() { return this.dataflowPath ; }
   
+  public String getTasksFinishedPath() { return tasksFinished.getPath() ;}
+  
   public Registry getRegistry() { return this.registry ; }
   
   public DataflowDescriptor getDataflowDescriptor() throws RegistryException {
@@ -47,15 +51,7 @@ public class DataflowRegistry {
   
   @Inject
   public void onInit() throws Exception {
-    tasksAvailable = registry.get(dataflowPath + "/" + TASKS_AVAILABLE_PATH);
-    tasksAssigned  = registry.get(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
-    tasksFinished  = registry.get(dataflowPath + "/" + TASKS_FINISHED_PATH);
-    tasksLock      = registry.get(dataflowPath + "/" + TASKS_LOCK_PATH);
-    
-    workers = registry.get(dataflowPath + "/" + WORKERS_PATH);
-  }
-  
-  public void createRegistryStructure() throws Exception {
+    status         = registry.createIfNotExist(dataflowPath + "/status");
     tasksAvailable = registry.createIfNotExist(dataflowPath + "/" + TASKS_AVAILABLE_PATH);
     tasksAssigned  = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
     tasksFinished  = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
@@ -65,7 +61,7 @@ public class DataflowRegistry {
     
     workers = registry.createIfNotExist(dataflowPath + "/" + WORKERS_PATH);
   }
- 
+  
   public void addAvailable(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     Node node = tasksAvailable.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
     taskDescriptor.setStoredPath(node.getPath());
@@ -76,10 +72,14 @@ public class DataflowRegistry {
     workers.createChild(vmDescriptor.getId(), vmDescriptor, NodeCreateMode.PERSISTENT);
   }
   
+  public void setStatus(DataflowLifecycleStatus event) throws RegistryException {
+    status.setData(event);
+  }
+  
   public DataflowTaskDescriptor getAssignedDataflowTaskDescriptor() throws RegistryException  {
     Lock lock = tasksLock.getLock("write") ;
     try {
-      LockId lockId = lock.lock(10000);
+      LockId lockId = lock.lock(30000);
       List<String> childrenName = tasksAvailable.getChildren();
       if(childrenName.size() == 0) return null;
       Collections.sort(childrenName);

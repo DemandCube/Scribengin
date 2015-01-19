@@ -24,6 +24,8 @@ public class Node {
     int idx = path.lastIndexOf('/') ;
     return path.substring(0, idx) ; 
   }
+  
+  public Node getParentNode() { return new Node(registry, getParentPath()); }
 
   public boolean exists() throws RegistryException {
     return registry.exists(path) ;
@@ -48,6 +50,10 @@ public class Node {
 
   public void delete() throws RegistryException {
     registry.delete(path);
+  }
+  
+  public void rdelete() throws RegistryException {
+    registry.rdelete(path);
   }
 
   public Lock getLock(String name) { return new Lock(registry, path, name) ; }

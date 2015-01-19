@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.FileSystem;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
@@ -19,9 +20,10 @@ import com.neverwinterdp.vm.VMConfig;
 public class VMDataflowServiceApp extends VMApp {
   private String         dataflowRegistryPath;
   private LeaderElection election;
-  private DataflowService dataflowMaster;
+  private DataflowService dataflowService;
   private Injector       appContainer;
-
+  private ServiceRunnerThread serviceRunnerThread;
+  
   @Override
   public void run() throws Exception {
     VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
@@ -31,6 +33,7 @@ public class VMDataflowServiceApp extends VMApp {
     election.start();
     try {
       waitForShutdown();
+      System.err.println("finish waitForShutdown()");
     } catch(InterruptedException ex) {
     } finally {
       if(election != null && election.getLeaderId() != null) {
@@ -62,11 +65,34 @@ public class VMDataflowServiceApp extends VMApp {
             }
           };
         };
-        registry.setData(dataflowRegistryPath + "/master/leader", getVM().getDescriptor());
+        RefNode leaderRefNode = new RefNode();
+        leaderRefNode.setPath(getVM().getDescriptor().getStoredPath());
+        registry.setData(dataflowRegistryPath + "/master/leader", leaderRefNode);
         appContainer = Guice.createInjector(module);
-        dataflowMaster = appContainer.getInstance(DataflowService.class);
+        dataflowService = appContainer.getInstance(DataflowService.class);
+        serviceRunnerThread = new ServiceRunnerThread(dataflowService);
+        serviceRunnerThread.start();
       } catch(Exception e) {
         e.printStackTrace();
+      }
+    }
+  }
+  
+  public class ServiceRunnerThread extends Thread {
+    DataflowService service;
+    
+    ServiceRunnerThread(DataflowService service) {
+      this.service = service;
+    }
+    
+    public void run() {
+      try {
+        service.run();
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        System.err.println("ServiceRunnerThread: notifyShutdown()");
+        notifyShutdown();
       }
     }
   }

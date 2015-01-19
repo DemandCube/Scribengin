@@ -69,7 +69,7 @@ public class VMClient {
     return result.getResultAs(Boolean.class);
   }
   
-  public class CommandReponseWatcher implements NodeWatcher {
+  public class CommandReponseWatcher extends NodeWatcher {
     private CommandResult<?> result ;
     private Exception error ;
     

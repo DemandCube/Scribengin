@@ -68,10 +68,11 @@ public class LeaderElection {
     return sortedLockIds;
   }
   
-  class LeaderWatcher implements NodeWatcher {
+  class LeaderWatcher extends NodeWatcher {
     @Override
     public void process(NodeEvent event) {
       try {
+        System.err.println("Election event: path = " + event.getType() + ", type" + event.getType());
         watch() ;
       } catch(RegistryException ex) {
         throw new RuntimeException(ex) ;
@@ -88,7 +89,7 @@ public class LeaderElection {
       }
       SortedSet<LeaderId> lessThanMe = leaderIds.headSet(leaderId);
       LeaderId previousLock = lessThanMe.last();
-      registry.watchModify(previousLock.getPath(), this);
+      registry.watchExists(previousLock.getPath(), this);
     }
   }
 }

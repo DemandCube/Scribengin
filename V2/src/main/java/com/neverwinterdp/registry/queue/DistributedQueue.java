@@ -123,7 +123,7 @@ public class DistributedQueue {
     return orderedChildren;
   }
   
-  private class LatchChildWatcher implements NodeWatcher {
+  private class LatchChildWatcher extends NodeWatcher {
 
     CountDownLatch latch;
 
