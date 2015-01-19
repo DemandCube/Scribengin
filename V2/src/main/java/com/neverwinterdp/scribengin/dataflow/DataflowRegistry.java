@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,10 +81,10 @@ public class DataflowRegistry {
     Lock lock = tasksLock.getLock("write") ;
     try {
       LockId lockId = lock.lock(30000);
-      List<String> childrenName = tasksAvailable.getChildren();
-      if(childrenName.size() == 0) return null;
-      Collections.sort(childrenName);
-      String childName = childrenName.get(0);
+      List<String> taskAvailableNames = tasksAvailable.getChildren();
+      if(taskAvailableNames.size() == 0) return null;
+      Collections.sort(taskAvailableNames);
+      String childName = taskAvailableNames.get(0);
       Node childNode = tasksAvailable.getChild(childName);
       DataflowTaskDescriptor descriptor = childNode.getData(DataflowTaskDescriptor.class);
       String storedPath = tasksAssigned.getPath() + "/" + childName;

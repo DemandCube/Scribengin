@@ -18,10 +18,9 @@ import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
-  
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
-    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
+    System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
   
   MiniYARNCluster miniYarnCluster ;
@@ -37,7 +36,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
     super.setup();
-    vmLaunchTime = 10000;
+    vmLaunchTime = 3000;
   }
 
   @After

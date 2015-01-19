@@ -60,7 +60,7 @@ public class DataflowService {
     int finishTasks = 0;
     while(finishTasks < 15) {
       dataflowRegistry.getRegistry().watchChildren(tasksFinishedPath, finishTaskWatcher);
-      int newFinishTasks = finishTaskWatcher.waitForFinishedTasks(10000);
+      int newFinishTasks = finishTaskWatcher.waitForFinishedTasks(5000);
       if(finishTasks == newFinishTasks) {
         newFinishTasks = dataflowRegistry.getRegistry().getChildren(tasksFinishedPath).size() ;
       }

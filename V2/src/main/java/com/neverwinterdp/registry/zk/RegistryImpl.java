@@ -265,7 +265,6 @@ public class RegistryImpl implements Registry {
   public Registry newRegistry() throws RegistryException {
     return new RegistryImpl(config);
   }
-  
   private void zkCreateIfNotExist(String path) throws RegistryException {
     try {
       if (zkClient.exists(path, false) != null) new Node(this, path);

@@ -89,6 +89,7 @@ public class Lock {
     @Override
     public void process(NodeEvent event) {
       try {
+        if(event.getType() != NodeEvent.Type.DELETE) return ;
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
         LockId ownerId = currentLockIds.first() ;
         if(ownerId.equals(lockId)) {

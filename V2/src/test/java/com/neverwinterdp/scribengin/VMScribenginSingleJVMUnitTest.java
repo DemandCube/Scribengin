@@ -14,9 +14,15 @@ import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMScribenginSingleJVMUnitTest extends VMScribenginUnitTest {
+  static {
+    System.setProperty("java.net.preferIPv4Stack", "true") ;
+    System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
+  }
+  
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/hdfs", false);
+    vmLaunchTime = 100;
     super.setup();
   }
   

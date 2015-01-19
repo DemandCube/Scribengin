@@ -18,10 +18,6 @@ import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 abstract public class VMUnitTest {
-  static {
-    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties") ;
-  }
-  
   protected ZookeeperServerLauncher zkServerLauncher ;
   
   @Before
