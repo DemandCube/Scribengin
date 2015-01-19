@@ -17,7 +17,6 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
@@ -36,14 +35,14 @@ public class CommandServletUnitTest {
                     "vm-master-1   /vm/allocated/vm-master-1   vm-master   1       128      \n\n";
   
   //Used to bring up VMs to test with
-  static VMUnitTest testHelper;
+  static CommandServerTestHelper testHelper;
   static Shell shell;
   static VMClient vmClient;
   
   @BeforeClass
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
-    testHelper = new VMUnitTest();
+    testHelper = new CommandServerTestHelper();
     testHelper.setup();
 
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());

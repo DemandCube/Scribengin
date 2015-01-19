@@ -9,7 +9,6 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.junit.VMAssert;
 
 public class CommandServerUnitTest extends CommandServletUnitTest{
@@ -18,7 +17,7 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
   @BeforeClass
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
-    testHelper = new VMUnitTest();
+    testHelper = new CommandServerTestHelper();
     testHelper.setup();
 
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
