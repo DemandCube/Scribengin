@@ -11,13 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
 public class CommandServlet extends HttpServlet {
   public static String noCommandMessage = "No Command Sent";
   public static String badCommandMessage = "Bad Command: ";
-  private Shell shell; 
+  private Shell vmShell; 
   private CommandConsole shellConsole;
   
   
@@ -33,7 +34,7 @@ public class CommandServlet extends HttpServlet {
     shellConsole = new CommandConsole();
     
     try {
-      shell = new Shell(new RegistryImpl(regConf).connect(), shellConsole) ;
+      vmShell = new ScribenginShell(new RegistryImpl(regConf).connect(), shellConsole) ;
       
     } catch (RegistryException e) {
       e.printStackTrace();
@@ -83,18 +84,33 @@ public class CommandServlet extends HttpServlet {
     }
     else{
       switch(command){
-        case "listvms":
-          try {
-            shell.execute("vm list");
-            response.getWriter().print(shellConsole.getLastCommandsOutput());
-          } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        case "vm list":
+          response.getWriter().print(executeShell("vm list"));
+          break;
+        case "registry dump":
+          String path = request.getParameter("path");
+          if(path == null){
+            response.getWriter().print(executeShell("registry dump"));
           }
+          else{
+            response.getWriter().print(executeShell("registry dump --path "+path));
+          }
+          break;
+        case "scribengin master":
+          response.getWriter().print(executeShell("scribengin master"));
           break;
         default:
           response.getWriter().print(badCommandMessage+command);
       }
     }
+  }
+  
+  private String executeShell(String command){
+    try {
+      vmShell.execute(command);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return shellConsole.getLastCommandsOutput();
   }
 }

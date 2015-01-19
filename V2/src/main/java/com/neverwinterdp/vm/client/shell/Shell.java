@@ -7,9 +7,9 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class Shell {
-  private Console console ;
-  private VMClient vmClient ;
-  private Map<String, Command> commands = new HashMap<String, Command>() ;
+  protected Console console ;
+  protected VMClient vmClient ;
+  protected Map<String, Command> commands = new HashMap<String, Command>() ;
   
   public Shell(Registry registry) {
     this(registry, new Console());

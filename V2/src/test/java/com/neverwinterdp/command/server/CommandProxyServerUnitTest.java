@@ -67,6 +67,8 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
   
   @AfterClass
   public static void teardown() throws Exception{
+    commandServer.join();
+    
     cps.stop();
     commandServer.stop();
     testHelper.teardown();

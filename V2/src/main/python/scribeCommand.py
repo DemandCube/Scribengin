@@ -30,9 +30,28 @@ def mastercommand(debug, host, logfile):
 @mastercommand.command(help="- List all running VMs")
 def listvms():
   logging.debug("Listing VMs")
-  payload = {'command': 'listvms'}
+  payload = {'command': 'vm list'}
   res = sendRequest(payload)
   click.echo(res)
+
+@mastercommand.command(help="- Dump the registry")
+@click.option('--path', default='/', help="Path to dump")
+def registrydump(path):
+  logging.debug("Dump Registry")
+  payload = {
+             'command': 'registry dump',
+             'path' : path,
+            }
+  res = sendRequest(payload)
+  click.echo(res)
+
+@mastercommand.command(help="- Not implemented yet :)")
+def scribenginmaster():
+  logging.debug("Scribengin master")
+  payload = {'command': 'scribengin master'}
+  res = sendRequest(payload)
+  click.echo(res)
+
 
 
 def sendRequest(params):

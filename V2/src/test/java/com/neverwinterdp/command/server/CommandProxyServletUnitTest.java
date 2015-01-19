@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mashape.unirest.http.HttpResponse;
@@ -33,6 +34,19 @@ public class CommandProxyServletUnitTest {
                     "ID            Path                        Roles       Cores   Memory   \n"+
                     "-----------------------------------------------------------------------\n"+
                     "vm-master-1   /vm/allocated/vm-master-1   vm-master   1       128      \n\n";
+  protected String expectedRegistryDumpResponse=
+                    "vm\n"+
+                    "  history\n"+
+                    "  allocated\n"+
+                    "    vm-master-1 - {\"storedPath\":\"/vm/allocated/vm-master-1\",\"memory\":128,\"cpuCores\":1,\"hostname\n"+
+                    "      status - \"RUNNING\"\n"+
+                    "        heartbeat\n"+
+                    "      commands\n"+
+                    "  commandServer - http://localhost:8181\n"+
+                    "  master\n"+
+                    "    leader - {\"path\":\"/vm/allocated/vm-master-1\"}\n"+
+                    "      leader-0000000000\n";
+  
   
   //Used to bring up VMs to test with
   static VMUnitTest testHelper;
@@ -99,10 +113,36 @@ public class CommandProxyServletUnitTest {
   @Test
   public void testCommandServletListVMs() throws InterruptedException, UnirestException{
     HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
-           .field("command", "listvms")
+           .field("command", "vm list")
            .asString();
     
     assertEquals(expectedListVMResponse, resp.getBody());
+  }
+  
+  @Test
+  public void testCommandScribenginMaster() throws InterruptedException, UnirestException{
+    HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
+           .field("command", "scribengin master")
+           .asString();
+    
+    assertEquals("", resp.getBody());
+  }
+  
+  @Test
+  public void testCommandServletDumpRegistry() throws UnirestException{
+    HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
+        .field("command", "registry dump")
+        .asString();
+ 
+    assertEquals(expectedRegistryDumpResponse, resp.getBody());
+    
+    
+    HttpResponse<String> resp2 = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
+        .field("command", "registry dump")
+        .field("path", "/vm/commandServer")
+        .asString();
+    System.err.println("RESP: "+resp2.getBody());
+    assertEquals("http://localhost:"+Integer.toString(commandPort), resp2.getBody());
   }
   
   
@@ -123,5 +163,4 @@ public class CommandProxyServletUnitTest {
     
     assertEquals(CommandServlet.noCommandMessage, resp.getBody());
   }
-  
 }

@@ -99,7 +99,7 @@ public class CommandProxyServletRetryUnitTest {
     
     //Test the proxy is working to begin with
     HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
-           .field("command", "listvms")
+           .field("command", "vm list")
            .asString();
     
     assertEquals(expectedListVMResponse, resp.getBody());
@@ -122,7 +122,7 @@ public class CommandProxyServletRetryUnitTest {
     
     //Query the proxy again, it should fix itself and return the expected String
     HttpResponse<String> resp2 = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
-        .field("command", "listvms")
+        .field("command", "vm list")
         .asString();
     assertEquals(expectedListVMResponse, resp2.getBody());
     commandServer2.stop();

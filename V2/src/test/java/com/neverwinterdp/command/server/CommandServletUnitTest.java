@@ -100,7 +100,7 @@ public class CommandServletUnitTest {
   @Test
   public void testCommandServletListVMs() throws InterruptedException, UnirestException{
     HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(port))
-           .field("command", "listvms")
+           .field("command", "vm list")
            .asString();
     
     //assertEquals("command run: "+"listvms", resp.getBody());
