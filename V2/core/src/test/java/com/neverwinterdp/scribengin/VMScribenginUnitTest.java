@@ -30,15 +30,19 @@ import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandResult;
+import com.neverwinterdp.vm.junit.VMCluster;
 
-abstract public class VMScribenginUnitTest extends VMUnitTest {
+abstract public class VMScribenginUnitTest {
+  private VMCluster vmCluster ;
   private SinkFactory sinkFactory;
   private FileSystem fs;
   protected long vmLaunchTime = 100;
   
   @Before
   public void setup() throws Exception {
-    super.setup();
+    vmCluster = new VMCluster() ;
+    vmCluster.clean(); 
+    vmCluster.start();
     fs = getFileSystem();
     String dataDir = getDataDir() ;
     sinkFactory = new SinkFactory(fs);
@@ -52,12 +56,12 @@ abstract public class VMScribenginUnitTest extends VMUnitTest {
   
   @After
   public void teardown() throws Exception {
-    super.teardown();
+    vmCluster.shutdown();
   }
   
   @Test
   public void testMaster() throws Exception {
-    ScribenginShell shell = new ScribenginShell(newRegistry().connect());
+    ScribenginShell shell = new ScribenginShell(vmCluster.newRegistry().connect());
     VMClient vmClient = shell.getVMClient();
     
     banner("Create VM Master 1");
