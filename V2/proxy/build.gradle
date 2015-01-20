@@ -10,7 +10,7 @@ eclipse {
 //to avoid clashing versions of jetty
 eclipse.classpath.file{
         whenMerged{ classpath ->
-            def projectRefs = classpath.entries.findAll{entry -> entry.path =~ /core/}
+            def projectRefs = classpath.entries.findAll{entry -> entry.path =~ /scribengin\.core/}
             //move the project references to the end of the list:
             classpath.entries.removeAll(projectRefs)
             classpath.entries.addAll(projectRefs)   
