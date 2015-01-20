@@ -6,6 +6,16 @@ eclipse {
   }
 }
 
+//Move project(':core') to bottom of .classpath file
+//to avoid clashing versions of jetty
+eclipse.classpath.file{
+        whenMerged{ classpath ->
+            def projectRefs = classpath.entries.findAll{entry -> entry.path =~ /core/}
+            //move the project references to the end of the list:
+            classpath.entries.removeAll(projectRefs)
+            classpath.entries.addAll(projectRefs)   
+        }   
+    }
 
 configurations.all {
   exclude group: "javax.servlet", module: 'servlet-api'
