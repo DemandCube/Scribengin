@@ -1,4 +1,4 @@
-package com.neverwinterdp.dependency;
+package com.neverwinterdp.server.kafka;
 
 import java.io.File;
 import java.util.Map;
@@ -8,6 +8,7 @@ import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.Time;
 
+import com.neverwinterdp.server.Server;
 import com.neverwinterdp.util.JSONSerializer;
 
 /**

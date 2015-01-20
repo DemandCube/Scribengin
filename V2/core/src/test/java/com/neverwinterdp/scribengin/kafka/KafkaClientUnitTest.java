@@ -6,10 +6,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.dependency.KafkaCluster;
 import com.neverwinterdp.scribengin.kafka.sink.SinkImpl;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.server.kafka.KafkaCluster;
 
 public class KafkaClientUnitTest {
   static {

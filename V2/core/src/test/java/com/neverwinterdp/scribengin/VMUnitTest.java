@@ -13,7 +13,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.dependency.ZookeeperServerLauncher;
+import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.shell.Shell;
 

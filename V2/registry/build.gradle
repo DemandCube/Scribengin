@@ -9,5 +9,5 @@ eclipse {
 }
 
 dependencies {
-  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+  compile project(':server')
 }

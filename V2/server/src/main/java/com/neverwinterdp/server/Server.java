@@ -1,4 +1,4 @@
-package com.neverwinterdp.dependency;
+package com.neverwinterdp.server;
 
 public interface Server {
 

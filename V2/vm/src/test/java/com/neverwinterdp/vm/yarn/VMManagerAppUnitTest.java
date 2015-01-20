@@ -15,17 +15,16 @@ import com.beust.jcommander.JCommander;
 import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.dependency.ZookeeperServerLauncher;
-import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.yarn.AppClient;
 import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
+import com.neverwinterdp.vm.junit.VMCluster;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
@@ -36,16 +35,15 @@ public class VMManagerAppUnitTest {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
-  
-  protected ZookeeperServerLauncher zkServerLauncher ;
-  
+ 
+  VMCluster vmCluster ;
   MiniYARNCluster miniYarnCluster ;
 
   @Before
   public void setup() throws Exception {
-    FileUtil.removeIfExist("./build/data", false);
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
-    zkServerLauncher.start();
+    vmCluster = new VMCluster() ;
+    vmCluster.clean(); 
+    vmCluster.start();
     
     YarnConfiguration yarnConf = new YarnConfiguration() ;
     yarnConf.set("io.serializations", "org.apache.hadoop.io.serializer.JavaSerialization");
@@ -62,7 +60,7 @@ public class VMManagerAppUnitTest {
   public void teardown() throws Exception {
     miniYarnCluster.stop();
     miniYarnCluster.close();
-    zkServerLauncher.shutdown();
+    vmCluster.shutdown();
   }
 
   @Test

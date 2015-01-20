@@ -23,6 +23,6 @@ configurations.all {
 }
 
 dependencies {
-  compile group: 'com.neverwinterdp', name: 'scribengin.registry', version: '1.0-SNAPSHOT'
+  compile project(':registry')
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
 }

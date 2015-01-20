@@ -1,4 +1,4 @@
-package com.neverwinterdp.dependency;
+package com.neverwinterdp.server.zookeeper;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,6 +12,7 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 
+import com.neverwinterdp.server.Server;
 import com.neverwinterdp.util.JSONSerializer;
 /**
  * @author Tuan Nguyen

@@ -1,4 +1,4 @@
-package com.neverwinterdp.dependency;
+package com.neverwinterdp.server.kafka;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.neverwinterdp.server.Server;
+import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 
 public class KafkaCluster {
@@ -22,7 +24,6 @@ public class KafkaCluster {
   public KafkaCluster(String serverDir) throws Exception {
     this(serverDir, 1, 3);
   }
-
 
   public KafkaCluster(String serverDir, int numOfZkInstances, int numOfKafkaInstances) throws Exception {
     FileUtil.removeIfExist(serverDir, false);

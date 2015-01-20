@@ -6,13 +6,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.neverwinterdp.dependency.ZookeeperServerLauncher;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryListener;
+import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 
 public class RegistryListenerUnitTest {

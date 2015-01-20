@@ -1,4 +1,6 @@
+include 'server'
 include 'registry'
 include 'vm'
 include 'core'
+include 'proxy'
 

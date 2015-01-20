@@ -13,9 +13,9 @@ import org.junit.Test;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.dependency.KafkaCluster;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaWriter;
+import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 public class KafkaPartitionReaderUnitTest {

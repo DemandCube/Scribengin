@@ -2,6 +2,8 @@ package com.neverwinterdp.command.server;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URL;
+
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -41,6 +43,10 @@ public class CommandServletUnitTest {
   
   @BeforeClass
   public static void setup() throws Exception{
+    ClassLoader classLoader = CommandServletUnitTest.class.getClassLoader();
+    URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
+    System.out.println(resource);
+
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
     testHelper.setup();

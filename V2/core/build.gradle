@@ -26,14 +26,13 @@ configurations.all {
 }
 
 dependencies {
+  compile project(':registry')
+  compile project(':vm')
+
   //Make sure to have this line before commons.hadoop-framework, otherwise might have 
   //jetty version issues 
-  compile group: 'com.neverwinterdp', name: 'commons.jetty', version: '1.0-SNAPSHOT'
   
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
-
-  compile group: 'com.neverwinterdp', name: 'scribengin.registry', version: '1.0-SNAPSHOT'
-  compile group: 'com.neverwinterdp', name: 'scribengin.vm', version: '1.0-SNAPSHOT'
 
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'

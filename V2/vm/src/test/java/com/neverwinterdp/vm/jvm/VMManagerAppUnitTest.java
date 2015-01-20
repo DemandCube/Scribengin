@@ -13,32 +13,35 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.VMUnitTest;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
 import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.junit.VMCluster;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
-public class VMManagerAppUnitTest extends VMUnitTest {
-  Shell shell;
-  VMClient vmClient;
+public class VMManagerAppUnitTest  {
+  VMCluster  vmCluster ;
+  Shell      shell;
+  VMClient   vmClient;
   
   @Before
   public void setup() throws Exception {
-    super.setup();
+    vmCluster = new VMCluster() ;
+    vmCluster.clean();
+    vmCluster.start();
     Thread.sleep(2000);
-    shell = newShell();
+    shell = vmCluster.newShell() ;
     vmClient = shell.getVMClient();
   }
   
   @After
   public void teardown() throws Exception {
-    super.teardown();
+    vmCluster.shutdown();
   }
   
   @Test
