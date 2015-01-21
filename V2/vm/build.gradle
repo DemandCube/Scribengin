@@ -14,7 +14,7 @@ configurations.all {
   
   //This is because hadoop uses and older version of jetty,
   //and the proxy server needs version 3
-  //exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
+  exclude(group: 'javax.servlet', module: 'servlet-api', version: '2.5')
   
 
   resolutionStrategy {
@@ -25,4 +25,5 @@ configurations.all {
 dependencies {
   compile project(':registry')
   compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
+  compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
 }

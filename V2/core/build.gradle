@@ -28,7 +28,6 @@ dependencies {
   compile project(':registry')
   compile project(':vm')
 
-  
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
 
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
@@ -37,12 +36,9 @@ dependencies {
 
   //TODO: move to use jackson
   compile 'org.json:json:20090211'
-  //compile group: 'com.google.guava', name: 'guava', version: '18.0'
   compile group: 'com.google.guava', name: 'guava', version: '13.0'
 
   compile group: 'junit', name: 'junit', version: '4.11'
-  //testCompile group: 'junit', name: 'junit', version: '4.11'
-  
 }
 
 task release (dependsOn: 'build') << {

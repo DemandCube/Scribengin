@@ -132,8 +132,6 @@ abstract public class VMScribenginUnitTest {
       setRegistryConfig(vmClient.getRegistry().getRegistryConfig()).
       setVmApplication(VMScribenginServiceApp.class.getName());
     configureEnvironment(vmConfig);
-    System.out.println("VMConfig:");
-    System.out.println(JSONSerializer.INSTANCE.toString(vmConfig));
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;
