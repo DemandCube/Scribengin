@@ -57,6 +57,7 @@ public class CommandProxyServletUnitTest {
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
+    testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
@@ -80,12 +81,12 @@ public class CommandProxyServletUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext commandApp = new WebAppContext();
-    commandApp.setResourceBase("./src/test/resources/commandServer");
-    commandApp.setDescriptor(  "./src/test/resources/commandServer/override-web.xml");
+    commandApp.setResourceBase(testHelper.getCommandServerFolder());
+    commandApp.setDescriptor(testHelper.getCommandServerXml());
     
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase("./src/test/resources/commandProxyServer");
-    proxyApp.setDescriptor(  "./src/test/resources/commandProxyServer/override-web.xml");
+    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
+    proxyApp.setDescriptor(testHelper.getProxyServerXml());
     
     proxyServer = new JettyServer(proxyPort, CommandProxyServlet.class);
     proxyServer.setHandler(proxyApp);

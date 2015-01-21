@@ -2,8 +2,6 @@ package com.neverwinterdp.command.server;
 
 import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
-
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,12 +41,9 @@ public class CommandServletUnitTest {
   
   @BeforeClass
   public static void setup() throws Exception{
-    ClassLoader classLoader = CommandServletUnitTest.class.getClassLoader();
-    URL resource = classLoader.getResource("org/apache/http/message/BasicLineFormatter.class");
-    System.out.println(resource);
-
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
+    testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
@@ -68,8 +63,8 @@ public class CommandServletUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext webapp = new WebAppContext();
-    webapp.setResourceBase("./src/test/resources/commandServer");
-    webapp.setDescriptor("./src/test/resources/commandServer/override-web.xml");
+    webapp.setResourceBase(testHelper.getCommandServerFolder());
+    webapp.setDescriptor(testHelper.getCommandServerXml());
     
     //Bring up commandServer using that context
     commandServer = new JettyServer(port, CommandServlet.class);

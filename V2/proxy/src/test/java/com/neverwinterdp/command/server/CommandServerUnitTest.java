@@ -18,6 +18,7 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
+    testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
@@ -26,6 +27,7 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
     } catch (RegistryException e) {
       e.printStackTrace();
     }
+    
     
     //Launch a single VM
     shell = testHelper.newShell();
@@ -38,8 +40,8 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
     cs = new CommandServer(port);
     //Point our context to our web.xml we want to use for testing
     WebAppContext webapp = new WebAppContext();
-    webapp.setResourceBase("./src/test/resources/commandServer");
-    webapp.setDescriptor("./src/test/resources/commandServer/override-web.xml");
+    webapp.setResourceBase(testHelper.getCommandServerFolder());
+    webapp.setDescriptor(testHelper.getCommandServerXml());
     cs.setHandler(webapp);
     cs.startServer();
   }
