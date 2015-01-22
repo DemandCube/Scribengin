@@ -1,5 +1,8 @@
 package com.neverwinterdp.command.server;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +20,27 @@ import com.neverwinterdp.vm.client.shell.Shell;
 
 public class CommandServerTestHelper {
   protected ZookeeperServerLauncher zkServerLauncher ;
+  public String commandServerFolder = "./src/test/resources/commandServer";
+  public String proxyServerFolder = "./src/test/resources/commandServer";
+  public String commandServerXml = commandServerFolder+"/override-web.xml";
+  public String proxyServerXml = proxyServerFolder+"/override-web.xml";
+  
+  public String getCommandServerFolder() {
+    return commandServerFolder;
+  }
+
+  public String getProxyServerFolder() {
+    return proxyServerFolder;
+  }
+
+  public String getCommandServerXml() {
+    return commandServerXml;
+  }
+
+  public String getProxyServerXml() {
+    return proxyServerXml;
+  }
+
   
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
@@ -45,5 +69,13 @@ public class CommandServerTestHelper {
   protected Shell newShell() throws RegistryException {
     VMClient vmClient = new VMClient(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
     return new Shell(vmClient) ;
+  }
+  
+  public void assertWebXmlFilesExist(){
+    //Check that web.xml exists
+    File f = new File(commandServerXml);
+    assertTrue(f.exists());
+    f = new File(proxyServerXml);
+    assertTrue(f.exists());
   }
 }

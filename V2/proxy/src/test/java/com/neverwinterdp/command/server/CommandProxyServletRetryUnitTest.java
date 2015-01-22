@@ -43,6 +43,7 @@ public class CommandProxyServletRetryUnitTest {
   public void setup() throws Exception{
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
+    testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
     registry = new RegistryImpl(RegistryConfig.getDefault());
@@ -61,13 +62,15 @@ public class CommandProxyServletRetryUnitTest {
     vmAssert.waitForEvents(5000);
     
     
+    
+    
     //Add the entry to tell the proxy server where to go to find the commandServer
     registry.create(registryPath, ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);
     
     //Start proxy
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase("./src/test/resources/commandProxyServer");
-    proxyApp.setDescriptor(  "./src/test/resources/commandProxyServer/override-web.xml");
+    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
+    proxyApp.setDescriptor(  testHelper.getProxyServerXml());
     
     proxyServer = new JettyServer(proxyPort, CommandProxyServlet.class);
     proxyServer.setHandler(proxyApp);
@@ -88,8 +91,8 @@ public class CommandProxyServletRetryUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext commandApp = new WebAppContext();
-    commandApp.setResourceBase("./src/test/resources/commandServer");
-    commandApp.setDescriptor(  "./src/test/resources/commandServer/override-web.xml");
+    commandApp.setResourceBase(testHelper.getCommandServerFolder());
+    commandApp.setDescriptor(testHelper.getCommandServerXml());
     
     //Bring up commandServer using that context
     JettyServer commandServer = new JettyServer(commandPort, CommandServlet.class);

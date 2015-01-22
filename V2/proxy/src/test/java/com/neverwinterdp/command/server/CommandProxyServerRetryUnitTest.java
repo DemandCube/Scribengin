@@ -18,8 +18,10 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
   public void setup() throws Exception{
     //Bring up ZK and all that jazz
     testHelper = new CommandServerTestHelper();
+    testHelper.assertWebXmlFilesExist();
+    
     testHelper.setup();
-
+    
     registry = new RegistryImpl(RegistryConfig.getDefault());
     try {
       registry.connect();
@@ -37,13 +39,14 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
     
     
     //Add the entry to tell the proxy server where to go to find the commandServer
-    
     registry.create(registryPath, ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);
+    
+    
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase("./src/test/resources/commandProxyServer");
-    proxyApp.setDescriptor("./src/test/resources/commandProxyServer/override-web.xml");
+    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
+    proxyApp.setDescriptor(testHelper.getProxyServerXml());
     
     //Bring up proxy
     cps = new CommandProxyServer(proxyPort);
@@ -51,6 +54,8 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
     cps.startServer();
   }
   
+  
+
   @After
   public void teardown() throws Exception{
     System.out.println("Stopping servers");
