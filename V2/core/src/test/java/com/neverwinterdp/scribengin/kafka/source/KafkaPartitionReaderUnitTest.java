@@ -16,6 +16,7 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaWriter;
 import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 public class KafkaPartitionReaderUnitTest {
@@ -74,6 +75,6 @@ public class KafkaPartitionReaderUnitTest {
     config.setConnect("127.0.0.1:2181");
     config.setDbDomain("/brokers");
     config.setRegistryImplementation(RegistryImpl.class.getName());
-    return new Shell(new RegistryImpl(config).connect()) ;
+    return new Shell(new VMClient(new RegistryImpl(config).connect())) ;
   }
 }

@@ -13,30 +13,31 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMStatus;
+import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
+import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
 import com.neverwinterdp.vm.junit.VMAssert;
-import com.neverwinterdp.vm.junit.VMCluster;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMManagerAppUnitTest  {
-  VMCluster  vmCluster ;
+  VMClusterBuilder  vmCluster ;
   Shell      shell;
   VMClient   vmClient;
   
   @Before
   public void setup() throws Exception {
-    vmCluster = new VMCluster() ;
+    vmCluster = new EmbededVMClusterBuilder() ;
     vmCluster.clean();
     vmCluster.start();
     Thread.sleep(2000);
-    shell = vmCluster.newShell() ;
-    vmClient = shell.getVMClient();
+    vmClient = vmCluster.getVMClient();
+    shell = new Shell(vmClient) ;
   }
   
   @After

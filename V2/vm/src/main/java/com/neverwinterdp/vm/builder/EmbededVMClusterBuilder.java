@@ -1,4 +1,4 @@
-package com.neverwinterdp.vm.junit;
+package com.neverwinterdp.vm.builder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,28 +12,42 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.client.shell.Shell;
+import com.neverwinterdp.vm.client.LocalVMClient;
+import com.neverwinterdp.vm.client.VMClient;
 
-public class VMCluster {
+public class EmbededVMClusterBuilder extends VMClusterBuilder {
   private String baseDir = "./build/data";
   protected ZookeeperServerLauncher zkServerLauncher ;
   
-  public VMCluster() { }
+  public EmbededVMClusterBuilder() throws RegistryException {
+    this(new LocalVMClient());
+  }
   
-  public VMCluster(String baseDir) { 
+  public EmbededVMClusterBuilder(VMClient vmClient) throws RegistryException {
+    super(vmClient);
+  }
+  
+  public EmbededVMClusterBuilder(String baseDir, VMClient vmClient) {
+    super(vmClient);
     this.baseDir = baseDir ;
   }
   
+  @Override
   public void clean() throws Exception {
+    super.clean(); 
     FileUtil.removeIfExist(baseDir, false);
   }
   
+  @Override
   public void start() throws Exception {
     zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
     zkServerLauncher.start();
+    super.start();
   }
   
+  @Override
   public void shutdown() throws Exception {
+    super.shutdown();
     zkServerLauncher.shutdown();
   }
 
@@ -47,11 +61,9 @@ public class VMCluster {
     return Guice.createInjector(module);
   }
   
-  public Registry newRegistry() {
-    return new RegistryImpl(RegistryConfig.getDefault());
-  }
+  public RegistryConfig getRegistryConfig() { return vmClient.getRegistry().getRegistryConfig() ; }
   
-  public Shell newShell() throws RegistryException {
-    return new Shell(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
+  public Registry newRegistry() {
+    return new RegistryImpl(getRegistryConfig());
   }
 }

@@ -69,6 +69,14 @@ public class VMClient {
     return result.getResultAs(Boolean.class);
   }
   
+  public void createVMMaster(String name) throws Exception {
+    throw new RuntimeException("This method need to override") ;
+  }
+  
+  public void configureEnvironment(VMConfig vmConfig) {
+    throw new RuntimeException("This method need to override") ;
+  }
+  
   public class CommandReponseWatcher extends NodeWatcher {
     private CommandResult<?> result ;
     private Exception error ;

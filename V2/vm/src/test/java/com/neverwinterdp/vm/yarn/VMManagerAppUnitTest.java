@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.yarn;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -13,18 +14,18 @@ import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.hadoop.MiniClusterUtil;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
+import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.client.YarnVMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.yarn.AppClient;
 import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
-import com.neverwinterdp.vm.junit.VMCluster;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
@@ -36,12 +37,12 @@ public class VMManagerAppUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
  
-  VMCluster vmCluster ;
+  EmbededVMClusterBuilder vmCluster ;
   MiniYARNCluster miniYarnCluster ;
 
   @Before
   public void setup() throws Exception {
-    vmCluster = new VMCluster() ;
+    vmCluster = new EmbededVMClusterBuilder() ;
     vmCluster.clean(); 
     vmCluster.start();
     
@@ -49,11 +50,6 @@ public class VMManagerAppUnitTest {
     yarnConf.set("io.serializations", "org.apache.hadoop.io.serializer.JavaSerialization");
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
-//    Iterator<Map.Entry<String, String>> i = conf.iterator();
-//    while(i.hasNext()) {
-//      Map.Entry<String, String> entry =  i.next();
-//      System.out.println(entry.getKey() + " = " + entry.getValue());
-//    }
   }
 
   @After
@@ -65,13 +61,15 @@ public class VMManagerAppUnitTest {
 
   @Test
   public void testAppClient() throws Exception {
+    Map<String, String> yarnProps = new HashMap<>();
+    yarnProps.put("yarn.resourcemanager.scheduler.address", "0.0.0.0:8030");
+    YarnVMClient vmClient = new YarnVMClient(vmCluster.newRegistry().connect(), yarnProps, miniYarnCluster.getConfig());
+    Shell shell = new Shell(vmClient) ;
+    
     String[] args = createVMConfigArgs("vm-master-1");
     AppClient appClient = new AppClient() ;
     appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
     Thread.sleep(10000);
-
-    Shell shell = new Shell(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
-    VMClient vmClient = shell.getVMClient();
     
     shell.execute("vm list");
     VMDescriptor vmMaster1 = shell.getVMClient().getMasterVMDescriptor();
@@ -109,24 +107,6 @@ public class VMManagerAppUnitTest {
         "--yarn:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
     } ;
     return args;
-  }
-  
-  private VMDescriptor allocateVMMaster(VMClient vmClient, String name) throws Exception {
-    VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
-    VMConfig vmConfig = new VMConfig() ;
-    String[] args = createVMConfigArgs(name);
-    new JCommander(vmConfig, args);
-    Configuration conf = miniYarnCluster.getConfig() ;
-    Iterator<Map.Entry<String, String>> i = conf.iterator();
-    while(i.hasNext()) {
-      Map.Entry<String, String> entry =  i.next();
-      //vmConfig.getYarnConf().put(entry.getKey(), entry.getValue());
-    }
-    CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
-    Assert.assertNull(result.getErrorStacktrace());
-    VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
-    Assert.assertNotNull(vmDescriptor);
-    return vmDescriptor;
   }
   
   private VMDescriptor allocateVMDummy(VMClient vmClient, String name) throws Exception {

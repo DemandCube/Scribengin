@@ -1,6 +1,8 @@
 package com.neverwinterdp.scribengin;
 
-import org.apache.hadoop.conf.Configuration;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -9,13 +11,13 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.neverwinterdp.hadoop.MiniClusterUtil;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.VMConfig;
-import com.neverwinterdp.vm.environment.yarn.AppClient;
-import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
-import com.neverwinterdp.vm.service.VMServiceApp;
-import com.neverwinterdp.vm.service.VMServicePlugin;
+import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
+import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.vm.client.YarnVMClient;
 
 public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   static {
@@ -34,9 +36,8 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     YarnConfiguration yarnConf = new YarnConfiguration() ;
     yarnConf.set("io.serializations", "org.apache.hadoop.io.serializer.JavaSerialization");
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
-    Configuration conf = miniYarnCluster.getConfig() ;
-    super.setup();
     vmLaunchTime = 3000;
+    super.setup();
   }
 
   @After
@@ -47,31 +48,6 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     super.teardown();
   }
   
-  protected void createVMMaster(String name) throws Exception {
-    System.out.println("fs.defaultFS = " + miniDFSCluster.getURI());
-    String[] args = {
-      "--environment", "YARN_MINICLUSTER",
-      "--name", name,
-      "--roles", "vm-master",
-      "--self-registration",
-      "--registry-connect", "127.0.0.1:2181", 
-      "--registry-db-domain", "/NeverwinterDP", 
-      "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMServiceApp.class.getName(),
-      "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
-      "--yarn:yarn.resourcemanager.scheduler.address=localhost:8030",
-      "--yarn:fs.defaultFS=" + miniDFSCluster.getURI()
-    };
-    AppClient appClient = new AppClient() ;
-    appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
-  }
-  
-  protected void configureEnvironment(VMConfig vmConfig) {
-    vmConfig.setEnvironment(VMConfig.Environment.YARN_MINICLUSTER);
-    vmConfig.addYarnProperty("yarn.resourcemanager.scheduler.address", "localhost:8030");
-    vmConfig.addYarnProperty("fs.defaultFS", miniDFSCluster.getURI().toString());
-  }
-  
   @Override
   protected FileSystem getFileSystem() throws Exception { 
     return miniDFSCluster.getFileSystem();
@@ -79,4 +55,15 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
 
   @Override
   protected String getDataDir() { return "/data"; }
+  
+  @Override
+  protected VMClusterBuilder getVMClusterBuilder() throws Exception {
+    Map<String, String> yarnProps = new HashMap<>() ;
+    yarnProps.put("yarn.resourcemanager.scheduler.address", "localhost:8030");
+    yarnProps.put("fs.defaultFS", miniDFSCluster.getURI().toString());
+    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
+    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder(vmClient) ;
+    return builder;
+  }
 }

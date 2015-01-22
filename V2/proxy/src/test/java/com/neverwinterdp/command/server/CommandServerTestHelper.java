@@ -12,6 +12,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 public class CommandServerTestHelper {
@@ -42,6 +43,7 @@ public class CommandServerTestHelper {
   }
   
   protected Shell newShell() throws RegistryException {
-    return new Shell(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
+    VMClient vmClient = new VMClient(new RegistryImpl(RegistryConfig.getDefault()).connect()) ;
+    return new Shell(vmClient) ;
   }
 }
