@@ -2,6 +2,8 @@ package com.neverwinterdp.registry;
 
 import java.util.List;
 
+import com.neverwinterdp.registry.event.NodeWatcher;
+
 public interface Registry {
   public RegistryConfig getRegistryConfig() ;
   public Registry connect() throws RegistryException ;

@@ -9,7 +9,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.event.VMAssertEventListener;
 
 public class CommandServerUnitTest extends CommandServletUnitTest{
   static CommandServer cs;
@@ -29,7 +29,7 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
     
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(registry);
+    VMAssertEventListener vmAssert = new VMAssertEventListener(registry);
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     createVMMaster("vm-master-1");

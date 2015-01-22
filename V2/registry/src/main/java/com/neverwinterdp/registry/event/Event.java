@@ -1,16 +1,14 @@
-package com.neverwinterdp.registry.junit;
+package com.neverwinterdp.registry.event;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.neverwinterdp.registry.NodeEvent;
-
-public class AssertEvent {
+public class Event {
   private String    name ;
   private NodeEvent nodeEvent;
   private Map<String, Object> attributes = new HashMap<String, Object>() ;
   
-  public AssertEvent(String name, NodeEvent nodeEvent) {
+  public Event(String name, NodeEvent nodeEvent) {
     this.name = name;
     this.nodeEvent = nodeEvent;
   }

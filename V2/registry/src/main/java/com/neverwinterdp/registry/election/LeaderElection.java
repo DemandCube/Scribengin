@@ -7,10 +7,10 @@ import java.util.TreeSet;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 
 public class LeaderElection {
   private Registry  registry ;
@@ -70,7 +70,7 @@ public class LeaderElection {
   
   class LeaderWatcher extends NodeWatcher {
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       try {
         System.err.println("Election event: path = " + event.getType() + ", type" + event.getType());
         watch() ;

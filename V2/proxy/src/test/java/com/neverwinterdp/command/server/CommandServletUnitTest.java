@@ -22,7 +22,7 @@ import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
-import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.event.VMAssertEventListener;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
@@ -60,7 +60,7 @@ public class CommandServletUnitTest {
     
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssert vmAssert = new VMAssert(registry);
+    VMAssertEventListener vmAssert = new VMAssertEventListener(registry);
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     createVMMaster("vm-master-1");

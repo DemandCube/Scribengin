@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
@@ -59,6 +59,7 @@ public class VMClient {
     CommandResult<VMDescriptor> result = 
         (CommandResult<VMDescriptor>) execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
     if(result.getErrorStacktrace() != null) {
+      registry.get("/").dump(System.err);
       throw new Exception(result.getErrorStacktrace());
     }
     return result.getResult();
@@ -82,7 +83,7 @@ public class VMClient {
     private Exception error ;
     
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       String path = event.getPath();
       try {
         CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;

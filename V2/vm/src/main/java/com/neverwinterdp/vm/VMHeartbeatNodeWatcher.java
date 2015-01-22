@@ -1,7 +1,7 @@
 package com.neverwinterdp.vm;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 
 public class VMHeartbeatNodeWatcher extends NodeWatcher {
@@ -12,7 +12,7 @@ public class VMHeartbeatNodeWatcher extends NodeWatcher {
   }
   
   @Override
-  public void process(NodeEvent event) {
+  public void onEvent(NodeEvent event) {
     try {
       String path = event.getPath();
       String descriptorPath = path.replace("/status/heartbeat", "") ;

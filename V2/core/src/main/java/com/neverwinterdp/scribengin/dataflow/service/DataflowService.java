@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.inject.Inject;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
@@ -84,7 +84,7 @@ public class DataflowService {
     private int finishTaskCount = 0;
     
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       try {
         List<String> children = dataflowRegistry.getRegistry().getChildren(event.getPath());
         finishTaskCount = children.size();

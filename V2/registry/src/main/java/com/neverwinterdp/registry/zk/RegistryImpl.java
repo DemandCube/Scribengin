@@ -20,11 +20,11 @@ import com.google.inject.Singleton;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.util.JSONSerializer;
 
 @Singleton

@@ -1,7 +1,6 @@
 package com.neverwinterdp.vm.yarn;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -14,6 +13,8 @@ import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.hadoop.MiniClusterUtil;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -42,14 +43,19 @@ public class VMManagerAppUnitTest {
 
   @Before
   public void setup() throws Exception {
-    vmCluster = new EmbededVMClusterBuilder() ;
-    vmCluster.clean(); 
-    vmCluster.start();
-    
     YarnConfiguration yarnConf = new YarnConfiguration() ;
     yarnConf.set("io.serializations", "org.apache.hadoop.io.serializer.JavaSerialization");
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
+    
+    Map<String, String> yarnProps = new HashMap<>();
+    yarnProps.put("yarn.resourcemanager.scheduler.address", "0.0.0.0:8030");
+    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
+    vmCluster = new EmbededVMClusterBuilder(vmClient) ;
+    vmCluster.clean(); 
+    vmCluster.startZookeeper();
+    vmCluster.getVMClient().getRegistry().connect();
   }
 
   @After
@@ -61,9 +67,7 @@ public class VMManagerAppUnitTest {
 
   @Test
   public void testAppClient() throws Exception {
-    Map<String, String> yarnProps = new HashMap<>();
-    yarnProps.put("yarn.resourcemanager.scheduler.address", "0.0.0.0:8030");
-    YarnVMClient vmClient = new YarnVMClient(vmCluster.newRegistry().connect(), yarnProps, miniYarnCluster.getConfig());
+    VMClient vmClient = vmCluster.getVMClient();
     Shell shell = new Shell(vmClient) ;
     
     String[] args = createVMConfigArgs("vm-master-1");

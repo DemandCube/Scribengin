@@ -54,7 +54,9 @@ def doRelease(String releaseDir) {
 
   def dependencyJars = [ 
     "commons.utils", "commons.api", "commons.buffer", "commons.yara",
-    "commons.hadoop-framework", "commons.zookeeper", "scribengin.v2",
+    "commons.hadoop-framework", "commons.zookeeper", 
+    
+    "scribengin.server", "scribengin.registry", "scribengin.vm", "scribengin.core", 
 
     "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
     //"jcommander", "reflections", "guava-16.0.1", "javassist",

@@ -1,29 +1,25 @@
-package com.neverwinterdp.vm.junit;
+package com.neverwinterdp.vm.event;
 
-import static com.neverwinterdp.vm.junit.VMAssertEvent.VM_HEARTBEAT;
-import static com.neverwinterdp.vm.junit.VMAssertEvent.VM_MASTER_ELECTION;
-import static com.neverwinterdp.vm.junit.VMAssertEvent.VM_STATUS;
+import static com.neverwinterdp.vm.event.VMEvent.VM_HEARTBEAT;
+import static com.neverwinterdp.vm.event.VMEvent.VM_MASTER_ELECTION;
+import static com.neverwinterdp.vm.event.VMEvent.VM_STATUS;
 
-import com.neverwinterdp.registry.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.RegistryListener;
 import com.neverwinterdp.registry.election.LeaderElectionNodeWatcher;
-import com.neverwinterdp.registry.junit.RegistryAssert;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.SequenceEventListener;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMHeartbeatNodeWatcher;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.VMStatusNodeWatcher;
-import com.neverwinterdp.vm.junit.VMAssertEvent.VMAttr;
+import com.neverwinterdp.vm.event.VMEvent.VMAttr;
 import com.neverwinterdp.vm.service.VMService;
 
-public class VMAssert extends RegistryAssert {
-  protected Registry registry;
-  protected RegistryListener registryListener ;
+public class VMAssertEventListener extends SequenceEventListener {
   
-  public VMAssert(Registry registry) throws RegistryException {
-    this.registry = registry;
-    registryListener = new RegistryListener(registry);
+  public VMAssertEventListener(Registry registry) throws RegistryException {
+    super("Assert sequence of event for VM", registry);
     registryListener.watch(VMService.LEADER_PATH, new VMLeaderElectionNodeWatcher(registry), true);
   }
   
@@ -37,11 +33,11 @@ public class VMAssert extends RegistryAssert {
         } catch(RegistryException e) {
           throw new RuntimeException(e);
         }
-        VMAssertEvent vmEvent = new VMAssertEvent(VM_STATUS, event);
+        VMEvent vmEvent = new VMEvent(VM_STATUS, event);
         vmEvent.attr(VMAttr.vmdescriptor, descriptor);
         vmEvent.attr(VMAttr.vmstatus, status);
         vmEvent.attr(VMAttr.heartbeat, heartBeat);
-        assertEvent(vmEvent);
+        VMAssertEventListener.this.process(vmEvent);
       }
     };
     registryListener.watch(path, vmStatusWatcher, true);
@@ -53,18 +49,18 @@ public class VMAssert extends RegistryAssert {
     VMHeartbeatNodeWatcher watcher = new VMHeartbeatNodeWatcher(registry) {
       @Override
       synchronized public void onConnected(NodeEvent event, VMDescriptor vmDescriptor) {
-        VMAssertEvent vmEvent = new VMAssertEvent(VM_HEARTBEAT, event);
+        VMEvent vmEvent = new VMEvent(VM_HEARTBEAT, event);
         vmEvent.attr(VMAttr.vmdescriptor, vmDescriptor);
         vmEvent.attr(VMAttr.heartbeat, true);
-        assertEvent(vmEvent);
+        VMAssertEventListener.this.process(vmEvent);
       }
 
       @Override
       synchronized public void onDisconnected(NodeEvent event, VMDescriptor vmDescriptor) {
-        VMAssertEvent vmEvent = new VMAssertEvent(VM_HEARTBEAT, event);
+        VMEvent vmEvent = new VMEvent(VM_HEARTBEAT, event);
         vmEvent.attr(VMAttr.vmdescriptor, vmDescriptor);
         vmEvent.attr(VMAttr.heartbeat, false);
-        assertEvent(vmEvent);
+        VMAssertEventListener.this.process(vmEvent);
       }
     };
     registryListener.watch(path, watcher, true);
@@ -82,13 +78,13 @@ public class VMAssert extends RegistryAssert {
 
     @Override
     public void onElected(NodeEvent event, VMDescriptor learderVMDescriptor) {
-      VMAssertEvent vmEvent = new VMAssertEvent(VM_MASTER_ELECTION, event);
+      VMEvent vmEvent = new VMEvent(VM_MASTER_ELECTION, event);
       vmEvent.attr(VMAttr.master_leader, learderVMDescriptor);
-      assertEvent(vmEvent);
+      VMAssertEventListener.this.process(vmEvent);
     }
   }
   
-  static public class VMAssertStatus extends VMAssertUnit {
+  static public class VMAssertStatus extends VMEventListener {
     String   expectVMName;
     VMStatus expectVMStatus; 
     
@@ -99,7 +95,7 @@ public class VMAssert extends RegistryAssert {
     }
 
     @Override
-    public boolean assertEvent(VMAssertEvent event) {
+    public boolean process(VMEvent event) {
       if(!VM_STATUS.equals(event.getName())) return false;
       VMDescriptor vmDescriptor = event.attr(VMAttr.vmdescriptor);
       VMStatus status = event.attr(VMAttr.vmstatus);
@@ -109,7 +105,7 @@ public class VMAssert extends RegistryAssert {
     }
   }
   
-  static public class VMAssertHeartbeat extends VMAssertUnit {
+  static public class VMAssertHeartbeat extends VMEventListener {
     String   expectVMName;
     boolean  connected ; 
     
@@ -120,7 +116,7 @@ public class VMAssert extends RegistryAssert {
     }
 
     @Override
-    public boolean assertEvent(VMAssertEvent event) {
+    public boolean process(VMEvent event) {
       if(!VM_HEARTBEAT.equals(event.getName())) return false;
       VMDescriptor vmDescriptor = event.attr(VMAttr.vmdescriptor);
       boolean connected = event.attr(VMAttr.heartbeat);
@@ -130,7 +126,7 @@ public class VMAssert extends RegistryAssert {
     }
   }
   
-  static public class VMAssertMasterElection extends VMAssertUnit {
+  static public class VMAssertMasterElection extends VMEventListener {
     String   expectVMName;
     
     public VMAssertMasterElection(String description, String vmName) {
@@ -139,7 +135,7 @@ public class VMAssert extends RegistryAssert {
     }
 
     @Override
-    public boolean assertEvent(VMAssertEvent event) {
+    public boolean process(VMEvent event) {
       if(!VM_MASTER_ELECTION.equals(event.getName())) return false;
       VMDescriptor vmDescriptor = event.attr(VMAttr.master_leader);
       if(!expectVMName.equals(vmDescriptor.getVmConfig().getName())) return false;

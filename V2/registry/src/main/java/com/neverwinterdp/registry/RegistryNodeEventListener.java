@@ -3,6 +3,9 @@ package com.neverwinterdp.registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
+
 public class RegistryNodeEventListener {
   protected Logger logger = LoggerFactory.getLogger(RegistryNodeEventListener.class) ;
   
@@ -27,11 +30,11 @@ public class RegistryNodeEventListener {
     } else {
       registry.watchExists(listenPath, new NodeWatcher() {
         @Override
-        public void process(NodeEvent event) {
+        public void onEvent(NodeEvent event) {
           if(event.getType() == NodeEvent.Type.CREATE) {
             try {
               registry.watchModify(listenPath, nodeWatcher);
-              nodeWatcher.process(event);
+              nodeWatcher.onEvent(event);
             } catch (RegistryException e) {
               logger.error("Cannot register the leader node watcher", e);
             }

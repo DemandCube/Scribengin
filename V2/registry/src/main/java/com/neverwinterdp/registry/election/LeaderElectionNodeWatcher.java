@@ -1,9 +1,9 @@
 package com.neverwinterdp.registry.election;
 
 import com.neverwinterdp.registry.Node;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 
 abstract public class LeaderElectionNodeWatcher<T> extends NodeWatcher {
   Registry registry;
@@ -15,7 +15,7 @@ abstract public class LeaderElectionNodeWatcher<T> extends NodeWatcher {
   }
   
   @Override
-  public void process(NodeEvent event) {
+  public void onEvent(NodeEvent event) {
     try {
       String path = event.getPath();
       if(event.getType() == NodeEvent.Type.MODIFY) {

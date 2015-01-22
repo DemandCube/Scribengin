@@ -6,8 +6,8 @@ import java.util.Map;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 
 public class RegistryWatcher implements Watcher {
   private Map<String, NodeWatcher> nodeWatchers = new HashMap<String, NodeWatcher>() ;

@@ -1,15 +1,15 @@
-package com.neverwinterdp.scribengin.junit;
+package com.neverwinterdp.scribengin.event;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.junit.AssertEvent;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.Event;
 
-public class ScribenginAssertEvent extends AssertEvent {
+public class ScribenginEvent extends Event {
   static public enum DataflowAttr { status, descriptor }
   static public enum ScribenginAttr { dataflow_status, dataflow_descriptor }
   
   final static public String DATAFLOW_STATUS = "dataflow-status" ;
   
-  public ScribenginAssertEvent(String name, NodeEvent event) {
+  public ScribenginEvent(String name, NodeEvent event) {
     super(name, event);
   }
   

@@ -1,4 +1,4 @@
-package com.neverwinterdp.registry;
+package com.neverwinterdp.registry.event;
 
 public class NodeEvent {
   static public enum Type { CREATE, DELETE, MODIFY, CHILDREN_CHANGED, LOCK, UNLOCK, OTHER}

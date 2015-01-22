@@ -1,8 +1,12 @@
 package com.neverwinterdp.vm.builder;
 
+import java.util.List;
+
+import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
-import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.command.VMCommand;
+import com.neverwinterdp.vm.event.VMAssertEventListener;
 
 public class VMClusterBuilder {
   protected VMClient vmClient ;
@@ -27,17 +31,28 @@ public class VMClusterBuilder {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    VMAssert vmAssert = new VMAssert(vmClient.getRegistry());
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
-    h1("Create VM master vm-master-1");
-    vmClient.createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(30000);
+    VMAssertEventListener vmAssert = createVMMaster("vm-master-1");
+    vmAssert.waitForEvents(60000);
   }
   
   public void shutdown() throws Exception {
+    List<VMDescriptor> list = vmClient.getRunningVMDescriptors() ;
+    for(VMDescriptor vmDescriptor : list) {
+      vmClient.execute(vmDescriptor, new VMCommand.Shutdown());
+    }
   }
   
+  public VMAssertEventListener createVMMaster(String name) throws Exception {
+    if(!vmClient.getRegistry().isConnect()) {
+      vmClient.getRegistry().connect() ;
+    }
+    VMAssertEventListener vmAssert = new VMAssertEventListener(vmClient.getRegistry());
+    vmAssert.assertVMStatus(format("Expect %s with running status", name), name, VMStatus.RUNNING);
+    vmAssert.assertHeartbeat(format("Expect %s has connected heartbeat", name), name, true);
+    h1(format("Create VM master %s", name));
+    vmClient.createVMMaster(name);
+    return vmAssert;
+  }
   
   static public void h1(String title) {
     System.out.println("\n\n");
@@ -53,5 +68,9 @@ public class VMClusterBuilder {
       b.append("-");
     }
     System.out.println(b) ;
+  }
+  
+  static public String format(String tmpl, Object ... args) {
+    return String.format(tmpl, args) ;
   }
 }

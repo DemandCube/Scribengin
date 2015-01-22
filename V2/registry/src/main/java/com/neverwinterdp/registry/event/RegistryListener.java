@@ -1,4 +1,4 @@
-package com.neverwinterdp.registry;
+package com.neverwinterdp.registry.event;
 
 import java.io.IOException;
 import java.util.Map;
@@ -6,6 +6,9 @@ import java.util.TreeMap;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.ErrorCode;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryException;
 
 @Singleton
 public class RegistryListener {
@@ -69,13 +72,14 @@ public class RegistryListener {
   
   class PersistentNodeWatcher extends NodeWatcherWrapper {
     String key ;
+    
     PersistentNodeWatcher(String key, NodeWatcher nodeWatcher) { 
       super(nodeWatcher); 
       this.key = key;
     }
     
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       if(closed) return;
       try {
         if(isComplete()) {
@@ -90,7 +94,7 @@ public class RegistryListener {
           watchers.remove(key);
         }
       }
-      nodeWatcher.process(event);
+      nodeWatcher.onEvent(event);
     }
   }
   
@@ -103,9 +107,9 @@ public class RegistryListener {
     }
     
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       if(closed) return;
-      nodeWatcher.process(event);
+      nodeWatcher.onEvent(event);
       watchers.remove(key);
     }
   }

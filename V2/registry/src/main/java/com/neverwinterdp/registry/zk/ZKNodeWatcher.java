@@ -3,8 +3,8 @@ package com.neverwinterdp.registry.zk;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 
 public class ZKNodeWatcher implements Watcher {
   private String basePath ;
@@ -18,7 +18,7 @@ public class ZKNodeWatcher implements Watcher {
   public void process(WatchedEvent event) {
     event.getState();
     NodeEvent nEvent = new NodeEvent(realPath(event.getPath()), eventType(event)) ;
-    nodeWatcher.process(nEvent);
+    nodeWatcher.onEvent(nEvent);
   }
   
   private String realPath(String path) {

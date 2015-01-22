@@ -1,20 +1,20 @@
-package com.neverwinterdp.scribengin.junit;
+package com.neverwinterdp.scribengin.event;
 
-import static com.neverwinterdp.scribengin.junit.ScribenginAssertEvent.*;
+import static com.neverwinterdp.scribengin.event.ScribenginEvent.*;
 
 import com.neverwinterdp.registry.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.Node;
-import com.neverwinterdp.registry.NodeEvent;
+import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.service.ScribenginService;
-import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.event.VMAssertEventListener;
 
 
-public class ScribenginAssert extends VMAssert {
-  public ScribenginAssert(Registry registry) throws RegistryException {
+public class ScribenginAssertEventListener extends VMAssertEventListener {
+  public ScribenginAssertEventListener(Registry registry) throws RegistryException {
     super(registry);
     registryListener.watch(ScribenginService.LEADER_PATH, new VMLeaderElectionNodeWatcher(registry), true);
   }
@@ -28,13 +28,13 @@ public class ScribenginAssert extends VMAssert {
       @Override
       public void onChange(NodeEvent event, DataflowLifecycleStatus data) {
         try {
-          ScribenginAssertEvent sEvent = new ScribenginAssertEvent(DATAFLOW_STATUS, event);
+          ScribenginEvent sEvent = new ScribenginEvent(DATAFLOW_STATUS, event);
           Node statusNode = new Node(registry, event.getPath());
           Node dataflowNode = statusNode.getParentNode();
           DataflowDescriptor dfDescriptor = dataflowNode.getData(DataflowDescriptor.class);
           sEvent.attr(DataflowAttr.status, data);
           sEvent.attr(DataflowAttr.descriptor, dfDescriptor);
-          assertEvent(sEvent);
+          ScribenginAssertEventListener.this.process(sEvent);
         } catch(Exception ex) {
           ex.printStackTrace();
         }
@@ -55,7 +55,7 @@ public class ScribenginAssert extends VMAssert {
     add(new AssertDataflowStatus(desc, dataflowName, status));
   }
   
-  static public class AssertDataflowStatus extends ScribenginAssertUnit {
+  static public class AssertDataflowStatus extends ScribenginEventListener {
     String   dataflowName;
     DataflowLifecycleStatus status;
     
@@ -66,7 +66,7 @@ public class ScribenginAssert extends VMAssert {
     }
 
     @Override
-    public boolean assertEvent(ScribenginAssertEvent event) {
+    public boolean process(ScribenginEvent event) {
       if(!DATAFLOW_STATUS.equals(event.getName())) return false;
       DataflowDescriptor descriptor = event.attr(DataflowAttr.descriptor) ;
       if(descriptor == null) return false;

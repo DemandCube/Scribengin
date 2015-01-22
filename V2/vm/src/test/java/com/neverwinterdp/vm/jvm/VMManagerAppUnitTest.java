@@ -20,13 +20,13 @@ import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.jvm.JVMVMServicePlugin;
-import com.neverwinterdp.vm.junit.VMAssert;
+import com.neverwinterdp.vm.event.VMAssertEventListener;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
 public class VMManagerAppUnitTest  {
-  VMClusterBuilder  vmCluster ;
+  EmbededVMClusterBuilder  vmCluster ;
   Shell      shell;
   VMClient   vmClient;
   
@@ -34,10 +34,7 @@ public class VMManagerAppUnitTest  {
   public void setup() throws Exception {
     vmCluster = new EmbededVMClusterBuilder() ;
     vmCluster.clean();
-    vmCluster.start();
-    Thread.sleep(2000);
-    vmClient = vmCluster.getVMClient();
-    shell = new Shell(vmClient) ;
+    vmCluster.startZookeeper();
   }
   
   @After
@@ -47,24 +44,13 @@ public class VMManagerAppUnitTest  {
   
   @Test
   public void testMaster() throws Exception {
-    VMAssert vmAssert = new VMAssert(shell.getVMClient().getRegistry());
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", true);
-    vmAssert.assertVMStatus("Expect vm-master-2 with running status", "vm-master-2", VMStatus.RUNNING);
-    vmAssert.assertHeartbeat("Expect vm-master-2 has connected heartbeat", "vm-master-2", true);
-    
-    banner("Create Masters");
-    VM vmMaster1 = createVMMaster("vm-master-1");
-    Thread.sleep(1000);
-    VM vmMaster2 = createVMMaster("vm-master-2");
-    try {
-      vmAssert.waitForEvents(5000);
-    } catch(Exception ex) {
-      vmAssert.reset();
-      ex.printStackTrace();
-    }
+    vmCluster.createVMMaster("vm-master-1");
+    vmCluster.createVMMaster("vm-master-2");
+    vmClient = vmCluster.getVMClient();
+    shell = new Shell(vmClient) ;
     shell.execute("registry dump");
 
+    VMAssertEventListener vmAssert = new VMAssertEventListener(shell.getVMClient().getRegistry());
     banner("Create VM Dummy 1");
     vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
     vmAssert.assertHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
@@ -82,7 +68,8 @@ public class VMManagerAppUnitTest  {
     vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
     vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
     vmAssert.assertVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
-    vmMaster1.shutdown();
+    vmClient.shutdown(vmClient.getMasterVMDescriptor());
+    //vmMaster1.shutdown();
     vmAssert.waitForEvents(5000);
     shell.execute("registry dump");
     

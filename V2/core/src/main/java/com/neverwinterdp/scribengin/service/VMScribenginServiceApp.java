@@ -28,8 +28,7 @@ public class VMScribenginServiceApp extends VMApp {
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     try {
-      //waitForShutdown();
-      Thread.sleep(100000000);
+      waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
       if(election != null && election.getLeaderId() != null) {

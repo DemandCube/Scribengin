@@ -1,9 +1,9 @@
-package com.neverwinterdp.registry;
+package com.neverwinterdp.registry.event;
 
 abstract public class NodeWatcherWrapper extends NodeWatcher {
   protected NodeWatcher nodeWatcher;
   
-  NodeWatcherWrapper(NodeWatcher nodeWatcher) {
+  protected NodeWatcherWrapper(NodeWatcher nodeWatcher) {
     this.nodeWatcher = nodeWatcher;
   }
   

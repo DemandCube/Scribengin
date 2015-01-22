@@ -1,16 +1,16 @@
-package com.neverwinterdp.vm.junit;
+package com.neverwinterdp.vm.event;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.junit.AssertEvent;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.Event;
 
-public class VMAssertEvent extends AssertEvent {
+public class VMEvent extends Event {
   static public enum VMAttr { vmdescriptor, vmstatus, heartbeat, master_leader}
   
   final static public String VM_STATUS          = "vm-status" ;
   final static public String VM_HEARTBEAT       = "vm-heartbeat" ;
   final static public String VM_MASTER_ELECTION = "vm-master-election" ;
   
-  public VMAssertEvent(String name, NodeEvent event) {
+  public VMEvent(String name, NodeEvent event) {
     super(name, event);
   }
   

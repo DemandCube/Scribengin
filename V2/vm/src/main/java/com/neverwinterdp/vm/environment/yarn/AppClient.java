@@ -72,7 +72,7 @@ public class AppClient  {
       }
       
       
-      System.out.println("Setup the classpath for ApplicationMaster") ;
+      System.out.println("Setup the classpath for ApplicationMaster, environment = " + vmConfig.getEnvironment()) ;
       Map<String, String> appMasterEnv = new HashMap<String, String>();
       boolean jvmEnv = vmConfig.getEnvironment() != VMConfig.Environment.YARN;
       Util.setupAppMasterEnv(jvmEnv , conf, appMasterEnv);

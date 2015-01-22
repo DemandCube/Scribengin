@@ -1,7 +1,7 @@
 package com.neverwinterdp.vm;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 
 public class VMStatusNodeWatcher extends NodeWatcher {
@@ -12,7 +12,7 @@ public class VMStatusNodeWatcher extends NodeWatcher {
   }
   
   @Override
-  public void process(NodeEvent event) {
+  public void onEvent(NodeEvent event) {
     //System.out.println("got status event " + event.getPath());
     try {
       if(event.getType() == NodeEvent.Type.MODIFY || event.getType() == NodeEvent.Type.CREATE) {

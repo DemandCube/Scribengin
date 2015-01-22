@@ -312,7 +312,7 @@ elif [ "$COMMAND" = "sync" ] ; then
   cluster_sync
 elif [ "$COMMAND" = "start" ] ; then
   zookeeper_start $@
-  kafka_start $@
+#  kafka_start $@
   hadoop_start $@
 elif [ "$COMMAND" = "stop" ] ; then
   hadoop_stop $@

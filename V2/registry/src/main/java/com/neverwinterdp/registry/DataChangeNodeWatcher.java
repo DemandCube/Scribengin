@@ -1,5 +1,8 @@
 package com.neverwinterdp.registry;
 
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
+
 
 abstract public class DataChangeNodeWatcher<T> extends NodeWatcher {
   protected Registry registry ;
@@ -11,7 +14,7 @@ abstract public class DataChangeNodeWatcher<T> extends NodeWatcher {
   }
   
   @Override
-  public void process(NodeEvent event) {
+  public void onEvent(NodeEvent event) {
     try {
       if(event.getType() == NodeEvent.Type.MODIFY || event.getType() == NodeEvent.Type.CREATE) {
         String path = event.getPath();

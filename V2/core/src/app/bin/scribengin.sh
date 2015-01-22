@@ -41,13 +41,9 @@ JAVA_OPTS="-Xshare:auto -Xms128m -Xmx1536m -XX:-UseSplitVerifier"
 APP_OPT="-Dapp.dir=$APP_DIR -Duser.dir=$APP_DIR"
 #LOG_OPT="-Dlog4j.configuration=file:$APP_DIR/config/log4j.properties"
 
-function scribengin_start() {
-  MAIN_CLASS="com.neverwinterdp.scribengin.ScribenginLauncher"
+function scribengin() {
+  MAIN_CLASS="com.neverwinterdp.scribengin.Main"
   $JAVACMD -Djava.ext.dirs=$APP_DIR/libs $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
-}
-
-function scribengin_shutdown() {
-  echo "TODO:............................."
 }
 
 function dataflow_submit() {
@@ -63,16 +59,7 @@ COMMAND=$1
 shift
 
 if [ "$COMMAND" = "scribengin" ] ; then
-  # get subcommand
-  SUB_COMMAND=$1
-  shift
-  if [ "$SUB_COMMAND" = "start" ] ; then
-    scribengin_start $@
-  elif [ "$SUB_COMMAND" = "shutdown" ] ; then
-    echo "TODO:............................."
-  else
-    echo "TODO:............................."
-  fi
+  scribengin $@
 elif [ "$COMMAND" = "dataflow" ] ; then
   # get subcommand
   SUB_COMMAND=$1
@@ -85,6 +72,6 @@ elif [ "$COMMAND" = "dataflow" ] ; then
     echo "TODO:............................."
   fi
 else
-  MAIN_CLASS="com.neverwinterdp.scribengin.Main"
+  MAIN_CLASS="com.neverwinterdp.scribengin.HelloScribengin"
   $JAVACMD -Djava.ext.dirs=$APP_DIR/libs $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
 fi

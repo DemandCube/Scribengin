@@ -7,10 +7,10 @@ import java.util.TreeSet;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 
 public class Lock {
   private Registry  registry ;
@@ -87,7 +87,7 @@ public class Lock {
     }
     
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       try {
         if(event.getType() != NodeEvent.Type.DELETE) return ;
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;

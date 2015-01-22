@@ -15,6 +15,17 @@ import com.neverwinterdp.vm.service.VMServicePlugin;
 public class YarnVMClient extends VMClient {
   private Map<String, String> yarnProps ;
   private Configuration conf ;
+  private VMConfig.Environment yarnEnv = VMConfig.Environment.YARN_MINICLUSTER ;
+  
+  public YarnVMClient(Registry registry, VMConfig.Environment yarnEnv, Map<String, String> yarnProps) {
+    super(registry);
+    this.yarnEnv = yarnEnv;
+    this.yarnProps = yarnProps;
+    conf = new Configuration() ;
+    for(Map.Entry<String, String> entry : yarnProps.entrySet()) {
+      conf.set(entry.getKey(), entry.getValue());
+    }
+  }
   
   public YarnVMClient(Registry registry, Map<String, String> yarnProps, Configuration conf) {
     super(registry);
@@ -42,7 +53,9 @@ public class YarnVMClient extends VMClient {
   }
   
   public void configureEnvironment(VMConfig vmConfig) {
-    vmConfig.setEnvironment(VMConfig.Environment.YARN_MINICLUSTER);
+    vmConfig.setEnvironment(yarnEnv);
     vmConfig.getYarnConf().putAll(yarnProps);
+    vmConfig.setLocalHome(".") ;
+    vmConfig.setDfsHome("/apps/scribengin.v2") ;
   }
 }

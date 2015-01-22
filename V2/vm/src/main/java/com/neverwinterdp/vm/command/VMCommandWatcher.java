@@ -2,8 +2,8 @@ package com.neverwinterdp.vm.command;
 
 import java.util.List;
 
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.vm.VM;
 
@@ -17,7 +17,7 @@ public class VMCommandWatcher extends NodeWatcher {
   private long seqTracker = 0 ;
   
   @Override
-  synchronized public void process(NodeEvent event) {
+  synchronized public void onEvent(NodeEvent event) {
     if(NodeEvent.Type.CHILDREN_CHANGED == event.getType()) {
       String path = event.getPath();
       try {

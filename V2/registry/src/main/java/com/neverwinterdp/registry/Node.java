@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.neverwinterdp.registry.election.LeaderElection;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.util.JSONSerializer;
 

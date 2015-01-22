@@ -3,7 +3,7 @@ package com.neverwinterdp.scribengin.dataflow.builder;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
-import com.neverwinterdp.scribengin.junit.ScribenginAssert;
+import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -17,11 +17,11 @@ abstract public class DataflowBuilder {
     this.clusterBuilder = clusterBuilder;
   }
   
-  public ScribenginAssert submit() throws Exception {
+  public ScribenginAssertEventListener submit() throws Exception {
     DataflowDescriptor descriptor = createDataflowDescriptor();
     String name = descriptor.getName() ;
     VMClient vmClient = clusterBuilder.getVMClusterBuilder().getVMClient();
-    ScribenginAssert scribenginAssert = new ScribenginAssert(vmClient.getRegistry());
+    ScribenginAssertEventListener scribenginAssert = new ScribenginAssertEventListener(vmClient.getRegistry());
     scribenginAssert.watchDataflow(name);
     scribenginAssert.assertDataflowMaster(format("Expect %s-master-1 as the leader", name), format("%s-master-1", name));
     scribenginAssert.assertDataflowStatus("Expect dataflow init status", name, DataflowLifecycleStatus.INIT);

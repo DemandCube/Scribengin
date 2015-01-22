@@ -127,7 +127,7 @@ public class VM {
       public void run() {
         try {
           Thread.sleep(500);
-          vmApplicationRunner.interrupt();
+          vmApplicationRunner.vmApplication.notifyShutdown();
         } catch (InterruptedException e) {
         }
       }

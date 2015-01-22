@@ -9,16 +9,12 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
+import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
-import com.neverwinterdp.scribengin.junit.ScribenginAssert;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
 abstract public class VMScribenginUnitTest {
   protected ScribenginClusterBuilder clusterBuilder ;
-  protected ScribenginShell shell;
-  protected HelloHDFSDataflowBuilder dataflowBuilder;
- 
-  private FileSystem fs;
   protected long vmLaunchTime = 100;
   
   @Before
@@ -28,11 +24,6 @@ abstract public class VMScribenginUnitTest {
     clusterBuilder.startVMMasters();
     Thread.sleep(vmLaunchTime);
     clusterBuilder.startScribenginMasters();
-    fs = getFileSystem();
-    dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
-    dataflowBuilder.createSource(15, 3, 5);
-    HDFSUtil.dump(fs, getDataDir() + "/source");
-    shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }
   
   @After
@@ -42,7 +33,13 @@ abstract public class VMScribenginUnitTest {
   
   @Test
   public void testMaster() throws Exception {
-    ScribenginAssert sribenginAssert = dataflowBuilder.submit();
+    FileSystem fs = getFileSystem();
+    HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
+    dataflowBuilder.createSource(15, 3, 5);
+    HDFSUtil.dump(fs, getDataDir() + "/source");
+    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+    
+    ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
     sribenginAssert.waitForEvents(60000);
     
     Thread.sleep(3000);

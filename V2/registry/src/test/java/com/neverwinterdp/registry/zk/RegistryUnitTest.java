@@ -10,10 +10,10 @@ import org.junit.Test;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
 
@@ -111,7 +111,7 @@ public class RegistryUnitTest {
     Registry registry = newRegistry().connect(); 
     registry.watchExists(watchPath, new NodeWatcher() {
       @Override
-      public void process(NodeEvent event) {
+      public void onEvent(NodeEvent event) {
         existsSignal.countDown();
       }
     });
@@ -130,7 +130,7 @@ public class RegistryUnitTest {
     registry.createIfNotExist(path);
     NodeWatcher watcher = new NodeWatcher() {
       @Override
-      public void process(NodeEvent event) {
+      public void onEvent(NodeEvent event) {
         modifySignal.countDown();
         System.out.println("got event.....");
       }
@@ -152,7 +152,7 @@ public class RegistryUnitTest {
   public class NodeEventCatcher extends NodeWatcher {
     private NodeEvent nodeEvent ;
     
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       this.nodeEvent = event ;
     }
     

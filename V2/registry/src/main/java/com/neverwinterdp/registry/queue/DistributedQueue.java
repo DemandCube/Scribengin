@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.NodeEvent;
-import com.neverwinterdp.registry.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.util.JSONSerializer;
 
 /**
@@ -132,7 +132,7 @@ public class DistributedQueue {
     }
 
     @Override
-    public void process(NodeEvent event) {
+    public void onEvent(NodeEvent event) {
       latch.countDown();
     }
     

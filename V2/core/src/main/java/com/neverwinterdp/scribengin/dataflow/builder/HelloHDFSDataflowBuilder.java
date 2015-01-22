@@ -18,12 +18,24 @@ import com.neverwinterdp.scribengin.source.SourceDescriptor;
 public class HelloHDFSDataflowBuilder extends DataflowBuilder {
   private String dataDir ;
   private FileSystem fs ;
+  private int numOfWorkers = 3;
+  private int numOfExecutorPerWorker = 3;
   
   public HelloHDFSDataflowBuilder(ScribenginClusterBuilder clusterBuilder, FileSystem fs, String dataDir) {
     super(clusterBuilder);
     this.fs = fs ;
     this.dataDir = dataDir ;
   }
+
+  
+  public void setNumOfWorkers(int numOfWorkers) {
+    this.numOfWorkers = numOfWorkers;
+  }
+
+  public void setNumOfExecutorPerWorker(int numOfExecutorPerWorker) {
+    this.numOfExecutorPerWorker = numOfExecutorPerWorker;
+  }
+
 
   public void createSource(int numOfStream, int numOfBuffer, int numOfRecordPerBuffer) throws Exception {
     SinkFactory  sinkFactory = new SinkFactory(fs);
@@ -38,8 +50,8 @@ public class HelloHDFSDataflowBuilder extends DataflowBuilder {
   protected DataflowDescriptor createDataflowDescriptor() {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("test-dataflow");
-    dflDescriptor.setNumberOfWorkers(3);
-    dflDescriptor.setNumberOfExecutorsPerWorker(3);
+    dflDescriptor.setNumberOfWorkers(numOfWorkers);
+    dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
     SourceDescriptor sourceDescriptor = new SourceDescriptor("HDFS", dataDir + "/source") ;
     dflDescriptor.setSourceDescriptor(sourceDescriptor);

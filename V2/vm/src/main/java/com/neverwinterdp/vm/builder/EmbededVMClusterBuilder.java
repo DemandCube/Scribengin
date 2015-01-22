@@ -40,9 +40,13 @@ public class EmbededVMClusterBuilder extends VMClusterBuilder {
   
   @Override
   public void start() throws Exception {
+    startZookeeper() ;
+    super.start();
+  }
+  
+  public void startZookeeper() throws Exception {
     zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
     zkServerLauncher.start();
-    super.start();
   }
   
   @Override
