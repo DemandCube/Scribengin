@@ -13,12 +13,12 @@ import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 
-public class SourceImpl implements Source {
+public class KafkaSource implements Source {
   private SourceDescriptor descriptor;
   private KafkaClient kafkaClient ;
-  private Map<Integer, SourceStreamImpl> sourceStreams = new HashMap<Integer, SourceStreamImpl>();
+  private Map<Integer, KafkaSourceStream> sourceStreams = new HashMap<Integer, KafkaSourceStream>();
   
-  public SourceImpl(String name, String zkConnect, String topic) throws Exception {
+  public KafkaSource(String name, String zkConnect, String topic) throws Exception {
     SourceDescriptor descriptor = new SourceDescriptor("kafka");
     descriptor.attribute("name", name);
     descriptor.attribute("topic", topic);
@@ -26,7 +26,7 @@ public class SourceImpl implements Source {
     init(descriptor);
   }
   
-  public SourceImpl(SourceDescriptor descriptor) throws Exception {
+  public KafkaSource(SourceDescriptor descriptor) throws Exception {
     init(descriptor);
   }
 
@@ -38,7 +38,7 @@ public class SourceImpl implements Source {
     List<PartitionMetadata> partitionMetadatas = topicMetdadata.partitionsMetadata();
     for(int i = 0; i < partitionMetadatas.size(); i++) {
       PartitionMetadata partitionMetadata = partitionMetadatas.get(i);
-      SourceStreamImpl sourceStream = new SourceStreamImpl(descriptor, partitionMetadata);
+      KafkaSourceStream sourceStream = new KafkaSourceStream(descriptor, partitionMetadata);
       sourceStreams.put(sourceStream.getId(), sourceStream);
     }
   }

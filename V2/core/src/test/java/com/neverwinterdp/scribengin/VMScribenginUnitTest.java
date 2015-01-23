@@ -9,8 +9,8 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
 abstract public class VMScribenginUnitTest {
@@ -33,20 +33,23 @@ abstract public class VMScribenginUnitTest {
   
   @Test
   public void testMaster() throws Exception {
-    FileSystem fs = getFileSystem();
-    HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
-    dataflowBuilder.createSource(15, 3, 5);
-    HDFSUtil.dump(fs, getDataDir() + "/source");
     ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
-    
-    ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
-    sribenginAssert.waitForEvents(60000);
-    
-    Thread.sleep(3000);
-    shell.execute("vm list");
-    shell.execute("registry dump --path /");
-    HDFSUtil.dump(fs, getDataDir() + "/sink");
-    HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");
+    FileSystem fs = getFileSystem();
+    try {
+      HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
+      dataflowBuilder.createSource(15, 3, 5);
+      //HelloKafkaDataflowBuilder dataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
+      //dataflowBuilder.createSource(5, 10);
+
+      ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
+      sribenginAssert.waitForEvents(60000);
+    } finally {
+      Thread.sleep(3000);
+      shell.execute("vm list");
+      shell.execute("registry dump --path /");
+      //HDFSUtil.dump(fs, getDataDir() + "/sink");
+      //HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");
+    }
   }
 
   abstract protected String getDataDir() ;

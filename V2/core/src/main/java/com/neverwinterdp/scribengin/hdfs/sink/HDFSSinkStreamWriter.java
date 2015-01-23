@@ -13,13 +13,13 @@ import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.util.JSONSerializer;
 
-public class SinkStreamWriterImpl implements SinkStreamWriter {
+public class HDFSSinkStreamWriter implements SinkStreamWriter {
   private FileSystem fs;
   private String location ;
   private String bufferLocation ;
   private SinkBuffer currentBuffer ;
   
-  public SinkStreamWriterImpl(FileSystem fs, String location) throws IOException {
+  public HDFSSinkStreamWriter(FileSystem fs, String location) throws IOException {
     this.fs = fs;
     this.location = location;
     this.bufferLocation = location + "/.buffer" + UUID.randomUUID().toString();

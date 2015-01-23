@@ -9,11 +9,11 @@ import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
-public class SourceStreamImpl implements SourceStream {
+public class HDFSSourceStream implements SourceStream {
   private FileSystem fs ;
   private SourceStreamDescriptor descriptor ;
   
-  public SourceStreamImpl(FileSystem fs, SourceStreamDescriptor descriptor) {
+  public HDFSSourceStream(FileSystem fs, SourceStreamDescriptor descriptor) {
     this.fs = fs;
     this.descriptor = descriptor;
   }
@@ -22,7 +22,7 @@ public class SourceStreamImpl implements SourceStream {
   
   @Override
   public SourceStreamReader getReader(String name) throws FileNotFoundException, IllegalArgumentException, IOException {
-    return new SourceStreamReaderImpl(name, fs, descriptor) ;
+    return new HDFSSourceStreamReader(name, fs, descriptor) ;
   }
 
 }

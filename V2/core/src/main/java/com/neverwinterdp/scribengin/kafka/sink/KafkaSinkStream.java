@@ -4,10 +4,10 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
-public class SinkStreamImpl implements SinkStream {
+public class KafkaSinkStream implements SinkStream {
   private SinkStreamDescriptor descriptor;
   
-  public SinkStreamImpl(SinkStreamDescriptor descriptor) {
+  public KafkaSinkStream(SinkStreamDescriptor descriptor) {
     this.descriptor = descriptor;
   }
   
@@ -20,6 +20,6 @@ public class SinkStreamImpl implements SinkStream {
 
   @Override
   public SinkStreamWriter getWriter() throws Exception {
-    return new SinkStreamWriterImpl(descriptor);
+    return new KafkaSinkStreamWriter(descriptor);
   }
 }

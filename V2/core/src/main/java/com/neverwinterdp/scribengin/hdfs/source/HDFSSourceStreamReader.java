@@ -19,7 +19,7 @@ import com.neverwinterdp.util.JSONSerializer;
 /**
  * @author Tuan Nguyen
  */
-public class SourceStreamReaderImpl implements SourceStreamReader {
+public class HDFSSourceStreamReader implements SourceStreamReader {
   private String name ;
   private FileSystem fs;
   private SourceStreamDescriptor descriptor;
@@ -30,7 +30,7 @@ public class SourceStreamReaderImpl implements SourceStreamReader {
   private int commitPoint ;
   private int currPosition ;
   
-  public SourceStreamReaderImpl(String name, FileSystem fs, SourceStreamDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSourceStreamReader(String name, FileSystem fs, SourceStreamDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this.name = name ;
     this.fs = fs;
     this.descriptor = descriptor;

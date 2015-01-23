@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -38,7 +39,7 @@ public class Main {
   
   public void start() throws Exception {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
-    Registry registry = newRegistry();
+    Registry registry = newRegistry().connect();
     try {
       Map<String, String> yarnProps = new HashMap<String, String>() ;
       //yarnProps.put("yarn.resourcemanager.scheduler.address", "hadoop-master:8030");
@@ -49,6 +50,7 @@ public class Main {
       ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(vmClient)) ;
       if(vmMaster) {
         clusterBuilder.startVMMasters();
+        Thread.sleep(5000);
       }
 
       if(scribenginMaster) {
@@ -58,6 +60,9 @@ public class Main {
       if(helloDataflow) {
         String dataDir = "/data" ;
         FileSystem fs = getFileSystem();
+        if(fs.exists(new Path(dataDir))) {
+          fs.delete(new Path(dataDir), true) ;
+        }
         HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, dataDir);
         dataflowBuilder.setNumOfWorkers(1);
         dataflowBuilder.setNumOfExecutorPerWorker(2);
@@ -96,7 +101,6 @@ public class Main {
   static public void main(String[] args) throws Exception {
     Main main = new Main() ;
     new JCommander(main, args) ;
-    System.out.println("hello dataflow = " + main.helloDataflow);
     main.start();
   }
 }

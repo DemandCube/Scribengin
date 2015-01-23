@@ -31,10 +31,9 @@ public class DataflowServiceInitEventListener implements DataflowServiceEventLis
     initWorkers(service, dataflowDescriptor);
   }
   
-  private void initTaskDescriptors(DataflowService master, DataflowDescriptor dataflowDescriptor) throws Exception {
-    DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
-    SourceFactory sourceFactory = master.getSourceFactory();
-    SinkFactory sinkFactory = master.getSinkFactory() ;
+  private void initTaskDescriptors(DataflowService service, DataflowDescriptor dataflowDescriptor) throws Exception {
+    SourceFactory sourceFactory = service.getSourceFactory();
+    SinkFactory sinkFactory = service.getSinkFactory() ;
     
     Source source    = sourceFactory.create(dataflowDescriptor.getSourceDescriptor()) ;
     Map<String, Sink> sinks = new HashMap<String, Sink>();
@@ -52,7 +51,7 @@ public class DataflowServiceInitEventListener implements DataflowServiceEventLis
       for(Map.Entry<String, Sink> entry : sinks.entrySet()) {
         descriptor.add(entry.getKey(), entry.getValue().newStream().getDescriptor());
       }
-      dataflowRegistry.addAvailable(descriptor);
+      service.addAvailable(descriptor);
     }
   }
   

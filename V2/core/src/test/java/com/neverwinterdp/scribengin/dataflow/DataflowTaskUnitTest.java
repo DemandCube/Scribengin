@@ -15,8 +15,8 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
-import com.neverwinterdp.scribengin.hdfs.sink.SinkImpl;
-import com.neverwinterdp.scribengin.hdfs.source.SourceImpl;
+import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
+import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -37,7 +37,7 @@ public class DataflowTaskUnitTest {
     dataflowContainer = new DataflowContainer(new HashMap<String, String>());
 
     fs = FileSystem.getLocal(new Configuration()) ;
-    Sink sink = new SinkImpl(fs, SOURCE_DIRECTORY);
+    Sink sink = new HDFSSink(fs, SOURCE_DIRECTORY);
     
     for(int i = 0; i < 3; i++) {
       DataGenerator.generateNewStream(sink, 3, 5);
@@ -51,9 +51,9 @@ public class DataflowTaskUnitTest {
   
   @Test
   public void test() throws Exception {
-    Source source = new SourceImpl(fs, SOURCE_DIRECTORY) ;
-    Sink sink = new SinkImpl(fs, SINK_DIRECTORY);
-    Sink invalidSink = new SinkImpl(fs, INVALID_SINK_DIRECTORY);
+    Source source = new HDFSSource(fs, SOURCE_DIRECTORY) ;
+    Sink sink = new HDFSSink(fs, SINK_DIRECTORY);
+    Sink invalidSink = new HDFSSink(fs, INVALID_SINK_DIRECTORY);
     
     SourceStream[] sourceStream = source.getStreams();
     DataflowTaskRunner[] runner = new DataflowTaskRunner[sourceStream.length]; 

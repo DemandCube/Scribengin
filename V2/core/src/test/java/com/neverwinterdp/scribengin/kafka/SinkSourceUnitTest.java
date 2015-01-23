@@ -6,8 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.kafka.sink.SinkImpl;
-import com.neverwinterdp.scribengin.kafka.source.SourceImpl;
+import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
+import com.neverwinterdp.scribengin.kafka.source.KafkaSource;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -26,7 +26,7 @@ public class SinkSourceUnitTest {
     cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.setNumOfPartition(5);
     cluster.start();
-    //Thread.sleep(000);
+    Thread.sleep(3000);
   }
   
   @After
@@ -38,7 +38,8 @@ public class SinkSourceUnitTest {
   public void testKafkaSource() throws Exception {
     String zkConnect = cluster.getZKConnect();
     System.out.println("zkConnect = " + zkConnect);
-    SinkImpl sink = new SinkImpl("hello", zkConnect, "hello") ;
+    String TOPIC = "hello.topic" ;
+    KafkaSink sink = new KafkaSink("hello", zkConnect, TOPIC) ;
     SinkStream stream = sink.newStream();
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < 10; i++) {
@@ -48,7 +49,7 @@ public class SinkSourceUnitTest {
     }
     writer.close();
     
-    SourceImpl source = new SourceImpl("hello", cluster.getZKConnect(), "hello");
+    KafkaSource source = new KafkaSource("hello", cluster.getZKConnect(), TOPIC);
     SourceStream[] streams = source.getStreams();
     Assert.assertEquals(5, streams.length);
     for(int i = 0; i < streams.length; i++) {

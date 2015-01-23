@@ -11,7 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.hdfs.sink.SinkImpl;
+import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
@@ -35,7 +35,7 @@ public class SinkUnitTest {
   
   @Test
   public void testSink() throws Exception {
-    SinkImpl sink = new SinkImpl(fs, DATA_DIRECTORY);
+    HDFSSink sink = new HDFSSink(fs, DATA_DIRECTORY);
     SinkStream[] streams = sink.getStreams();
     Assert.assertEquals(0, streams.length);
     
@@ -58,7 +58,7 @@ public class SinkUnitTest {
   
   @Test
   public void testRollback() throws Exception {
-    SinkImpl sink = new SinkImpl(fs, DATA_DIRECTORY);
+    HDFSSink sink = new HDFSSink(fs, DATA_DIRECTORY);
     SinkStream stream0 = sink.newStream();
     SinkStreamWriter writer = stream0.getWriter();
     for(int i = 0; i < 10; i ++) {
@@ -71,7 +71,7 @@ public class SinkUnitTest {
   
   @Test
   public void testMultiThread() throws Exception {
-    SinkImpl sink = new SinkImpl(fs, DATA_DIRECTORY);
+    HDFSSink sink = new HDFSSink(fs, DATA_DIRECTORY);
     SinkStreamWriterTask[] task = new SinkStreamWriterTask[5]; 
     ExecutorService service = Executors.newFixedThreadPool(task.length);
     for(int i = 0; i < task.length; i++) {

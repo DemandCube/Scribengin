@@ -16,20 +16,20 @@ import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 /**
  * @author Tuan Nguyen
  */
-public class SourceImpl implements Source {
+public class HDFSSource implements Source {
   private FileSystem fs;
   private SourceDescriptor descriptor ;
-  private Map<Integer,SourceStreamImpl> streams = new LinkedHashMap<Integer, SourceStreamImpl>();
+  private Map<Integer,HDFSSourceStream> streams = new LinkedHashMap<Integer, HDFSSourceStream>();
   
-  public SourceImpl(FileSystem fs, String location) throws Exception {
+  public HDFSSource(FileSystem fs, String location) throws Exception {
     this(fs, new SourceDescriptor("HDFS", location));
   }
   
-  public SourceImpl(FileSystem fs, SourceStreamDescriptor streamDescriptor) throws Exception {
+  public HDFSSource(FileSystem fs, SourceStreamDescriptor streamDescriptor) throws Exception {
     this(fs, getSourceDescriptor(streamDescriptor)) ;
   }
   
-  public SourceImpl(FileSystem fs, SourceDescriptor descriptor) throws Exception {
+  public HDFSSource(FileSystem fs, SourceDescriptor descriptor) throws Exception {
     this.fs = fs;
     this.descriptor = descriptor ;
     Path fsLoc = new Path(descriptor.getLocation());
@@ -43,7 +43,7 @@ public class SourceImpl implements Source {
       sDescriptor.setType(descriptor.getType());
       sDescriptor.setLocation(status[i].getPath().toString());
       sDescriptor.setId(HDFSUtil.getStreamId(status[i].getPath()));
-      SourceStreamImpl stream = new SourceStreamImpl(fs, sDescriptor);
+      HDFSSourceStream stream = new HDFSSourceStream(fs, sDescriptor);
       streams.put(sDescriptor.getId(), stream);
     }
   }

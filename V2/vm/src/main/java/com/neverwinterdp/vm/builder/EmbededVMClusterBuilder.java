@@ -10,14 +10,14 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
+import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.LocalVMClient;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class EmbededVMClusterBuilder extends VMClusterBuilder {
   private String baseDir = "./build/data";
-  protected ZookeeperServerLauncher zkServerLauncher ;
+  protected KafkaCluster kafkaCluster;
   
   public EmbededVMClusterBuilder() throws RegistryException {
     this(new LocalVMClient());
@@ -40,19 +40,22 @@ public class EmbededVMClusterBuilder extends VMClusterBuilder {
   
   @Override
   public void start() throws Exception {
-    startZookeeper() ;
+    startKafkaCluster() ;
     super.start();
   }
   
-  public void startZookeeper() throws Exception {
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
-    zkServerLauncher.start();
+  public void startKafkaCluster() throws Exception {
+    h1("Start kafka cluster");
+    kafkaCluster = new KafkaCluster(baseDir, 1, 1);
+    kafkaCluster.setNumOfPartition(5);
+    kafkaCluster.start();
+    Thread.sleep(1000);
   }
   
   @Override
   public void shutdown() throws Exception {
     super.shutdown();
-    zkServerLauncher.shutdown();
+    kafkaCluster.shutdown();
   }
 
   public <T> Injector newAppContainer() {

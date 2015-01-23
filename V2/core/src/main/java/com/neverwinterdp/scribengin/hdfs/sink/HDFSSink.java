@@ -13,22 +13,22 @@ import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 
-public class SinkImpl implements Sink {
+public class HDFSSink implements Sink {
   private FileSystem fs;
   private SinkDescriptor descriptor;
 
   private int idTracker = 0;
-  private LinkedHashMap<Integer, SinkStreamImpl> streams = new LinkedHashMap<Integer, SinkStreamImpl>() ;
+  private LinkedHashMap<Integer, HDFSSinkStream> streams = new LinkedHashMap<Integer, HDFSSinkStream>() ;
   
-  public SinkImpl(FileSystem fs, String location) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSink(FileSystem fs, String location) throws FileNotFoundException, IllegalArgumentException, IOException {
     this(fs, new SinkDescriptor("HDFS", location));
   }
   
-  public SinkImpl(FileSystem fs, SinkStreamDescriptor streamDescriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSink(FileSystem fs, SinkStreamDescriptor streamDescriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this(fs, getSinkDescriptor(streamDescriptor));
   }
   
-  public SinkImpl(FileSystem fs, SinkDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSink(FileSystem fs, SinkDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this.fs = fs;
     this.descriptor = descriptor;
     
@@ -36,7 +36,7 @@ public class SinkImpl implements Sink {
     if(!fs.exists(fsLoc)) fs.mkdirs(fsLoc) ;
     FileStatus[] status = fs.listStatus(fsLoc) ;
     for(int i = 0; i < status.length; i++) {
-      SinkStreamImpl stream = new SinkStreamImpl(fs, status[i].getPath());
+      HDFSSinkStream stream = new HDFSSinkStream(fs, status[i].getPath());
       streams.put(stream.getDescriptor().getId(), stream);
     }
   }
@@ -70,7 +70,7 @@ public class SinkImpl implements Sink {
     int id = idTracker++;
     String location = descriptor.getLocation() + "/stream-" + id;
     SinkStreamDescriptor streamDescriptor = new SinkStreamDescriptor("HDFS", id, location) ;
-    SinkStreamImpl stream = new SinkStreamImpl(fs, streamDescriptor);
+    HDFSSinkStream stream = new HDFSSinkStream(fs, streamDescriptor);
     streams.put(streamDescriptor.getId(), stream) ;
     return stream;
   }

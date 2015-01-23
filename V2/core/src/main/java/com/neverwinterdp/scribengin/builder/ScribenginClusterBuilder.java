@@ -19,7 +19,13 @@ public class ScribenginClusterBuilder {
   
   public VMClusterBuilder getVMClusterBuilder() { return this.vmClusterBuilder ; }
   
-  public ScribenginClient getScribenginClient() { return this.scribenginClient ; }
+  public ScribenginClient getScribenginClient() { 
+    if(scribenginClient == null) {
+      VMClient vmClient = vmClusterBuilder.getVMClient();
+      scribenginClient = new ScribenginClient(vmClient.getRegistry());
+    }
+    return this.scribenginClient ; 
+  }
   
   public void clean() throws Exception {
     vmClusterBuilder.clean(); 

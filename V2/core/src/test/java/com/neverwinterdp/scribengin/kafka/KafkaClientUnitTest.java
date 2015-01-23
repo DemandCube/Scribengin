@@ -6,7 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.kafka.sink.SinkImpl;
+import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.server.kafka.KafkaCluster;
@@ -32,7 +32,7 @@ public class KafkaClientUnitTest {
 
   @Test
   public void testKafkaClient() throws Exception {
-    SinkImpl sink = new SinkImpl("writer", cluster.getZKConnect(), "hello");
+    KafkaSink sink = new KafkaSink("writer", cluster.getZKConnect(), "hello");
     SinkStream stream = sink.newStream();
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < 10; i++) {

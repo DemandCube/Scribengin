@@ -10,18 +10,18 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
-public class SinkStreamImpl implements SinkStream {
+public class HDFSSinkStream implements SinkStream {
   private FileSystem fs ;
   private SinkStreamDescriptor descriptor;
   
   
-  public SinkStreamImpl(FileSystem fs, Path path) throws IOException {
+  public HDFSSinkStream(FileSystem fs, Path path) throws IOException {
     this.fs = fs ;
     descriptor = new SinkStreamDescriptor("HDFS", HDFSUtil.getStreamId(path), path.toString());
     init();
   }
   
-  public SinkStreamImpl(FileSystem fs, SinkStreamDescriptor descriptor) throws IOException {
+  public HDFSSinkStream(FileSystem fs, SinkStreamDescriptor descriptor) throws IOException {
     this.fs = fs;
     this.descriptor = descriptor;
     init() ;
@@ -39,7 +39,7 @@ public class SinkStreamImpl implements SinkStream {
   
   @Override
   synchronized public SinkStreamWriter getWriter() throws IOException {
-    return new SinkStreamWriterImpl(fs, descriptor.getLocation());
+    return new HDFSSinkStreamWriter(fs, descriptor.getLocation());
   }
   
   synchronized public void fsCheck() throws Exception {

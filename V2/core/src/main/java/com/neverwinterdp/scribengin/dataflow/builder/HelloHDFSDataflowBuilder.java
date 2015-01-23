@@ -10,6 +10,7 @@ import com.neverwinterdp.scribengin.dataflow.DataProcessor;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
+import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
@@ -44,6 +45,7 @@ public class HelloHDFSDataflowBuilder extends DataflowBuilder {
     for(int i = 0; i < 15; i++) {
       DataGenerator.generateNewStream(sink, numOfBuffer, numOfRecordPerBuffer);
     }
+    HDFSUtil.dump(fs, dataDir + "/source");
   }
   
   @Override

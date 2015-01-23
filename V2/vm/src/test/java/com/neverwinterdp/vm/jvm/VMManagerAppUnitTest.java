@@ -14,7 +14,6 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
@@ -34,7 +33,7 @@ public class VMManagerAppUnitTest  {
   public void setup() throws Exception {
     vmCluster = new EmbededVMClusterBuilder() ;
     vmCluster.clean();
-    vmCluster.startZookeeper();
+    vmCluster.startKafkaCluster();
   }
   
   @After
@@ -44,46 +43,45 @@ public class VMManagerAppUnitTest  {
   
   @Test
   public void testMaster() throws Exception {
-    vmCluster.createVMMaster("vm-master-1");
-    vmCluster.createVMMaster("vm-master-2");
-    vmClient = vmCluster.getVMClient();
-    shell = new Shell(vmClient) ;
-    shell.execute("registry dump");
-
-    VMAssertEventListener vmAssert = new VMAssertEventListener(shell.getVMClient().getRegistry());
-    banner("Create VM Dummy 1");
-    vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
-    vmAssert.assertHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
-    VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
     try {
+      vmCluster.createVMMaster("vm-master-1");
+      vmCluster.createVMMaster("vm-master-2");
+      vmClient = vmCluster.getVMClient();
+      shell = new Shell(vmClient) ;
+      shell.execute("registry dump");
+
+      VMAssertEventListener vmAssert = new VMAssertEventListener(shell.getVMClient().getRegistry());
+      banner("Create VM Dummy 1");
+      vmAssert.assertVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
+      vmAssert.assertHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
+      VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
       vmAssert.waitForEvents(5000);
-    } catch(Exception ex) {
-      vmAssert.reset();
-      ex.printStackTrace();
+
+      shell.execute("registry dump");
+
+      banner("Shutdown VM Master 1");
+      //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
+      vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
+      vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
+      vmAssert.assertVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
+      vmClient.shutdown(vmClient.getMasterVMDescriptor());
+      //vmMaster1.shutdown();
+      vmAssert.waitForEvents(5000);
+      shell.execute("registry dump");
+
+      banner("Create VM Dummy 2");
+      VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
+      shell.execute("registry dump");
+
+      banner("Shutdown VM Dummy 1 and 2");
+      vmAssert.assertVMStatus("Expect vm-dummy-1 terminated status", "vm-dummy-1", VMStatus.TERMINATED);
+      vmAssert.assertVMStatus("Expect vm-dummy-2 terminated status", "vm-dummy-2", VMStatus.TERMINATED);
+      Assert.assertTrue(shutdown(vmClient, vmDummy2));
+      Assert.assertTrue(shutdown(vmClient, vmDummy1));
+      vmAssert.waitForEvents(10000);
+    } finally {
+      shell.execute("registry dump");
     }
-    shell.execute("registry dump");
-    
-    banner("Shutdown VM Master 1");
-    //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
-    vmAssert.assertHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
-    vmAssert.assertVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
-    vmClient.shutdown(vmClient.getMasterVMDescriptor());
-    //vmMaster1.shutdown();
-    vmAssert.waitForEvents(5000);
-    shell.execute("registry dump");
-    
-    banner("Create VM Dummy 2");
-    VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
-    shell.execute("registry dump");
-    
-    banner("Shutdown VM Dummy 1 and 2");
-    vmAssert.assertVMStatus("Expect vm-dummy-1 running status", "vm-dummy-1", VMStatus.TERMINATED);
-    vmAssert.assertVMStatus("Expect vm-dummy-2 running status", "vm-dummy-2", VMStatus.TERMINATED);
-    Assert.assertTrue(shutdown(vmClient, vmDummy2));
-    Assert.assertTrue(shutdown(vmClient, vmDummy1));
-    vmAssert.waitForEvents(5000);
-    shell.execute("registry dump");
   }
 
   private void banner(String title) {

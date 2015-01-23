@@ -7,15 +7,15 @@ import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
-public class SourceStreamImpl implements SourceStream {
+public class KafkaSourceStream implements SourceStream {
   private SourceStreamDescriptor descriptor;
   private PartitionMetadata partitionMetadata;
   
-  public SourceStreamImpl(SourceStreamDescriptor descriptor) {
+  public KafkaSourceStream(SourceStreamDescriptor descriptor) {
     this.descriptor = descriptor;
   }
   
-  public SourceStreamImpl(SourceDescriptor sourceDescriptor, PartitionMetadata metadata) {
+  public KafkaSourceStream(SourceDescriptor sourceDescriptor, PartitionMetadata metadata) {
     descriptor = new SourceStreamDescriptor(sourceDescriptor);
     descriptor.setId(metadata.partitionId());
     this.partitionMetadata = metadata;
@@ -28,6 +28,6 @@ public class SourceStreamImpl implements SourceStream {
 
   @Override
   public SourceStreamReader getReader(String name) throws Exception {
-    return new SourceStreamReaderImpl(descriptor, partitionMetadata);
+    return new KafkaSourceStreamReader(descriptor, partitionMetadata);
   }
 }

@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.vm.VMConfig;
@@ -28,6 +29,8 @@ public class DataflowService {
   @Inject
   private SinkFactory sinkFactory ;
   
+  private int numOfTasks = 0;
+  
   private List<DataflowServiceEventListener> listeners = new ArrayList<DataflowServiceEventListener>();
   
   public VMConfig getVMConfig() { return this.vmConfig ; }
@@ -37,6 +40,11 @@ public class DataflowService {
   public SourceFactory getSourceFactory() { return sourceFactory; }
 
   public SinkFactory getSinkFactory() { return sinkFactory; }
+  
+  public void addAvailable(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
+    dataflowRegistry.addAvailable(taskDescriptor);
+    numOfTasks++ ;
+  }
   
   public void run() throws Exception {
     onInit() ;
@@ -58,7 +66,7 @@ public class DataflowService {
     DataflowDescriptor descriptor = dataflowRegistry.getDataflowDescriptor();
     DataflowFinishTaskWatcher finishTaskWatcher = new DataflowFinishTaskWatcher();
     int finishTasks = 0;
-    while(finishTasks < 15) {
+    while(finishTasks < numOfTasks) {
       dataflowRegistry.getRegistry().watchChildren(tasksFinishedPath, finishTaskWatcher);
       int newFinishTasks = finishTaskWatcher.waitForFinishedTasks(5000);
       if(finishTasks == newFinishTasks) {
