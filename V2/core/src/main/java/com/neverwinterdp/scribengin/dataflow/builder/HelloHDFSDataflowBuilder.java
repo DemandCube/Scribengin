@@ -51,7 +51,7 @@ public class HelloHDFSDataflowBuilder extends DataflowBuilder {
   @Override
   protected DataflowDescriptor createDataflowDescriptor() {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
-    dflDescriptor.setName("test-dataflow");
+    dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());

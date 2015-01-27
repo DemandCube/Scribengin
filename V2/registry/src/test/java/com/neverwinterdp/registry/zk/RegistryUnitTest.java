@@ -145,6 +145,20 @@ public class RegistryUnitTest {
     registry.disconnect();
   }
   
+  @Test
+  public void test_rcopy() throws Exception {
+    final Registry registry = newRegistry().connect(); 
+    String path = "/from" ;
+    registry.create(path, path.getBytes(), NodeCreateMode.PERSISTENT);
+    for(int i = 0; i < 3; i++) {
+      path = path + "/" + i ;
+      registry.create(path, path.getBytes(), NodeCreateMode.PERSISTENT);
+    }
+    registry.rcopy("/from", "/to");
+    registry.get("/").dump(System.out);
+    registry.disconnect();
+  }
+  
   private Registry newRegistry() {
     return new RegistryImpl(RegistryConfig.getDefault()) ;
   }

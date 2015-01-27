@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.builder;
 
 import com.neverwinterdp.scribengin.client.ScribenginClient;
-import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
@@ -44,16 +44,18 @@ public class ScribenginClusterBuilder {
   public void startScribenginMasters() throws Exception {
     VMClient vmClient = vmClusterBuilder.getVMClient();
     scribenginClient = new ScribenginClient(vmClient.getRegistry());
-    ScribenginAssertEventListener sribenginAssert = new ScribenginAssertEventListener(vmClusterBuilder.getVMClient().getRegistry());
+    ScribenginWaitingEventListener sribenginAssert = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     h1("Create Scribengin Master 1");
-    sribenginAssert.assertScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
+    sribenginAssert.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
     sribenginAssert.waitForEvents(60000);
+    h2("Finish creating Scribengin Master 1") ;
     
     h1("Create Scribengin Master 2");
-    sribenginAssert.assertVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
+    sribenginAssert.waitVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
     sribenginAssert.waitForEvents(60000);
+    h2("Finish creating Scribengin Master 2") ;
   }
 
   public void shutdown() throws Exception {

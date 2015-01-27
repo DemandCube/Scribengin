@@ -105,7 +105,6 @@ public class KafkaClient implements Closeable {
 
   private void nextLeader() throws Exception {
     List<BrokerRegistration> registrations = getBrokerRegistration();
-    System.out.println("BrokerRegistration = " + registrations.size());
     if(consumer != null) {
       //Remove the current select broker
       Iterator<BrokerRegistration> i = registrations.iterator();

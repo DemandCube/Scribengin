@@ -1,6 +1,7 @@
 package com.neverwinterdp.registry;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.election.LeaderElection;
@@ -82,6 +83,10 @@ public class Node {
     return new Node(registry, path + "/" + name) ;
   }
   
+  public Node getDescendant(String descendant) throws RegistryException {
+    return new Node(registry, path + "/" + descendant) ;
+  }
+  
   public List<String> getChildren() throws RegistryException {
     return registry.getChildren(path) ;
   }
@@ -101,9 +106,19 @@ public class Node {
     return child;
   }
   
+  public void createChildRef(String name, String toPath, NodeCreateMode mode) throws RegistryException {
+    registry.createRef(path + "/" + name, toPath, mode);
+  }
+  
+  public Node createDescendantIfNotExists(String descendant) throws RegistryException {
+    registry.createIfNotExist(path + "/" + descendant) ;
+    return new Node(registry, path + "/" + descendant);
+  }
+  
   public void dump(Appendable out) throws RegistryException, IOException  {
-    List<String> nodes = registry.getChildren(path);
-    for(String node : nodes) {
+    List<String> childNodes = registry.getChildren(path);
+    Collections.sort(childNodes);
+    for(String node : childNodes) {
       dump(out, path, node, registry, "");
     }
   }
@@ -134,6 +149,7 @@ public class Node {
     } catch(RegistryException ex) {
     }
     if(children != null) {
+      Collections.sort(children);
       for(String child : children) {
         dump(out, path, child, registry, indentation + "  ");
       }

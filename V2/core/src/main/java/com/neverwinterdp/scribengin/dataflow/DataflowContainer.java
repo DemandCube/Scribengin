@@ -11,8 +11,10 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorManager;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
+import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowContainer {
   private Logger logger = LoggerFactory.getLogger(DataflowContainer.class);
@@ -39,9 +41,15 @@ public class DataflowContainer {
   
   public <T> T getInstance(Class<T> type) { return appContainer.getInstance(type); }
   
+  public DataflowTaskExecutorManager getDataflowTaskExecutorManager() {
+    return getInstance(DataflowTaskExecutorManager.class);
+  }
+  
+  public VMDescriptor getVMDescriptor() { return appContainer.getInstance(VMDescriptor.class) ; }
+  
   public DataflowRegistry getDataflowRegistry() { return appContainer.getInstance(DataflowRegistry.class); }
   
   public SourceFactory getSourceFactory() { return appContainer.getInstance(SourceFactory.class); }
   
-  public SinkFactory getSinkFactory() { return appContainer.getInstance(SinkFactory.class); }
+  public SinkFactory   getSinkFactory() { return appContainer.getInstance(SinkFactory.class); }
 }

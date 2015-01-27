@@ -76,7 +76,7 @@ public class HelloKafkaDataflowBuilder extends DataflowBuilder {
       e.printStackTrace();
     }
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
-    dflDescriptor.setName("test-dataflow");
+    dflDescriptor.setName("hello-kafka-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());

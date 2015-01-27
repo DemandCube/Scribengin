@@ -10,7 +10,8 @@ import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
-import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
 abstract public class VMScribenginUnitTest {
@@ -32,26 +33,49 @@ abstract public class VMScribenginUnitTest {
   }
   
   @Test
-  public void testMaster() throws Exception {
+  public void testDataflows() throws Exception {
+    long start = System.currentTimeMillis() ;
+    testHdfsDataflow();
+    long hdfsDataflowExecTime = System.currentTimeMillis() - start ;
+
+    start = System.currentTimeMillis() ;
+    testKafkaDataflow();
+    long kafkaDataflowExecTime = System.currentTimeMillis() - start ;
+    System.out.println("Test hello hdfs dataflow in " + hdfsDataflowExecTime + "ms");
+    System.out.println("Test hello kafka dataflow in " + kafkaDataflowExecTime + "ms");
+  }
+  
+  void testHdfsDataflow() throws Exception {
     ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     FileSystem fs = getFileSystem();
     try {
-      HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
-      dataflowBuilder.createSource(15, 3, 5);
-      //HelloKafkaDataflowBuilder dataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
-      //dataflowBuilder.createSource(5, 10);
+      HelloHDFSDataflowBuilder hdfDataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
+      hdfDataflowBuilder.createSource(15, 3, 5);
+      ScribenginWaitingEventListener eventListener = hdfDataflowBuilder.submit();
+      eventListener.waitForEvents(60000);
+    } finally {
+      Thread.sleep(3000);
+      shell.execute("vm list");
+      shell.execute("registry dump --path /");
+      HDFSUtil.dump(fs, getDataDir() + "/sink");
+      HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");
+    }
+  }
 
-      ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
+  void testKafkaDataflow() throws Exception {
+    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+    try {
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
+      kafkaDataflowBuilder.createSource(5, 10);
+      ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
       sribenginAssert.waitForEvents(60000);
     } finally {
       Thread.sleep(3000);
       shell.execute("vm list");
       shell.execute("registry dump --path /");
-      //HDFSUtil.dump(fs, getDataDir() + "/sink");
-      //HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");
     }
   }
-
+  
   abstract protected String getDataDir() ;
   
   abstract protected FileSystem getFileSystem() throws Exception ;

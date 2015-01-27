@@ -18,7 +18,7 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
-import com.neverwinterdp.vm.event.VMAssertEventListener;
+import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 public class CommandProxyServletRetryUnitTest {
   protected static JettyServer proxyServer;
@@ -55,8 +55,8 @@ public class CommandProxyServletRetryUnitTest {
     
     //Launch a single VM
     shell = testHelper.newShell();
-    VMAssertEventListener vmAssert = new VMAssertEventListener(registry);
-    vmAssert.assertVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
+    VMWaitingEventListener vmAssert = new VMWaitingEventListener(registry);
+    vmAssert.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
     //VM vmMaster1 = createVMMaster("vm-master-1");
     CommandServletUnitTest.createVMMaster("vm-master-1");
     vmAssert.waitForEvents(5000);

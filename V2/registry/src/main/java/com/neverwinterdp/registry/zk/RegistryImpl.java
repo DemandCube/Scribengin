@@ -260,7 +260,22 @@ public class RegistryImpl implements Registry {
       throw new RegistryException(ErrorCode.Unknown, e) ;
     }
   }
- 
+  
+  public void rcopy(String path, String toPath) throws RegistryException {
+    try {
+      PathUtils.validatePath(path);
+      List<String> tree = ZKUtil.listSubTreeBFS(zkClient, realPath(path));
+      for (int i = 0; i < tree.size(); i++) {
+        String selPath = tree.get(i);
+        String selToPath = selPath.replace(path, toPath);
+        byte[] data = zkClient.getData(selPath, false, new Stat()) ;
+        zkClient.create(selToPath, data, DEFAULT_ACL, toCreateMode(NodeCreateMode.PERSISTENT)) ;
+      }
+    } catch (InterruptedException | KeeperException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
+  
   @Override
   public Registry newRegistry() throws RegistryException {
     return new RegistryImpl(config);

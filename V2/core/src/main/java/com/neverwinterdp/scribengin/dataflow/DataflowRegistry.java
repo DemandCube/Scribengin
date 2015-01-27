@@ -1,6 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,6 +11,8 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.lock.LockId;
+import com.neverwinterdp.registry.lock.LockOperation;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowRegistry {
@@ -63,14 +64,14 @@ public class DataflowRegistry {
     workers = registry.createIfNotExist(dataflowPath + "/" + WORKERS_PATH);
   }
   
-  public void addAvailable(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
+  public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     Node node = tasksAvailable.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
     taskDescriptor.setStoredPath(node.getPath());
     node.setData(taskDescriptor);
   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
-    workers.createChild(vmDescriptor.getId(), vmDescriptor, NodeCreateMode.PERSISTENT);
+    workers.createChildRef(vmDescriptor.getId(), vmDescriptor.getStoredPath(), NodeCreateMode.PERSISTENT);
   }
   
   public void setStatus(DataflowLifecycleStatus event) throws RegistryException {
@@ -79,50 +80,51 @@ public class DataflowRegistry {
   
   public DataflowTaskDescriptor getAssignedDataflowTaskDescriptor() throws RegistryException  {
     Lock lock = tasksLock.getLock("write") ;
-    try {
-      LockId lockId = lock.lock(30000);
-      List<String> taskAvailableNames = tasksAvailable.getChildren();
-      if(taskAvailableNames.size() == 0) return null;
-      Collections.sort(taskAvailableNames);
-      String childName = taskAvailableNames.get(0);
-      Node childNode = tasksAvailable.getChild(childName);
-      DataflowTaskDescriptor descriptor = childNode.getData(DataflowTaskDescriptor.class);
-      String storedPath = tasksAssigned.getPath() + "/" + childName;
-      descriptor.setStoredPath(storedPath);
-      tasksAssigned.createChild(childName, descriptor, NodeCreateMode.PERSISTENT);
-      childNode.delete();
-      return descriptor;
-    } catch(RegistryException ex) {
-      throw ex;
-    } finally {
-      try {
-        lock.unlock();
-      } catch (RegistryException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+    LockOperation<DataflowTaskDescriptor> getAssignedtaskOp = new LockOperation<DataflowTaskDescriptor>() {
+      @Override
+      public DataflowTaskDescriptor execute() throws Exception {
+        List<String> taskAvailableNames = tasksAvailable.getChildren();
+        if(taskAvailableNames.size() == 0) return null;
+        Collections.sort(taskAvailableNames);
+        String childName = taskAvailableNames.get(0);
+        Node childNode = tasksAvailable.getChild(childName);
+        DataflowTaskDescriptor descriptor = childNode.getData(DataflowTaskDescriptor.class);
+        String storedPath = tasksAssigned.getPath() + "/" + childName;
+        descriptor.setStoredPath(storedPath);
+        tasksAssigned.createChild(childName, descriptor, NodeCreateMode.PERSISTENT);
+        childNode.delete();
+        return descriptor;
       }
-    }
+    };
+    return lock.execute(getAssignedtaskOp, 5, 1000);
   }
   
-  public void commitFinishedDataflowTaskDescriptor(DataflowTaskDescriptor descriptor) throws RegistryException {
+  public void commitFinishedDataflowTaskDescriptor(final DataflowTaskDescriptor descriptor) throws RegistryException {
     Lock lock = tasksLock.getLock("write") ;
-    try {
-      LockId lockId = lock.lock(10000);
-      String oldStoredPath = descriptor.getStoredPath();
-      String storedName = descriptor.storedName();
-      String storedPath = tasksFinished.getPath() + "/" + storedName;
-      descriptor.setStoredPath(storedPath) ;
-      tasksFinished.createChild(storedName, descriptor, NodeCreateMode.PERSISTENT);
-      registry.rdelete(oldStoredPath);
-    } catch(RegistryException ex) {
-      throw ex;
-    } finally {
-      try {
-        lock.unlock();
-      } catch (RegistryException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+      @Override
+      public Boolean execute() throws Exception {
+        String oldStoredPath = descriptor.getStoredPath();
+        String storedName = descriptor.storedName();
+        String storedPath = tasksFinished.getPath() + "/" + storedName;
+        descriptor.setStoredPath(storedPath) ;
+        tasksFinished.createChild(storedName, descriptor, NodeCreateMode.PERSISTENT);
+        registry.rdelete(oldStoredPath);
+        return true;
       }
-    }
+    };
+    lock.execute(commitOp, 5, 1000);
+  }
+  
+  public void createTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
+    Node worker = workers.getChild(vmDescriptor.getId()) ;
+    Node executors = worker.createDescendantIfNotExists("executors");
+    executors.createChild(descriptor.getId(), descriptor, NodeCreateMode.PERSISTENT);
+  }
+  
+  public void updateTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
+    Node worker = workers.getChild(vmDescriptor.getId()) ;
+    Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
+    executor.setData(descriptor);
   }
 }

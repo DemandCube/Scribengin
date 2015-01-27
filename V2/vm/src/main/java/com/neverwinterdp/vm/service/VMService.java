@@ -12,8 +12,8 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.RegistryListener;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMHeartbeatNodeWatcher;
 import com.neverwinterdp.vm.VMStatus;
+import com.neverwinterdp.vm.event.VMHeartbeatNodeWatcher;
 
 @Singleton
 public class VMService {

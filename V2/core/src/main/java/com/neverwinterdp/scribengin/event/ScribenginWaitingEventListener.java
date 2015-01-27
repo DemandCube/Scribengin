@@ -10,19 +10,27 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.service.ScribenginService;
-import com.neverwinterdp.vm.event.VMAssertEventListener;
+import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 
-public class ScribenginAssertEventListener extends VMAssertEventListener {
-  public ScribenginAssertEventListener(Registry registry) throws RegistryException {
+public class ScribenginWaitingEventListener extends VMWaitingEventListener {
+  public ScribenginWaitingEventListener(Registry registry) throws RegistryException {
     super(registry);
-    registryListener.watch(ScribenginService.LEADER_PATH, new VMLeaderElectionNodeWatcher(registry), true);
+    registryListener.watch(ScribenginService.LEADER_PATH, new VMLeaderElectedNodeWatcher(registry), true);
   }
   
-  public void watchDataflow(String dataflowName) throws RegistryException {
+  public void waitScribenginMaster(String desc, String vmName) throws Exception {
+    add(new VMMasterElectionEventListener(desc, vmName));
+  }
+  
+  public void waitDataflowLeader(String desc, String dataflowName, String vmName) throws Exception {
+    add(new VMMasterElectionEventListener(desc, vmName));
     String dataflowLeaderPath = ScribenginService.getDataflowLeaderPath(dataflowName);
-    registryListener.watch(dataflowLeaderPath, new VMLeaderElectionNodeWatcher(registry), true);
-    
+    registryListener.watch(dataflowLeaderPath, new VMLeaderElectedNodeWatcher(registry));
+  }
+  
+  public void waitDataflowStatus(String desc, String dataflowName, DataflowLifecycleStatus status) throws Exception {
+    add(new DataflowStatusEventListener(desc, dataflowName, status));
     String dataflowStatusPath = ScribenginService.getDataflowStatusPath(dataflowName);
     DataChangeNodeWatcher<DataflowLifecycleStatus> dataflowStatusWatcher = new DataChangeNodeWatcher<DataflowLifecycleStatus>(registry, DataflowLifecycleStatus.class) {
       @Override
@@ -34,7 +42,7 @@ public class ScribenginAssertEventListener extends VMAssertEventListener {
           DataflowDescriptor dfDescriptor = dataflowNode.getData(DataflowDescriptor.class);
           sEvent.attr(DataflowAttr.status, data);
           sEvent.attr(DataflowAttr.descriptor, dfDescriptor);
-          ScribenginAssertEventListener.this.process(sEvent);
+          ScribenginWaitingEventListener.this.process(sEvent);
         } catch(Exception ex) {
           ex.printStackTrace();
         }
@@ -43,23 +51,11 @@ public class ScribenginAssertEventListener extends VMAssertEventListener {
     registryListener.watch(dataflowStatusPath, dataflowStatusWatcher, true);
   }
   
-  public void assertScribenginMaster(String desc, String vmName) throws Exception {
-    add(new VMAssertMasterElection(desc, vmName));
-  }
-  
-  public void assertDataflowMaster(String desc, String vmName) throws Exception {
-    add(new VMAssertMasterElection(desc, vmName));
-  }
-  
-  public void assertDataflowStatus(String desc, String dataflowName, DataflowLifecycleStatus status) throws Exception {
-    add(new AssertDataflowStatus(desc, dataflowName, status));
-  }
-  
-  static public class AssertDataflowStatus extends ScribenginEventListener {
+  static public class DataflowStatusEventListener extends ScribenginEventListener {
     String   dataflowName;
     DataflowLifecycleStatus status;
     
-    public AssertDataflowStatus(String desc, String dataflowName, DataflowLifecycleStatus status) {
+    public DataflowStatusEventListener(String desc, String dataflowName, DataflowLifecycleStatus status) {
       super(desc);
       this.dataflowName = dataflowName;
       this.status = status;

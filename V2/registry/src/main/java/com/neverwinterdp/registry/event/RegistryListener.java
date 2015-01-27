@@ -42,6 +42,10 @@ public class RegistryListener {
     watchers.put(key, wrapper) ;
   }
   
+  public void watch(String path, NodeWatcher nodeWatcher) throws RegistryException {
+    watch(path, nodeWatcher, true) ;
+  }
+  
   public void watchModify(String path, NodeWatcher nodeWatcher, boolean persistent) throws RegistryException {
     String key = createKey(path, nodeWatcher);
     NodeWatcherWrapper wrapper = null ;

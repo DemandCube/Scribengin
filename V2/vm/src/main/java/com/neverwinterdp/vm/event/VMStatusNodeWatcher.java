@@ -1,8 +1,10 @@
-package com.neverwinterdp.vm;
+package com.neverwinterdp.vm.event;
 
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMStatus;
 
 public class VMStatusNodeWatcher extends NodeWatcher {
   private Registry registry;
