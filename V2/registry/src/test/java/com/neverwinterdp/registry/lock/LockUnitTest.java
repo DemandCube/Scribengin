@@ -86,7 +86,7 @@ public class LockUnitTest {
         Registry registry = newRegistry().connect();
         Node lockDir =  registry.get(LOCK_DIR) ;
         Lock lock = lockDir.getLock("write") ;
-        lockId = lock.lock(15 * 1000) ; //wait max 15s for lock
+        lockId = lock.lock(60 * 1000) ; //wait max 15s for lock
         System.out.println("\nWorker " + name + " acquires the lock: " + lockId);
         long execTime = random.nextInt(1000) ;
         Thread.sleep(execTime);
@@ -103,7 +103,6 @@ public class LockUnitTest {
         } else {
           e.printStackTrace();
         }
-        
       } catch(Exception e) {
         e.printStackTrace();
       } 
