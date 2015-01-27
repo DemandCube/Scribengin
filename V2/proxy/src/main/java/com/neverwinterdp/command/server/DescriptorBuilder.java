@@ -11,7 +11,21 @@ public class DescriptorBuilder {
   protected static DataflowDescriptor parseDataflowInput(HttpServletRequest request){
     DataflowDescriptor dflDescriptor = parseDataFlowDescriptor(request);
     
-    switch(request.getParameter("source-Type").toUpperCase()){
+    String sourceType      = request.getParameter("source-Type"); 
+    String sinkType        = request.getParameter("sink-Type");
+    String invalidSinkType = request.getParameter("invalidsink-Type");
+    
+    if(sourceType == null){
+      sourceType = "KAFKA";
+    }
+    if(sinkType == null){
+      sinkType = "KAFKA";
+    }
+    if(invalidSinkType == null){
+      invalidSinkType = "KAFKA";
+    }
+    
+    switch(sourceType.toUpperCase()){
       case "KAFKA":
         dflDescriptor.setSourceDescriptor(createKafkaSourceDescriptor(request));
         break;
@@ -19,7 +33,7 @@ public class DescriptorBuilder {
         break;
     }
     
-    switch(request.getParameter("sink-Type").toUpperCase()){
+    switch(sinkType.toUpperCase()){
       case "KAFKA":
         dflDescriptor.addSinkDescriptor("default", createKafkaSinkDescriptor(request, "sink"));
         break;
@@ -27,7 +41,7 @@ public class DescriptorBuilder {
         break;
     }
     
-    switch(request.getParameter("invalidsink-Type").toUpperCase()){
+    switch(invalidSinkType.toUpperCase()){
       case "KAFKA":
         dflDescriptor.addSinkDescriptor("invalid", createKafkaSinkDescriptor(request, "invalidsink"));
         break;

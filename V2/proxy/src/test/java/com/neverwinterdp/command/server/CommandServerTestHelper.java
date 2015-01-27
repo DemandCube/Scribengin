@@ -37,6 +37,8 @@ public class CommandServerTestHelper {
       "        leader-0000000000\n"+
       "        leader-0000000001\n"+
       "    dataflows\n"+
+      "      history\n"+
+      "      running\n"+
       "  vm\n"+
       "    history\n"+
       "    allocated\n"+

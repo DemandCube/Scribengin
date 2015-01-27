@@ -12,9 +12,6 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
