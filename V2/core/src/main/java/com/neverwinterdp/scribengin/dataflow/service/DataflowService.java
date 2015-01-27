@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.inject.Inject;
-import com.neverwinterdp.registry.event.NodeEvent;
-import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.vm.VMConfig;
+import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 
 public class DataflowService {
@@ -29,7 +28,7 @@ public class DataflowService {
   @Inject
   private SinkFactory sinkFactory ;
   
-  private int numOfTasks = 0;
+  private VMWaitingEventListener workerListener ;
   
   private List<DataflowServiceEventListener> listeners = new ArrayList<DataflowServiceEventListener>();
   
@@ -41,9 +40,13 @@ public class DataflowService {
 
   public SinkFactory getSinkFactory() { return sinkFactory; }
   
-  public void addAvailable(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
-    dataflowRegistry.addAvailable(taskDescriptor);
-    numOfTasks++ ;
+  public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
+    dataflowRegistry.addAvailableTask(taskDescriptor);
+  }
+  
+  public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
+    dataflowRegistry.addWorker(vmDescriptor);
+    workerListener.waitHeartbeat("Wait for " + vmDescriptor.getId(), vmDescriptor.getId(), false);
   }
   
   public void run() throws Exception {
@@ -54,6 +57,7 @@ public class DataflowService {
   
   void onInit() throws Exception {
     System.err.println("onInit.....................");
+    workerListener = new VMWaitingEventListener(dataflowRegistry.getRegistry());
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
     listeners.add(new DataflowServiceInitEventListener());
     onEvent(DataflowLifecycleStatus.INIT);
@@ -62,19 +66,7 @@ public class DataflowService {
   void onRunning() throws Exception {
     System.err.println("onRunning.....................");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
-    String tasksFinishedPath = dataflowRegistry.getTasksFinishedPath();
-    DataflowDescriptor descriptor = dataflowRegistry.getDataflowDescriptor();
-    DataflowFinishTaskWatcher finishTaskWatcher = new DataflowFinishTaskWatcher();
-    int finishTasks = 0;
-    while(finishTasks < numOfTasks) {
-      dataflowRegistry.getRegistry().watchChildren(tasksFinishedPath, finishTaskWatcher);
-      int newFinishTasks = finishTaskWatcher.waitForFinishedTasks(5000);
-      if(finishTasks == newFinishTasks) {
-        newFinishTasks = dataflowRegistry.getRegistry().getChildren(tasksFinishedPath).size() ;
-      }
-      finishTasks = newFinishTasks;
-      System.err.println("finished task: " + finishTasks);
-    }
+    workerListener.waitForEvents(5 * 60 * 1000);
   }
   
   void onFinish() throws Exception {
@@ -86,28 +78,5 @@ public class DataflowService {
       DataflowServiceEventListener listener = listeners.get(i) ;
       listener.onEvent(this, event);
     }
-  }
-  
-  public class DataflowFinishTaskWatcher extends NodeWatcher {
-    private int finishTaskCount = 0;
-    
-    @Override
-    public void onEvent(NodeEvent event) {
-      try {
-        List<String> children = dataflowRegistry.getRegistry().getChildren(event.getPath());
-        finishTaskCount = children.size();
-        synchronized(this) {
-          notifyAll();
-        }
-      } catch (RegistryException e) {
-        e.printStackTrace();
-      }
-    }
-    
-    synchronized public int waitForFinishedTasks(long timeout) throws InterruptedException {
-      wait(timeout);
-      return finishTaskCount;
-    }
-    
   }
 }

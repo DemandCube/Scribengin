@@ -55,15 +55,22 @@ public class Lock {
     lockId = null ;
   }
   
-  public void execute(LockOperation op, long timeout) throws RegistryException {
-    lock(timeout) ;
-    try {
-      op.execute();
-    } catch (Exception e) {
-      throw new RegistryException(ErrorCode.Unknown, e);
-    } finally {
-      unlock();
+  public <T> T execute(LockOperation<T> op, int retry, long timeoutThreshold) throws RegistryException {
+    for(int i = 0;i < retry; i++) {
+      try {
+        lock(timeoutThreshold * (i + 1)) ;
+        T result = op.execute();
+        unlock();
+        return result;
+      } catch (RegistryException e) {
+        if(e.getErrorCode() != ErrorCode.Timeout) {
+          throw e;
+        }
+      } catch (Exception e) {
+        throw new RegistryException(ErrorCode.Unknown, e);
+      }
     }
+    throw new RegistryException(ErrorCode.Unknown, "Fail after " + retry + "tries");
   }
   
   private SortedSet<LockId> getSortedLockIds() throws RegistryException {
@@ -78,8 +85,9 @@ public class Lock {
   }
   
   class LockWatcher extends NodeWatcher {
-    long startTime;
-    long timeout ;
+    long    startTime;
+    long    timeout;
+    boolean obtainedLock = false;
     
     public LockWatcher(long timeout) {
       this.startTime = System.currentTimeMillis();
@@ -89,11 +97,14 @@ public class Lock {
     @Override
     public void onEvent(NodeEvent event) {
       try {
-        if(event.getType() != NodeEvent.Type.DELETE) return ;
+        if(event.getType() != NodeEvent.Type.DELETE) {
+          return ;
+        }
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
         LockId ownerId = currentLockIds.first() ;
         if(ownerId.equals(lockId)) {
           synchronized(this) {
+            obtainedLock = true ;
             notifyAll() ;
           }
           return ;
@@ -117,6 +128,19 @@ public class Lock {
           wait(timeout - (System.currentTimeMillis() - startTime));
         } catch (InterruptedException e) {
           throw new RegistryException(ErrorCode.Timeout, e) ;
+        }
+        if(!obtainedLock) {
+          //check again
+          SortedSet<LockId> currentLockIds = getSortedLockIds() ;
+          LockId ownerId = currentLockIds.first() ;
+          if(ownerId.equals(lockId)) {
+            obtainedLock = true;
+          } else {
+            String lockIdPath = lockId.getPath();
+            registry.delete(lockIdPath);
+            lockId = null;
+            throw new RegistryException(ErrorCode.Timeout, "Cannot obtain a lock at " + lockIdPath + " after " + timeout + "ms") ;
+          }
         }
       }
     }

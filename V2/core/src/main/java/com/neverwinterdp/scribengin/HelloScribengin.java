@@ -12,7 +12,7 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
-import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
@@ -57,7 +57,7 @@ public class HelloScribengin {
       HDFSUtil.dump(fs, dataDir + "/source");
       ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
 
-      ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
+      ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();
       sribenginAssert.waitForEvents(90000);
 
       Thread.sleep(3000);

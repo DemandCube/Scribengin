@@ -28,7 +28,7 @@ public class ScribenginClient {
   }
   
   public List<DataflowDescriptor> getDataflowDescriptor() throws RegistryException {
-    return registry.getChildrenAs(ScribenginService.DATAFLOWS_PATH, DataflowDescriptor.class) ;
+    return registry.getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
   }
   
   public VMDescriptor createVMScribenginMaster(VMClient vmClient, String name) throws Exception {

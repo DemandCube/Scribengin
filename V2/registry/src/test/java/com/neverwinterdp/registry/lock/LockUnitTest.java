@@ -11,10 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
 
+import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.lock.LockId;
 import com.neverwinterdp.registry.zk.RegistryImpl;
@@ -62,9 +64,8 @@ public class LockUnitTest {
       if(i % 10 == 0) Thread.sleep(new Random().nextInt(50));
     }
     executorPool.shutdown();
-    executorPool.awaitTermination(5 * 60 * 1000, TimeUnit.MILLISECONDS);
+    executorPool.awaitTermination(15 * 60 * 1000, TimeUnit.MILLISECONDS);
     for(int i = 0; i < worker.length; i++) {
-      Assert.assertNotNull(worker[i].lockId);
       Assert.assertTrue(worker[i].complete);
     }
   }
@@ -85,19 +86,26 @@ public class LockUnitTest {
         Registry registry = newRegistry().connect();
         Node lockDir =  registry.get(LOCK_DIR) ;
         Lock lock = lockDir.getLock("write") ;
-        lockId = lock.lock(3 * 60 * 1000) ; //wait max 3 min for lock
+        lockId = lock.lock(60 * 1000) ; //wait max 15s for lock
         System.out.println("\nWorker " + name + " acquires the lock: " + lockId);
-        long execTime = random.nextInt(100) ;
+        long execTime = random.nextInt(1000) ;
         Thread.sleep(execTime);
         System.out.println(" Process in " + execTime);
         Assert.assertEquals(lockOrder.getAndIncrement(), lockId.getSequence()) ;
         lock.unlock();
-        System.out.println("ScribenginMasterRunner " + name + " releases the lock: " + lockId);
-        registry.disconnect();
+        System.out.println("Worker " + name + " releases the lock: " + lockId);
         complete = true ;
+        registry.disconnect();
+      } catch(RegistryException e) {
+        if(e.getErrorCode() == ErrorCode.Timeout) {
+          complete = true ;
+          System.err.println(e.getMessage()) ;
+        } else {
+          e.printStackTrace();
+        }
       } catch(Exception e) {
         e.printStackTrace();
-      }
+      } 
     }
   }
 }

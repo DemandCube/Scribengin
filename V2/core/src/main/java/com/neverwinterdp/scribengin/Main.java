@@ -15,7 +15,8 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
-import com.neverwinterdp.scribengin.event.ScribenginAssertEventListener;
+import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
@@ -34,8 +35,12 @@ public class Main {
   @Parameter(names = "--scribengin-master", description = "Start Scribengin Master")
   private boolean scribenginMaster = false;
   
-  @Parameter(names = "--hello-dataflow", description = "Start Hello Dataflow")
-  private boolean helloDataflow = false;
+  @Parameter(names = "--hello-hdfs-dataflow", description = "Start Hello Dataflow")
+  private boolean helloHDFSDataflow = false;
+  
+  @Parameter(names = "--hello-kafka-dataflow", description = "Start Hello Dataflow")
+  private boolean helloKafkaDataflow = false;
+  
   
   public void start() throws Exception {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
@@ -57,30 +62,51 @@ public class Main {
         clusterBuilder.startScribenginMasters();
       }
 
-      if(helloDataflow) {
-        String dataDir = "/data" ;
-        FileSystem fs = getFileSystem();
-        if(fs.exists(new Path(dataDir))) {
-          fs.delete(new Path(dataDir), true) ;
-        }
-        HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, dataDir);
-        dataflowBuilder.setNumOfWorkers(1);
-        dataflowBuilder.setNumOfExecutorPerWorker(2);
-        dataflowBuilder.createSource(15, 3, 5);
-        HDFSUtil.dump(fs, dataDir + "/source");
-        ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
-
-        ScribenginAssertEventListener sribenginAssert = dataflowBuilder.submit();
-        sribenginAssert.waitForEvents(90000);
-
-        Thread.sleep(3000);
-        shell.execute("vm list");
-        shell.execute("registry dump --path /");
-        HDFSUtil.dump(fs, dataDir + "/sink");
-        HDFSUtil.dump(fs, dataDir + "/invalid-sink");
+      if(helloHDFSDataflow) {
+        submitHdfsDataflow(clusterBuilder);
+      }
+      
+      if(helloKafkaDataflow) {
+        submitKafkaDataflow(clusterBuilder);
       }
     } finally {
       registry.get("/").dump(System.err);
+    }
+  }
+  
+  void submitHdfsDataflow(ScribenginClusterBuilder clusterBuilder) throws Exception {
+    String dataDir = "/data" ;
+    FileSystem fs = getFileSystem();
+    if(fs.exists(new Path(dataDir))) {
+      fs.delete(new Path(dataDir), true) ;
+    }
+    HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, dataDir);
+    dataflowBuilder.setNumOfWorkers(1);
+    dataflowBuilder.setNumOfExecutorPerWorker(2);
+    dataflowBuilder.createSource(15, 3, 5);
+    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+
+    ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();
+    sribenginAssert.waitForEvents(90000);
+
+    Thread.sleep(3000);
+    shell.execute("vm list");
+    shell.execute("registry dump --path /");
+    HDFSUtil.dump(fs, dataDir + "/sink");
+    HDFSUtil.dump(fs, dataDir + "/invalid-sink");
+  }
+  
+  void submitKafkaDataflow(ScribenginClusterBuilder clusterBuilder) throws Exception {
+    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+    try {
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
+      kafkaDataflowBuilder.createSource(5, 10);
+      ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
+      sribenginAssert.waitForEvents(60000);
+    } finally {
+      Thread.sleep(3000);
+      shell.execute("vm list");
+      shell.execute("registry dump --path /");
     }
   }
   

@@ -11,8 +11,8 @@ import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 
-public class DataflowWorker {
-  private Logger logger = LoggerFactory.getLogger(DataflowWorker.class);
+public class DataflowTaskExecutorManager {
+  private Logger logger = LoggerFactory.getLogger(DataflowTaskExecutorManager.class);
 
   @Inject
   private DataflowContainer container;
@@ -33,7 +33,8 @@ public class DataflowWorker {
     int numOfExecutors = dataflowDescriptor.getNumberOfExecutorsPerWorker();
     taskExecutors = new ArrayList<DataflowTaskExecutor>();
     for(int i = 0; i < numOfExecutors; i++) {
-      DataflowTaskExecutor executor = new DataflowTaskExecutor(container);
+      DataflowTaskExecutorDescriptor descriptor = new DataflowTaskExecutorDescriptor ("executor-" + i);
+      DataflowTaskExecutor executor = new DataflowTaskExecutor(descriptor, container);
       executor.start();
       taskExecutors.add(executor);
     }
@@ -53,14 +54,14 @@ public class DataflowWorker {
     return false;
   }
   
-  public void waitForTermination(long checkPeriod) throws InterruptedException {
+  synchronized public void waitForExecutorTermination(long checkPeriod) throws InterruptedException {
     while(isAlive()) {
-      Thread.sleep(1000);
+      wait(checkPeriod);
     }
   }
   
-  public DataflowWorkerDescriptor getDescriptor() {
-    return null ;
+  synchronized public void notifyExecutorTermination() {
+    notify() ;
   }
   
   public List<DataflowTaskExecutor> getExecutors() { return taskExecutors; }

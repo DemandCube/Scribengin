@@ -16,24 +16,26 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
+import com.neverwinterdp.vm.VMDescriptor;
 
 
 public class VMDataflowWorkerApp extends VMApp {
   private Logger logger = LoggerFactory.getLogger(VMDataflowWorkerApp.class) ;
   
   private DataflowContainer container;
-  private DataflowWorker dataflowWorker;
+  private DataflowTaskExecutorManager dataflowTaskExecutorManager;
   
-  public DataflowWorker getDataflowWorker() { return this.dataflowWorker; }
+  public DataflowTaskExecutorManager getDataflowWorker() { return this.dataflowTaskExecutorManager; }
   
   @Override
   public void run() throws Exception {
     final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
-    final Registry registry = getVM().getVMRegistry().getRegistry();
     AppModule module = new AppModule(vmConfig.getProperties()) {
       @Override
       protected void configure(Map<String, String> properties) {
+        Registry registry = getVM().getVMRegistry().getRegistry();
         bindInstance(RegistryConfig.class, registry.getRegistryConfig());
+        bindInstance(VMDescriptor.class, getVM().getDescriptor());
         try {
           bindType(Registry.class, registry.getClass().getName());
           FileSystem fs = null; 
@@ -53,15 +55,12 @@ public class VMDataflowWorkerApp extends VMApp {
     };
     Injector injector = Guice.createInjector(module);
     container = injector.getInstance(DataflowContainer.class);
-    dataflowWorker = container.getInstance(DataflowWorker.class);
-    
+    dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
     try {
-      dataflowWorker.waitForTermination(1000);
-      dataflowWorker.shutdown();
-      //waitForShutdown();
+      dataflowTaskExecutorManager.waitForExecutorTermination(1000);
     } catch(InterruptedException ex) {
-      dataflowWorker.shutdown();
     } finally {
+      dataflowTaskExecutorManager.shutdown();
     }
   }
 }

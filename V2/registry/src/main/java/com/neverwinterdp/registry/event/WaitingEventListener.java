@@ -6,12 +6,12 @@ import java.util.List;
 
 import com.neverwinterdp.registry.Registry;
 
-public class SequenceEventListener extends EventListener {
-  private List<EventListener> eventListeners = new ArrayList<EventListener>();
+public class WaitingEventListener extends EventListener {
+  protected List<EventListener> eventListeners = new ArrayList<EventListener>();
   protected Registry registry;
   protected RegistryListener registryListener ;
   
-  public SequenceEventListener(String desc, Registry registry) {
+  public WaitingEventListener(String desc, Registry registry) {
     super(desc) ;
     this.registry = registry;
     registryListener = new RegistryListener(registry);
@@ -37,6 +37,7 @@ public class SequenceEventListener extends EventListener {
   }
   
   synchronized public void waitForEvents(long timeout) throws Exception {
+    if(eventListeners.size() == 0) return ;
     long stopTime = System.currentTimeMillis() + timeout;
     try {
       while(true) {

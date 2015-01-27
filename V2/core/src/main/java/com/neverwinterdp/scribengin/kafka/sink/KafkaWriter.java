@@ -48,7 +48,6 @@ public class KafkaWriter {
     if (props != null) {
       kafkaProps.putAll(props);
     }
-    System.out.println("Kafka Producer: " + kafkaProps);
     this.kafkaProperties = kafkaProps;
     reconnect();
   }

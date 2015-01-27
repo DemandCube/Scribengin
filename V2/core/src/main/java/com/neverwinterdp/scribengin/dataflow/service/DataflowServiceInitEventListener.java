@@ -51,28 +51,27 @@ public class DataflowServiceInitEventListener implements DataflowServiceEventLis
       for(Map.Entry<String, Sink> entry : sinks.entrySet()) {
         descriptor.add(entry.getKey(), entry.getValue().newStream().getDescriptor());
       }
-      service.addAvailable(descriptor);
+      service.addAvailableTask(descriptor);
     }
   }
   
-  private void initWorkers(DataflowService master, DataflowDescriptor dataflowDescriptor) throws Exception {
-    DataflowRegistry dataflowRegistry = master.getDataflowRegistry();
+  private void initWorkers(DataflowService service, DataflowDescriptor dataflowDescriptor) throws Exception {
+    DataflowRegistry dataflowRegistry = service.getDataflowRegistry();
     Registry registry = dataflowRegistry.getRegistry();
     VMClient vmClient = new VMClient(registry);
     RegistryConfig registryConfig = registry.getRegistryConfig();
     for(int i = 0; i < dataflowDescriptor.getNumberOfWorkers(); i++) {
       VMConfig vmConfig = 
         new VMConfig().
-        setEnvironment(master.getVMConfig().getEnvironment()).
+        setEnvironment(service.getVMConfig().getEnvironment()).
         setName(dataflowDescriptor.getName() + "-worker-" + (i + 1)).
         addRoles("dataflow-worker").
         setRegistryConfig(registryConfig).
         setVmApplication(VMDataflowWorkerApp.class.getName()).
         addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath()).
-        setYarnConf(master.getVMConfig().getYarnConf());
+        setYarnConf(service.getVMConfig().getYarnConf());
         VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
-      dataflowRegistry.addWorker(vmDescriptor);
-      vmDescriptor.getStoredPath();
+      service.addWorker(vmDescriptor);
     }
   }
 }

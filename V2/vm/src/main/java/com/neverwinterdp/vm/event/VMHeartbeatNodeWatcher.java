@@ -1,8 +1,9 @@
-package com.neverwinterdp.vm;
+package com.neverwinterdp.vm.event;
 
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.vm.VMDescriptor;
 
 public class VMHeartbeatNodeWatcher extends NodeWatcher {
   private Registry registry;

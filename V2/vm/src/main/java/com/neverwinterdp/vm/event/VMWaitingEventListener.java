@@ -8,22 +8,20 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.election.LeaderElectionNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
-import com.neverwinterdp.registry.event.SequenceEventListener;
+import com.neverwinterdp.registry.event.WaitingEventListener;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMHeartbeatNodeWatcher;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.VMStatusNodeWatcher;
 import com.neverwinterdp.vm.event.VMEvent.VMAttr;
 import com.neverwinterdp.vm.service.VMService;
 
-public class VMAssertEventListener extends SequenceEventListener {
+public class VMWaitingEventListener extends WaitingEventListener {
   
-  public VMAssertEventListener(Registry registry) throws RegistryException {
+  public VMWaitingEventListener(Registry registry) throws RegistryException {
     super("Assert sequence of event for VM", registry);
-    registryListener.watch(VMService.LEADER_PATH, new VMLeaderElectionNodeWatcher(registry), true);
+    registryListener.watch(VMService.LEADER_PATH, new VMLeaderElectedNodeWatcher(registry), true);
   }
   
-  public void assertVMStatus(String desc, String vmName, VMStatus vmStatus) throws Exception {
+  public void waitVMStatus(String desc, String vmName, VMStatus vmStatus) throws Exception {
     String path = VMService.getVMStatusPath(vmName);
     VMStatusNodeWatcher vmStatusWatcher = new VMStatusNodeWatcher(registry) {
       synchronized public void onChange(NodeEvent event, VMDescriptor descriptor, VMStatus status) {
@@ -37,14 +35,14 @@ public class VMAssertEventListener extends SequenceEventListener {
         vmEvent.attr(VMAttr.vmdescriptor, descriptor);
         vmEvent.attr(VMAttr.vmstatus, status);
         vmEvent.attr(VMAttr.heartbeat, heartBeat);
-        VMAssertEventListener.this.process(vmEvent);
+        VMWaitingEventListener.this.process(vmEvent);
       }
     };
     registryListener.watch(path, vmStatusWatcher, true);
-    add(new VMAssertStatus(desc, vmName, vmStatus));
+    add(new VMStatusEventListener(desc, vmName, vmStatus));
   }
   
-  public void assertHeartbeat(String desc, String vmName, boolean connected) throws Exception {
+  public void waitHeartbeat(String desc, String vmName, boolean connected) throws RegistryException {
     String path = VMService.getVMHeartbeatPath(vmName);
     VMHeartbeatNodeWatcher watcher = new VMHeartbeatNodeWatcher(registry) {
       @Override
@@ -52,7 +50,7 @@ public class VMAssertEventListener extends SequenceEventListener {
         VMEvent vmEvent = new VMEvent(VM_HEARTBEAT, event);
         vmEvent.attr(VMAttr.vmdescriptor, vmDescriptor);
         vmEvent.attr(VMAttr.heartbeat, true);
-        VMAssertEventListener.this.process(vmEvent);
+        VMWaitingEventListener.this.process(vmEvent);
       }
 
       @Override
@@ -60,19 +58,19 @@ public class VMAssertEventListener extends SequenceEventListener {
         VMEvent vmEvent = new VMEvent(VM_HEARTBEAT, event);
         vmEvent.attr(VMAttr.vmdescriptor, vmDescriptor);
         vmEvent.attr(VMAttr.heartbeat, false);
-        VMAssertEventListener.this.process(vmEvent);
+        VMWaitingEventListener.this.process(vmEvent);
       }
     };
     registryListener.watch(path, watcher, true);
-    add(new VMAssertHeartbeat(desc, vmName, connected));
+    add(new VMHeartbeatEventListener(desc, vmName, connected));
   }
   
-  public void assertVMMaster(String desc, String vmName) throws Exception {
-    add(new VMAssertMasterElection(desc, vmName));
+  public void waitVMMaster(String desc, String vmName) throws Exception {
+    add(new VMMasterElectionEventListener(desc, vmName));
   }
   
-  public class VMLeaderElectionNodeWatcher extends LeaderElectionNodeWatcher<VMDescriptor> {
-    public VMLeaderElectionNodeWatcher(Registry registry) {
+  public class VMLeaderElectedNodeWatcher extends LeaderElectionNodeWatcher<VMDescriptor> {
+    public VMLeaderElectedNodeWatcher(Registry registry) {
       super(registry, VMDescriptor.class);
     }
 
@@ -80,15 +78,16 @@ public class VMAssertEventListener extends SequenceEventListener {
     public void onElected(NodeEvent event, VMDescriptor learderVMDescriptor) {
       VMEvent vmEvent = new VMEvent(VM_MASTER_ELECTION, event);
       vmEvent.attr(VMAttr.master_leader, learderVMDescriptor);
-      VMAssertEventListener.this.process(vmEvent);
+      VMWaitingEventListener.this.process(vmEvent);
+      setComplete();
     }
   }
   
-  static public class VMAssertStatus extends VMEventListener {
+  static public class VMStatusEventListener extends VMEventListener {
     String   expectVMName;
     VMStatus expectVMStatus; 
     
-    public VMAssertStatus(String description, String vmName, VMStatus vmStatus) {
+    public VMStatusEventListener(String description, String vmName, VMStatus vmStatus) {
       super(description);
       this.expectVMName = vmName;
       this.expectVMStatus = vmStatus;
@@ -105,11 +104,11 @@ public class VMAssertEventListener extends SequenceEventListener {
     }
   }
   
-  static public class VMAssertHeartbeat extends VMEventListener {
+  static public class VMHeartbeatEventListener extends VMEventListener {
     String   expectVMName;
     boolean  connected ; 
     
-    public VMAssertHeartbeat(String description, String vmName, boolean connected) {
+    public VMHeartbeatEventListener(String description, String vmName, boolean connected) {
       super(description);
       this.expectVMName = vmName;
       this.connected = connected ;
@@ -126,10 +125,10 @@ public class VMAssertEventListener extends SequenceEventListener {
     }
   }
   
-  static public class VMAssertMasterElection extends VMEventListener {
+  static public class VMMasterElectionEventListener extends VMEventListener {
     String   expectVMName;
     
-    public VMAssertMasterElection(String description, String vmName) {
+    public VMMasterElectionEventListener(String description, String vmName) {
       super(description);
       this.expectVMName = vmName;
     }
