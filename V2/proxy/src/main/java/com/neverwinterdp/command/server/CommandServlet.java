@@ -12,6 +12,9 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.sink.SinkDescriptor;
+import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
@@ -20,8 +23,8 @@ public class CommandServlet extends HttpServlet {
   public static String badCommandMessage = "Bad Command: ";
   private Shell vmShell; 
   private CommandConsole shellConsole;
-  
-  
+
+
   @Override
   public void init() throws ServletException {
     RegistryConfig regConf = new RegistryConfig();
@@ -34,8 +37,7 @@ public class CommandServlet extends HttpServlet {
     shellConsole = new CommandConsole();
     
     try {
-      vmShell = new ScribenginShell(new RegistryImpl(regConf).connect(), shellConsole) ;
-      
+      vmShell = new ScribenginShell(new RegistryImpl(regConf).connect(), shellConsole);
     } catch (RegistryException e) {
       e.printStackTrace();
     }
@@ -100,14 +102,16 @@ public class CommandServlet extends HttpServlet {
           response.getWriter().print(executeShell("scribengin master"));
           break;
         case "dataflow":
-          response.getWriter().print(executeShell("dataflow"));
+          DescriptorBuilder.parseDataflowInput(request);
+          response.getWriter().print("dataflow");
+          break;
         default:
           response.getWriter().print(badCommandMessage+command);
       }
     }
   }
   
-  private String executeShell(String command){
+  protected String executeShell(String command){
     try {
       vmShell.execute(command);
     } catch (Exception e) {
@@ -115,4 +119,6 @@ public class CommandServlet extends HttpServlet {
     }
     return shellConsole.getLastCommandsOutput();
   }
+  
+  
 }
