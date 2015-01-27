@@ -99,6 +99,8 @@ public class CommandServlet extends HttpServlet {
         case "scribengin master":
           response.getWriter().print(executeShell("scribengin master"));
           break;
+        case "dataflow":
+          response.getWriter().print(executeShell("dataflow"));
         default:
           response.getWriter().print(badCommandMessage+command);
       }
