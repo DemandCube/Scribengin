@@ -67,30 +67,44 @@ public class CommandServletDataFlowUnitTest {
   public void testCommandServletCreateDataFlow() throws UnirestException, RegistryException, JsonParseException, JsonMappingException, IOException{
     HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(CommandServletUnitTest.port))
         .field("command", "dataflow")
-        .field("source-Type", "KAFKA")
-        .field("source-Name", "sourceName")
-        .field("source-Topic", "sourceTopic")
-        .field("source-ZkConnect", "sourceZkConnect")
+        .field("dataflow-Name"                  , "dataflowName")
+        .field("dataflow-Dataprocessor"         , "dataflowDataprocessor")
+        .field("dataflow-NumWorkers"            , "10")
+        .field("dataflow-NumExecutorsPerWorkers", "20")
+        .field("source-Type"      , "KAFKA")
+        .field("source-Name"      , "sourceName")
+        .field("source-Topic"     , "sourceTopic")
+        .field("source-ZkConnect" , "sourceZkConnect")
         .field("source-BrokerList", "sourceBrokerList")
+        .field("sink-Type"      , "KAFKA")
+        .field("sink-Name"      , "sinkName")
+        .field("sink-Topic"     , "sinkTopic")
+        .field("sink-ZkConnect" , "sinkZkConnect")
+        .field("sink-BrokerList", "sinkBrokerList")
+        .field("invalidsink-Type"      , "KAFKA")
+        .field("invalidsink-Name"      , "invalidsinkName")
+        .field("invalidsink-Topic"     , "invalidsinkTopic")
+        .field("invalidsink-ZkConnect" , "invalidsinkZkConnect")
+        .field("invalidsink-BrokerList", "invalidsinkBrokerList")
         .asString();
     
-    //String type = request.getParameter("source-Type");
-    //String name = request.getParameter("source-Name");
-    //String topic = request.getParameter("source-Topic");
-    //String zkConnect = request.getParameter("source-ZkConnect");
-    //String brokerList = request.getParameter("source-BrokerList");
     
     assertEquals("DATAFLOW SUBMITTED SUCCESSFULLY", resp.getBody());
     
     Registry r = CommandServerTestHelper.getNewRegistry();
     r.connect();
-    Node x = r.get("/scribengin/dataflows/running/defaultDataFlow");
-    System.err.println(new String(x.getData()));
+    Node flowNode = r.get("/scribengin/dataflows/running/dataflowName");
+    System.err.println(new String(flowNode.getData()));
     ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-    DataflowDescriptor dfDesc = mapper.readValue(new String(x.getData()), DataflowDescriptor.class);
+    DataflowDescriptor dfDesc = mapper.readValue(new String(flowNode.getData()), DataflowDescriptor.class);
     
+    assertEquals(10, dfDesc.getNumberOfWorkers());
+    assertEquals(20, dfDesc.getNumberOfExecutorsPerWorker());
+    assertEquals("dataflowName", dfDesc.getName());
+    assertEquals("dataflowDataprocessor", dfDesc.getDataProcessor());
     
-    assertEquals(DescriptorBuilderDefaults._dataflowName, dfDesc.getName());
+
+    
     assertEquals("KAFKA", dfDesc.getSourceDescriptor().getType());
     assertEquals("sourceName", dfDesc.getSourceDescriptor().attribute("name"));
     assertEquals("sourceTopic", dfDesc.getSourceDescriptor().attribute("topic"));
@@ -98,13 +112,21 @@ public class CommandServletDataFlowUnitTest {
     assertEquals("sourceBrokerList", dfDesc.getSourceDescriptor().attribute("broker.list"));
     
     Map<String, SinkDescriptor> sinks = dfDesc.getSinkDescriptors();
+    SinkDescriptor sink = sinks.get("default");
+    SinkDescriptor invalidSink = sinks.get("invalid");
     
-    for (Entry<String, SinkDescriptor> entry : sinks.entrySet()) {
-      assertEquals("KAFKA", entry.getValue().getType());
-    }
+    assertEquals("KAFKA", sink.getType());
+    assertEquals("sinkName", sink.attribute("name"));
+    assertEquals("sinkTopic", sink.attribute("topic"));
+    assertEquals("sinkZkConnect", sink.attribute("zk.connect"));
+    assertEquals("sinkBrokerList", sink.attribute("broker.list"));
     
-    assertEquals(DescriptorBuilderDefaults._dataflowName, dfDesc.getName());
-    assertEquals(DescriptorBuilderDefaults._dataflowName, dfDesc.getName());
+    
+    assertEquals("KAFKA", invalidSink.getType());
+    assertEquals("invalidsinkName", invalidSink.attribute("name"));
+    assertEquals("invalidsinkTopic", invalidSink.attribute("topic"));
+    assertEquals("invalidsinkZkConnect", invalidSink.attribute("zk.connect"));
+    assertEquals("invalidsinkBrokerList", invalidSink.attribute("broker.list"));
     
   }
 
