@@ -78,7 +78,7 @@ public class DescriptorBuilder {
     
     int numExecutorsPerWorker;
     try{
-      numExecutorsPerWorker = Integer.parseInt(request.getParameter("dataflow-NumWorkers"));
+      numExecutorsPerWorker = Integer.parseInt(request.getParameter("dataflow-NumExecutorsPerWorkers"));
     }
     catch(Exception e){
       numExecutorsPerWorker = DescriptorBuilderDefaults._numExecutorsPerWorker;
