@@ -110,7 +110,7 @@ public class VMManagerAppUnitTest  {
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     String[] args = {
       "--name", name,
-      "--roles", "dummy",
+      "--role", "dummy",
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 
       "--registry-implementation", RegistryImpl.class.getName(),
