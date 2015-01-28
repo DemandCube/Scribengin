@@ -2,7 +2,7 @@ package com.neverwinterdp.command.server;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.neverwinterdp.scribengin.client.ScribenginClient;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
