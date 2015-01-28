@@ -94,7 +94,7 @@ public class VMManagerAppUnitTest  {
   private VM createVMMaster(String name) throws Exception {
     String[] args = {
       "--name", name,
-      "--roles", "vm-master",
+      "--role", "vm-master",
       "--self-registration",
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP", 

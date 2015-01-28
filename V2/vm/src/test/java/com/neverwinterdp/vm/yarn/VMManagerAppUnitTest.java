@@ -103,7 +103,7 @@ public class VMManagerAppUnitTest {
     String[] args = { 
         "--environment", "YARN_MINICLUSTER",
         "--name", name,
-        "--roles", "vm-master",
+        "--role", "vm-master",
         "--self-registration",
         "--registry-connect", "127.0.0.1:2181", 
         "--registry-db-domain", "/NeverwinterDP", 
