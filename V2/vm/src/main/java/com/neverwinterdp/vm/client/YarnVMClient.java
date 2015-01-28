@@ -16,6 +16,8 @@ public class YarnVMClient extends VMClient {
   private Map<String, String> yarnProps ;
   private Configuration conf ;
   private VMConfig.Environment yarnEnv = VMConfig.Environment.YARN_MINICLUSTER ;
+  private String localAppHome = ".";
+  private String dfsAppHome = "/apps/VMApp" ;
   
   public YarnVMClient(Registry registry, VMConfig.Environment yarnEnv, Map<String, String> yarnProps) {
     super(registry);
@@ -32,6 +34,10 @@ public class YarnVMClient extends VMClient {
     this.yarnProps = yarnProps;
     this.conf = conf ;
   }
+  
+  public void setDFSAppHome(String home) { this.dfsAppHome = home; }
+  
+  public void setLocalAppHome(String home) { this.localAppHome = home; }
   
   @Override
   public void createVMMaster(String name) throws Exception {
@@ -55,7 +61,7 @@ public class YarnVMClient extends VMClient {
   public void configureEnvironment(VMConfig vmConfig) {
     vmConfig.setEnvironment(yarnEnv);
     vmConfig.getYarnConf().putAll(yarnProps);
-    vmConfig.setLocalHome(".") ;
-    vmConfig.setDfsHome("/apps/scribengin.v2") ;
+    vmConfig.setLocalHome(localAppHome) ;
+    vmConfig.setDfsHome(dfsAppHome) ;
   }
 }

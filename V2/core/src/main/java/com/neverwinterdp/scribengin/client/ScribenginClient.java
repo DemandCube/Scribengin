@@ -42,5 +42,4 @@ public class ScribenginClient {
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     return vmDescriptor;
   }
-  
 }

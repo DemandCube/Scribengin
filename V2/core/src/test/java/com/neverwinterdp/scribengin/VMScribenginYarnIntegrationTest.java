@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -37,6 +38,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     yarnConf.set("io.serializations", "org.apache.hadoop.io.serializer.JavaSerialization");
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     vmLaunchTime = 3000;
+    //new ThreadDump().start();
     super.setup();
   }
 
@@ -63,7 +65,35 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
     yarnProps.put("fs.defaultFS", miniDFSCluster.getURI().toString());
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
+    vmClient.setLocalAppHome("build/release/Scribengin.V2");
     EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder(vmClient) ;
     return builder;
+  }
+  
+  static public class ThreadDump extends Thread {
+    public void run() {
+      try {
+        while(true) {
+          Thread.sleep(10000);
+          System.out.println("------------------------------------------------------------------------------------");
+          Set<Thread> threadSet = Thread.getAllStackTraces().keySet() ;
+          for(Thread thread : threadSet) {
+            if("main".equals(thread.getName())) {
+              System.out.println("Thread: " + thread.getName());
+              dumpThreadStackTrace(thread);
+              System.out.println();
+            }
+          }
+        }
+      } catch(InterruptedException ex) {
+      }
+    }
+    
+    private void dumpThreadStackTrace(Thread thread) {
+      StackTraceElement[] elements = thread.getStackTrace();
+      for(StackTraceElement sel : elements) {
+        System.out.println(sel.toString());
+      }
+    }
   }
 }
