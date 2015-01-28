@@ -6,6 +6,7 @@ eclipse {
   }
 }
 
+
 //Move project(':core') to bottom of .classpath file
 //to avoid clashing versions of jetty
 eclipse.classpath.file{
@@ -30,6 +31,9 @@ dependencies {
   compile project(':registry')
   compile project(':vm')
   compile project(':core')
+  //Include tests from core to be able to use VMScribenginSingleJVM class
+  testCompile project(':core').sourceSets.test.output
+
   
   compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.3.1'
   compile group: 'com.neverwinterdp', name: 'commons.jetty', version: '1.0-SNAPSHOT'
