@@ -23,29 +23,16 @@ import org.apache.hadoop.yarn.api.records.LocalResourceVisibility;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.client.api.YarnClientApplication;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 
-import com.beust.jcommander.JCommander;
 import com.neverwinterdp.hadoop.yarn.app.Util;
 import com.neverwinterdp.vm.VMConfig;
 
-public class AppClient  {
-  
-  public void run(String[] args) throws Exception {
-    run(args, new YarnConfiguration()) ;
-  }
-  public void run(String[] args, Configuration conf) throws Exception {
-    VMConfig vmConfig = new VMConfig() ;
-    new JCommander(vmConfig, args) ;
-    run(vmConfig, conf);
-  }
-  
+public class AppClient {
   public void run(VMConfig vmConfig, Configuration conf) throws Exception {
     try {
       vmConfig.overrideYarnConfiguration(conf);
-      uploadApp(vmConfig);
       System.out.println("Create YarnClient") ;
       YarnClient yarnClient = YarnClient.createYarnClient();
       yarnClient.init(conf);
@@ -67,10 +54,9 @@ public class AppClient  {
       amContainer.setCommands(commands) ;
 
       System.out.println("Setup the app classpath and resources") ;
-      if(vmConfig.getDfsHome() != null) {
-        amContainer.setLocalResources(createLocalResources(conf, vmConfig));
+      if(vmConfig.getVmResources().size() > 0) {
+        amContainer.setLocalResources(new VMResources(conf, vmConfig));
       }
-      
       
       System.out.println("Setup the classpath for ApplicationMaster, environment = " + vmConfig.getEnvironment()) ;
       Map<String, String> appMasterEnv = new HashMap<String, String>();
@@ -100,40 +86,18 @@ public class AppClient  {
     }
   }
   
-  public void uploadApp(VMConfig vmConfig) throws Exception {
-    if(vmConfig.getDfsHome() == null) return ;
+  public void uploadApp(VMConfig vmConfig, String localAppHome, String dfsAppHome) throws Exception {
+    if(dfsAppHome == null || localAppHome == null) return; 
     HdfsConfiguration hdfsConf = new HdfsConfiguration() ;
     vmConfig.overrideYarnConfiguration(hdfsConf);
     FileSystem fs = FileSystem.get(hdfsConf);
     DistributedFileSystem dfs = (DistributedFileSystem)fs;
-    Path appHomePath = new Path(vmConfig.getLocalHome()) ;
-    Path appHomeSharePath = new Path(vmConfig.getDfsHome()) ;
+    Path appHomePath = new Path(localAppHome) ;
+    Path appHomeSharePath = new Path(dfsAppHome) ;
     if(dfs.exists(appHomeSharePath)) {
       dfs.delete(appHomeSharePath, true) ;
     }
     dfs.copyFromLocalFile(false, true, appHomePath, appHomeSharePath);
-  }
-  
-  Map<String, LocalResource> createLocalResources(Configuration conf, VMConfig appConfig) throws Exception {
-    Map<String, LocalResource> libs = new HashMap<String, LocalResource>() ;
-    FileSystem fs = FileSystem.get(conf) ;
-    RemoteIterator<LocatedFileStatus> itr = fs.listFiles(new Path(appConfig.getDfsHome() + "/libs"), true) ;
-    while(itr.hasNext()) {
-      FileStatus fstatus = itr.next() ;
-      Path fpath = fstatus.getPath() ;
-      LocalResource libJar = Records.newRecord(LocalResource.class);
-      libJar.setResource(ConverterUtils.getYarnUrlFromPath(fpath));
-      libJar.setSize(fstatus.getLen());
-      libJar.setTimestamp(fstatus.getModificationTime());
-      libJar.setType(LocalResourceType.FILE);
-      libJar.setVisibility(LocalResourceVisibility.PUBLIC);
-      libs.put(fpath.getName(), libJar) ;
-    }
-    return libs ;
-  }
-  
-  static public void main(String[] args) throws Exception {
-    AppClient appClient = new AppClient() ;
-    appClient.run(args);
+    vmConfig.addProperty("dfs-app-home", dfsAppHome);
   }
 }

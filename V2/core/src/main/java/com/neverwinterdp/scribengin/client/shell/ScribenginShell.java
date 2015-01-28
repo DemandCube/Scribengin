@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.client.shell;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.scribengin.client.ScribenginClient;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Console;
 import com.neverwinterdp.vm.client.shell.Shell;

@@ -3,6 +3,7 @@ package com.neverwinterdp.vm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +27,10 @@ public class VMConfig {
     }
   }
 
-  
   @Parameter(names = "--name", description = "The registry partition or table")
   private String              name;
   
-  @Parameter(names = "--roles", description = "The VM roles")
+  @Parameter(names = "--role", description = "The VM roles")
   private List<String>        roles = new ArrayList<String>();
   
   @Parameter(names = "--cpu-cores", description = "The request number of cpu cores")
@@ -38,11 +38,8 @@ public class VMConfig {
   @Parameter(names = "--memory", description = "The request amount of memory in MB")
   private int                 requestMemory   = 128;
   
-  @Parameter(names = "--local-home", description = "vm local home")
-  private String localHome ;
-  
-  @Parameter(names = "--dfs-home", description = "vm dfs home")
-  private String dfsHome ;
+  @DynamicParameter(names = "--vm-resource:", description = "The resources for the vm")
+  private Map<String, String> vmResources  = new LinkedHashMap<String, String>();
   
   @ParametersDelegate
   private RegistryConfig      registryConfig = new RegistryConfig();
@@ -96,17 +93,12 @@ public class VMConfig {
     return this;
   }
   
-  public String getLocalHome() { return localHome;}
-  public VMConfig setLocalHome(String localHome) { 
-    this.localHome = localHome;
-    return this;
+  public Map<String, String> getVmResources() { return vmResources; }
+  public void setVmResources(Map<String, String> vmResources) { this.vmResources = vmResources; }
+  public void addVMResource(String name, String resource) {
+    vmResources.put(name, resource);
   }
   
-  public String getDfsHome() { return dfsHome; }
-  public VMConfig setDfsHome(String dfsHome) { 
-    this.dfsHome = dfsHome;
-    return this;
-  }
   
   public RegistryConfig getRegistryConfig() { return registryConfig;}
   public VMConfig setRegistryConfig(RegistryConfig registryConfig) { 
@@ -197,7 +189,7 @@ public class VMConfig {
     }
     
     if(roles != null && roles.size() > 0) {
-      b.append(" --roles ");
+      b.append(" --role ");
       for(String role : roles) {
         b.append(role).append(" ");
       }
@@ -207,12 +199,8 @@ public class VMConfig {
     
     b.append(" --memory ").append(requestMemory) ;
     
-    if(localHome != null) {
-      b.append(" --local-home ").append(localHome) ;
-    }
-    
-    if(dfsHome != null) {
-      b.append(" --dfs-home ").append(dfsHome) ;
+    for(Map.Entry<String, String> entry : vmResources.entrySet()) {
+      b.append(" --vm-resource:").append(entry.getKey()).append("=").append(entry.getValue()) ;
     }
     
     b.append(" --vm-application ").append(vmApplication);

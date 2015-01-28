@@ -49,7 +49,8 @@ abstract public class VMScribenginUnitTest {
     ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     FileSystem fs = getFileSystem();
     try {
-      HelloHDFSDataflowBuilder hdfDataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, getDataDir());
+      HelloHDFSDataflowBuilder hdfDataflowBuilder = 
+          new HelloHDFSDataflowBuilder(clusterBuilder.getScribenginClient(), fs, getDataDir());
       hdfDataflowBuilder.createSource(15, 3, 5);
       ScribenginWaitingEventListener eventListener = hdfDataflowBuilder.submit();
       eventListener.waitForEvents(60000);
@@ -65,7 +66,8 @@ abstract public class VMScribenginUnitTest {
   void testKafkaDataflow() throws Exception {
     ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     try {
-      HelloKafkaDataflowBuilder kafkaDataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
+          new HelloKafkaDataflowBuilder(clusterBuilder.getScribenginClient());
       kafkaDataflowBuilder.createSource(5, 10);
       ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
       sribenginAssert.waitForEvents(60000);

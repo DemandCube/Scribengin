@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.client;
+package com.neverwinterdp.scribengin;
 
 import java.util.List;
 
@@ -48,7 +48,6 @@ public class ScribenginClient {
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     return vmDescriptor;
   }
-  
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
     return execute(vmDescriptor, command, 30000);
   }

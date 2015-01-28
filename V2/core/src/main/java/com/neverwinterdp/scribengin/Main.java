@@ -80,7 +80,8 @@ public class Main {
     if(fs.exists(new Path(dataDir))) {
       fs.delete(new Path(dataDir), true) ;
     }
-    HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, dataDir);
+    HelloHDFSDataflowBuilder dataflowBuilder = 
+        new HelloHDFSDataflowBuilder(clusterBuilder.getScribenginClient(), fs, dataDir);
     dataflowBuilder.setNumOfWorkers(1);
     dataflowBuilder.setNumOfExecutorPerWorker(2);
     dataflowBuilder.createSource(15, 3, 5);
@@ -99,7 +100,8 @@ public class Main {
   void submitKafkaDataflow(ScribenginClusterBuilder clusterBuilder) throws Exception {
     ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     try {
-      HelloKafkaDataflowBuilder kafkaDataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder);
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
+          new HelloKafkaDataflowBuilder(clusterBuilder.getScribenginClient());
       kafkaDataflowBuilder.createSource(5, 10);
       ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
       sribenginAssert.waitForEvents(60000);
