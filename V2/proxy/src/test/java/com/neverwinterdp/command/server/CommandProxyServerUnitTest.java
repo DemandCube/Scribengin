@@ -7,11 +7,7 @@ import org.junit.BeforeClass;
 import com.neverwinterdp.jetty.JettyServer;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
   static CommandProxyServer cps;
@@ -24,22 +20,12 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
     testHelper.setup();
     
     
-    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    Registry registry = CommandServerTestHelper.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
       e.printStackTrace();
     }
-    
-    //Launch a single VM
-    shell = testHelper.newShell();
-    VMWaitingEventListener vmAssert = new VMWaitingEventListener(registry);
-    vmAssert.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    //VM vmMaster1 = createVMMaster("vm-master-1");
-    CommandServletUnitTest.createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(5000);
-    
-    
     
     registry.create("/vm/commandServer", ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);
     
@@ -47,7 +33,6 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
     WebAppContext commandApp = new WebAppContext();
     commandApp.setResourceBase(testHelper.getCommandServerFolder());
     commandApp.setDescriptor(  testHelper.getCommandServerXml());
-    
     
     
     //Point our context to our web.xml we want to use for testing

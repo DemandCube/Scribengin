@@ -14,38 +14,15 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.neverwinterdp.jetty.JettyServer;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
-import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 public class CommandProxyServletUnitTest {
   protected static JettyServer commandServer;
   protected static JettyServer proxyServer;
   protected static int commandPort = 8181;
   protected static int proxyPort = 8383;
-  protected String expectedListVMResponse = 
-                    "Running VM\n"+
-                    "-----------------------------------------------------------------------\n"+
-                    "ID            Path                        Roles       Cores   Memory   \n"+
-                    "-----------------------------------------------------------------------\n"+
-                    "vm-master-1   /vm/allocated/vm-master-1   vm-master   1       128      \n\n";
-  protected String expectedRegistryDumpResponse=
-                    "/\n"+
-                    "  vm\n"+
-                    "    history\n"+
-                    "    allocated\n"+
-                    "      vm-master-1 - {\"storedPath\":\"/vm/allocated/vm-master-1\",\"memory\":128,\"cpuCores\":1,\"hostname\n"+
-                    "        status - \"RUNNING\"\n"+
-                    "          heartbeat\n"+
-                    "        commands\n"+
-                    "    commandServer - http://localhost:8181\n"+
-                    "    master\n"+
-                    "      leader - {\"path\":\"/vm/allocated/vm-master-1\"}\n"+
-                    "        leader-0000000000\n";
   
   
   //Used to bring up VMs to test with
@@ -60,20 +37,12 @@ public class CommandProxyServletUnitTest {
     testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
-    Registry registry = new RegistryImpl(RegistryConfig.getDefault());
+    Registry registry = CommandServerTestHelper.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
       e.printStackTrace();
     }
-    
-    //Launch a single VM
-    shell = testHelper.newShell();
-    VMWaitingEventListener vmAssert = new VMWaitingEventListener(registry);
-    vmAssert.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    //VM vmMaster1 = createVMMaster("vm-master-1");
-    CommandServletUnitTest.createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(5000);
     
     
     //Add the entry to tell the proxy server where to go to find the commandServer
@@ -117,7 +86,7 @@ public class CommandProxyServletUnitTest {
            .field("command", "vm list")
            .asString();
     
-    assertEquals(expectedListVMResponse, resp.getBody());
+    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp.getBody());
   }
   
   @Test
@@ -135,7 +104,7 @@ public class CommandProxyServletUnitTest {
         .field("command", "registry dump")
         .asString();
  
-    assertEquals(expectedRegistryDumpResponse, resp.getBody());
+    assertEquals(CommandServerTestHelper.expectedRegistryDumpResponse, resp.getBody());
   }
   
   @Test

@@ -5,11 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUnitTest{
   CommandProxyServer cps;
@@ -22,21 +18,12 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
     
     testHelper.setup();
     
-    registry = new RegistryImpl(RegistryConfig.getDefault());
+    registry = CommandServerTestHelper.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
       e.printStackTrace();
     }
-    
-    //Launch a single VM
-    shell = testHelper.newShell();
-    VMWaitingEventListener vmAssert = new VMWaitingEventListener(registry);
-    vmAssert.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.RUNNING);
-    //VM vmMaster1 = createVMMaster("vm-master-1");
-    CommandServletUnitTest.createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(5000);
-    
     
     //Add the entry to tell the proxy server where to go to find the commandServer
     registry.create(registryPath, ("http://localhost:"+Integer.toString(commandPort)).getBytes(), NodeCreateMode.PERSISTENT);

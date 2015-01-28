@@ -10,7 +10,6 @@ import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.lock.Lock;
-import com.neverwinterdp.registry.lock.LockId;
 import com.neverwinterdp.registry.lock.LockOperation;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.vm.VMDescriptor;

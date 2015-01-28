@@ -8,10 +8,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
@@ -20,22 +23,23 @@ public class CommandServlet extends HttpServlet {
   public static String badCommandMessage = "Bad Command: ";
   private Shell vmShell; 
   private CommandConsole shellConsole;
-  
-  
+  RegistryConfig regConf;
+  Registry reg;
+
   @Override
   public void init() throws ServletException {
-    RegistryConfig regConf = new RegistryConfig();
+    this.regConf = new RegistryConfig();
     ServletConfig conf = this.getServletConfig();
     
     //Get config from web.xml
-    regConf.setConnect(conf.getInitParameter("host"));
-    regConf.setDbDomain("/NeverwinterDP");
+    this.regConf.setConnect(conf.getInitParameter("host"));
+    this.regConf.setDbDomain("/NeverwinterDP");
     
     shellConsole = new CommandConsole();
     
     try {
-      vmShell = new ScribenginShell(new RegistryImpl(regConf).connect(), shellConsole) ;
-      
+      this.reg = new RegistryImpl(this.regConf);
+      vmShell = new ScribenginShell(this.reg.connect(), shellConsole);
     } catch (RegistryException e) {
       e.printStackTrace();
     }
@@ -99,13 +103,24 @@ public class CommandServlet extends HttpServlet {
         case "scribengin master":
           response.getWriter().print(executeShell("scribengin master"));
           break;
+        case "dataflow":
+          ScribenginClient sc = new ScribenginClient(this.reg);
+          
+          DataflowClient submitter = new DataflowClient(sc);
+          try {
+            submitter.submit(DescriptorBuilder.parseDataflowInput(request));
+          } catch (Exception e) {
+            response.getWriter().print("DATAFLOW ERROR: "+e.getMessage());
+          }
+          response.getWriter().print("DATAFLOW SUBMITTED SUCCESSFULLY");
+          break;
         default:
           response.getWriter().print(badCommandMessage+command);
       }
     }
   }
   
-  private String executeShell(String command){
+  protected String executeShell(String command){
     try {
       vmShell.execute(command);
     } catch (Exception e) {
@@ -113,4 +128,6 @@ public class CommandServlet extends HttpServlet {
     }
     return shellConsole.getLastCommandsOutput();
   }
+  
+  
 }
