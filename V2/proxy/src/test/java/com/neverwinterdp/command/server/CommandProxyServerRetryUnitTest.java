@@ -18,7 +18,7 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
     
     testHelper.setup();
     
-    registry = testHelper.getNewRegistry();
+    registry = CommandServerTestHelper.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {

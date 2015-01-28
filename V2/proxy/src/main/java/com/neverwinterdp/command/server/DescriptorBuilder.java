@@ -100,11 +100,15 @@ public class DescriptorBuilder {
    * @return
    */
   public static SourceDescriptor createKafkaSourceDescriptor(HttpServletRequest request){
-    
+    String type = request.getParameter("source-Type");
     String name = request.getParameter("source-Name");
     String topic = request.getParameter("source-Topic");
     String zkConnect = request.getParameter("source-ZkConnect");
     String brokerList = request.getParameter("source-BrokerList");
+    
+    if(type == null){
+      type = "KAFKA";
+    }
     if(name == null){
       name = DescriptorBuilderDefaults._kafkaName;
     }
@@ -118,7 +122,7 @@ public class DescriptorBuilder {
       brokerList = DescriptorBuilderDefaults._kafkaBrokerList;
     }
     
-    SourceDescriptor sourceDescriptor = new SourceDescriptor(request.getParameter("source-Type")) ;
+    SourceDescriptor sourceDescriptor = new SourceDescriptor(type) ;
     sourceDescriptor.attribute("name", name);
     sourceDescriptor.attribute("topic", topic);
     sourceDescriptor.attribute("zk.connect", zkConnect);
@@ -135,11 +139,15 @@ public class DescriptorBuilder {
    * @return
    */
   public static SinkDescriptor createKafkaSinkDescriptor(HttpServletRequest request, String prefix){
-    
+    String type = request.getParameter(prefix+"-Type");
     String name = request.getParameter(prefix+"-Name");
     String topic = request.getParameter(prefix+"-Topic");
     String zkConnect = request.getParameter(prefix+"-ZkConnect");
     String brokerList = request.getParameter(prefix+"-BrokerList");
+    
+    if(type == null){
+      type = "KAFKA";
+    }
     if(name == null){
       name = DescriptorBuilderDefaults._kafkaName;
     }
@@ -153,7 +161,7 @@ public class DescriptorBuilder {
       brokerList = DescriptorBuilderDefaults._kafkaBrokerList;
     }
     
-    SinkDescriptor sink = new SinkDescriptor(request.getParameter(prefix+"-Type")) ;
+    SinkDescriptor sink = new SinkDescriptor(type) ;
     sink.attribute("name", name);
     sink.attribute("topic", topic);
     sink.attribute("zk.connect", zkConnect);

@@ -37,7 +37,7 @@ public class CommandProxyServletUnitTest {
     testHelper.assertWebXmlFilesExist();
     testHelper.setup();
 
-    Registry registry = testHelper.getNewRegistry();
+    Registry registry = CommandServerTestHelper.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {

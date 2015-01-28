@@ -88,7 +88,7 @@ public class CommandServerTestHelper {
     clusterBuilder.teardown();
   }
 
-  protected Registry getNewRegistry() {
+  protected static Registry getNewRegistry() {
     return new RegistryImpl(RegistryConfig.getDefault());
   }
   
