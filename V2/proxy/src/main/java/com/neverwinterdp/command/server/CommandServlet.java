@@ -14,6 +14,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
@@ -104,9 +105,10 @@ public class CommandServlet extends HttpServlet {
           break;
         case "dataflow":
           ScribenginClient sc = new ScribenginClient(this.reg);
-          DataflowSubmitter submitter = new DataflowSubmitter(sc);
+          
+          DataflowClient submitter = new DataflowClient(sc);
           try {
-            submitter.submit(request);
+            submitter.submit(DescriptorBuilder.parseDataflowInput(request));
           } catch (Exception e) {
             response.getWriter().print("DATAFLOW ERROR: "+e.getMessage());
           }

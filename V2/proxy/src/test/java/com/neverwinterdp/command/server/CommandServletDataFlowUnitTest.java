@@ -85,7 +85,7 @@ public class CommandServletDataFlowUnitTest {
     Registry r = CommandServerTestHelper.getNewRegistry();
     r.connect();
     Node x = r.get("/scribengin/dataflows/running/defaultDataFlow");
-
+    System.err.println(new String(x.getData()));
     ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
     DataflowDescriptor dfDesc = mapper.readValue(new String(x.getData()), DataflowDescriptor.class);
     
