@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.client;
+package com.neverwinterdp.scribengin;
 
 import java.util.List;
 

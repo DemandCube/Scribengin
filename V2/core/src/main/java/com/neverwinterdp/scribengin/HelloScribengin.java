@@ -50,7 +50,8 @@ public class HelloScribengin {
 
       String dataDir = "/data" ;
       FileSystem fs = getFileSystem();
-      HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(clusterBuilder, fs, dataDir);
+      HelloHDFSDataflowBuilder dataflowBuilder = 
+          new HelloHDFSDataflowBuilder(clusterBuilder.getScribenginClient(), fs, dataDir);
       dataflowBuilder.setNumOfWorkers(1);
       dataflowBuilder.setNumOfExecutorPerWorker(2);
       dataflowBuilder.createSource(15, 3, 5);

@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.client.shell;
 
-import com.neverwinterdp.scribengin.client.ScribenginClient;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
 import com.neverwinterdp.vm.client.shell.Shell;

@@ -55,13 +55,12 @@ public class YarnVMClient extends VMClient {
     for(Map.Entry<String, String> entry : yarnProps.entrySet()) {
       yarnConf.set(entry.getKey(), entry.getValue());
     }
+    appClient.uploadApp(vmConfig, localAppHome, dfsAppHome);
     appClient.run(vmConfig, yarnConf);
   }
   
   public void configureEnvironment(VMConfig vmConfig) {
     vmConfig.setEnvironment(yarnEnv);
     vmConfig.getYarnConf().putAll(yarnProps);
-    vmConfig.setLocalHome(localAppHome) ;
-    vmConfig.setDfsHome(dfsAppHome) ;
   }
 }

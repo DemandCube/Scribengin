@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.builder;
 
-import com.neverwinterdp.scribengin.client.ScribenginClient;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;

@@ -5,10 +5,12 @@ import java.util.Random;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataProcessor;
+import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
 import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.sink.Sink;
@@ -16,14 +18,15 @@ import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
-public class HelloHDFSDataflowBuilder extends DataflowBuilder {
+public class HelloHDFSDataflowBuilder {
   private String dataDir ;
   private FileSystem fs ;
   private int numOfWorkers = 3;
   private int numOfExecutorPerWorker = 3;
+  private DataflowClient dataflowClient ;
   
-  public HelloHDFSDataflowBuilder(ScribenginClusterBuilder clusterBuilder, FileSystem fs, String dataDir) {
-    super(clusterBuilder);
+  public HelloHDFSDataflowBuilder(ScribenginClient scribenginClient, FileSystem fs, String dataDir) {
+    dataflowClient = new DataflowClient(scribenginClient);
     this.fs = fs ;
     this.dataDir = dataDir ;
   }
@@ -37,19 +40,7 @@ public class HelloHDFSDataflowBuilder extends DataflowBuilder {
     this.numOfExecutorPerWorker = numOfExecutorPerWorker;
   }
 
-
-  public void createSource(int numOfStream, int numOfBuffer, int numOfRecordPerBuffer) throws Exception {
-    SinkFactory  sinkFactory = new SinkFactory(fs);
-    SinkDescriptor sinkDescriptor = new SinkDescriptor("hdfs", dataDir + "/source");
-    Sink sink = sinkFactory.create(sinkDescriptor);;
-    for(int i = 0; i < 15; i++) {
-      DataGenerator.generateNewStream(sink, numOfBuffer, numOfRecordPerBuffer);
-    }
-    HDFSUtil.dump(fs, dataDir + "/source");
-  }
-  
-  @Override
-  protected DataflowDescriptor createDataflowDescriptor() {
+  public ScribenginWaitingEventListener submit() throws Exception {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
@@ -61,7 +52,17 @@ public class HelloHDFSDataflowBuilder extends DataflowBuilder {
     dflDescriptor.addSinkDescriptor("default", defaultSink);
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
-    return dflDescriptor;
+    return dataflowClient.submit(dflDescriptor) ;
+  }
+
+  public void createSource(int numOfStream, int numOfBuffer, int numOfRecordPerBuffer) throws Exception {
+    SinkFactory  sinkFactory = new SinkFactory(fs);
+    SinkDescriptor sinkDescriptor = new SinkDescriptor("hdfs", dataDir + "/source");
+    Sink sink = sinkFactory.create(sinkDescriptor);;
+    for(int i = 0; i < 15; i++) {
+      DataGenerator.generateNewStream(sink, numOfBuffer, numOfRecordPerBuffer);
+    }
+    HDFSUtil.dump(fs, dataDir + "/source");
   }
   
   static public class TestCopyDataProcessor implements DataProcessor {

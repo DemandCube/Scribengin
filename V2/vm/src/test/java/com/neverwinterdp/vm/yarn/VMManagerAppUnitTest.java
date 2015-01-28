@@ -72,7 +72,9 @@ public class VMManagerAppUnitTest {
     
     String[] args = createVMConfigArgs("vm-master-1");
     AppClient appClient = new AppClient() ;
-    appClient.run(args, new YarnConfiguration(miniYarnCluster.getConfig()));
+    VMConfig vmConfig = new VMConfig() ;
+    new JCommander(vmConfig, args) ;
+    appClient.run(vmConfig, new YarnConfiguration(miniYarnCluster.getConfig()));
     Thread.sleep(10000);
     
     shell.execute("vm list");

@@ -3,10 +3,12 @@ package com.neverwinterdp.scribengin.dataflow.builder;
 import java.util.Random;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataProcessor;
+import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
@@ -15,17 +17,18 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
-public class HelloKafkaDataflowBuilder extends DataflowBuilder {
+public class HelloKafkaDataflowBuilder {
   private String     name  = "hello";
   private String     zkConnect              = "127.0.0.1:2181";
   private String     topic                  = "hello";
-  private String     brokerList             = "192.168.59.3:9092" ;
 
   private int numOfWorkers = 3;
   private int numOfExecutorPerWorker = 3;
   
-  public HelloKafkaDataflowBuilder(ScribenginClusterBuilder clusterBuilder) {
-    super(clusterBuilder);
+  private DataflowClient dataflowClient;
+  
+  public HelloKafkaDataflowBuilder(ScribenginClient scribenginClient) {
+    dataflowClient = new DataflowClient(scribenginClient);
   }
 
   
@@ -64,9 +67,8 @@ public class HelloKafkaDataflowBuilder extends DataflowBuilder {
     System.out.println("Finish create data source for kafka");
   }
   
-  
-  @Override
-  protected DataflowDescriptor createDataflowDescriptor() {
+  public ScribenginWaitingEventListener submit() throws Exception {
+    String brokerList = null ;
     try {
       KafkaClient client = new KafkaClient(name, zkConnect) ;
       client.connect();
@@ -101,9 +103,9 @@ public class HelloKafkaDataflowBuilder extends DataflowBuilder {
     invalidSink.attribute("zk.connect", zkConnect);
     invalidSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
-    
-    return dflDescriptor;
+    return dataflowClient.submit(dflDescriptor);
   }
+  
   
   static public class TestCopyDataProcessor implements DataProcessor {
     private int count = 0;
