@@ -9,6 +9,7 @@ public class Shell {
   protected Console console ;
   protected VMClient vmClient ;
   protected Map<String, Command> commands = new HashMap<String, Command>() ;
+  protected Map<String, Object> attributes = new HashMap<String, Object>();
   
   public Shell(VMClient vmClient) {
     this(vmClient, new Console());
@@ -29,8 +30,31 @@ public class Shell {
     commands.put(name, command);
   }
   
+  public Object attribute(String name) {
+    return attributes.get(name);
+  }
+  
+  public void attribute(String name, Object attr) {
+    attributes.put(name, attr);
+  }
+  
+  public <T> T attribute(Class<T> type) {
+    return (T) attributes.get(type.getName());
+  }
+  
+  public <T> void attribute(Class<T> type, T attr) {
+    attributes.put(type.getName(), attr);
+  }
+  
   public void execute(String cmdLine) throws Exception {
-    CommandInput cmdInput = new CommandInput(cmdLine, true) ;
+    execute(new CommandInput(cmdLine, true));
+  }
+  
+  public void execute(String[] args) throws Exception {
+    execute(new CommandInput(args, true));
+  }
+  
+  void execute(CommandInput cmdInput) throws Exception {
     Command command = commands.get(cmdInput.getCommand());
     if(command == null) {
       throw new Exception("Unkown command " + cmdInput.getCommand()) ;

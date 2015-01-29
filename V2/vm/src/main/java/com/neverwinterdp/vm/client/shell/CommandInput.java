@@ -15,14 +15,16 @@ public class CommandInput {
   private String subCommand;
   private String[] remainArgs ;
   
-  
   public CommandInput(String cmdLine) {
     this(cmdLine, true) ;
   }
   
   public CommandInput(String cmdLine, boolean parseSubCommand) {
+    this(parseArgs(cmdLine), parseSubCommand);
     this.commandLine = cmdLine ;
-    String[] args = parseArgs(cmdLine);
+  }
+  
+  public CommandInput(String[] args, boolean parseSubCommand) {
     command = args[0] ;
     args = shift(args) ;
     if(args == null) return ;
@@ -85,10 +87,10 @@ public class CommandInput {
   
   static class ParameterMapper {
     @ParametersDelegate
-    Object object ;
+    Object object;
     
     @Parameter(description = "main parameter")
-    private List<String> mainParameters ;
+    private List<String> mainParameters;
     
     public List<String> map(Object object, List<String> argsList) {
       this.object = object ;

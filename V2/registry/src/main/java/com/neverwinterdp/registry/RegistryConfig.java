@@ -7,15 +7,12 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 @Singleton
 public class RegistryConfig {
   @Parameter(names = "--registry-connect", description = "The registry connect string")
-  //@Inject @Named("registry.connect")
   private String connect ;
   
   @Parameter(names = "--registry-db-domain", description = "The registry partition or table")
-  //@Inject @Named("registry.db-domain")
   private String dbDomain ;
   
   @Parameter(names = "--registry-implementation", description = "The registry implementation class")
-  //@Inject @Named("registry.implementation")
   private String registryImplementation ;
   
   public String getConnect() { return connect; }

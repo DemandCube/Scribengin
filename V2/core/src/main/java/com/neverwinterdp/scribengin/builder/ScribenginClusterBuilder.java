@@ -43,6 +43,9 @@ public class ScribenginClusterBuilder {
   
   public void startScribenginMasters() throws Exception {
     VMClient vmClient = vmClusterBuilder.getVMClient();
+    if(!vmClient.getRegistry().isConnect()) {
+      vmClient.getRegistry().connect() ;
+    }
     scribenginClient = new ScribenginClient(vmClient.getRegistry());
     ScribenginWaitingEventListener sribenginAssert = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     h1("Create Scribengin Master 1");
