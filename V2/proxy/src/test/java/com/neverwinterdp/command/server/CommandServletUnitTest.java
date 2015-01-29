@@ -20,20 +20,14 @@ public class CommandServletUnitTest {
   protected static JettyServer commandServer;
   protected static int port = 8181;
 
-  
-  //Used to bring up VMs to test with
-  static CommandServerTestHelper testHelper;
   static Shell shell;
   static VMClient vmClient;
   
   @BeforeClass
-  public static void setup() throws Exception{
-    //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+  public static void setup() throws Exception {
+    CommandServerTestBase.setup();
 
-    Registry registry = CommandServerTestHelper.getNewRegistry();
+    Registry registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -42,13 +36,14 @@ public class CommandServletUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext webapp = new WebAppContext();
-    webapp.setResourceBase(testHelper.getCommandServerFolder());
-    webapp.setDescriptor(testHelper.getCommandServerXml());
+    webapp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    webapp.setDescriptor(CommandServerTestBase.getCommandServerXml());
     
     //Bring up commandServer using that context
     commandServer = new JettyServer(port, CommandServlet.class);
     commandServer.setHandler(webapp);
     commandServer.start();
+    
   }
   
   
@@ -58,7 +53,7 @@ public class CommandServletUnitTest {
     //commandServer.join();
 
     commandServer.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
   
   @Test
@@ -68,7 +63,7 @@ public class CommandServletUnitTest {
            .asString();
     
     //assertEquals("command run: "+"listvms", resp.getBody());
-    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp.getBody());
+    assertEquals(CommandServerTestBase.expectedListVMResponse, resp.getBody());
   }
   
   @Test

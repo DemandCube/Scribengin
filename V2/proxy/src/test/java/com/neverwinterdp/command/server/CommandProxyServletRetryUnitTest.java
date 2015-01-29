@@ -24,19 +24,15 @@ public class CommandProxyServletRetryUnitTest {
   Registry registry;
   String registryPath = "/vm/commandServer";
   
-  //Used to bring up VMs to test with
-  CommandServerTestHelper testHelper;
   Shell shell;
   VMClient vmClient;
   
   @Before
   public void setup() throws Exception{
     //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+    CommandServerTestBase.setup();
 
-    registry = CommandServerTestHelper.getNewRegistry();
+    registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -48,8 +44,8 @@ public class CommandProxyServletRetryUnitTest {
     
     //Start proxy
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
-    proxyApp.setDescriptor(  testHelper.getProxyServerXml());
+    proxyApp.setResourceBase(CommandServerTestBase.getProxyServerFolder());
+    proxyApp.setDescriptor(  CommandServerTestBase.getProxyServerXml());
     
     proxyServer = new JettyServer(proxyPort, CommandProxyServlet.class);
     proxyServer.setHandler(proxyApp);
@@ -62,15 +58,15 @@ public class CommandProxyServletRetryUnitTest {
   public void teardown() throws Exception{
     System.out.println("Stopping servers");
     proxyServer.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
   
   @Test
   public void testProxyServletRetry() throws Exception{
     //Point our context to our web.xml we want to use for testing
     WebAppContext commandApp = new WebAppContext();
-    commandApp.setResourceBase(testHelper.getCommandServerFolder());
-    commandApp.setDescriptor(testHelper.getCommandServerXml());
+    commandApp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    commandApp.setDescriptor(CommandServerTestBase.getCommandServerXml());
     
     //Bring up commandServer using that context
     JettyServer commandServer = new JettyServer(commandPort, CommandServlet.class);
@@ -82,7 +78,7 @@ public class CommandProxyServletRetryUnitTest {
            .field("command", "vm list")
            .asString();
     
-    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp.getBody());
+    assertEquals(CommandServerTestBase.expectedListVMResponse, resp.getBody());
     
     //Kill the original command server
     commandServer.stop();
@@ -104,7 +100,7 @@ public class CommandProxyServletRetryUnitTest {
     HttpResponse<String> resp2 = Unirest.post("http://localhost:"+Integer.toString(proxyPort))
         .field("command", "vm list")
         .asString();
-    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp2.getBody());
+    assertEquals(CommandServerTestBase.expectedListVMResponse, resp2.getBody());
     commandServer2.stop();
   }
   

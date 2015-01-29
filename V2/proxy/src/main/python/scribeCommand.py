@@ -52,6 +52,14 @@ def scribenginmaster():
   res = sendRequest(payload)
   click.echo(res)
 
+@mastercommand.command(help="- Submit a new dataflow")
+@click.option('--jsonfile', type=click.File('r'), default='dataflow.json', help="Path to file containing json for dataflow config")
+def submitdataflow(jsonfile):
+  logging.debug("Submit New Dataflow")
+  payload = json.load(jsonfile)
+  payload["command"] = "dataflow"
+  res = sendRequest(payload)
+  click.echo(res)
 
 
 def sendRequest(params):
@@ -68,4 +76,30 @@ def sendRequest(params):
 
 
 if __name__ == '__main__':
+  #x = {
+  #      "command": "dataflow",
+  #      "dataflow-Name"                   :"dataflowName",
+  #      "dataflow-Dataprocessor"          : "dataflowDataprocessor",
+  #      "dataflow-NumWorkers"             : "10",
+  #      "dataflow-NumExecutorsPerWorkers" : "20",
+  #      "source-Type"       : "KAFKA",
+  #      "source-Name"       : "sourceName",
+  #      "source-Topic"      : "sourceTopic",
+  #      "source-ZkConnect"  : "sourceZkConnect",
+  #      "source-BrokerList" : "sourceBrokerList",
+  #      "sink-Type"       : "KAFKA",
+  #      "sink-Name"       : "sinkName",
+  #      "sink-Topic"      : "sinkTopic",
+  #      "sink-ZkConnect"  : "sinkZkConnect",
+  #      "sink-BrokerList" : "sinkBrokerList",
+  #      "invalidsink-Type"       : "KAFKA",
+  #      "invalidsink-Name"       : "invalidsinkName",
+  #      "invalidsink-Topic"      : "invalidsinkTopic",
+  #      "invalidsink-ZkConnect"  : "invalidsinkZkConnect",
+  #      "invalidsink-BrokerList" : "invalidsinkBrokerList",
+  #}
+  #filex = open("newfile.json", "w+")
+  #print json.dump(x, filex)
+  #
+  #filex.close
   mastercommand()

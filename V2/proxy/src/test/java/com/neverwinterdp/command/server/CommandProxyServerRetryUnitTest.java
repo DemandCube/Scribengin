@@ -12,13 +12,9 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
   
   @Before
   public void setup() throws Exception{
-    //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
+    CommandServerTestBase.setup();
     
-    testHelper.setup();
-    
-    registry = CommandServerTestHelper.getNewRegistry();
+    registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -32,8 +28,8 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
-    proxyApp.setDescriptor(testHelper.getProxyServerXml());
+    proxyApp.setResourceBase(CommandServerTestBase.getProxyServerFolder());
+    proxyApp.setDescriptor(CommandServerTestBase.getProxyServerXml());
     
     //Bring up proxy
     cps = new CommandProxyServer(proxyPort);
@@ -47,6 +43,6 @@ public class CommandProxyServerRetryUnitTest extends CommandProxyServletRetryUni
   public void teardown() throws Exception{
     System.out.println("Stopping servers");
     cps.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
 }

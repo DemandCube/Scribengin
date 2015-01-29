@@ -24,20 +24,15 @@ public class CommandProxyServletUnitTest {
   protected static int commandPort = 8181;
   protected static int proxyPort = 8383;
   
-  
-  //Used to bring up VMs to test with
-  static CommandServerTestHelper testHelper;
   static Shell shell;
   static VMClient vmClient;
   
   @BeforeClass
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+    CommandServerTestBase.setup();
 
-    Registry registry = CommandServerTestHelper.getNewRegistry();
+    Registry registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -50,12 +45,12 @@ public class CommandProxyServletUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext commandApp = new WebAppContext();
-    commandApp.setResourceBase(testHelper.getCommandServerFolder());
-    commandApp.setDescriptor(testHelper.getCommandServerXml());
+    commandApp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    commandApp.setDescriptor(CommandServerTestBase.getCommandServerXml());
     
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
-    proxyApp.setDescriptor(testHelper.getProxyServerXml());
+    proxyApp.setResourceBase(CommandServerTestBase.getProxyServerFolder());
+    proxyApp.setDescriptor(CommandServerTestBase.getProxyServerXml());
     
     proxyServer = new JettyServer(proxyPort, CommandProxyServlet.class);
     proxyServer.setHandler(proxyApp);
@@ -77,7 +72,7 @@ public class CommandProxyServletUnitTest {
   public static void teardown() throws Exception{
     proxyServer.stop();
     commandServer.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
   
   @Test
@@ -86,7 +81,7 @@ public class CommandProxyServletUnitTest {
            .field("command", "vm list")
            .asString();
     
-    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp.getBody());
+    assertEquals(CommandServerTestBase.expectedListVMResponse, resp.getBody());
   }
   
   @Test
@@ -104,7 +99,7 @@ public class CommandProxyServletUnitTest {
         .field("command", "registry dump")
         .asString();
  
-    assertEquals(CommandServerTestHelper.expectedRegistryDumpResponse, resp.getBody());
+    assertEquals(CommandServerTestBase.expectedRegistryDumpResponse, resp.getBody());
   }
   
   @Test

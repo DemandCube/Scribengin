@@ -13,11 +13,9 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
   @BeforeClass
   public static void setup() throws Exception{
     //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+    CommandServerTestBase.setup();
 
-    Registry registry = CommandServerTestHelper.getNewRegistry();
+    Registry registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -27,8 +25,8 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
     cs = new CommandServer(port);
     //Point our context to our web.xml we want to use for testing
     WebAppContext webapp = new WebAppContext();
-    webapp.setResourceBase(testHelper.getCommandServerFolder());
-    webapp.setDescriptor(testHelper.getCommandServerXml());
+    webapp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    webapp.setDescriptor(CommandServerTestBase.getCommandServerXml());
     cs.setHandler(webapp);
     cs.startServer();
   }
@@ -36,6 +34,6 @@ public class CommandServerUnitTest extends CommandServletUnitTest{
   @AfterClass
   public static void teardown() throws Exception{
     cs.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
 }

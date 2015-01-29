@@ -1,6 +1,9 @@
 package com.neverwinterdp.command.server;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -108,11 +111,15 @@ public class CommandServlet extends HttpServlet {
           
           DataflowClient submitter = new DataflowClient(sc);
           try {
-            submitter.submit(DescriptorBuilder.parseDataflowInput(request));
+            submitter.submit(DescriptorBuilder.parseDataflowInput(parseRequestIntoMap(request)));
           } catch (Exception e) {
             response.getWriter().print("DATAFLOW ERROR: "+e.getMessage());
           }
-          response.getWriter().print("DATAFLOW SUBMITTED SUCCESSFULLY");
+          String dataflowName = request.getParameter("dataflow-Name");
+          if(dataflowName == null){
+            dataflowName = DescriptorBuilderDefaults._dataflowName;
+          }
+          response.getWriter().print("DATAFLOW "+ dataflowName +" SUBMITTED SUCCESSFULLY");
           break;
         default:
           response.getWriter().print(badCommandMessage+command);
@@ -129,5 +136,21 @@ public class CommandServlet extends HttpServlet {
     return shellConsole.getLastCommandsOutput();
   }
   
+  /**
+   * To make the DescriptorBuilder more reusable, going to parse out all the entries from
+   * the request parameter map.  There should only ever be 1 item per entry, so parse out the
+   * need to have multiple values per key
+   * @param request
+   * @return
+   */
+  protected Map<String, String> parseRequestIntoMap(HttpServletRequest request){
+    Map<String,String> result = new HashMap<String,String>();
+    
+    for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+      result.put(entry.getKey(), entry.getValue()[0]);
+    }
+    
+    return result;
+  }
   
 }
