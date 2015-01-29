@@ -61,6 +61,7 @@ public class ScribenginClient {
   }
   
   
+  
   public class CommandReponseWatcher extends NodeWatcher {
     private CommandResult<?> result ;
     private Exception error ;
