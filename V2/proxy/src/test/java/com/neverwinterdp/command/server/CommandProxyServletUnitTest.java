@@ -120,7 +120,7 @@ public class CommandProxyServletUnitTest {
            .field("command", badCommand)
            .asString();
     
-    assertEquals(CommandServlet.badCommandMessage+badCommand, resp.getBody());
+    assertEquals("", resp.getBody());
   }
   
   @Test

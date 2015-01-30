@@ -43,7 +43,6 @@ public class CommandServletUnitTest {
     commandServer = new JettyServer(port, CommandServlet.class);
     commandServer.setHandler(webapp);
     commandServer.start();
-    
   }
   
   
@@ -55,6 +54,7 @@ public class CommandServletUnitTest {
     commandServer.stop();
     CommandServerTestBase.teardown();
   }
+  
   
   @Test
   public void testCommandServletListVMs() throws InterruptedException, UnirestException{
@@ -73,7 +73,7 @@ public class CommandServletUnitTest {
            .field("command", badCommand)
            .asString();
     
-    assertEquals(CommandServlet.badCommandMessage+badCommand, resp.getBody());
+    assertEquals("", resp.getBody());
   }
   
   @Test
@@ -82,5 +82,43 @@ public class CommandServletUnitTest {
         .asString();
     
     assertEquals(CommandServlet.noCommandMessage, resp.getBody());
+  }
+  
+  
+  @Test
+  public void testCommandServletStopScribeMaster() throws UnirestException{
+    HttpResponse<String> x = Unirest.post("http://localhost:"+Integer.toString(port))
+        .field("command", "registry dump")
+        .asString();
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println(x.getBody());
+    
+    HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(port))
+           .field("command", "scribengin server")
+           .field("stop-master", "vm")
+           .asString();
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println(resp.getBody());
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    x = Unirest.post("http://localhost:"+Integer.toString(port))
+        .field("command", "registry dump")
+        .asString();
+    System.err.println(x.getBody());
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    
+    //assertEquals("", resp.getBody());
+    
   }
 }

@@ -45,10 +45,11 @@ def registrydump(path):
   res = sendRequest(payload)
   click.echo(res)
 
-@mastercommand.command(help="- Not implemented yet :)")
-def scribenginmaster():
-  logging.debug("Scribengin master")
-  payload = {'command': 'scribengin master'}
+@mastercommand.command(help="- Run any command on Scribengin shell")
+@click.option('--command',  help="The command to execute")
+def runcommand(command):
+  logging.debug("Running arbitrary command")
+  payload = {'command': command}
   res = sendRequest(payload)
   click.echo(res)
 
@@ -76,30 +77,4 @@ def sendRequest(params):
 
 
 if __name__ == '__main__':
-  #x = {
-  #      "command": "dataflow",
-  #      "dataflow-Name"                   :"dataflowName",
-  #      "dataflow-Dataprocessor"          : "dataflowDataprocessor",
-  #      "dataflow-NumWorkers"             : "10",
-  #      "dataflow-NumExecutorsPerWorkers" : "20",
-  #      "source-Type"       : "KAFKA",
-  #      "source-Name"       : "sourceName",
-  #      "source-Topic"      : "sourceTopic",
-  #      "source-ZkConnect"  : "sourceZkConnect",
-  #      "source-BrokerList" : "sourceBrokerList",
-  #      "sink-Type"       : "KAFKA",
-  #      "sink-Name"       : "sinkName",
-  #      "sink-Topic"      : "sinkTopic",
-  #      "sink-ZkConnect"  : "sinkZkConnect",
-  #      "sink-BrokerList" : "sinkBrokerList",
-  #      "invalidsink-Type"       : "KAFKA",
-  #      "invalidsink-Name"       : "invalidsinkName",
-  #      "invalidsink-Topic"      : "invalidsinkTopic",
-  #      "invalidsink-ZkConnect"  : "invalidsinkZkConnect",
-  #      "invalidsink-BrokerList" : "invalidsinkBrokerList",
-  #}
-  #filex = open("newfile.json", "w+")
-  #print json.dump(x, filex)
-  #
-  #filex.close
   mastercommand()

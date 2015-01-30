@@ -18,13 +18,12 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
-import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
 public class CommandServlet extends HttpServlet {
   public static String noCommandMessage = "No Command Sent";
-  public static String badCommandMessage = "Bad Command: ";
-  private Shell vmShell; 
+  //public static String badCommandMessage = "Bad Command: ";
+  private ScribenginShell scribenginShell; 
   private CommandConsole shellConsole;
   RegistryConfig regConf;
   Registry reg;
@@ -42,7 +41,7 @@ public class CommandServlet extends HttpServlet {
     
     try {
       this.reg = new RegistryImpl(this.regConf);
-      vmShell = new ScribenginShell(this.reg.connect(), shellConsole);
+      this.scribenginShell = new ScribenginShell(this.reg.connect(), shellConsole);
     } catch (RegistryException e) {
       e.printStackTrace();
     }
@@ -91,21 +90,6 @@ public class CommandServlet extends HttpServlet {
     }
     else{
       switch(command){
-        case "vm list":
-          response.getWriter().print(executeShell("vm list"));
-          break;
-        case "registry dump":
-          String path = request.getParameter("path");
-          if(path == null){
-            response.getWriter().print(executeShell("registry dump"));
-          }
-          else{
-            response.getWriter().print(executeShell("registry dump --path "+path));
-          }
-          break;
-        case "scribengin master":
-          response.getWriter().print(executeShell("scribengin master"));
-          break;
         case "dataflow":
           ScribenginClient sc = new ScribenginClient(this.reg);
           
@@ -122,14 +106,14 @@ public class CommandServlet extends HttpServlet {
           response.getWriter().print("DATAFLOW "+ dataflowName +" SUBMITTED SUCCESSFULLY");
           break;
         default:
-          response.getWriter().print(badCommandMessage+command);
+          response.getWriter().print(executeShell(command));
       }
     }
   }
   
   protected String executeShell(String command){
     try {
-      vmShell.execute(command);
+      scribenginShell.execute(command);
     } catch (Exception e) {
       e.printStackTrace();
     }
