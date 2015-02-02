@@ -38,6 +38,9 @@ public class VMConfig {
   @Parameter(names = "--memory", description = "The request amount of memory in MB")
   private int                 requestMemory   = 128;
   
+  @Parameter(names = "--app-home", description = "App Home")
+  private String appHome;
+  
   @DynamicParameter(names = "--vm-resource:", description = "The resources for the vm")
   private Map<String, String> vmResources  = new LinkedHashMap<String, String>();
   
@@ -53,8 +56,8 @@ public class VMConfig {
   @DynamicParameter(names = "--prop:", description = "The application configuration properties")
   private Map<String, String> properties   = new HashMap<String, String>();
   
-  @DynamicParameter(names = "--yarn:", description = "The application configuration properties")
-  private Map<String, String> yarnConf   = new HashMap<String, String>();
+  @DynamicParameter(names = "--hadoop:", description = "The application configuration properties")
+  private HadoopProperties hadoopProperties   = new HadoopProperties();
   
   @Parameter(names = "--description", description = "Description")
   private String              description;
@@ -93,6 +96,9 @@ public class VMConfig {
     return this;
   }
   
+  public String getAppHome() { return appHome; }
+  public void setAppHome(String appHome) { this.appHome = appHome; }
+  
   public Map<String, String> getVmResources() { return vmResources; }
   public void setVmResources(Map<String, String> vmResources) { this.vmResources = vmResources; }
   public void addVMResource(String name, String resource) {
@@ -130,20 +136,18 @@ public class VMConfig {
     return this;
   }
   
-  public Map<String, String> getYarnConf() { return yarnConf; }
-  public VMConfig setYarnConf(Map<String, String> yarnConf) {
-    this.yarnConf = yarnConf;
+  public HadoopProperties getHadoopProperties() { return hadoopProperties; }
+  public VMConfig setHadoopProperties(HadoopProperties hadoopProperties) {
+    this.hadoopProperties = hadoopProperties;
     return this;
   }
   
-  public VMConfig addYarnProperty(String name, String value) {
-    if(yarnConf == null) yarnConf = new HashMap<String, String>();
-    yarnConf.put(name, value);
+  public VMConfig addHadoopProperty(String name, String value) {
+    hadoopProperties.put(name, value);
     return this;
   }
   
-  public VMConfig addYarnProperty(Map<String, String> conf) {
-    if(yarnConf == null) yarnConf = new HashMap<String, String>();
+  public VMConfig addHadoopProperty(Map<String, String> conf) {
     Iterator<Map.Entry<String, String>> i = conf.entrySet().iterator();
     while(i.hasNext()) {
       Map.Entry<String, String> entry = i.next();
@@ -151,16 +155,14 @@ public class VMConfig {
       String value = conf.get(key);
       if(value.length() == 0) continue;
       else if(value.indexOf(' ') > 0) continue;
-      yarnConf.put(key, value);
+      hadoopProperties.put(key, value);
     }
     return this;
   }
   
   
-  public void overrideYarnConfiguration(Configuration aconf) {
-    for(Map.Entry<String, String> entry : yarnConf.entrySet()) {
-      aconf.set(entry.getKey(), entry.getValue()) ;
-    }
+  public void overrideHadoopConfiguration(Configuration aconf) {
+    hadoopProperties.overrideConfiguration(aconf);
   }
   
   public String getDescription() { return description; }
@@ -199,6 +201,10 @@ public class VMConfig {
     
     b.append(" --memory ").append(requestMemory) ;
     
+    if(appHome != null) {
+      b.append(" --app-home ").append(appHome) ;
+    }
+    
     for(Map.Entry<String, String> entry : vmResources.entrySet()) {
       b.append(" --vm-resource:").append(entry.getKey()).append("=").append(entry.getValue()) ;
     }
@@ -219,8 +225,8 @@ public class VMConfig {
       b.append(" --prop:").append(entry.getKey()).append("=").append(entry.getValue()) ;
     }
     
-    for(Map.Entry<String, String> entry : yarnConf.entrySet()) {
-      b.append(" --yarn:").append(entry.getKey()).append("=").append(entry.getValue()) ;
+    for(Map.Entry<String, String> entry : hadoopProperties.entrySet()) {
+      b.append(" --hadoop:").append(entry.getKey()).append("=").append(entry.getValue()) ;
     }
   }
 }

@@ -22,10 +22,11 @@ import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
 public class ScribenginService {
-  final static public String SCRIBENGIN_PATH = "/scribengin";
-  final static public String LEADER_PATH     = "/scribengin/master/leader";
-  final static public String DATAFLOWS_HISTORY_PATH  = "/scribengin/dataflows/history";
-  final static public String DATAFLOWS_RUNNING_PATH  = "/scribengin/dataflows/running";
+  final static public String SCRIBENGIN_PATH         = "/scribengin";
+  final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
+  final static public String LEADER_PATH             = SCRIBENGIN_PATH + "/master/leader";
+  final static public String DATAFLOWS_HISTORY_PATH  = SCRIBENGIN_PATH + "/dataflows/history";
+  final static public String DATAFLOWS_RUNNING_PATH  = SCRIBENGIN_PATH + "/dataflows/running";
   
   @Inject
   private VMConfig vmConfig; 
@@ -42,6 +43,7 @@ public class ScribenginService {
     this.registry = registry;
     this.registryListener = new RegistryListener(registry);
 
+    registry.createIfNotExist(EVENTS_PATH);
     registry.createIfNotExist(DATAFLOWS_RUNNING_PATH);
     dataflowsRunningNode = registry.get(DATAFLOWS_RUNNING_PATH) ;
 
@@ -65,15 +67,20 @@ public class ScribenginService {
   }
   
   private VMDescriptor createDataflowMaster(DataflowDescriptor descriptor, int id) throws Exception {
+    String dataflowAppHome = descriptor.getDataflowAppHome();
     Node dataflowNode = registry.get(DATAFLOWS_RUNNING_PATH + "/" + descriptor.getName()) ;
     VMConfig dfVMConfig = new VMConfig() ;
+    if(dataflowAppHome != null) {
+      dfVMConfig.setAppHome(dataflowAppHome);
+      dfVMConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
+    }
     dfVMConfig.setEnvironment(vmConfig.getEnvironment());
     dfVMConfig.setName(descriptor.getName() + "-master-" + id);
     dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
     dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
     dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
     dfVMConfig.addProperty("dataflow.registry.path", dataflowNode.getPath());
-    dfVMConfig.setYarnConf(vmConfig.getYarnConf());
+    dfVMConfig.setHadoopProperties(vmConfig.getHadoopProperties());
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
         (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
@@ -113,7 +120,7 @@ public class ScribenginService {
     private DataflowDescriptor descriptor;
     
     public DataflowDeployer(DataflowDescriptor descriptor) {
-      this.descriptor = descriptor;
+      this.descriptor      = descriptor;
     }
     
     public void run() {

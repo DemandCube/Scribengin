@@ -21,7 +21,10 @@ import com.neverwinterdp.vm.VMConfig;
 
 public class VMResources extends HashMap<String, LocalResource> {
   public VMResources(Configuration conf, VMConfig vmConfig) throws FileNotFoundException, IllegalArgumentException, IOException {
-    FileSystem fs = FileSystem.get(conf) ;
+    this(FileSystem.get(conf), vmConfig) ;
+  }
+  
+  public VMResources(FileSystem fs, VMConfig vmConfig) throws FileNotFoundException, IllegalArgumentException, IOException {
     for(Map.Entry<String, String> entry : vmConfig.getVmResources().entrySet()) {
       addDir(fs, entry.getValue()) ;
     }
@@ -32,21 +35,32 @@ public class VMResources extends HashMap<String, LocalResource> {
   }
   
   void addDir(FileSystem fs, Path path) throws FileNotFoundException, IOException {
-    RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, true) ;
-    while(itr.hasNext()) {
-      FileStatus fstatus = itr.next() ;
-      Path fpath = fstatus.getPath() ;
-      if(fstatus.isFile()) {
-        LocalResource libJar = Records.newRecord(LocalResource.class);
-        libJar.setResource(ConverterUtils.getYarnUrlFromPath(fpath));
-        libJar.setSize(fstatus.getLen());
-        libJar.setTimestamp(fstatus.getModificationTime());
-        libJar.setType(LocalResourceType.FILE);
-        libJar.setVisibility(LocalResourceVisibility.PUBLIC);
-        put(fpath.getName(), libJar) ;
-      } else {
-        addDir(fs, fpath);
+    if(!fs.exists(path)) return ;
+    
+    if(fs.isFile(path)) {
+      FileStatus fstatus = fs.getFileStatus(path);
+      addFile(fstatus);
+    } else {
+      RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, true) ;
+      while(itr.hasNext()) {
+        FileStatus fstatus = itr.next() ;
+        if(fstatus.isFile()) {
+          addFile(fstatus);
+        } else {
+          addDir(fs, fstatus.getPath() );
+        }
       }
     }
   }
- }
+  
+  public void addFile(FileStatus fstatus) {
+    Path fpath = fstatus.getPath() ;
+    LocalResource libJar = Records.newRecord(LocalResource.class);
+    libJar.setResource(ConverterUtils.getYarnUrlFromPath(fpath));
+    libJar.setSize(fstatus.getLen());
+    libJar.setTimestamp(fstatus.getModificationTime());
+    libJar.setType(LocalResourceType.FILE);
+    libJar.setVisibility(LocalResourceVisibility.PUBLIC);
+    put(fpath.getName(), libJar) ;
+  }
+}

@@ -16,6 +16,7 @@ import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
@@ -48,7 +49,7 @@ public class VMManagerAppUnitTest {
     miniYarnCluster = MiniClusterUtil.createMiniYARNCluster(yarnConf, 1);
     Configuration conf = miniYarnCluster.getConfig() ;
     
-    Map<String, String> yarnProps = new HashMap<>();
+    HadoopProperties yarnProps = new HadoopProperties();
     yarnProps.put("yarn.resourcemanager.scheduler.address", "0.0.0.0:8030");
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
@@ -71,9 +72,9 @@ public class VMManagerAppUnitTest {
     Shell shell = new Shell(vmClient) ;
     
     String[] args = createVMConfigArgs("vm-master-1");
-    AppClient appClient = new AppClient() ;
     VMConfig vmConfig = new VMConfig() ;
     new JCommander(vmConfig, args) ;
+    AppClient appClient = new AppClient(vmConfig.getHadoopProperties()) ;
     appClient.run(vmConfig, new YarnConfiguration(miniYarnCluster.getConfig()));
     Thread.sleep(10000);
     

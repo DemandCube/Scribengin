@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.client.shell;
+package com.neverwinterdp.vm;
 
 import java.util.HashMap;
 import java.util.Map;

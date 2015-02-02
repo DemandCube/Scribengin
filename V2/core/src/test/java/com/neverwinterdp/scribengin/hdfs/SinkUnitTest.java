@@ -16,6 +16,7 @@ import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 public class SinkUnitTest {
   static String DATA_DIRECTORY = "./build/sinkhdfs" ;

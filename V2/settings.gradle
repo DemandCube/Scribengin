@@ -6,4 +6,5 @@ include 'proxy'
 include 'dataflow/hdfs'
 include 'dataflow/kafka'
 include 'dataflow/s3'
+include 'release'
 

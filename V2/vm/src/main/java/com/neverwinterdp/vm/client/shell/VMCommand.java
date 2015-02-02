@@ -7,12 +7,32 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.text.StringUtil;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class VMCommand extends Command {
   public VMCommand() {
+    add("start", new Start()) ;
+    add("shutdown", new Shutdown()) ;
     add("list", new ListRunning()) ;
     add("history", new ListHistory()) ;
+  }
+  
+  static public class Start extends SubCommand {
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      VMClient vmClient = shell.getVMClient() ;
+      VMClusterBuilder clusterBuilder = new VMClusterBuilder(vmClient) ;
+      clusterBuilder.start();
+    }
+  }
+  
+  static public class Shutdown extends SubCommand {
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      VMClient vmClient = shell.getVMClient() ;
+      vmClient.shutdown();
+    }
   }
   
   static public class ListRunning extends SubCommand {

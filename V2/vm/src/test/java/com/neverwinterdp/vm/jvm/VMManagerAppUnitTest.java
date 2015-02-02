@@ -50,23 +50,23 @@ public class VMManagerAppUnitTest  {
       shell = new Shell(vmClient) ;
       shell.execute("registry dump");
 
-      VMWaitingEventListener vmAssert = new VMWaitingEventListener(shell.getVMClient().getRegistry());
+      VMWaitingEventListener eventsListener = new VMWaitingEventListener(shell.getVMClient().getRegistry());
       banner("Create VM Dummy 1");
-      vmAssert.waitVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
-      vmAssert.waitHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
+      eventsListener.waitVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
+      eventsListener.waitHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
       VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
-      vmAssert.waitForEvents(5000);
+      eventsListener.waitForEvents(5000);
 
       shell.execute("registry dump");
 
       banner("Shutdown VM Master 1");
       //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
-      vmAssert.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
-      vmAssert.waitHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
-      vmAssert.waitVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
+      eventsListener.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
+      eventsListener.waitHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
+      eventsListener.waitVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
       vmClient.shutdown(vmClient.getMasterVMDescriptor());
       //vmMaster1.shutdown();
-      vmAssert.waitForEvents(5000);
+      eventsListener.waitForEvents(5000);
       shell.execute("registry dump");
 
       banner("Create VM Dummy 2");
@@ -74,12 +74,14 @@ public class VMManagerAppUnitTest  {
       shell.execute("registry dump");
 
       banner("Shutdown VM Dummy 1 and 2");
-      vmAssert.waitVMStatus("Expect vm-dummy-1 terminated status", "vm-dummy-1", VMStatus.TERMINATED);
-      vmAssert.waitVMStatus("Expect vm-dummy-2 terminated status", "vm-dummy-2", VMStatus.TERMINATED);
+      eventsListener.waitVMStatus("Expect vm-dummy-1 terminated status", "vm-dummy-1", VMStatus.TERMINATED);
+      eventsListener.waitVMStatus("Expect vm-dummy-2 terminated status", "vm-dummy-2", VMStatus.TERMINATED);
       Assert.assertTrue(shutdown(vmClient, vmDummy2));
       Assert.assertTrue(shutdown(vmClient, vmDummy1));
-      vmAssert.waitForEvents(10000);
+      eventsListener.waitForEvents(10000);
+      vmClient.shutdown();
     } finally {
+      Thread.sleep(3000);
       shell.execute("registry dump");
     }
   }
@@ -91,28 +93,13 @@ public class VMManagerAppUnitTest  {
     System.out.println("------------------------------------------------------------------------");
   }
   
-  private VM createVMMaster(String name) throws Exception {
-    String[] args = {
-      "--name", name,
-      "--role", "vm-master",
-      "--self-registration",
-      "--registry-connect", "127.0.0.1:2181", 
-      "--registry-db-domain", "/NeverwinterDP", 
-      "--registry-implementation", RegistryImpl.class.getName(),
-      "--vm-application",VMServiceApp.class.getName(),
-      "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + JVMVMServicePlugin.class.getName()
-    };
-    VM vm = VM.run(args);
-    return vm;
-  }
-  
   private VMDescriptor allocate(VMClient vmClient, String name) throws Exception {
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     String[] args = {
       "--name", name,
       "--role", "dummy",
       "--registry-connect", "127.0.0.1:2181", 
-      "--registry-db-domain", "/NeverwinterDP", 
+      "--registry-db-domain", "/NeverwinterDP",
       "--registry-implementation", RegistryImpl.class.getName(),
       "--vm-application", VMDummyApp.class.getName()
     };

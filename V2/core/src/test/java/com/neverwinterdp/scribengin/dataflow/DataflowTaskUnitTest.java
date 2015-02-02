@@ -14,13 +14,13 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 public class DataflowTaskUnitTest {
   static String      SOURCE_DIRECTORY       = "./build/hdfs/source";

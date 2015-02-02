@@ -21,8 +21,7 @@ public class ScribenginClusterBuilder {
   
   public ScribenginClient getScribenginClient() { 
     if(scribenginClient == null) {
-      VMClient vmClient = vmClusterBuilder.getVMClient();
-      scribenginClient = new ScribenginClient(vmClient.getRegistry());
+      scribenginClient = new ScribenginClient(vmClusterBuilder.getVMClient());
     }
     return this.scribenginClient ; 
   }
@@ -46,7 +45,7 @@ public class ScribenginClusterBuilder {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    scribenginClient = new ScribenginClient(vmClient.getRegistry());
+    scribenginClient = new ScribenginClient(vmClient);
     ScribenginWaitingEventListener sribenginAssert = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     h1("Create Scribengin Master 1");
     sribenginAssert.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");

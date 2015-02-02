@@ -13,6 +13,7 @@ import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 /**
  * @author Tuan Nguyen

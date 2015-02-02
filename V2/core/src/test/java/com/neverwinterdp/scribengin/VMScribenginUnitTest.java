@@ -11,12 +11,13 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 abstract public class VMScribenginUnitTest {
   protected ScribenginClusterBuilder clusterBuilder ;
   protected long vmLaunchTime = 100;
+  protected ScribenginShell shell;
   
   @Before
   public void setup() throws Exception {
@@ -25,6 +26,7 @@ abstract public class VMScribenginUnitTest {
     clusterBuilder.startVMMasters();
     Thread.sleep(vmLaunchTime);
     clusterBuilder.startScribenginMasters();
+    shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }
   
   @After
@@ -43,10 +45,13 @@ abstract public class VMScribenginUnitTest {
     long kafkaDataflowExecTime = System.currentTimeMillis() - start ;
     System.out.println("Test hello hdfs dataflow in " + hdfsDataflowExecTime + "ms");
     System.out.println("Test hello kafka dataflow in " + kafkaDataflowExecTime + "ms");
+    
+    clusterBuilder.getScribenginClient().shutdown();
+    shell.execute("vm list");
+    shell.execute("registry dump --path /");
   }
   
   void testHdfsDataflow() throws Exception {
-    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     FileSystem fs = getFileSystem();
     try {
       HelloHDFSDataflowBuilder hdfDataflowBuilder = 
@@ -64,7 +69,6 @@ abstract public class VMScribenginUnitTest {
   }
 
   void testKafkaDataflow() throws Exception {
-    ScribenginShell shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
     try {
       HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
           new HelloKafkaDataflowBuilder(clusterBuilder.getScribenginClient());

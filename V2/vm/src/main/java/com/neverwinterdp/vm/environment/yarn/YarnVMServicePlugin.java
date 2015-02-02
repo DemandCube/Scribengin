@@ -27,7 +27,7 @@ public class YarnVMServicePlugin implements VMServicePlugin {
   synchronized public void allocateVM(VMService vmService, final VMConfig vmConfig) throws RegistryException, Exception {
     logger.info("Start allocate(VMService vmService, VMDescriptor vmDescriptor)");
     final ContainerRequest containerReq = 
-        yarnManager.createContainerRequest(0, vmConfig.getRequestCpuCores(), vmConfig.getRequestMemory());
+      yarnManager.createContainerRequest(0, vmConfig.getRequestCpuCores(), vmConfig.getRequestMemory());
     
     YarnManager.ContainerRequestCallback callback = new YarnManager.ContainerRequestCallback() {
       @Override
@@ -35,9 +35,9 @@ public class YarnVMServicePlugin implements VMServicePlugin {
         logger.info("Start onAllocate(Container container)");
         vmConfig.
           setSelfRegistration(false).
-          addYarnProperty(manager.getYarnConfig());
+          addHadoopProperty(manager.getYarnConfig());
         try {
-          yarnManager.startContainer(container, vmConfig.buildCommand());
+          yarnManager.startContainer(container, vmConfig);
         } catch (YarnException | IOException e) {
           logger.error("Cannot start the container", e);
         }

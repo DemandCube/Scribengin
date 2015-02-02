@@ -20,12 +20,19 @@ import org.apache.hadoop.yarn.client.api.YarnClientApplication;
 import org.apache.hadoop.yarn.util.Records;
 
 import com.neverwinterdp.hadoop.yarn.app.Util;
+import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.VMConfig;
 
 public class AppClient {
+  private HadoopProperties hadoopProperties ;
+  
+  public AppClient(HadoopProperties hadoopProperties) {
+    this.hadoopProperties = hadoopProperties;
+  }
+
   public void run(VMConfig vmConfig, Configuration conf) throws Exception {
     try {
-      vmConfig.overrideYarnConfiguration(conf);
+      vmConfig.overrideHadoopConfiguration(conf);
       System.out.println("Create YarnClient") ;
       YarnClient yarnClient = YarnClient.createYarnClient();
       yarnClient.init(conf);
@@ -79,10 +86,10 @@ public class AppClient {
     }
   }
   
-  public void uploadApp(VMConfig vmConfig, String localAppHome, String dfsAppHome) throws Exception {
+  public void uploadApp(String localAppHome, String dfsAppHome) throws Exception {
     if(dfsAppHome == null || localAppHome == null) return; 
     HdfsConfiguration hdfsConf = new HdfsConfiguration() ;
-    vmConfig.overrideYarnConfiguration(hdfsConf);
+    hadoopProperties.overrideConfiguration(hdfsConf);
     FileSystem fs = FileSystem.get(hdfsConf);
     DistributedFileSystem dfs = (DistributedFileSystem)fs;
     Path appHomePath = new Path(localAppHome) ;
@@ -91,6 +98,5 @@ public class AppClient {
       dfs.delete(appHomeSharePath, true) ;
     }
     dfs.copyFromLocalFile(false, true, appHomePath, appHomeSharePath);
-    vmConfig.addVMResource("dfs-app-home", dfsAppHome);
   }
 }

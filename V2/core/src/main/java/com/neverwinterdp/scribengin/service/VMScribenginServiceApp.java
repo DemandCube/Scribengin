@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
+import com.neverwinterdp.scribengin.event.ScribenginShutdownEventListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.client.VMClient;
@@ -17,16 +18,21 @@ import com.neverwinterdp.vm.client.VMClient;
 public class VMScribenginServiceApp extends VMApp {
   private LeaderElection election ;
   private Injector  appContainer ;
-  private ScribenginService scribenginMaster;
+  private ScribenginService scribenginService;
   
-  public ScribenginService getScribenginMaster() { return this.scribenginMaster ; }
+  public ScribenginService getScribenginService() { return this.scribenginService ; }
   
   @Override
   public void run() throws Exception {
+    Registry registry = getVM().getVMRegistry().getRegistry();
     getVM().getVMRegistry().getRegistry().createIfNotExist(ScribenginService.LEADER_PATH) ;
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), ScribenginService.LEADER_PATH) ;
     election.setListener(new MasterLeaderElectionListener());
     election.start();
+    ScribenginShutdownEventListener shutdownListener = new ScribenginShutdownEventListener(registry) {
+      @Override
+      public void onShutdownEvent() { notifyShutdown(); }
+    };
     try {
       waitForShutdown();
     } catch(InterruptedException ex) {
@@ -57,7 +63,7 @@ public class VMScribenginServiceApp extends VMApp {
           };
         };
         appContainer = Guice.createInjector(module);
-        scribenginMaster = appContainer.getInstance(ScribenginService.class);
+        scribenginService = appContainer.getInstance(ScribenginService.class);
         RefNode refNode = new RefNode() ;
         refNode.setPath(getVM().getDescriptor().getStoredPath());
         registry.setData(ScribenginService.LEADER_PATH, refNode);

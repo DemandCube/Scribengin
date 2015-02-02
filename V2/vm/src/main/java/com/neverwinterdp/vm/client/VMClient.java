@@ -1,19 +1,22 @@
 package com.neverwinterdp.vm.client;
 
+import static com.neverwinterdp.vm.builder.VMClusterBuilder.h1;
+
 import java.util.List;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.event.NodeEvent;
-import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
+import com.neverwinterdp.vm.event.VMShutdownEventListener;
 import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 
@@ -37,6 +40,11 @@ public class VMClient {
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
     Node vmNode = registry.getRef(VMService.LEADER_PATH);
     return vmNode.getData(VMDescriptor.class);
+  }
+  
+  public void shutdown() throws Exception {
+    h1("Shutdow the vm masters");
+    registry.create(VMShutdownEventListener.EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
@@ -65,9 +73,16 @@ public class VMClient {
     return result.getResult();
   }
   
+  public VMDescriptor allocate(String localAppHome, VMConfig vmConfig) throws Exception {
+    return allocate(vmConfig);
+  }
+  
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
     return result.getResultAs(Boolean.class);
+  }
+  
+  public void uploadApp(String localAppHome, String appHome) throws Exception {
   }
   
   public void createVMMaster(String name) throws Exception {

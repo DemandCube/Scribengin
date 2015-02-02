@@ -3,8 +3,8 @@ package com.neverwinterdp.scribengin;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.scribengin.client.shell.HadoopProperties;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.client.YarnVMClient;
 
