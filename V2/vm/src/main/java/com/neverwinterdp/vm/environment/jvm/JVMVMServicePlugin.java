@@ -24,4 +24,8 @@ public class JVMVMServicePlugin implements VMServicePlugin {
     if(found == null) return;
     found.shutdown();
   }
+
+  @Override
+  public void shutdown() {
+  }
 }

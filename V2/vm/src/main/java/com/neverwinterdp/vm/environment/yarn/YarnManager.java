@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.neverwinterdp.hadoop.yarn.app.Util;
 import com.neverwinterdp.vm.VMConfig;
 
 @Singleton
@@ -87,16 +86,20 @@ public class YarnManager {
     logger.info("Finish init(VMConfig vmConfig)");
   }
 
-  public void onDestroy() throws Exception {
+  public void onDestroy()  {
     logger.info("Start onDestroy()");
-    if(amrmClientAsync != null) {
-      amrmClientAsync.unregisterApplicationMaster(FinalApplicationStatus.SUCCEEDED, "", "");
-      amrmClientAsync.stop();
-      amrmClientAsync.close(); 
-    }
-    if(nmClient != null) {
-      nmClient.stop();
-      nmClient.close();
+    try {
+      if(amrmClientAsync != null) {
+        amrmClientAsync.unregisterApplicationMaster(FinalApplicationStatus.SUCCEEDED, "", "");
+        amrmClientAsync.stop();
+        amrmClientAsync.close(); 
+      }
+      if(nmClient != null) {
+        nmClient.stop();
+        nmClient.close();
+      }
+    } catch(Exception ex) {
+      logger.error("Cannot destroy YarnManager properly", ex);
     }
     logger.info("Finish onDestroy()");
   }
