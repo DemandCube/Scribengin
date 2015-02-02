@@ -14,13 +14,10 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
   
   @BeforeClass
   public static void setup() throws Exception{
-    //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+    CommandServerTestBase.setup();
     
     
-    Registry registry = CommandServerTestHelper.getNewRegistry();
+    Registry registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -31,14 +28,14 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext commandApp = new WebAppContext();
-    commandApp.setResourceBase(testHelper.getCommandServerFolder());
-    commandApp.setDescriptor(  testHelper.getCommandServerXml());
+    commandApp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    commandApp.setDescriptor(  CommandServerTestBase.getCommandServerXml());
     
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext proxyApp = new WebAppContext();
-    proxyApp.setResourceBase(testHelper.getProxyServerFolder());
-    proxyApp.setDescriptor(testHelper.getProxyServerXml());
+    proxyApp.setResourceBase(CommandServerTestBase.getProxyServerFolder());
+    proxyApp.setDescriptor(CommandServerTestBase.getProxyServerXml());
     
     //Bring up proxy
     cps = new CommandProxyServer(proxyPort);
@@ -55,6 +52,6 @@ public class CommandProxyServerUnitTest extends CommandProxyServletUnitTest{
   public static void teardown() throws Exception{
     cps.stop();
     commandServer.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
 }

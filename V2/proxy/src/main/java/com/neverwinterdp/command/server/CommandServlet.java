@@ -1,6 +1,9 @@
 package com.neverwinterdp.command.server;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -15,13 +18,12 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
-import com.neverwinterdp.vm.client.shell.Shell;
 
 @SuppressWarnings("serial")
 public class CommandServlet extends HttpServlet {
   public static String noCommandMessage = "No Command Sent";
-  public static String badCommandMessage = "Bad Command: ";
-  private Shell vmShell; 
+  //public static String badCommandMessage = "Bad Command: ";
+  private ScribenginShell scribenginShell; 
   private CommandConsole shellConsole;
   RegistryConfig regConf;
   Registry reg;
@@ -39,7 +41,7 @@ public class CommandServlet extends HttpServlet {
     
     try {
       this.reg = new RegistryImpl(this.regConf);
-      vmShell = new ScribenginShell(this.reg.connect(), shellConsole);
+      this.scribenginShell = new ScribenginShell(this.reg.connect(), shellConsole);
     } catch (RegistryException e) {
       e.printStackTrace();
     }
@@ -88,46 +90,51 @@ public class CommandServlet extends HttpServlet {
     }
     else{
       switch(command){
-        case "vm list":
-          response.getWriter().print(executeShell("vm list"));
-          break;
-        case "registry dump":
-          String path = request.getParameter("path");
-          if(path == null){
-            response.getWriter().print(executeShell("registry dump"));
-          }
-          else{
-            response.getWriter().print(executeShell("registry dump --path "+path));
-          }
-          break;
-        case "scribengin master":
-          response.getWriter().print(executeShell("scribengin master"));
-          break;
         case "dataflow":
           ScribenginClient sc = new ScribenginClient(this.reg);
           
           DataflowClient submitter = new DataflowClient(sc);
           try {
-            submitter.submit(DescriptorBuilder.parseDataflowInput(request));
+            submitter.submit(DescriptorBuilder.parseDataflowInput(parseRequestIntoMap(request)));
           } catch (Exception e) {
             response.getWriter().print("DATAFLOW ERROR: "+e.getMessage());
           }
-          response.getWriter().print("DATAFLOW SUBMITTED SUCCESSFULLY");
+          String dataflowName = request.getParameter("dataflow-Name");
+          if(dataflowName == null){
+            dataflowName = DescriptorBuilderDefaults._dataflowName;
+          }
+          response.getWriter().print("DATAFLOW "+ dataflowName +" SUBMITTED SUCCESSFULLY");
           break;
         default:
-          response.getWriter().print(badCommandMessage+command);
+          response.getWriter().print(executeShell(command));
       }
     }
   }
   
   protected String executeShell(String command){
     try {
-      vmShell.execute(command);
+      scribenginShell.execute(command);
     } catch (Exception e) {
       e.printStackTrace();
     }
     return shellConsole.getLastCommandsOutput();
   }
   
+  /**
+   * To make the DescriptorBuilder more reusable, going to parse out all the entries from
+   * the request parameter map.  There should only ever be 1 item per entry, so parse out the
+   * need to have multiple values per key
+   * @param request
+   * @return
+   */
+  protected Map<String, String> parseRequestIntoMap(HttpServletRequest request){
+    Map<String,String> result = new HashMap<String,String>();
+    
+    for (Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+      result.put(entry.getKey(), entry.getValue()[0]);
+    }
+    
+    return result;
+  }
   
 }

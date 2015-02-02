@@ -1,6 +1,6 @@
 package com.neverwinterdp.command.server;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
@@ -8,12 +8,12 @@ import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
 public class DescriptorBuilder {
 
-  protected static DataflowDescriptor parseDataflowInput(HttpServletRequest request){
+  protected static DataflowDescriptor parseDataflowInput(Map<String,String> request){
     DataflowDescriptor dflDescriptor = parseDataFlowDescriptor(request);
     
-    String sourceType      = request.getParameter("source-Type"); 
-    String sinkType        = request.getParameter("sink-Type");
-    String invalidSinkType = request.getParameter("invalidsink-Type");
+    String sourceType      = request.get("source-Type"); 
+    String sinkType        = request.get("sink-Type");
+    String invalidSinkType = request.get("invalidsink-Type");
     
     if(sourceType == null){
       sourceType = "KAFKA";
@@ -58,19 +58,19 @@ public class DescriptorBuilder {
    * @param request
    * @return
    */
-  public static DataflowDescriptor parseDataFlowDescriptor(HttpServletRequest request){
-    String dataflowName = request.getParameter("dataflow-Name");
+  public static DataflowDescriptor parseDataFlowDescriptor(Map<String,String>  request){
+    String dataflowName = request.get("dataflow-Name");
     if(dataflowName == null){
       dataflowName = DescriptorBuilderDefaults._dataflowName;
     }
-    String dataProcessorClass = request.getParameter("dataflow-Dataprocessor");
+    String dataProcessorClass = request.get("dataflow-Dataprocessor");
     if(dataProcessorClass == null){
       dataProcessorClass = DescriptorBuilderDefaults._dataProcessorClass;
     }
     
     int numWorkers;
     try{
-      numWorkers = Integer.parseInt(request.getParameter("dataflow-NumWorkers"));
+      numWorkers = Integer.parseInt(request.get("dataflow-NumWorkers"));
     }
     catch(Exception e){
       numWorkers = DescriptorBuilderDefaults._numWorkers;
@@ -78,7 +78,7 @@ public class DescriptorBuilder {
     
     int numExecutorsPerWorker;
     try{
-      numExecutorsPerWorker = Integer.parseInt(request.getParameter("dataflow-NumExecutorsPerWorkers"));
+      numExecutorsPerWorker = Integer.parseInt(request.get("dataflow-NumExecutorsPerWorkers"));
     }
     catch(Exception e){
       numExecutorsPerWorker = DescriptorBuilderDefaults._numExecutorsPerWorker;
@@ -99,12 +99,12 @@ public class DescriptorBuilder {
    * @param request
    * @return
    */
-  public static SourceDescriptor createKafkaSourceDescriptor(HttpServletRequest request){
-    String type = request.getParameter("source-Type");
-    String name = request.getParameter("source-Name");
-    String topic = request.getParameter("source-Topic");
-    String zkConnect = request.getParameter("source-ZkConnect");
-    String brokerList = request.getParameter("source-BrokerList");
+  public static SourceDescriptor createKafkaSourceDescriptor(Map<String,String>  request){
+    String type = request.get("source-Type");
+    String name = request.get("source-Name");
+    String topic = request.get("source-Topic");
+    String zkConnect = request.get("source-ZkConnect");
+    String brokerList = request.get("source-BrokerList");
     
     if(type == null){
       type = "KAFKA";
@@ -138,12 +138,12 @@ public class DescriptorBuilder {
    * @param prefix
    * @return
    */
-  public static SinkDescriptor createKafkaSinkDescriptor(HttpServletRequest request, String prefix){
-    String type = request.getParameter(prefix+"-Type");
-    String name = request.getParameter(prefix+"-Name");
-    String topic = request.getParameter(prefix+"-Topic");
-    String zkConnect = request.getParameter(prefix+"-ZkConnect");
-    String brokerList = request.getParameter(prefix+"-BrokerList");
+  public static SinkDescriptor createKafkaSinkDescriptor(Map<String,String>  request, String prefix){
+    String type = request.get(prefix+"-Type");
+    String name = request.get(prefix+"-Name");
+    String topic = request.get(prefix+"-Topic");
+    String zkConnect = request.get(prefix+"-ZkConnect");
+    String brokerList = request.get(prefix+"-BrokerList");
     
     if(type == null){
       type = "KAFKA";

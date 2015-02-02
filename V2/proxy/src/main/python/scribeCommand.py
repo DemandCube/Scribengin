@@ -1,7 +1,5 @@
 import requests, click, json, logging, sys
 
-#r = requests.get("http://www.github.com/DemandCube/Scribengin")
-#print r.content
 _debug = False
 _host = ''
 _logfile = ''
@@ -45,13 +43,22 @@ def registrydump(path):
   res = sendRequest(payload)
   click.echo(res)
 
-@mastercommand.command(help="- Not implemented yet :)")
-def scribenginmaster():
-  logging.debug("Scribengin master")
-  payload = {'command': 'scribengin master'}
+@mastercommand.command(help="- Run any command on Scribengin shell")
+@click.option('--command',  help="The command to execute")
+def runcommand(command):
+  logging.debug("Running arbitrary command")
+  payload = {'command': command}
   res = sendRequest(payload)
   click.echo(res)
 
+@mastercommand.command(help="- Submit a new dataflow")
+@click.option('--jsonfile', type=click.File('r'), default='dataflow.json', help="Path to file containing json for dataflow config")
+def submitdataflow(jsonfile):
+  logging.debug("Submit New Dataflow")
+  payload = json.load(jsonfile)
+  payload["command"] = "dataflow"
+  res = sendRequest(payload)
+  click.echo(res)
 
 
 def sendRequest(params):

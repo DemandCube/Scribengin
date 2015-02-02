@@ -40,9 +40,9 @@ public class CommandServletDataFlowUnitTest {
         .field("command", "dataflow")
         .asString();
     
-    assertEquals("DATAFLOW SUBMITTED SUCCESSFULLY", resp.getBody());
+    assertEquals("DATAFLOW "+DescriptorBuilderDefaults._dataflowName +" SUBMITTED SUCCESSFULLY", resp.getBody());
     
-    Registry r = CommandServerTestHelper.getNewRegistry();
+    Registry r = CommandServerTestBase.getNewRegistry();
     r.connect();
     Node x = r.get("/scribengin/dataflows/running/defaultDataFlow");
 
@@ -89,12 +89,12 @@ public class CommandServletDataFlowUnitTest {
         .asString();
     
     
-    assertEquals("DATAFLOW SUBMITTED SUCCESSFULLY", resp.getBody());
+    assertEquals("DATAFLOW dataflowName SUBMITTED SUCCESSFULLY", resp.getBody());
     
-    Registry r = CommandServerTestHelper.getNewRegistry();
+    Registry r = CommandServerTestBase.getNewRegistry();
     r.connect();
     Node flowNode = r.get("/scribengin/dataflows/running/dataflowName");
-    System.err.println(new String(flowNode.getData()));
+    //System.err.println(new String(flowNode.getData()));
     ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
     DataflowDescriptor dfDesc = mapper.readValue(new String(flowNode.getData()), DataflowDescriptor.class);
     
@@ -128,6 +128,15 @@ public class CommandServletDataFlowUnitTest {
     assertEquals("invalidsinkZkConnect", invalidSink.attribute("zk.connect"));
     assertEquals("invalidsinkBrokerList", invalidSink.attribute("broker.list"));
     
+    
+    /*
+    resp = Unirest.post("http://localhost:"+Integer.toString(CommandServletUnitTest.port))
+        .field("command", "registry dump")
+        .asString();
+    System.out.println(resp.getBody());
+    */
   }
+  
+  
 
 }
