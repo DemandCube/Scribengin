@@ -20,7 +20,6 @@ public class VMScribenginServiceCommand {
     
     @Override
     public CommandResult<Boolean> execute(VM vm) {
-      System.out.println("Call VMScribenginServiceCommand");
       CommandResult<Boolean> result = new CommandResult<Boolean>();
       VMScribenginServiceApp app = (VMScribenginServiceApp) vm.getVMApplication();
       try {

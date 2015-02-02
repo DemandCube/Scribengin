@@ -11,8 +11,8 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
 import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 abstract public class VMScribenginUnitTest {
   protected ScribenginClusterBuilder clusterBuilder ;

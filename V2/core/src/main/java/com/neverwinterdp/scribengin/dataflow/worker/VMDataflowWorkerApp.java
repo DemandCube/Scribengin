@@ -42,7 +42,7 @@ public class VMDataflowWorkerApp extends VMApp {
           VMConfig.Environment env = vmConfig.getEnvironment();
           if(env == VMConfig.Environment.YARN || env == VMConfig.Environment.YARN_MINICLUSTER) {
             YarnConfiguration conf = new YarnConfiguration();
-            vmConfig.overrideYarnConfiguration(conf);
+            vmConfig.overrideHadoopConfiguration(conf);
             fs = FileSystem.get(conf) ;
           } else {
             fs = FileSystem.getLocal(new Configuration());

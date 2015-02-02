@@ -24,7 +24,7 @@ public class ScribenginShell extends Shell {
   
   public ScribenginShell(VMClient vmClient, Console console){
     super(vmClient, console);
-    this.scribenginClient = new ScribenginClient(vmClient.getRegistry());
+    this.scribenginClient = new ScribenginClient(vmClient);
     add("scribengin", new ScribenginCommand());
     add("dataflow", new DataflowCommand());
   }

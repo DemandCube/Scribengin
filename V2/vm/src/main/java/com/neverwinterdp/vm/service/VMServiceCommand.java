@@ -29,7 +29,7 @@ public class VMServiceCommand {
       CommandResult<VMDescriptor> result = new CommandResult<VMDescriptor>();
       try {
         //TODO: REVIEW this yarn configuration settings
-        vmConfig.addYarnProperty(app.getVM().getDescriptor().getVmConfig().getYarnConf());
+        vmConfig.addHadoopProperty(app.getVM().getDescriptor().getVmConfig().getHadoopProperties());
         VMDescriptor descriptor = vmService.allocate(vmConfig) ;
         result.setResult(descriptor);
       } catch (Exception e) {

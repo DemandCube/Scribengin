@@ -5,10 +5,10 @@ import java.io.IOException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 public class HDFSSinkStream implements SinkStream {
   private FileSystem fs ;

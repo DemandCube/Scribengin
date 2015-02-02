@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.environment.yarn;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.api.ApplicationConstants.Environment;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -27,6 +29,7 @@ import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.Records;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +63,9 @@ public class YarnManager {
     logger.info("Start init(VMConfig vmConfig)");
     this.vmConfig = vmConfig;
     try {
-      this.yarnConfig = vmConfig.getYarnConf();
+      this.yarnConfig = vmConfig.getHadoopProperties();
       conf = new YarnConfiguration() ;
-      vmConfig.overrideYarnConfiguration(conf);
+      vmConfig.overrideHadoopConfiguration(conf);
       
       amrmClient = AMRMClient.createAMRMClient();
       amrmClientAsync = AMRMClientAsync.createAMRMClientAsync(amrmClient, 1000, new AMRMCallbackHandler());
@@ -123,15 +126,19 @@ public class YarnManager {
     return response.getAllocatedContainers() ;
   }
   
-  public void startContainer(Container container, String command) throws YarnException, IOException {
+  public void startContainer(Container container, VMConfig appVMConfig) throws YarnException, IOException {
+    String command = appVMConfig.buildCommand();
+    System.err.println(">>startContainer with command: " + command);
     ContainerLaunchContext ctx = Records.newRecord(ContainerLaunchContext.class);
     if(vmConfig.getVmResources().size() > 0) {
-      ctx.setLocalResources(new VMResources(conf, vmConfig));
+      appVMConfig.getVmResources().putAll(vmConfig.getVmResources());
+      VMResources vmResources = new VMResources(conf, appVMConfig);
+      ctx.setLocalResources(vmResources);
     }
-    Map<String, String> appMasterEnv = new HashMap<String, String>();
-    boolean jvmEnv = vmConfig.getEnvironment() != VMConfig.Environment.YARN;
-    Util.setupAppMasterEnv(jvmEnv , conf, appMasterEnv);
-    ctx.setEnvironment(appMasterEnv);
+    Map<String, String> appEnv = new HashMap<String, String>();
+    boolean miniClusterEnv = vmConfig.getEnvironment() == VMConfig.Environment.YARN_MINICLUSTER;
+    setupAppClasspath(miniClusterEnv , conf, appEnv);
+    ctx.setEnvironment(appEnv);
     
     StringBuilder sb = new StringBuilder();
     List<String> commands = Collections.singletonList(
@@ -142,6 +149,33 @@ public class YarnManager {
     ctx.setCommands(commands);
     nmClient.startContainer(container, ctx);
     //TODO: update vm descriptor status
+    System.err.println("<<startContainer with command: " + command);
+  }
+  
+  void setupAppClasspath(boolean miniClusterEnv, Configuration conf, Map<String, String> appMasterEnv) {
+    if(miniClusterEnv) {
+      String cps = System.getProperty("java.class.path") ;
+      String[] cp = cps.split(":") ;
+      for(String selCp : cp) {
+        Apps.addToEnvironment(appMasterEnv, Environment.CLASSPATH.name(), selCp, ":");
+      }
+    } else {
+      StringBuilder classPathEnv = new StringBuilder();
+      classPathEnv.append(Environment.CLASSPATH.$()).append(File.pathSeparatorChar);
+      classPathEnv.append("./*");
+
+      String[] classpath = conf.getStrings(
+          YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+          YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH
+      ) ;
+      for (String selClasspath : classpath) {
+        classPathEnv.append(File.pathSeparatorChar);
+        classPathEnv.append(selClasspath.trim());
+      }
+      appMasterEnv.put(Environment.CLASSPATH.name(), classPathEnv.toString());
+      System.err.println("CLASSPATH: " + classPathEnv);
+    }
+    Apps.addToEnvironment(appMasterEnv, Environment.CLASSPATH.name(), Environment.PWD.$() + File.separator + "*", ":");
   }
   
   class AMRMCallbackHandler implements AMRMClientAsync.CallbackHandler {

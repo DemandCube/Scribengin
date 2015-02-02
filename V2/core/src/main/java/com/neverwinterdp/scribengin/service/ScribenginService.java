@@ -65,15 +65,20 @@ public class ScribenginService {
   }
   
   private VMDescriptor createDataflowMaster(DataflowDescriptor descriptor, int id) throws Exception {
+    String dataflowAppHome = descriptor.getDataflowAppHome();
     Node dataflowNode = registry.get(DATAFLOWS_RUNNING_PATH + "/" + descriptor.getName()) ;
     VMConfig dfVMConfig = new VMConfig() ;
+    if(dataflowAppHome != null) {
+      dfVMConfig.setAppHome(dataflowAppHome);
+      dfVMConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
+    }
     dfVMConfig.setEnvironment(vmConfig.getEnvironment());
     dfVMConfig.setName(descriptor.getName() + "-master-" + id);
     dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
     dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
     dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
     dfVMConfig.addProperty("dataflow.registry.path", dataflowNode.getPath());
-    dfVMConfig.setYarnConf(vmConfig.getYarnConf());
+    dfVMConfig.setHadoopProperties(vmConfig.getHadoopProperties());
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     CommandResult<VMDescriptor> result = 
         (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
@@ -113,7 +118,7 @@ public class ScribenginService {
     private DataflowDescriptor descriptor;
     
     public DataflowDeployer(DataflowDescriptor descriptor) {
-      this.descriptor = descriptor;
+      this.descriptor      = descriptor;
     }
     
     public void run() {

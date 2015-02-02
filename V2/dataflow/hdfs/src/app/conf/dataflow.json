@@ -1,0 +1,23 @@
+{
+  "name" : "hello-hdfs-dataflow",
+  "numberOfWorkers" : 3,
+  "numberOfExecutorsPerWorker" : 3,
+  "dataProcessor" : "com.neverwinterdp.scribengin.dataflow.TestCopyDataProcessor",
+
+  "sourceDescriptor" : {
+    "location" : "/data/source",
+    "type" : "HDFS"
+  },
+
+  "sinkDescriptors" : {
+    "default" : {
+      "location" : "/data/sink",
+      "type" : "HDFS"
+    },
+
+    "invalid" : {
+      "location" : "/data/invalid-sink",
+      "type" : "HDFS"
+    }
+  }
+}

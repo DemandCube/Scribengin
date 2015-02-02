@@ -16,6 +16,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.YarnVMClient;
@@ -44,10 +45,11 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
 
   @After
   public void teardown() throws Exception {
+    super.teardown();
+    
     miniYarnCluster.stop();
     miniYarnCluster.close();
     miniDFSCluster.shutdown();
-    super.teardown();
   }
   
   @Override
@@ -60,7 +62,7 @@ public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
   
   @Override
   protected VMClusterBuilder getVMClusterBuilder() throws Exception {
-    Map<String, String> yarnProps = new HashMap<>() ;
+    HadoopProperties yarnProps = new HadoopProperties() ;
     yarnProps.put("yarn.resourcemanager.scheduler.address", "localhost:8030");
     yarnProps.put("fs.defaultFS", miniDFSCluster.getURI().toString());
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());

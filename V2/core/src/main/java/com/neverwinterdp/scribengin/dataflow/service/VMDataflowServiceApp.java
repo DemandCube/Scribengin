@@ -56,7 +56,7 @@ public class VMDataflowServiceApp extends VMApp {
             try {
               bindType(Registry.class, registry.getClass().getName());
               Configuration conf = new Configuration();
-              vmConfig.overrideYarnConfiguration(conf);
+              vmConfig.overrideHadoopConfiguration(conf);
               FileSystem fs = FileSystem.get(conf);
               bindInstance(FileSystem.class, fs);
             } catch (Exception e) {

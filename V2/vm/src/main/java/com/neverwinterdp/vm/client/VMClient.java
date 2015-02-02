@@ -65,9 +65,16 @@ public class VMClient {
     return result.getResult();
   }
   
+  public VMDescriptor allocate(String localAppHome, VMConfig vmConfig) throws Exception {
+    return allocate(vmConfig);
+  }
+  
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
     return result.getResultAs(Boolean.class);
+  }
+  
+  public void uploadApp(String localAppHome, String appHome) throws Exception {
   }
   
   public void createVMMaster(String name) throws Exception {

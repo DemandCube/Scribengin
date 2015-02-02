@@ -3,7 +3,6 @@ package com.neverwinterdp.scribengin.client.shell;
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
-import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Command;
@@ -13,6 +12,7 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class ScribenginCommand extends Command {
   public ScribenginCommand() {
+    add("start",  new Start()) ;
     add("server", new Server()) ;
     add("master", new ListMasterDescriptor()) ;
   }
@@ -36,10 +36,19 @@ public class ScribenginCommand extends Command {
       }
       
       //TODO: for Richard
-      ScribenginShell scribenginShell = (ScribenginShell) shell ;
-      ScribenginClient scribenginClient = scribenginShell.getScribenginClient();
-      VMDescriptor scribenginMaster = scribenginClient.getScribenginMaster() ;
-      vmClient.shutdown(scribenginMaster) ;
+//      ScribenginShell scribenginShell = (ScribenginShell) shell ;
+//      ScribenginClient scribenginClient = scribenginShell.getScribenginClient();
+//      VMDescriptor scribenginMaster = scribenginClient.getScribenginMaster() ;
+//      vmClient.shutdown(scribenginMaster) ;
+    }
+  }
+  
+  static public class Start extends SubCommand {
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      VMClient vmClient = shell.getVMClient() ;
+      ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(vmClient)) ;
+      clusterBuilder.startScribenginMasters();
     }
   }
   

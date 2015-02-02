@@ -60,6 +60,7 @@ public class DataflowServiceInitEventListener implements DataflowServiceEventLis
     Registry registry = dataflowRegistry.getRegistry();
     VMClient vmClient = new VMClient(registry);
     RegistryConfig registryConfig = registry.getRegistryConfig();
+    String dataflowAppHome = dataflowDescriptor.getDataflowAppHome();
     for(int i = 0; i < dataflowDescriptor.getNumberOfWorkers(); i++) {
       VMConfig vmConfig = 
         new VMConfig().
@@ -69,8 +70,12 @@ public class DataflowServiceInitEventListener implements DataflowServiceEventLis
         setRegistryConfig(registryConfig).
         setVmApplication(VMDataflowWorkerApp.class.getName()).
         addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath()).
-        setYarnConf(service.getVMConfig().getYarnConf());
-        VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
+        setHadoopProperties(service.getVMConfig().getHadoopProperties());
+      if(dataflowAppHome != null) {
+        vmConfig.setAppHome(dataflowAppHome);
+        vmConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
+      }
+      VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
       service.addWorker(vmDescriptor);
     }
   }

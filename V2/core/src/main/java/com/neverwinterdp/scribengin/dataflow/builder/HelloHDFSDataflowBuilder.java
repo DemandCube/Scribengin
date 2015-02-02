@@ -12,11 +12,12 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.hdfs.DataGenerator;
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.util.JSONSerializer;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 public class HelloHDFSDataflowBuilder {
   private String dataDir ;
@@ -52,6 +53,7 @@ public class HelloHDFSDataflowBuilder {
     dflDescriptor.addSinkDescriptor("default", defaultSink);
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
+    System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
     return dataflowClient.submit(dflDescriptor) ;
   }
 

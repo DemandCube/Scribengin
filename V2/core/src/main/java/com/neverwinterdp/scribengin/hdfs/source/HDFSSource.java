@@ -7,11 +7,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.hdfs.HDFSUtil;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
+import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 /**
  * @author Tuan Nguyen

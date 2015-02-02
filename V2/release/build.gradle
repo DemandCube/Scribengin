@@ -1,0 +1,128 @@
+archivesBaseName = 'scribengin.release'
+
+eclipse {
+  project {
+    name = 'scribengin.release'
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations.all {
+  exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
+  exclude(group: 'storm', name: 'storm', version: '0.8.1')
+  
+  //This is because hadoop uses and older version of jetty,
+  //and the proxy server needs version 3
+  //exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
+  
+  resolutionStrategy {
+    force 'com.google.guava:guava:13.0'
+  }
+}
+
+dependencies {
+  compile project(':core')
+  compile project(':dataflow/hdfs')
+
+  compile group: 'junit', name: 'junit', version: '4.11'
+}
+
+task release (dependsOn: 'build') << {
+  def releaseDir = "${buildDir}/release"
+  doReleaseScribengin("${releaseDir}/scribengin");
+
+  def hdfsDataflowLibs = [ "scribengin.dataflow.hdfs" ] ;
+  def descriptor = "src/dataflows/hdfs/dataflow.json" ;
+  doReleaseDataflow("hdfs", "${releaseDir}", hdfsDataflowLibs, descriptor);
+}
+
+def doReleaseScribengin(String releaseDir) {
+  println "\n\n"
+  println "*************************************************"
+  println "Build release VMMaster ${releaseDir}"
+  println "*************************************************"
+
+  def dependencyJars = [ 
+    "commons.utils", "commons.api", "commons.buffer", "commons.yara",
+    "commons.hadoop-framework", "commons.zookeeper", 
+    
+    "scribengin.server", "scribengin.registry", "scribengin.vm", "scribengin.core", 
+
+    "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
+    //"jcommander", "reflections", "guava-16.0.1", "javassist",
+    "jcommander", "reflections", "guava-13.0", "javassist",
+    'guice', 'javax.inject', 'hazelcast', 'aopalliance',
+    "kafka", "scala-library",
+    'zookeeper', 'zkclient',
+    "netty-all", 'jzlib', 
+    'chronicle', "lang-6.4.6", "compiler-2.2.0",
+    
+    "hadoop-common", "hadoop-hdfs", "hadoop-auth", 
+    "hadoop-yarn-api", "hadoop-yarn-common", "hadoop-yarn-client",
+    "protobuf",
+
+    //codahale metric is required by kafka
+    "metrics-core-2.2.0",
+    "commons-collections", "commons-configuration","commons-lang3-3.1", "commons-lang-2.6", "commons-cli",
+    "log4j", "slf4j-api", "slf4j-log4j12", "commons-logging",
+    "junit-4.11"
+  ] ;
+
+  println "Copy the dependency library"
+  configurations.compile.each { File file -> 
+    if(isIn(dependencyJars, file)) {
+      println "  Copy $file.name to NeverwinterDP/libs"
+      copy {
+        from file
+        into "${releaseDir}/libs"
+      }
+    } else {
+      //println "Ignore $file.name "
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}/libs"
+  }
+
+  println "Copy and override app"
+  copy {
+    from "src/app"
+    into "${releaseDir}"
+  }
+}
+
+def doReleaseDataflow(String name, String releaseDir, def libs, descriptor) {
+  println "\n\n"
+  println "*************************************************"
+  println "Build release for the dataflow ${name}"
+  println "*************************************************"
+
+  println "Copy the dependency library"
+  configurations.compile.each { File file -> 
+    if(isIn(libs, file)) {
+      println "  Copy $file.name to ${releaseDir}/dataflows/${name}/libs"
+      copy {
+        from file
+        into "${releaseDir}/dataflows/${name}/libs"
+      }
+    }
+  }
+
+  copy {
+    from descriptor
+      into "${releaseDir}/dataflows/${name}"
+  }
+}
+
+def isIn(set, File file) {
+  for(item in set) {
+    if(file.name.startsWith(item)) return true ;
+  }
+  return false ;
+}

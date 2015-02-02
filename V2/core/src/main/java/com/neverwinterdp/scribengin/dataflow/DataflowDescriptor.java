@@ -8,6 +8,7 @@ import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
 public class DataflowDescriptor {
   private String                      name;
+  private String                      dataflowAppHome;
   private SourceDescriptor            sourceDescriptor;
   private Map<String, SinkDescriptor> sinkDescriptors;
   private int                         numberOfWorkers =  1;
@@ -17,6 +18,13 @@ public class DataflowDescriptor {
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
   
+  public String getDataflowAppHome() {
+    return dataflowAppHome;
+  }
+  public void setDataflowAppHome(String dataflowAppHome) {
+    this.dataflowAppHome = dataflowAppHome;
+  }
+
   public SourceDescriptor getSourceDescriptor() { return sourceDescriptor;}
   public void setSourceDescriptor(SourceDescriptor sourceDescriptor) { this.sourceDescriptor = sourceDescriptor;}
 
