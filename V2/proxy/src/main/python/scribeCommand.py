@@ -60,6 +60,17 @@ def submitdataflow(jsonfile):
   res = sendRequest(payload)
   click.echo(res)
 
+@mastercommand.command(help="- Start an interactive shell")
+def shell():
+  logging.debug("Starting interactive shell")
+  print "Type 'exit' to quit the shell"
+  command = raw_input('shell: ')
+  while(command != "exit"):
+    payload = {'command': command}
+    res = sendRequest(payload)
+    click.echo(res)
+    command = raw_input('shell: ')
+
 
 def sendRequest(params):
   global _host
