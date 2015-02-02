@@ -1,3 +1,8 @@
+#! /bin/sh
+""":"
+exec python $0 ${1+"$@"}
+"""
+
 import requests, click, json, logging, sys
 
 _debug = False
