@@ -62,6 +62,5 @@ public class VMResources extends HashMap<String, LocalResource> {
     libJar.setType(LocalResourceType.FILE);
     libJar.setVisibility(LocalResourceVisibility.PUBLIC);
     put(fpath.getName(), libJar) ;
-    System.err.println("Add local reousrce: " + fpath);
   }
 }

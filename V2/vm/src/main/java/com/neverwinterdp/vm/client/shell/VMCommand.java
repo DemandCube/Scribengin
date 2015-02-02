@@ -13,6 +13,7 @@ import com.neverwinterdp.vm.client.VMClient;
 public class VMCommand extends Command {
   public VMCommand() {
     add("start", new Start()) ;
+    add("shutdown", new Shutdown()) ;
     add("list", new ListRunning()) ;
     add("history", new ListHistory()) ;
   }
@@ -23,6 +24,14 @@ public class VMCommand extends Command {
       VMClient vmClient = shell.getVMClient() ;
       VMClusterBuilder clusterBuilder = new VMClusterBuilder(vmClient) ;
       clusterBuilder.start();
+    }
+  }
+  
+  static public class Shutdown extends SubCommand {
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      VMClient vmClient = shell.getVMClient() ;
+      vmClient.shutdown();
     }
   }
   

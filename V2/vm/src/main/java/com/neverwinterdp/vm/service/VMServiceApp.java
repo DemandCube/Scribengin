@@ -13,6 +13,7 @@ import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.event.VMShutdownEventListener;
 
 
 public class VMServiceApp extends VMApp {
@@ -28,14 +29,25 @@ public class VMServiceApp extends VMApp {
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
     election.setListener(new VMServiceLeaderElectionListener());
     election.start();
+    Registry registry = getVM().getVMRegistry().getRegistry();
+    VMShutdownEventListener shutdownListener = new VMShutdownEventListener(registry) {
+      @Override
+      public void onShutdownEvent() throws Exception {
+        notifyShutdown();
+      }
+    };
     try {
       waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
-      if(vmService != null) vmService.close();
       if(election != null && election.getLeaderId() != null) {
-        vmService.close();
         election.stop();
+      }
+      
+      if(vmService != null) {
+        //TODO: should check to make sure the resource are clean before destroy the service
+        Thread.sleep(3000);
+        vmService.close();
       }
     }
   }

@@ -20,6 +20,7 @@ public class VMService {
   final static public String ALLOCATED_PATH = "/vm/allocated";
   final static public String HISTORY_PATH   = "/vm/history";
   final static public String LEADER_PATH    = "/vm/master/leader";
+  final static public String EVENTS_PATH    = "/vm/events";
   
   @Inject
   private Registry registry;
@@ -32,6 +33,7 @@ public class VMService {
   @Inject
   public void onInit() throws Exception {
     registry.createIfNotExist(LEADER_PATH) ;
+    registry.createIfNotExist(EVENTS_PATH) ;
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
     

@@ -128,7 +128,6 @@ public class YarnManager {
   
   public void startContainer(Container container, VMConfig appVMConfig) throws YarnException, IOException {
     String command = appVMConfig.buildCommand();
-    System.err.println(">>startContainer with command: " + command);
     ContainerLaunchContext ctx = Records.newRecord(ContainerLaunchContext.class);
     if(vmConfig.getVmResources().size() > 0) {
       appVMConfig.getVmResources().putAll(vmConfig.getVmResources());
@@ -149,7 +148,6 @@ public class YarnManager {
     ctx.setCommands(commands);
     nmClient.startContainer(container, ctx);
     //TODO: update vm descriptor status
-    System.err.println("<<startContainer with command: " + command);
   }
   
   void setupAppClasspath(boolean miniClusterEnv, Configuration conf, Map<String, String> appMasterEnv) {

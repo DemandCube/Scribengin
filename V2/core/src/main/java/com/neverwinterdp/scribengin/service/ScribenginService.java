@@ -22,10 +22,11 @@ import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
 public class ScribenginService {
-  final static public String SCRIBENGIN_PATH = "/scribengin";
-  final static public String LEADER_PATH     = "/scribengin/master/leader";
-  final static public String DATAFLOWS_HISTORY_PATH  = "/scribengin/dataflows/history";
-  final static public String DATAFLOWS_RUNNING_PATH  = "/scribengin/dataflows/running";
+  final static public String SCRIBENGIN_PATH         = "/scribengin";
+  final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
+  final static public String LEADER_PATH             = SCRIBENGIN_PATH + "/master/leader";
+  final static public String DATAFLOWS_HISTORY_PATH  = SCRIBENGIN_PATH + "/dataflows/history";
+  final static public String DATAFLOWS_RUNNING_PATH  = SCRIBENGIN_PATH + "/dataflows/running";
   
   @Inject
   private VMConfig vmConfig; 
@@ -42,6 +43,7 @@ public class ScribenginService {
     this.registry = registry;
     this.registryListener = new RegistryListener(registry);
 
+    registry.createIfNotExist(EVENTS_PATH);
     registry.createIfNotExist(DATAFLOWS_RUNNING_PATH);
     dataflowsRunningNode = registry.get(DATAFLOWS_RUNNING_PATH) ;
 

@@ -98,6 +98,5 @@ public class AppClient {
       dfs.delete(appHomeSharePath, true) ;
     }
     dfs.copyFromLocalFile(false, true, appHomePath, appHomeSharePath);
-    HDFSUtil.dump(dfs, "/");
   }
 }
