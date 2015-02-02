@@ -59,4 +59,9 @@ public class YarnVMServicePlugin implements VMServicePlugin {
     logger.info("Start onKill(VMService vmService, VMDescriptor vmDescriptor)");
     logger.info("Finish onKill(VMService vmService, VMDescriptor vmDescriptor)");
   }
+
+  @Override
+  public void shutdown() {
+    yarnManager.onDestroy();
+  }
 }

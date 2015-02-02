@@ -39,7 +39,9 @@ public class VMService {
     
   }
   
-  public void close() { registry = null ; }
+  public void shutdown() { 
+    plugin.shutdown();
+  }
   
   public boolean isClosed() { return registry == null ; }
   

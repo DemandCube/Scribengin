@@ -47,7 +47,7 @@ public class VMServiceApp extends VMApp {
       if(vmService != null) {
         //TODO: should check to make sure the resource are clean before destroy the service
         Thread.sleep(3000);
-        vmService.close();
+        vmService.shutdown();
       }
     }
   }
