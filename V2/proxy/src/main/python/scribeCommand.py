@@ -1,7 +1,5 @@
 import requests, click, json, logging, sys
 
-#r = requests.get("http://www.github.com/DemandCube/Scribengin")
-#print r.content
 _debug = False
 _host = ''
 _logfile = ''

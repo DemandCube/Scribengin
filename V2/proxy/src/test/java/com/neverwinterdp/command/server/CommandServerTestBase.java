@@ -31,6 +31,7 @@ public class CommandServerTestBase {
       "vm-scribengin-master-1   /vm/allocated/vm-scribengin-master-1   scribengin-master   1       128      \n"+
       "vm-scribengin-master-2   /vm/allocated/vm-scribengin-master-2   scribengin-master   1       128      \n\n";
 
+  /*
   public static String expectedRegistryDumpResponse=
       "/\n"+
       "  scribengin\n"+
@@ -60,7 +61,7 @@ public class CommandServerTestBase {
       "    master\n"+
       "      leader - {\"path\":\"/vm/allocated/vm-master-1\"}\n"+
       "        leader-0000000000\n";
-  
+  */
   
   protected static ScribenginClusterBuilder clusterBuilder ;
   
