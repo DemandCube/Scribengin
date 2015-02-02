@@ -19,7 +19,8 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 public class DataflowCommand extends Command {
   public DataflowCommand() {
     add("submit", new Submit()) ;
-    add("hello",  new Hello()) ;
+    add("hdfs",  new Hdfs()) ;
+    add("kafka",  new Kafka()) ;
   }
   
   static public class Submit extends SubCommand {
@@ -34,15 +35,6 @@ public class DataflowCommand extends Command {
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       ScribenginClient scribenginClient= scribenginShell.getScribenginClient();
       try {
-        String dataDir = "/data" ;
-        HadoopProperties hadoopProperties = shell.attribute(HadoopProperties.class);
-        FileSystem fs = FileSystem.get(hadoopProperties.getConfiguration());
-        if(fs.exists(new Path(dataDir))) {
-          fs.delete(new Path(dataDir), true) ;
-        }
-        HelloHDFSDataflowBuilder hdfDataflowBuilder = new HelloHDFSDataflowBuilder(scribenginClient, fs, dataDir);
-        hdfDataflowBuilder.createSource(15, 3, 5);
-        
         DataflowClient dataflowClient = new DataflowClient(scribenginClient);
         String dataflowJson = IOUtil.getFileContentAsString(descriptor) ;
         System.out.println("Dataflow JSON:");
@@ -61,43 +53,59 @@ public class DataflowCommand extends Command {
     }
   }
   
-  static public class Hello extends SubCommand {
+  static public class Kafka extends SubCommand {
+    @Parameter(names = "--create-source", description = "Create kafka source")
+    private boolean createSource ;
+    
     @Parameter(names = "--submit", description = "Launch the submit dataflow(hdfs, kafka)")
-    private String submit ;
+    private boolean submit ;
     
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginShell scribenginShell = (ScribenginShell) shell;
-      if("hdfs".equals(submit)) {
-        submitHdfsDataflow(scribenginShell);
-      } else if("kafka".equals(submit)) {
-        submitKafkaDataflow(scribenginShell);
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
+          new HelloKafkaDataflowBuilder(scribenginShell.getScribenginClient());
+      
+      if(submit || createSource) {
+        kafkaDataflowBuilder.createSource(5, 10);
+      }
+      
+      if(submit) {
+        ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
+        sribenginAssert.waitForEvents(60000);
       }
     }
+  }
+  
+  static public class Hdfs extends SubCommand {
+    @Parameter(names = "--data-dir", description = "Submit hello hdfs dataflow")
+    private String dataDir = "/data";
     
-    void submitHdfsDataflow(ScribenginShell shell) throws Exception {
+    @Parameter(names = "--create-source", description = "Submit hello hdfs dataflow")
+    private boolean createSource ;
+    
+    @Parameter(names = "--submit", description = "Submit hello hdfs dataflow")
+    private boolean submit ;
+    
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      ScribenginShell scribenginShell = (ScribenginShell) shell;
       HadoopProperties hadoopProperties = shell.attribute(HadoopProperties.class);
-      String dataDir = "/data" ;
       FileSystem fs = FileSystem.get(hadoopProperties.getConfiguration());
       if(fs.exists(new Path(dataDir))) {
         fs.delete(new Path(dataDir), true) ;
       }
       HelloHDFSDataflowBuilder dataflowBuilder = 
-        new HelloHDFSDataflowBuilder(shell.getScribenginClient(), fs, dataDir);
+        new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(), fs, dataDir);
       dataflowBuilder.setNumOfWorkers(1);
       dataflowBuilder.setNumOfExecutorPerWorker(2);
-      dataflowBuilder.createSource(15, 3, 5);
-
-      ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();
-      sribenginAssert.waitForEvents(90000);
-    }
-    
-    void submitKafkaDataflow(ScribenginShell shell) throws Exception {
-      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
-          new HelloKafkaDataflowBuilder(shell.getScribenginClient());
-      kafkaDataflowBuilder.createSource(5, 10);
-      ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
-      sribenginAssert.waitForEvents(60000);
+      if(submit || createSource) {
+        dataflowBuilder.createSource(15, 3, 5);
+      }
+      if(submit) {
+        ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();
+        sribenginAssert.waitForEvents(90000);
+      }
     }
   }
 }
