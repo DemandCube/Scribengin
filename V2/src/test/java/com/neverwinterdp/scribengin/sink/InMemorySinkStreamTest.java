@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin.sink;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import org.junit.Test;
@@ -16,7 +17,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public class InMemorySinkStreamTest {
   
   @Test
-  public void testInMemorySinkStream(){
+  public void testInMemorySinkStream() throws IOException{
     SinkStream sink = new InMemorySinkStream(new DumbSinkPartitioner());
     
     int i=0;

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import org.junit.Test;
@@ -14,7 +15,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 
 public class SequentialIntSourceStreamTest {
   @Test
-  public void testSequentialIntSourceStream(){
+  public void testSequentialIntSourceStream() throws IOException{
     SourceStream s = new SequentialIntSourceStream();
     
     assertNotNull(s.getName());

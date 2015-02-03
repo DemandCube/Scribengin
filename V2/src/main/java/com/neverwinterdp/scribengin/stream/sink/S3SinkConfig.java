@@ -7,195 +7,203 @@ import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 public class S3SinkConfig {
 
-  private final Properties props;
+	private final Properties props;
 
+	public S3SinkConfig(Properties props) {
+		this.props = props;
+	}
 
-  public S3SinkConfig(Properties props) {
-    this.props = props;
-  }
+	/**
+	 * The Constructor.
+	 * 
+	 * @param configProperty
+	 *            the config property
+	 */
+	public S3SinkConfig(String configProperty) {
+		Properties systemProperties = System.getProperties();
+		try {
+			props = new PropertyUtils(configProperty).getProperties();
+		} catch (Exception e) {
+			throw new RuntimeException("Error loading configuration from "
+					+ configProperty + " was " + e.getMessage());
+		}
+		for (final Map.Entry<Object, Object> entry : systemProperties
+				.entrySet()) {
+			props.put(entry.getKey().toString(), entry.getValue());
+		}
 
-  /**
-   * The Constructor.
-   * 
-   * @param configProperty the config property
-   */
-  public S3SinkConfig(String configProperty) {
-    Properties systemProperties = System.getProperties();
-    try {
-      props = new PropertyUtils(configProperty).getProperties();
-    } catch (Exception e) {
-      throw new RuntimeException("Error loading configuration from " + configProperty + " was "
-          + e.getMessage());
-    }
-    for (final Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
-      props.put(entry.getKey().toString(), entry.getValue());
-    }
+	}
 
-  }
+	/**
+	 * Gets the bucket name.
+	 * 
+	 * @return the bucket name
+	 */
+	public String getBucketName() {
+		return getString("bucketName");
+	}
 
-  /**
-   * Gets the bucket name.
-   * 
-   * @return the bucket name
-   */
-  public String getBucketName() {
-    return getString("bucketName");
-  }
+	/**
+	 * Gets the mapped byte buffer size.
+	 * 
+	 * @return the mapped byte buffer size
+	 */
+	public int getMappedByteBufferSize() {
+		return getInt("diskBuffer.mappedByteBufferSize");
+	}
 
+	/**
+	 * Gets the region name.
+	 * 
+	 * @return the region name
+	 */
+	public String getRegionName() {
+		return getString("regionName");
+	}
 
-  /**
-   * Gets the mapped byte buffer size.
-   * 
-   * @return the mapped byte buffer size
-   */
-  public int getMappedByteBufferSize() {
-    return getInt("diskBuffer.mappedByteBufferSize");
-  }
+	/**
+	 * Gets the local tmp dir.
+	 * 
+	 * @return the local tmp dir
+	 */
+	public String getLocalTmpDir() {
+		return getString("localTmpDir");
+	}
 
-  /**
-   * Gets the region name.
-   * 
-   * @return the region name
-   */
-  public String getRegionName() {
-    return getString("regionName");
-  }
+	/**
+	 * Gets the chunk size.
+	 * 
+	 * @return the chunk size
+	 */
+	public int getChunkSize() {
+		return getInt("chunkSize");
+	}
 
-  /**
-   * Gets the local tmp dir.
-   * 
-   * @return the local tmp dir
-   */
-  public String getLocalTmpDir() {
-    return getString("localTmpDir");
-  }
+	/**
+	 * Gets the memory max buffer size.
+	 * 
+	 * @return the memory max buffer size
+	 */
+	public int getMemoryMaxBufferSize() {
+		return getInt("memoryBuffer.maxBufferSize") * 1024;
+	}
 
-  /**
-   * Gets the chunk size.
-   * 
-   * @return the chunk size
-   */
-  public int getChunkSize() {
-    return getInt("chunkSize");
-  }
+	/**
+	 * Gets the memory max buffering time.
+	 * 
+	 * @return the memory max buffering time
+	 */
+	public int getMemoryMaxBufferingTime() {
+		return getInt("memoryBuffer.maxBufferingTime") * 1000;
+	}
 
-  /**
-   * Gets the memory max buffer size.
-   * 
-   * @return the memory max buffer size
-   */
-  public int getMemoryMaxBufferSize() {
-    return getInt("memoryBuffer.maxBufferSize") * 1024;
-  }
+	/**
+	 * Gets the memory max tuples.
+	 * 
+	 * @return the memory max tuples
+	 */
+	public int getMemoryMaxTuples() {
+		return getInt("memoryBuffer.maxTuples");
+	}
 
-  /**
-   * Gets the memory max buffering time.
-   * 
-   * @return the memory max buffering time
-   */
-  public int getMemoryMaxBufferingTime() {
-    return getInt("memoryBuffer.maxBufferingTime") * 1000;
-  }
+	/**
+	 * Gets the disk max buffer size.
+	 * 
+	 * @return the disk max buffer size
+	 */
+	public int getDiskMaxBufferSize() {
+		return getInt("diskBuffer.maxBufferSize") * 1024;
+	}
 
-  /**
-   * Gets the memory max tuples.
-   * 
-   * @return the memory max tuples
-   */
-  public int getMemoryMaxTuples() {
-    return getInt("memoryBuffer.maxTuples");
-  }
+	/**
+	 * Gets the disk max buffering time.
+	 * 
+	 * @return the disk max buffering time
+	 */
+	public int getDiskMaxBufferingTime() {
+		return getInt("diskBuffer.maxBufferingTime") * 1000;
+	}
 
-  /**
-   * Gets the disk max buffer size.
-   * 
-   * @return the disk max buffer size
-   */
-  public int getDiskMaxBufferSize() {
-    return getInt("diskBuffer.maxBufferSize") * 1024;
-  }
+	/**
+	 * Gets the disk max tuples.
+	 * 
+	 * @return the disk max tuples
+	 */
+	public int getDiskMaxTuples() {
+		return getInt("diskBuffer.maxTuples");
+	}
 
-  /**
-   * Gets the disk max buffering time.
-   * 
-   * @return the disk max buffering time
-   */
-  public int getDiskMaxBufferingTime() {
-    return getInt("diskBuffer.maxBufferingTime") * 1000;
-  }
+	/**
+	 * Gets the offset per partition.
+	 * 
+	 * @return the offset per partition
+	 */
+	public int getOffsetPerPartition() {
+		return getInt("partitionner.chunkPerPartition") * getChunkSize();
+	}
 
-  /**
-   * Gets the disk max tuples.
-   * 
-   * @return the disk max tuples
-   */
-  public int getDiskMaxTuples() {
-    return getInt("diskBuffer.maxTuples");
-  }
+	/**
+	 * Checks if is memory buffering enabled.
+	 * 
+	 * @return true, if checks if is memory buffering enabled
+	 */
+	public boolean isMemoryBufferingEnabled() {
+		return getBoolean("memoryBuffer.enabled");
+	}
 
-  /**
-   * Gets the offset per partition.
-   * 
-   * @return the offset per partition
-   */
-  public int getOffsetPerPartition() {
-    return getInt("partitionner.chunkPerPartition") * getChunkSize();
-  }
+	/**
+	 * Check property.
+	 * 
+	 * @param name
+	 *            the name
+	 */
+	private void checkProperty(String name) {
+		if (!props.containsKey(name)) {
+			throw new IllegalArgumentException(
+					"Failed to find required configuration option '" + name
+							+ "'.");
+		}
+	}
 
-  /**
-   * Checks if is memory buffering enabled.
-   * 
-   * @return true, if checks if is memory buffering enabled
-   */
-  public boolean isMemoryBufferingEnabled() {
-    return getBoolean("memoryBuffer.enabled");
-  }
+	/**
+	 * Gets the string.
+	 * 
+	 * @param name
+	 *            the name
+	 * @return the string
+	 */
+	private String getString(String name) {
+		checkProperty(name);
+		return props.getProperty(name);
+	}
 
+	/**
+	 * Gets the int.
+	 * 
+	 * @param name
+	 *            the name
+	 * @return the int
+	 */
+	private int getInt(String name) {
+		checkProperty(name);
+		String property = props.getProperty(name);
+		return Integer.parseInt(property);
+	}
 
-  /**
-   * Check property.
-   * 
-   * @param name the name
-   */
-  private void checkProperty(String name) {
-    if (!props.containsKey(name)) {
-      throw new IllegalArgumentException("Failed to find required configuration option '" + name
-          + "'.");
-    }
-  }
+	/**
+	 * Gets the boolean.
+	 * 
+	 * @param name
+	 *            the name
+	 * @return the boolean
+	 */
+	private boolean getBoolean(String name) {
+		checkProperty(name);
+		String property = props.getProperty(name);
+		return Boolean.getBoolean(property);
+	}
 
-  /**
-   * Gets the string.
-   * 
-   * @param name the name
-   * @return the string
-   */
-  private String getString(String name) {
-    checkProperty(name);
-    return props.getProperty(name);
-  }
-
-  /**
-   * Gets the int.
-   * 
-   * @param name the name
-   * @return the int
-   */
-  private int getInt(String name) {
-    checkProperty(name);
-    String property = props.getProperty(name);
-    return Integer.parseInt(property);
-  }
-
-  /**
-   * Gets the boolean.
-   * 
-   * @param name the name
-   * @return the boolean
-   */
-  private boolean getBoolean(String name) {
-    checkProperty(name);
-    String property = props.getProperty(name);
-    return Boolean.getBoolean(property);
-  }
+	public String getBucketVersioningConfig() {
+		return getString("bucket.versioning.configuration");
+	}
 }

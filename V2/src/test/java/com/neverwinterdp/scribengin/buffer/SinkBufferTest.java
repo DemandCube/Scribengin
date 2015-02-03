@@ -163,6 +163,7 @@ public class SinkBufferTest {
       System.out.println("total space " + read.getTotalSpace());
       actual = Files.readFirstLine(read, Charsets.UTF_8).trim();
       System.out.println(actual);
+      System.out.println(expected);
       assertEquals(expected, actual);
     } catch (IOException e) {
       e.printStackTrace();

@@ -128,7 +128,7 @@ public class FileSystemSinkStream implements SinkStream{
     for (int i=0;i<status.length;i++){
       //System.err.println(status[i].getPath().getName());
       int fileName = Integer.parseInt(status[i].getPath().getName());
-      if(status[i].isFile() && fileName > largestFileName){
+      if(status[i]. isFile() && fileName > largestFileName){
         largestFileName = fileName;
       }
     }

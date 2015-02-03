@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.sink;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.commitlog.CommitLogEntry;
@@ -13,7 +15,7 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
 public class StdOutSinkStreamTest {
   
   @Test
-  public void testStdOutSinkStream(){
+  public void testStdOutSinkStream() throws IOException{
     SinkStream sink = new StdOutSinkStream();
     
     int i=0;
