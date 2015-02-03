@@ -1,143 +1,75 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
-apply plugin: 'jacoco'
+allprojects {
+}
 
-jacoco {
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}
+
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'eclipse'
+  apply plugin: 'maven'
+  apply plugin: 'maven-publish'
+  apply plugin: 'jacoco'
+
+  jacoco {
     toolVersion = "0.6.2.201302030002"
     reportsDir = file("$buildDir/JacocoReportDir")
-}
-
-archivesBaseName = 'scribengin.v2'
-
-eclipse {
-  project {
-    name = 'scribengin.v2'
   }
-
-  classpath {
-    downloadSources=true
-  }
-}
-
-
-eclipse.classpath.defaultOutputDir = file( 'build/classes' )
-
-group = 'com.neverwinterdp'
-sourceCompatibility = 1.7
-version = '1.0-SNAPSHOT'
-configurations.compile.transitive = true
-
-repositories {
-  mavenLocal()
-  mavenCentral()
-}
-
-configurations.all {
-  exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
-  exclude(group: 'storm', name: 'storm', version: '0.8.1')
-
-  resolutionStrategy {
-    force 'com.google.guava:guava:13.0'
-  }
-}
-
-dependencies {
-  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
-  compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
-  compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
-
-  //TODO: move to use jackson
-  compile 'org.json:json:20090211'
-  //compile group: 'com.google.guava', name: 'guava', version: '18.0'
-  compile group: 'com.google.guava', name: 'guava', version: '13.0'
-
-  compile group: 'junit', name: 'junit', version: '4.11'
-  //testCompile group: 'junit', name: 'junit', version: '4.11'
-}
-
-test {
-  forkEvery = 1
-  ignoreFailures = true
-  testLogging.showStandardStreams = true
-  testLogging {
-    events "passed", "skipped", "failed"
-  }
-
-  filter {
-    includeTestsMatching "*UnitTest"
-  }
-}
-
-task release (dependsOn: 'build') << {
-  def releaseDir = "${buildDir}/release/Scribengin.V2"
-  doRelease(releaseDir) ;
-}
-
-def doRelease(String releaseDir) {
-  println "\n\n"
-  println "*************************************************"
-  println "Preparing the release directory ${releaseDir}"
-  println "*************************************************"
-
-  def dependencyJars = [ 
-    "commons.utils", "commons.api", "commons.buffer", "commons.yara",
-    "commons.hadoop-framework", "commons.zookeeper", "scribengin.v2",
-
-    "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
-    //"jcommander", "reflections", "guava-16.0.1", "javassist",
-    "jcommander", "reflections", "guava-13.0", "javassist",
-    'guice', 'javax.inject', 'hazelcast', 'aopalliance',
-    "kafka", "scala-library",
-    'zookeeper', 'zkclient',
-    "netty-all", 'jzlib', 
-    'chronicle', "lang-6.4.6", "compiler-2.2.0",
-    
-    "hadoop-common", "hadoop-hdfs", "hadoop-auth", 
-    "hadoop-yarn-api", "hadoop-yarn-common", "hadoop-yarn-client",
-    "protobuf",
-
-    //codahale metric is required by kafka
-    "metrics-core-2.2.0",
-    "commons-collections", "commons-configuration","commons-lang3-3.1", "commons-lang-2.6", "commons-cli",
-    "log4j", "slf4j-api", "slf4j-log4j12", "commons-logging",
-    "junit-4.11"
-  ] ;
-
-  println "Copy the dependency library"
-  configurations.compile.each { File file -> 
-    if(isIn(dependencyJars, file)) {
-      println "  Copy $file.name to NeverwinterDP/libs"
-      copy {
-        from file
-        into "${releaseDir}/libs"
-      }
-    } else {
-      //println "Ignore $file.name "
+  
+  eclipse {
+    classpath {
+      downloadSources=true
     }
   }
 
-  copy {
-    from "${buildDir}/libs"
-    into "${releaseDir}/libs"
+  eclipse.classpath.defaultOutputDir = file( 'build/classes' )
+
+  group = 'com.neverwinterdp'
+  sourceCompatibility = 1.7
+  version = '1.0-SNAPSHOT'
+  configurations.compile.transitive = true
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
   }
 
-  println "Copy and override app"
-  copy {
-    from "src/app"
-    into "${releaseDir}"
+  dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
   }
 
-  println "Copy and override webapp"
-  copy {
-    from "src/main/webapp"
-    into "${releaseDir}/webapp"
-  }
-}
+  test {
+    forkEvery = 1
+    ignoreFailures = true
+    testLogging.showStandardStreams = true
 
-def isIn(set, File file) {
-  for(item in set) {
-    if(file.name.startsWith(item)) return true ;
+    filter {
+      includeTestsMatching "*UnitTest"
+    }
+    testLogging {
+      events "passed", "skipped", "failed"
+    }
   }
-  return false ;
+
+  task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+  }
+
+  configurations {
+    tests
+    published.extendsFrom tests, archives
+  }
+
+
+  install {
+    configuration = configurations.published
+  }
+
+  artifacts {
+    tests testJar
+  }
 }

@@ -1,0 +1,25 @@
+{
+  "dataflow-Name": "dataflowName",
+  "dataflow-Dataprocessor": "dataflowDataprocessorClassName",
+  "dataflow-NumWorkers": "10",
+  "dataflow-NumExecutorsPerWorkers": "20",
+  
+  "sink-Type": "KAFKA",
+  "sink-Name": "sinkName",
+  "sink-Topic": "sinkTopic",
+  "sink-ZkConnect": "sinkZkConnect",
+  "sink-BrokerList": "sinkBrokerList",
+  
+  "source-Type": "KAFKA",
+  "source-Name": "sourceName",
+  "source-Topic": "sourceTopic",
+  "source-ZkConnect": "sourceZkConnect",
+  "source-BrokerList": "sourceBrokerList",
+  
+  
+  "invalidsink-Type": "KAFKA",
+  "invalidsink-Name": "invalidsinkName",
+  "invalidsink-Topic": "invalidsinkTopic",
+  "invalidsink-ZkConnect": "invalidsinkZkConnect",
+  "invalidsink-BrokerList": "invalidsinkBrokerList" 
+}

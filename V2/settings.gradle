@@ -1,0 +1,10 @@
+include 'server'
+include 'registry'
+include 'vm'
+include 'core'
+include 'proxy'
+include 'dataflow/hdfs'
+include 'dataflow/kafka'
+include 'dataflow/s3'
+include 'release'
+
