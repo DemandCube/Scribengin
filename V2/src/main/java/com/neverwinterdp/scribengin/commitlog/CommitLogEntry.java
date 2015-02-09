@@ -1,8 +1,14 @@
 package com.neverwinterdp.scribengin.commitlog;
 
+import java.io.Serializable;
 
-public class CommitLogEntry {
-  private String readerName ;
+
+public class CommitLogEntry  implements Serializable{
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2128383341023587968L;
+private String readerName ;
   private long   startOffset ;
   private long   endOffset   ;
   private boolean invalidData ; 

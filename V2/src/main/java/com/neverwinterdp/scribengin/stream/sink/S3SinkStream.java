@@ -114,7 +114,6 @@ public class S3SinkStream implements SinkStream {
 
 			try {
 				// check if bucket exist
-
 				if (!s3Client.doesBucketExist(bucketName)) {
 					System.out.println("bucket does not exist.");
 					logger.info("Bucket does not Exist");
@@ -150,6 +149,7 @@ public class S3SinkStream implements SinkStream {
 			validS3Sink = true;
 		}
 		logger.info("validS3Sink = " + validS3Sink);
+		System.out.println("validS3Sink = " + validS3Sink);
 		return validS3Sink;
 	}
 
