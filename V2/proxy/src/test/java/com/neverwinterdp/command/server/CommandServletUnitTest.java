@@ -20,20 +20,14 @@ public class CommandServletUnitTest {
   protected static JettyServer commandServer;
   protected static int port = 8181;
 
-  
-  //Used to bring up VMs to test with
-  static CommandServerTestHelper testHelper;
   static Shell shell;
   static VMClient vmClient;
   
   @BeforeClass
-  public static void setup() throws Exception{
-    //Bring up ZK and all that jazz
-    testHelper = new CommandServerTestHelper();
-    testHelper.assertWebXmlFilesExist();
-    testHelper.setup();
+  public static void setup() throws Exception {
+    CommandServerTestBase.setup();
 
-    Registry registry = CommandServerTestHelper.getNewRegistry();
+    Registry registry = CommandServerTestBase.getNewRegistry();
     try {
       registry.connect();
     } catch (RegistryException e) {
@@ -42,8 +36,8 @@ public class CommandServletUnitTest {
     
     //Point our context to our web.xml we want to use for testing
     WebAppContext webapp = new WebAppContext();
-    webapp.setResourceBase(testHelper.getCommandServerFolder());
-    webapp.setDescriptor(testHelper.getCommandServerXml());
+    webapp.setResourceBase(CommandServerTestBase.getCommandServerFolder());
+    webapp.setDescriptor(CommandServerTestBase.getCommandServerXml());
     
     //Bring up commandServer using that context
     commandServer = new JettyServer(port, CommandServlet.class);
@@ -58,8 +52,9 @@ public class CommandServletUnitTest {
     //commandServer.join();
 
     commandServer.stop();
-    testHelper.teardown();
+    CommandServerTestBase.teardown();
   }
+  
   
   @Test
   public void testCommandServletListVMs() throws InterruptedException, UnirestException{
@@ -68,7 +63,7 @@ public class CommandServletUnitTest {
            .asString();
     
     //assertEquals("command run: "+"listvms", resp.getBody());
-    assertEquals(CommandServerTestHelper.expectedListVMResponse, resp.getBody());
+    assertEquals(CommandServerTestBase.expectedListVMResponse, resp.getBody());
   }
   
   @Test
@@ -78,7 +73,7 @@ public class CommandServletUnitTest {
            .field("command", badCommand)
            .asString();
     
-    assertEquals(CommandServlet.badCommandMessage+badCommand, resp.getBody());
+    assertEquals("", resp.getBody());
   }
   
   @Test
@@ -87,5 +82,43 @@ public class CommandServletUnitTest {
         .asString();
     
     assertEquals(CommandServlet.noCommandMessage, resp.getBody());
+  }
+  
+  
+  @Test
+  public void testCommandServletStopScribeMaster() throws UnirestException{
+    HttpResponse<String> x = Unirest.post("http://localhost:"+Integer.toString(port))
+        .field("command", "registry dump")
+        .asString();
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println(x.getBody());
+    
+    HttpResponse<String> resp = Unirest.post("http://localhost:"+Integer.toString(port))
+           .field("command", "scribengin server")
+           .field("stop-master", "vm")
+           .asString();
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println(resp.getBody());
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    x = Unirest.post("http://localhost:"+Integer.toString(port))
+        .field("command", "registry dump")
+        .asString();
+    System.err.println(x.getBody());
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    System.err.println("");
+    
+    //assertEquals("", resp.getBody());
+    
   }
 }
