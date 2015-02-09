@@ -21,6 +21,8 @@ import com.neverwinterdp.scribengin.tuple.Tuple;
  */
 public final class SinkBuffer {
 
+	private final long FIVE_GB = 5368709120l;
+
 	/** The max tuples. */
 	private long maxTuplesInMemory;
 
@@ -46,10 +48,8 @@ public final class SinkBuffer {
 	/** The start time. */
 	private long startBufferingTimeOnDisk;
 
-
-
 	/** The files. */
-	private LinkedList<File> files = new LinkedList<File>();
+	private LinkedList<String> files = new LinkedList<String>();
 
 	/** The chunk size. */
 	private int chunkSize;
@@ -61,7 +61,7 @@ public final class SinkBuffer {
 	private boolean memoryBufferingEnabled;
 
 	/** The logger. */
-	private static Logger logger;
+	private static Logger logger = LogManager.getLogger(SinkBuffer.class);
 	/** The buffer. */
 	private LinkedList<Tuple> tuples = new LinkedList<Tuple>();
 
@@ -88,7 +88,7 @@ public final class SinkBuffer {
 		this.maxBufferSizeOnDisk = config.getDiskMaxBufferSize();
 		this.maxBufferingTimeOnDisk = config.getDiskMaxBufferingTime();
 		this.maxTuplesInMemory = config.getMemoryMaxTuples();
-		//this.mappedByteBufferSize = config.getMappedByteBufferSize();
+		// this.mappedByteBufferSize = config.getMappedByteBufferSize();
 		this.partitioner = partitioner;
 		this.chunkSize = config.getChunkSize();
 		memoryBufferingEnabled = config.isMemoryBufferingEnabled();
@@ -102,7 +102,7 @@ public final class SinkBuffer {
 			}
 		};
 		bufferThread.start();
-		logger = LogManager.getLogger(SinkBuffer.class);
+
 	}
 
 	private void setProcessLoopActive(boolean active) {
@@ -139,6 +139,7 @@ public final class SinkBuffer {
 	 *            the tuple
 	 * @return true, if adds the to disk
 	 */
+	// TODO thro an exception if possible filesize > 5GB
 	private LinkedList<Tuple> tuplesChunk = new LinkedList<Tuple>();
 
 	private boolean addToDisk(Tuple tuple) {
@@ -149,13 +150,16 @@ public final class SinkBuffer {
 		try {
 			tuplesChunk.add(tuple);
 			// write every chunk of tuples in one file
+
 			if (tuplesChunk.size() == chunkSize) {
+
 				try {
 					long startOffset = tuplesChunk.getFirst()
 							.getCommitLogEntry().getStartOffset();
 					long endOffset = tuplesChunk.getLast().getCommitLogEntry()
 							.getEndOffset();
-					// call partitioner to get the path of the file depending on
+					// call partitioner to get the path of the file
+					// depending on
 					// the offset
 					// the path will be later used to deduce the s3 path
 					String path = localTmpDir + "/"
@@ -181,7 +185,11 @@ public final class SinkBuffer {
 						mem.put("\n".getBytes());
 					}
 					// add the file to the list of file created
-					success = files.add(file);
+					if (file.length() >= FIVE_GB) {
+						throw new IllegalArgumentException(
+								"File created is bigger than allowed s3 sink file size.");
+					}
+					success = files.add(file.getCanonicalPath());
 					tuplesChunk.clear();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -192,6 +200,7 @@ public final class SinkBuffer {
 					randomAccessFile.close();
 					fileChannel.close();
 				}
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -270,8 +279,8 @@ public final class SinkBuffer {
 
 	private long getTuplesSizeOnDisk() {
 		long size = 0;
-		for (File file : files) {
-			size = file.length();
+		for (String file : files) {
+			size = new File(file).length();
 		}
 		return size;
 	}
@@ -313,7 +322,7 @@ public final class SinkBuffer {
 	 */
 	// TODO name suggests that we actually read from disk?
 	public File pollFromDisk() {
-		return files.poll();
+		return new File(files.poll());
 	}
 
 	/**
@@ -387,7 +396,7 @@ public final class SinkBuffer {
 	/*
 	 * This methods exists solely for testing purposes.
 	 */
-	public LinkedList<File> getFiles() {
+	public LinkedList<String> getFiles() {
 		return files;
 
 	}

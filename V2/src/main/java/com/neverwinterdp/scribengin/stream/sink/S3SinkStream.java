@@ -123,11 +123,14 @@ public class S3SinkStream implements SinkStream {
 				}
 
 				logger.info("Bucket Exist");
-			/*	BucketVersioningConfiguration configuration = new BucketVersioningConfiguration(
-						bucketVersionConfig);
-				SetBucketVersioningConfigurationRequest request = new SetBucketVersioningConfigurationRequest(
-						bucketName, configuration);
-				s3Client.setBucketVersioningConfiguration(request);*/
+				/*
+				 * BucketVersioningConfiguration configuration = new
+				 * BucketVersioningConfiguration( bucketVersionConfig);
+				 * SetBucketVersioningConfigurationRequest request = new
+				 * SetBucketVersioningConfigurationRequest( bucketName,
+				 * configuration);
+				 * s3Client.setBucketVersioningConfiguration(request);
+				 */
 				AccessControlList acl = s3Client.getBucketAcl(bucketName);
 				List<Permission> permissions = new ArrayList<Permission>();
 				for (Grant grant : acl.getGrants()) {
@@ -157,36 +160,32 @@ public class S3SinkStream implements SinkStream {
 	 */
 	@Override
 	public boolean commit() throws IOException {
-
+		System.out.println("committing");
 		logger.info("commit");
 		buffer.purgeMemoryToDisk();
 		String path;
 		File file;
 		while (buffer.getFilesCount() > 0) {
-			System.out.print("getFilesCount " + buffer.getFilesCount() + " ");
-			System.out.println(buffer.getFilesCount() > 0);
 			// the file path on local is similar to its path on s3, just change
-			// tmp
-			// folder by bucket name
+			// tmp folder by bucket name
 			file = buffer.pollFromDisk();
 			System.out.println("getFilesCount " + buffer.getFilesCount() + " ");
 
 			path = file.getPath();
 			logger.info("file path " + path);
-			// TODO will fail for windows. path doesn't have '/'
-			String key = path.substring(path.lastIndexOf("/") + 1,
+			String key2 = path.substring(path.indexOf(localTmpDir) + 5,
 					path.length());
 			System.out.println("path exists " + path);
-			String folder = path.substring(0, path.lastIndexOf("/"));
-			folder = folder.replaceFirst(localTmpDir, bucketName);
+			System.out.println("key2 " + key2);
+
 			logger.info("Uploading a new object to S3 from a file\n");
 			try {
 				// upload to S3
-				PutObjectResult result = s3Client.putObject(folder, key, file);
+				PutObjectResult result = s3Client.putObject(bucketName, key2,
+						file);
 
 				System.out.println("result " + result.getContentMd5());
-				uploadedFilesPath.put(folder + "/" + key,
-						result.getContentMd5());
+				uploadedFilesPath.put(key2, result.getContentMd5());
 			} catch (AmazonServiceException ase) {
 				logger.error("Caught an AmazonServiceException. "
 						+ ase.getMessage());
@@ -268,12 +267,14 @@ public class S3SinkStream implements SinkStream {
 	 * 
 	 * @see com.neverwinterdp.scribengin.stream.sink.SinkStream#rollBack()
 	 */
+	// TODO if we are using versioning delete the version
 	@Override
 	public boolean rollBack() {
 		boolean retVal = true;
-		// s3Client.abortMultipartUpload(request)
+		// TODO remove from uploadedFilesPath
 		for (String path : uploadedFilesPath.keySet()) {
 			try {
+				System.out.println("deleted " + path);
 				s3Client.deleteObject(bucketName, path);
 			} catch (Exception e) {
 				logger.error("Caught Exception when rolling back "
