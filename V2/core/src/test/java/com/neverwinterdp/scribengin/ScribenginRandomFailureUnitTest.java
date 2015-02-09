@@ -41,7 +41,7 @@ public class ScribenginRandomFailureUnitTest {
     shell.execute(
      "dataflow-test kafka " + 
      "  --worker 1 --executor-per-worker 3 --duration 300000 " +
-     "  --kafka-num-partition 5 --kafka-write-period 5 --kafka-max-message-per-partition 10000"
+     "  --kafka-num-partition 5 --kafka-write-period 5 --kafka-max-message-per-partition 1000"
     );
     Thread.sleep(3000);
     shell.execute("vm info");

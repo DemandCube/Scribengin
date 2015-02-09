@@ -49,7 +49,7 @@ abstract public class ScribenginUnitTest {
     System.out.println("Test hello kafka dataflow in " + kafkaDataflowExecTime + "ms");
     
     clusterBuilder.getScribenginClient().shutdown();
-    shell.execute("vm list");
+    shell.execute("vm info");
     shell.execute("registry dump --path /");
   }
   
@@ -63,7 +63,7 @@ abstract public class ScribenginUnitTest {
       eventListener.waitForEvents(60000);
     } finally {
       Thread.sleep(3000);
-      shell.execute("vm list");
+      shell.execute("vm info");
       shell.execute("registry dump --path /");
       HDFSUtil.dump(fs, getDataDir() + "/sink");
       HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");
@@ -79,7 +79,7 @@ abstract public class ScribenginUnitTest {
       sribenginAssert.waitForEvents(60000);
     } finally {
       Thread.sleep(3000);
-      shell.execute("vm list");
+      shell.execute("vm info");
       shell.execute("registry dump --path /");
     }
   }
