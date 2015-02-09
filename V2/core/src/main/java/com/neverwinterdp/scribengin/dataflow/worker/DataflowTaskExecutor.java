@@ -44,10 +44,10 @@ public class DataflowTaskExecutor {
   public void execute() { 
     descriptor.setStatus(DataflowTaskExecutorDescriptor.Status.RUNNING);
     DataflowTask dataflowTask = null;
+    DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
     while(true) {
       try {
-        DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
         DataflowTaskDescriptor taskDescriptor = dataflowRegistry.getAssignedDataflowTaskDescriptor();
         if(taskDescriptor == null) {
           descriptor.setStatus(DataflowTaskExecutorDescriptor.Status.TERMINATED);
@@ -70,7 +70,7 @@ public class DataflowTaskExecutor {
         try {
           StringBuilder b = new StringBuilder() ;
           b.append("Executor Error and lock dumps\n");
-          registry.get(dataflowContainer.getDataflowRegistry().getDataflowPath() + "/tasks/locks").dump(b);
+          registry.get(dataflowContainer.getDataflowRegistry().getDataflowPath() + "/tasks/executors/locks").dump(b);
           System.err.println(b);
         } catch (RegistryException | IOException e1) {
           e1.printStackTrace();

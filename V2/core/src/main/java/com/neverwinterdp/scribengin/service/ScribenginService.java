@@ -105,7 +105,7 @@ public class ScribenginService {
         try {
           Node statusNode = registry.get(event.getPath());
           Node dataflowNode = statusNode.getParentNode() ;
-          DataflowDescriptor dataflowDescriptor = dataflowNode.getData(DataflowDescriptor.class);
+          DataflowDescriptor dataflowDescriptor = dataflowNode.getDataAs(DataflowDescriptor.class);
           moveToHistory(dataflowDescriptor) ;
         } catch (Exception e) {
           e.printStackTrace();

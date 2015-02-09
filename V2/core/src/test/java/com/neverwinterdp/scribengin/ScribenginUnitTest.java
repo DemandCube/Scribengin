@@ -8,13 +8,15 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
-import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
+import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
-abstract public class VMScribenginUnitTest {
+abstract public class ScribenginUnitTest {
   protected ScribenginClusterBuilder clusterBuilder ;
   protected long vmLaunchTime = 100;
   protected ScribenginShell shell;
@@ -55,8 +57,8 @@ abstract public class VMScribenginUnitTest {
     FileSystem fs = getFileSystem();
     try {
       HelloHDFSDataflowBuilder hdfDataflowBuilder = 
-          new HelloHDFSDataflowBuilder(clusterBuilder.getScribenginClient(), fs, getDataDir());
-      hdfDataflowBuilder.createSource(15, 3, 5);
+          new HelloHDFSDataflowBuilder(clusterBuilder.getScribenginClient(), getDataDir());
+      new HDFSSourceGenerator().generateSource(fs, getDataDir() + "/source");
       ScribenginWaitingEventListener eventListener = hdfDataflowBuilder.submit();
       eventListener.waitForEvents(60000);
     } finally {
@@ -70,9 +72,9 @@ abstract public class VMScribenginUnitTest {
 
   void testKafkaDataflow() throws Exception {
     try {
-      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
-          new HelloKafkaDataflowBuilder(clusterBuilder.getScribenginClient());
-      kafkaDataflowBuilder.createSource(5, 10);
+      KafkaSourceGenerator generator = new KafkaSourceGenerator("hello", "127.0.0.1:2181");
+      generator.generateAndWait("hello.source");
+      HelloKafkaDataflowBuilder kafkaDataflowBuilder = new HelloKafkaDataflowBuilder(clusterBuilder.getScribenginClient());
       ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
       sribenginAssert.waitForEvents(60000);
     } finally {

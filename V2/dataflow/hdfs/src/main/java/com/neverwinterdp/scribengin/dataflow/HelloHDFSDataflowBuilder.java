@@ -4,7 +4,7 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.DataGenerator;
+import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
@@ -51,12 +51,7 @@ public class HelloHDFSDataflowBuilder {
   }
 
   public void createSource(int numOfStream, int numOfBuffer, int numOfRecordPerBuffer) throws Exception {
-    SinkFactory  sinkFactory = new SinkFactory(fs);
-    SinkDescriptor sinkDescriptor = new SinkDescriptor("hdfs", dataDir + "/source");
-    Sink sink = sinkFactory.create(sinkDescriptor);;
-    for(int i = 0; i < 15; i++) {
-      DataGenerator.generateNewStream(sink, numOfBuffer, numOfRecordPerBuffer);
-    }
-    HDFSUtil.dump(fs, dataDir + "/source");
+    HDFSSourceGenerator generator = new HDFSSourceGenerator();
+    generator.generateSource(fs, dataDir + "/source");
   }
 }

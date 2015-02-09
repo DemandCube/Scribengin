@@ -39,7 +39,7 @@ public class VMClient {
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
     Node vmNode = registry.getRef(VMService.LEADER_PATH);
-    return vmNode.getData(VMDescriptor.class);
+    return vmNode.getDataAs(VMDescriptor.class);
   }
   
   public void shutdown() throws Exception {

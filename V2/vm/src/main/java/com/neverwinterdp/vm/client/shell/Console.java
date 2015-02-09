@@ -21,4 +21,10 @@ public class Console {
   public void println(String line) throws IOException {
     out.append(line).append('\n');
   }
+  
+  public void h1(String title) throws IOException {
+    out.append(title).append('\n');
+    String underline = title.replaceAll(".", "*");
+    out.append(underline).append("\n");
+  }
 }

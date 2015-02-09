@@ -40,9 +40,12 @@ public class KafkaPartitionReader {
         new FetchRequestBuilder().
         clientId(name).
         // Note: this fetchSize of 100000 might need to be increased if large batches are written to Kafka
-        addFetch(topic, partitionMetadata.partitionId(), readOffset, fetchSize). 
+        addFetch(topic, partitionMetadata.partitionId(), readOffset, fetchSize).
+        minBytes(1).
+        maxWait(1000).
         build();
     FetchResponse fetchResponse = consumer.fetch(req);
+
     if(fetchResponse.hasError()) {
       throw new Exception("TODO: handle the error, reset the consumer....");
     }

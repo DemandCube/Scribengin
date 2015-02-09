@@ -43,7 +43,7 @@ public class KafkaWriter {
     //TODO: Review, when the topic is auto created, producer can fail since kafka and zookeeper do not have enough time
     //to assign the partition leader for the first tries.
     kafkaProps.put("message.send.max.retries", "5");
-    kafkaProps.put("topic.metadata.refresh.interval.ms", "0");
+    //kafkaProps.put("topic.metadata.refresh.interval.ms", "0");
     kafkaProps.put("metadata.broker.list", kafkaBrokerUrls);
     if (props != null) {
       kafkaProps.putAll(props);

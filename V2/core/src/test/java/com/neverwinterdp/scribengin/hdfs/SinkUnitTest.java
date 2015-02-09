@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
@@ -45,7 +46,7 @@ public class SinkUnitTest {
     for(int i = 0; i < 5; i++) {
       for(int j = 0; j < 100; j ++) {
         String key = "stream=" + stream.getDescriptor().getId() +",buffer=" + i + ",record=" + j;
-        writer.append(DataGenerator.createRecord(key, key));
+        writer.append(Record.create(key, key));
       }
       writer.commit();
     }
@@ -63,7 +64,7 @@ public class SinkUnitTest {
     SinkStream stream0 = sink.newStream();
     SinkStreamWriter writer = stream0.getWriter();
     for(int i = 0; i < 10; i ++) {
-      writer.append(DataGenerator.createRecord("key-" + i, "record " + i));
+      writer.append(Record.create("key-" + i, "record " + i));
     }
     writer.rollback();
     writer.close();
@@ -102,7 +103,7 @@ public class SinkUnitTest {
         Random random = new Random() ;
         for(int i = 0; i < 5; i++) {
           for(int j = 0; j < 100; j ++) {
-            writer.append(DataGenerator.createRecord("key-" + i, "record " + i));
+            writer.append(Record.create("key-" + i, "record " + i));
             Thread.sleep(random.nextInt(10));
           }
           writer.commit();

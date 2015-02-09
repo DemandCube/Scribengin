@@ -20,7 +20,7 @@ abstract public class LeaderElectionNodeWatcher<T> extends NodeWatcher {
       String path = event.getPath();
       if(event.getType() == NodeEvent.Type.MODIFY) {
         Node node = registry.getRef(path);
-        T data = node.getData(descriptorType) ;
+        T data = node.getDataAs(descriptorType) ;
         onElected(event, data);
       }
     } catch(Exception ex) {

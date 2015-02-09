@@ -8,7 +8,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.scribengin.VMScribenginSingleJVMUnitTest;
+import com.neverwinterdp.scribengin.ScribenginSingleJVMUnitTest;
 import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
@@ -60,7 +60,7 @@ public class CommandServerTestHelper {
       "        leader-0000000000\n";
   
   
-  protected VMScribenginSingleJVMUnitTest clusterBuilder ;
+  protected ScribenginSingleJVMUnitTest clusterBuilder ;
   
   public String getCommandServerFolder() {
     return commandServerFolder;
@@ -80,7 +80,7 @@ public class CommandServerTestHelper {
 
   
   public void setup() throws Exception {
-    clusterBuilder = new VMScribenginSingleJVMUnitTest();
+    clusterBuilder = new ScribenginSingleJVMUnitTest();
     clusterBuilder.setup();
   }
   

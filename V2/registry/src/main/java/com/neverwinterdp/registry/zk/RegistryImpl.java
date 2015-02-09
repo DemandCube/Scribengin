@@ -17,6 +17,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
@@ -153,6 +154,34 @@ public class RegistryImpl implements Registry {
     }
   }
   
+  public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException {
+    try {
+      byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
+      if(bytes == null || bytes.length == 0) return null;
+      return mapper.map(path, bytes, type);
+    } catch (KeeperException | InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
+  
+  @Override
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException {
+    List<T> holder = new ArrayList<T>();
+    for(String path : paths) {
+      holder.add(getDataAs(path, type));
+    }
+    return holder;
+  }
+  
+  @Override
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException {
+    List<T> holder = new ArrayList<T>();
+    for(String path : paths) {
+      holder.add(getDataAs(path, type, mapper));
+    }
+    return holder;
+  }
+  
   public void setData(String path, byte[] data) throws RegistryException {
     try {
       Stat stat = zkClient.setData(realPath(path), data, -1) ;
@@ -176,6 +205,19 @@ public class RegistryImpl implements Registry {
     }
   }
   
+  public List<String> getChildrenPath(String path) throws RegistryException {
+    try {
+      List<String> names = zkClient.getChildren(realPath(path), false);
+      List<String> paths = new ArrayList<String>() ;
+      for(String name : names) {
+        paths.add(path + "/" + name);
+      }
+      return names ;
+    } catch (KeeperException | InterruptedException e) {
+      throw new RegistryException(ErrorCode.Unknown, e) ;
+    }
+  }
+  
   public List<String> getChildren(String path, boolean watch) throws RegistryException {
     try {
       List<String> names = zkClient.getChildren(realPath(path), watch);
@@ -191,8 +233,19 @@ public class RegistryImpl implements Registry {
     Collections.sort(nodes);
     for(int i = 0; i < nodes.size(); i++) {
       String name = nodes.get(i) ;
-      Node node = get(path + "/" + name) ;
-      T object = node.getData(type);
+      T object = getDataAs(path + "/" + name, type);
+      holder.add(object);
+    }
+    return holder ;
+  }
+  
+  public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException {
+    List<T> holder = new ArrayList<T>();
+    List<String> nodes = getChildren(path);
+    Collections.sort(nodes);
+    for(int i = 0; i < nodes.size(); i++) {
+      String name = nodes.get(i) ;
+      T object = getDataAs(path + "/" + name, type, callback);
       holder.add(object);
     }
     return holder ;

@@ -19,4 +19,11 @@ public class Record {
   
   public byte[] getData() { return data; }
   public void setData(byte[] data) { this.data = data; }
+  
+  
+  static public Record create(String key, String text) {
+    byte[] data = text.getBytes();
+    Record record = new Record(key, data) ;
+    return record;
+  }
 }

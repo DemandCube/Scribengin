@@ -1,6 +1,6 @@
 package com.neverwinterdp.command.server;
 
-import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder.TestCopyDataProcessor;
+import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyDataProcessor;
 
 
 public class DescriptorBuilderDefaults {

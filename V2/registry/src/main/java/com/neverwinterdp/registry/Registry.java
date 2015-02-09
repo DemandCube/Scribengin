@@ -22,12 +22,17 @@ public interface Registry {
   public Node getRef(String path) throws RegistryException ;
   public byte[] getData(String path) throws RegistryException ;
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException ;
+  public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException ;
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException;
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException;
   public void setData(String path, byte[] data) throws RegistryException ;
   public <T> void setData(String path, T data) throws RegistryException ;
   
   public List<String> getChildren(String dir) throws RegistryException ;
+  public List<String> getChildrenPath(String dir) throws RegistryException ;
   public List<String> getChildren(String path, boolean watch) throws RegistryException;
   public <T> List<T> getChildrenAs(String path, Class<T> type) throws RegistryException;
+  public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException;
   
   public boolean exists(String path) throws RegistryException ;
   

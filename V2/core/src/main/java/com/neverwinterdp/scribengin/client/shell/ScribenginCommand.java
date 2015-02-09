@@ -1,7 +1,10 @@
 package com.neverwinterdp.scribengin.client.shell;
 
+import java.util.List;
+
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Command;
@@ -13,7 +16,7 @@ public class ScribenginCommand extends Command {
   public ScribenginCommand() {
     add("start",  new Start()) ;
     add("shutdown",  new Shutdown()) ;
-    add("master", new ListMasterDescriptor()) ;
+    add("info", new Info()) ;
   }
   
   static public class Start extends SubCommand {
@@ -33,18 +36,13 @@ public class ScribenginCommand extends Command {
     }
   }
   
-  
-  static public class ListMasterDescriptor extends SubCommand {
+  static public class Info extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
-    }
-  }
-  
-  static public class DataflowDeploy extends SubCommand {
-    @Override
-    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
+      shell.console().h1("Scribengin Info");
+      shell.console().println(ScribenginFormater.format("Running Dataflows", client.getRunningDataflowDescriptor()));
+      shell.console().println(ScribenginFormater.format("History Dataflows", client.getHistoryDataflowDescriptor()));
     }
   }
 }

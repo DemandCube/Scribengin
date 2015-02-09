@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
@@ -27,10 +26,7 @@ public class SourceUnitTest {
   public void setup() throws Exception {
     FileUtil.removeIfExist(DATA_DIRECTORY, false);
     fs = FileSystem.getLocal(new Configuration()) ;
-    HDFSSink sink = new HDFSSink(fs, DATA_DIRECTORY);
-    for(int i = 0; i < 3; i++) {
-      DataGenerator.generateNewStream(sink, 3, 5);
-    }
+    new HDFSSourceGenerator().generateSource(fs, DATA_DIRECTORY);
   }
   
   @After

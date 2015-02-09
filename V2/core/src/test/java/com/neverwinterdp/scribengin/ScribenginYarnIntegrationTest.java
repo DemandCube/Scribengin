@@ -21,7 +21,7 @@ import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.YarnVMClient;
 
-public class VMScribenginYarnIntegrationTest extends VMScribenginUnitTest {
+public class ScribenginYarnIntegrationTest extends ScribenginUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
