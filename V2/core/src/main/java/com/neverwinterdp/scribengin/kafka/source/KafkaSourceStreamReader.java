@@ -43,9 +43,14 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
     throw new Exception("To implement") ;
   }
 
+  static boolean printCommit = false;
   @Override
   public CommitPoint commit() throws Exception {
-    throw new Exception("To implement") ;
+    if(!printCommit) {
+      System.err.println("Need to implement the commit point");
+      printCommit = true;
+    }
+    return null;
   }
 
   @Override

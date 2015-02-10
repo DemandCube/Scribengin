@@ -23,6 +23,8 @@ public class KafkaServerLauncher implements Server {
   private Thread thread;
 
   public KafkaServerLauncher() {
+    properties.put("host.name", "127.0.0.1");
+    properties.put("advertised.host.name", "127.0.0.1");
     properties.put("port", "9092");
     properties.put("broker.id", "1");
     properties.put("auto.create.topics.enable", "true");
@@ -37,6 +39,7 @@ public class KafkaServerLauncher implements Server {
     properties.put("controlled.shutdown.enable", "true");
     properties.put("controlled.shutdown.max.retries", "3");
     properties.put("controlled.shutdown.retry.backoff.ms", "60000");
+    properties.put("retry.backoff.ms", "1000");
   }
   
   public KafkaServerLauncher(int id, String dataDir, int port) {

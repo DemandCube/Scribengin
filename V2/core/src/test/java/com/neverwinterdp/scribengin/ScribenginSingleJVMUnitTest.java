@@ -8,7 +8,7 @@ import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
-public class VMScribenginSingleJVMUnitTest extends VMScribenginUnitTest {
+public class ScribenginSingleJVMUnitTest extends ScribenginUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;

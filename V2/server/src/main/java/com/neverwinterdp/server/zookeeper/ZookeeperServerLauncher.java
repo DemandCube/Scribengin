@@ -33,7 +33,6 @@ public class ZookeeperServerLauncher implements Server {
     props.put("dataDir", dataDir);
     this.port = port;
     props.put("clientPort", Integer.toString(port));
-
     init(props);
   }
   
@@ -45,11 +44,11 @@ public class ZookeeperServerLauncher implements Server {
     zkProperties.put("dataDir", "./build/data/zookeeper");
     // the port at which the clients will connect
     zkProperties.put("clientPort", "2181");
-    // disable the per-ip limit on the number of connections since this is a non-production config
-    zkProperties.put("maxClientCnxns", "0");
     if (overrideProperties != null) {
       zkProperties.putAll(overrideProperties);
     }
+    //disable the per-ip limit on the number of connections since this is a non-production config
+    zkProperties.put("maxClientCnxns", "60");
   }
 
   public void start() throws Exception {

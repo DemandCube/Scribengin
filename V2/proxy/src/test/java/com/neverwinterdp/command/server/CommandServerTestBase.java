@@ -81,7 +81,6 @@ public class CommandServerTestBase {
     return proxyServerXml;
   }
 
-  
   public static void setup() throws Exception {
     assertWebXmlFilesExist();
     FileUtil.removeIfExist("./build/hdfs", false);
@@ -90,7 +89,6 @@ public class CommandServerTestBase {
     clusterBuilder.startVMMasters();
     Thread.sleep(vmLaunchTime);
     clusterBuilder.startScribenginMasters();
-    
   }
   
   public static void teardown() throws Exception {

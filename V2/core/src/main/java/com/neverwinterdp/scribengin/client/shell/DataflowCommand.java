@@ -1,26 +1,71 @@
 package com.neverwinterdp.scribengin.client.shell;
 
+import java.util.List;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
-import com.neverwinterdp.scribengin.dataflow.builder.HelloHDFSDataflowBuilder;
-import com.neverwinterdp.scribengin.dataflow.builder.HelloKafkaDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
+import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
+import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.util.IOUtil;
 import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
+import com.neverwinterdp.vm.client.shell.Console;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class DataflowCommand extends Command {
   public DataflowCommand() {
+    add("info",   new Info()) ;
     add("submit", new Submit()) ;
-    add("hdfs",  new Hdfs()) ;
+    add("hdfs",   new Hdfs()) ;
     add("kafka",  new Kafka()) ;
+  }
+  
+  static public class Info extends SubCommand {
+    @Parameter(names = "--running", description = "The running dataflow name")
+    private String running ;
+    
+    @Parameter(names = "--history", description = "The history dataflow id")
+    private String history ;
+    
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      ScribenginShell scribenginShell = (ScribenginShell) shell;
+      ScribenginClient scribenginClient= scribenginShell.getScribenginClient();
+      DataflowRegistry dRegistry = null;
+      if(running != null) {
+        dRegistry = scribenginClient.getRunningDataflowRegistry(running);
+      } else if(history != null) {
+        dRegistry = scribenginClient.getHistoryDataflowRegistry(history);
+      }
+      Console console = shell.console();
+      console.h1("Dataflow " + dRegistry.getDataflowPath());
+      console.println("\nTasks:\n");
+      List<DataflowTaskDescriptor> taskDescriptors = dRegistry.getTaskDescriptors();
+      console.println(DataflowFormater.formatDescriptor("All Tasks", taskDescriptors));
+      List<DataflowTaskReport> taskReports = dRegistry.getTaskReports(taskDescriptors) ;
+      console.print(DataflowFormater.formatReport("Report", taskReports, "  "));
+      
+      console.println("Workers:\n");
+      List<String> workers = dRegistry.getWorkers();
+      for(String worker : workers) {
+        List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getExecutors(worker);
+        console.println("\n  Worker: " + worker + "\n");
+        console.println(DataflowFormater.formatExecutor("Executors", descriptors, "    "));
+      }
+    }
   }
   
   static public class Submit extends SubCommand {
@@ -67,7 +112,9 @@ public class DataflowCommand extends Command {
           new HelloKafkaDataflowBuilder(scribenginShell.getScribenginClient());
       
       if(submit || createSource) {
-        kafkaDataflowBuilder.createSource(5, 10);
+        String zkConnect = scribenginShell.getScribenginClient().getRegistry().getRegistryConfig().getConnect();
+        KafkaSourceGenerator generator = new KafkaSourceGenerator("hello", zkConnect);
+        generator.generateAndWait("hello.source");
       }
       
       if(submit) {
@@ -95,12 +142,11 @@ public class DataflowCommand extends Command {
       if(fs.exists(new Path(dataDir))) {
         fs.delete(new Path(dataDir), true) ;
       }
-      HelloHDFSDataflowBuilder dataflowBuilder = 
-        new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(), fs, dataDir);
+      HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(), dataDir);
       dataflowBuilder.setNumOfWorkers(1);
       dataflowBuilder.setNumOfExecutorPerWorker(2);
       if(submit || createSource) {
-        dataflowBuilder.createSource(15, 3, 5);
+        new HDFSSourceGenerator().generateSource(fs, dataDir + "/source");
       }
       if(submit) {
         ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();

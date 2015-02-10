@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin.dataflow;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 
@@ -14,7 +15,7 @@ public class DataflowTaskDescriptor {
   private String                            dataProcessor;
   private SourceStreamDescriptor            sourceStreamDescriptor;
   private Map<String, SinkStreamDescriptor> sinkStreamDescriptors;
-  private String storedPath;
+  private String                            storedPath;
   
   public int getId() { return id; }
   public void setId(int id) { this.id = id; }
@@ -44,6 +45,7 @@ public class DataflowTaskDescriptor {
     this.sinkStreamDescriptors = sinkStreamDescriptors;
   }
   
+  @JsonIgnore
   public String getStoredPath() { return storedPath; }
   public void setStoredPath(String storedPath) { this.storedPath = storedPath; }
   

@@ -54,9 +54,10 @@ public class LockUnitTest {
   public void testConcurrentLock() throws Exception {
     String DATA = "lock directory";
     Registry registry = newRegistry().connect(); 
+
     Node lockDir = registry.create(LOCK_DIR, DATA.getBytes(), NodeCreateMode.PERSISTENT) ;
     registry.disconnect();
-    Worker[] worker = new Worker[100];
+    Worker[] worker = new Worker[50];
     ExecutorService executorPool = Executors.newFixedThreadPool(worker.length);
     for(int i = 0; i < worker.length; i++) {
       worker[i] = new Worker("worker-" + (i + 1)) ;

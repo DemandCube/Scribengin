@@ -98,7 +98,7 @@ public class VMService {
   public boolean isRunning(VMDescriptor descriptor) throws Exception {
     Node statusNode = registry.get(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
     if(!statusNode.exists()) return false;
-    VMStatus status = statusNode.getData(VMStatus.class);
+    VMStatus status = statusNode.getDataAs(VMStatus.class);
     if(status == VMStatus.ALLOCATED) {
       return true;
     } else {

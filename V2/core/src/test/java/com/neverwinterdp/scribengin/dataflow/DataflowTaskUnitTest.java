@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.hdfs.DataGenerator;
+import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.sink.Sink;
@@ -35,13 +35,8 @@ public class DataflowTaskUnitTest {
     FileUtil.removeIfExist("./build/hdfs", false);
     
     dataflowContainer = new DataflowContainer(new HashMap<String, String>());
-
     fs = FileSystem.getLocal(new Configuration()) ;
-    Sink sink = new HDFSSink(fs, SOURCE_DIRECTORY);
-    
-    for(int i = 0; i < 3; i++) {
-      DataGenerator.generateNewStream(sink, 3, 5);
-    }
+    new HDFSSourceGenerator().generateSource(fs, SOURCE_DIRECTORY);
   }
   
   @After

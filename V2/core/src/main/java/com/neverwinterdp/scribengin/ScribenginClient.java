@@ -11,6 +11,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.event.ScribenginShutdownEventListener;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
@@ -38,12 +39,28 @@ public class ScribenginClient {
   
   public VMDescriptor getScribenginMaster() throws RegistryException {
     Node node = vmClient.getRegistry().getRef(ScribenginService.LEADER_PATH);
-    VMDescriptor descriptor = node.getData(VMDescriptor.class);
+    VMDescriptor descriptor = node.getDataAs(VMDescriptor.class);
     return descriptor;
   }
   
-  public List<DataflowDescriptor> getDataflowDescriptor() throws RegistryException {
+  public List<DataflowDescriptor> getRunningDataflowDescriptor() throws RegistryException {
     return vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
+  }
+  
+  public List<DataflowDescriptor> getHistoryDataflowDescriptor() throws RegistryException {
+    return vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_HISTORY_PATH, DataflowDescriptor.class) ;
+  }
+  
+  public DataflowRegistry getRunningDataflowRegistry(String name) throws Exception {
+    String dataflowPath = ScribenginService.DATAFLOWS_RUNNING_PATH + "/" + name;
+    DataflowRegistry dataflowRegistry = new DataflowRegistry(getRegistry(), dataflowPath);
+    return dataflowRegistry;
+  }
+  
+  public DataflowRegistry getHistoryDataflowRegistry(String id) throws Exception {
+    String dataflowPath = ScribenginService.DATAFLOWS_HISTORY_PATH + "/" + id;
+    DataflowRegistry dataflowRegistry = new DataflowRegistry(getRegistry(), dataflowPath);
+    return dataflowRegistry;
   }
   
   public VMDescriptor createVMScribenginMaster(VMClient vmClient, String name) throws Exception {

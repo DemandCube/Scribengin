@@ -22,6 +22,11 @@ public class Node {
   
   public String getPath() { return path; }
 
+  public String getName() {
+    int idx = path.lastIndexOf('/') ;
+    return path.substring(idx + 1) ; 
+  }
+  
   public String getParentPath() {
     if(path.length() == 1 && path.equals("/")) return null ;
     int idx = path.lastIndexOf('/') ;
@@ -38,9 +43,12 @@ public class Node {
     return registry.getData(path); 
   }
   
-  public <T> T getData(Class<T> type) throws RegistryException { 
-    byte[] data = getData();
-    return JSONSerializer.INSTANCE.fromBytes(data, type);
+  public <T> T getDataAs(Class<T> type) throws RegistryException { 
+    return registry.getDataAs(path, type);
+  }
+
+  public <T> T getDataAs(Class<T> type, DataMapperCallback<T> callback) throws RegistryException { 
+    return registry.getDataAs(path, type, callback);
   }
 
   public void setData(byte[] data) throws RegistryException {
@@ -91,19 +99,28 @@ public class Node {
     return registry.getChildren(path) ;
   }
   
+  public List<String> getChildrenPath() throws RegistryException {
+    return registry.getChildrenPath(path);
+  }
+  
+  public <T> List<T> getChildrenAs(Class<T> type) throws RegistryException {
+    return registry.getChildrenAs(path, type) ;
+  }
+  
+  public <T> List<T> getChildrenAs(Class<T> type, DataMapperCallback<T> callback) throws RegistryException {
+    return registry.getChildrenAs(path, type, callback) ;
+  }
+  
   public Node createChild(String name, NodeCreateMode mode) throws RegistryException {
-    Node child = registry.create(path + "/" + name, mode);
-    return child;
+    return registry.create(path + "/" + name, mode);
   }
   
   public Node createChild(String name, byte[] data, NodeCreateMode mode) throws RegistryException {
-    Node child = registry.create(path + "/" + name, data, mode);
-    return child;
+    return registry.create(path + "/" + name, data, mode);
   }
   
   public <T> Node createChild(String name, T data, NodeCreateMode mode) throws RegistryException {
-    Node child = registry.create(path + "/" + name, data, mode);
-    return child;
+    return registry.create(path + "/" + name, data, mode);
   }
   
   public void createChildRef(String name, String toPath, NodeCreateMode mode) throws RegistryException {

@@ -68,9 +68,9 @@ public class RegistryUnitTest {
     Registry  registry = newRegistry().connect(); 
     
     registry.create("/sequential", NodeCreateMode.PERSISTENT) ;
-    Node seqNode1 = registry.create("/sequential/node", NodeCreateMode.PERSISTENT_SEQUENTIAL) ;
-    System.out.println("path = " + seqNode1.getPath());
-    Assert.assertTrue(seqNode1.getPath().matches("/sequential/node0+")) ;
+    Node seqNode1 = registry.create("/sequential/node-", NodeCreateMode.PERSISTENT_SEQUENTIAL) ;
+    seqNode1.createChild("report", registry.getRegistryConfig(), NodeCreateMode.PERSISTENT);
+    Assert.assertTrue(seqNode1.getPath().matches("/sequential/node-0+")) ;
     registry.disconnect();
   }
   

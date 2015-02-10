@@ -1,6 +1,7 @@
 package com.neverwinterdp.vm.client.shell;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +53,11 @@ public class CommandInput {
   public String[] getRemainArgs() { return this.remainArgs ; }
   
   public <T> void mapRemainArgs(T object) {
-    JCommander jcommander = new JCommander(object, this.remainArgs) ;
+    //JCommander jcommander = new JCommander(object, this.remainArgs) ;
+    ParameterMapper mapper = new ParameterMapper() ;
+    Arrays.asList(remainArgs);
+    List<String> remainList = mapper.map(object, Arrays.asList(remainArgs)) ;
+    remainArgs = remainList.toArray(new String[remainList.size()]);
   }
   
   static public String[] shift(String[] array){

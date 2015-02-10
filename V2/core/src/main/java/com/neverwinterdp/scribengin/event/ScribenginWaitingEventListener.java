@@ -39,7 +39,7 @@ public class ScribenginWaitingEventListener extends VMWaitingEventListener {
           ScribenginEvent sEvent = new ScribenginEvent(DATAFLOW_STATUS, event);
           Node statusNode = new Node(registry, event.getPath());
           Node dataflowNode = statusNode.getParentNode();
-          DataflowDescriptor dfDescriptor = dataflowNode.getData(DataflowDescriptor.class);
+          DataflowDescriptor dfDescriptor = dataflowNode.getDataAs(DataflowDescriptor.class);
           sEvent.attr(DataflowAttr.status, data);
           sEvent.attr(DataflowAttr.descriptor, dfDescriptor);
           ScribenginWaitingEventListener.this.process(sEvent);

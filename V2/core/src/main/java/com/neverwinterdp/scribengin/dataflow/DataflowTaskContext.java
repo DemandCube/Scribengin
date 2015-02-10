@@ -17,11 +17,11 @@ import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
 public class DataflowTaskContext {
-  
+  private DataflowTaskReport report ;
   private SourceContext sourceContext ;
   private Map<String, SinkContext> sinkContexts = new HashMap<String, SinkContext>();
   
-  public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
+  public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws Exception {
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
     Iterator<Map.Entry<String, SinkStreamDescriptor>> i = descriptor.getSinkStreamDescriptors().entrySet().iterator() ;
     while(i.hasNext()) {
@@ -29,7 +29,10 @@ public class DataflowTaskContext {
       SinkContext context = new SinkContext(container.getSinkFactory(), entry.getValue());
       sinkContexts.put(entry.getKey(), context) ;
     }
+    this.report = report ;
   }
+  
+  public DataflowTaskReport getReport() { return this.report ;}
   
   public SourceStreamReader getSourceStreamReader() {
     return sourceContext.assignedSourceStreamReader;
@@ -53,6 +56,7 @@ public class DataflowTaskContext {
       ctx.commit();
     }
     sourceContext.commit();
+    report.incrCommitProcessCount();
   }
   
   public void rollback() throws Exception {

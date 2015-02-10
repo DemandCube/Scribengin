@@ -1,9 +1,7 @@
 package com.neverwinterdp.vm.client.shell;
 
-import java.io.IOException;
 import java.util.List;
 
-import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.text.StringUtil;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -14,8 +12,7 @@ public class VMCommand extends Command {
   public VMCommand() {
     add("start", new Start()) ;
     add("shutdown", new Shutdown()) ;
-    add("list", new ListRunning()) ;
-    add("history", new ListHistory()) ;
+    add("info", new Info()) ;
   }
   
   static public class Start extends SubCommand {
@@ -35,41 +32,13 @@ public class VMCommand extends Command {
     }
   }
   
-  static public class ListRunning extends SubCommand {
-    @Override
-    public void execute(Shell shell, CommandInput cmdInput) throws IOException  {
-      VMClient vmClient = shell.getVMClient();
-      try {
-        printVMDescriptors("Running VM", shell, vmClient.getRunningVMDescriptors());
-      } catch (RegistryException e) {
-        shell.console().println("Error caught: "+e.getMessage());
-      } catch (Exception e) {
-        shell.console().println("Error caught: "+e.getMessage());
-      }
-    }
-  }
-  
-  static public class ListHistory extends SubCommand {
+  static public class Info extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
-      printVMDescriptors("History VM", shell, vmClient.getHistoryVMDescriptors());
+      shell.console().h1("VM Info");
+      shell.console().println(VMFormater.format("Running VM", vmClient.getRunningVMDescriptors()));
+      shell.console().println(VMFormater.format("History VM", vmClient.getHistoryVMDescriptors()));
     }
-  }
-  
-  static void printVMDescriptors(String title, Shell shell, List<VMDescriptor> descriptors) throws Exception {
-    TabularFormater formater = new TabularFormater("ID", "Path", "Roles", "Cores", "Memory");
-    for(int i = 0; i < descriptors.size(); i++) {
-      VMDescriptor descriptor = descriptors.get(i) ;
-      formater.addRow(
-          descriptor.getId(), 
-          descriptor.getStoredPath(),
-          StringUtil.join(descriptor.getVmConfig().getRoles(), ","),
-          descriptor.getCpuCores(),
-          descriptor.getMemory()
-      );
-    }
-    formater.setTitle(title);
-    shell.console().println(formater.getFormatText());
   }
 }

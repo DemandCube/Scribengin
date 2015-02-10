@@ -1,10 +1,6 @@
 package com.neverwinterdp.scribengin.kafka.sink;
 
 import java.util.LinkedHashMap;
-import java.util.List;
-
-import kafka.javaapi.PartitionMetadata;
-import kafka.javaapi.TopicMetadata;
 
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.sink.Sink;
@@ -14,7 +10,6 @@ import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 
 public class KafkaSink implements Sink {
   private SinkDescriptor descriptor;
-  private KafkaClient kafkaClient ;
   
   private int idTracker = 0;
   private LinkedHashMap<Integer, KafkaSinkStream> streams = new LinkedHashMap<Integer, KafkaSinkStream>() ;
@@ -32,10 +27,11 @@ public class KafkaSink implements Sink {
   }
   
   private void init(SinkDescriptor descriptor) throws Exception {
-    kafkaClient = new KafkaClient(descriptor.attribute("name"), descriptor.attribute("zk.connect")) ;
+    KafkaClient kafkaClient = new KafkaClient(descriptor.attribute("name"), descriptor.attribute("zk.connect")) ;
     kafkaClient.connect();
     descriptor.attribute("broker.list", kafkaClient.getKafkaBrokerList());
     this.descriptor  = descriptor ;
+    kafkaClient.close();
   }
   
   @Override
@@ -78,6 +74,5 @@ public class KafkaSink implements Sink {
   public void close() throws Exception {
     for(KafkaSinkStream sel : streams.values()) {
     }
-    kafkaClient.close();
   }
 }
