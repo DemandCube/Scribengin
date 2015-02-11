@@ -83,7 +83,7 @@ public class DataflowTaskUnitTest {
     public void run() {
       try {
         DataflowTask task = new DataflowTask(dataflowContainer, descriptor);
-        task.execute();
+        task.run();
       } catch(Exception ex) {
         ex.printStackTrace();
       }

@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Command {
-  private Map<String, SubCommand> subcommands = new HashMap<String, SubCommand>() ;
+  private Map<String, Class<? extends SubCommand>> subcommands = new HashMap<>() ;
 
-  public void add(String name, SubCommand subcommand) {
-    subcommands.put(name, subcommand) ;
+  public void add(String name, Class<? extends SubCommand> type) {
+    subcommands.put(name, type) ;
   }
   
   public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-    SubCommand subcommand = subcommands.get(cmdInput.getSubCommand()) ;
+    Class<? extends SubCommand> type = subcommands.get(cmdInput.getSubCommand()) ;
+    SubCommand subcommand = type.newInstance();
     if(subcommand == null) {
       throw new Exception("Unkown sub command for: " + cmdInput.getCommandLine()) ;
     }

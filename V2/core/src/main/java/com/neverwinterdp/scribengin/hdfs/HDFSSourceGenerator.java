@@ -10,7 +10,7 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
 public class HDFSSourceGenerator {
-  private int numOfStream = 15;
+  private int numOfStream = 5;
   private int numOfBufferPerStream = 3;
   private int numOfRecordPerBuffer = 10;
   

@@ -50,7 +50,6 @@ public class CommandProxyServletRetryUnitTest {
     proxyServer = new JettyServer(proxyPort, CommandProxyServlet.class);
     proxyServer.setHandler(proxyApp);
     proxyServer.start();
-    
   }
 
   

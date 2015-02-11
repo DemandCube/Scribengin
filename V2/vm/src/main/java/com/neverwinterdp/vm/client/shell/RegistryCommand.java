@@ -10,7 +10,7 @@ import com.neverwinterdp.vm.client.VMClient;
 
 public class RegistryCommand extends Command {
   public RegistryCommand() {
-    add("dump", new Dump()) ;
+    add("dump", Dump.class) ;
   }
   
   static public class Dump extends SubCommand {

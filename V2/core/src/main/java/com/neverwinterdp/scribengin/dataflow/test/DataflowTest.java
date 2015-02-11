@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import java.io.IOException;
-
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
@@ -12,6 +10,9 @@ abstract public class DataflowTest {
   
   @Parameter(names = "--executor-per-worker", description = "The number of executor per worker")
   protected int    numOfExecutorPerWorker = 3;
+  
+  @Parameter(names = "--task-max-execute-time", description = "The max time an executor should work on a task")
+  protected long   taskMaxExecuteTime = 10000;
   
   @Parameter(names = "--duration", description = "Max duration for the test")
   protected long duration = 60000;
