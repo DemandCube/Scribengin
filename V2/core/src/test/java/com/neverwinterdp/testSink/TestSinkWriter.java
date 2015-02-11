@@ -50,12 +50,6 @@ public class TestSinkWriter implements SinkStreamWriter{
   }
 
 
-  //@Override
-  //public boolean clearBuffer() {
-  //  buffer.clear();
-  //  return true;
-  //}
-
 
   @Override
   public void completeCommit() {
@@ -68,10 +62,6 @@ public class TestSinkWriter implements SinkStreamWriter{
   }
 
 
-  //@Override
-  //public boolean bufferRecord(Record r) {
-  //  return buffer.add(r);
-  //}
 
 
   @Override
@@ -104,5 +94,12 @@ public class TestSinkWriter implements SinkStreamWriter{
   
   public int getNumMessagesWritten(){
     return this.numMessagesWritten;
+  }
+
+
+
+  @Override
+  public void clearBuffer() {
+    buffer.clear();
   }
 }

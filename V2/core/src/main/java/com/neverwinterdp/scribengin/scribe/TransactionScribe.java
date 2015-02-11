@@ -30,7 +30,6 @@ public class TransactionScribe implements ScribeInterface{
   @Override
   public void process(Record record, DataflowTaskContext ctx) throws Exception {
     //Read in data from source, add to sink's buffer
-    //Can we buffer here?  Who should be responsible for holding buffer - sink?
     if(ctx.append(record)){
       return;
     }
@@ -52,9 +51,7 @@ public class TransactionScribe implements ScribeInterface{
     }
     else{
       //Clean up everything
-      //ctx.clearBuffer();
-      //What do we do here?  try to process(record, ctx) again?
-      process(record, ctx);
+      ctx.clearBuffer();
     }
   }
   

@@ -10,9 +10,11 @@ public interface SinkStreamWriter {
    * @throws Exception
    */
   public boolean append(Record record) throws Exception ;
+  public void clearBuffer();
   public boolean commit() throws Exception ;
   public void close()  throws  Exception ;
   public boolean rollback() throws Exception;
   public boolean prepareCommit();
   public void completeCommit();
+  
 }

@@ -14,4 +14,5 @@ public interface SourceStreamReader {
   public void close() throws Exception;
   public boolean prepareCommit();
   public void completeCommit();
+  public void clearBuffer();
 }

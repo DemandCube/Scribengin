@@ -36,10 +36,10 @@ public class TestSourceReader implements SourceStreamReader{
     //return true;
   }
 
-  //@Override
-  //public void clearBuffer() {
-  //  this.currNum = this.lastCommitted;
-  //}
+  @Override
+  public void clearBuffer() {
+    this.currNum = this.lastCommitted;
+  }
 
   @Override
   public void completeCommit() {
@@ -91,5 +91,7 @@ public class TestSourceReader implements SourceStreamReader{
   public int getNumMessagesWritten(){
     return this.lastCommitted;
   }
+
+
 
 }

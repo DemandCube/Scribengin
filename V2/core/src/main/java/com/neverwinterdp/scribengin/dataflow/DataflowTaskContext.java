@@ -116,6 +116,16 @@ public class DataflowTaskContext {
     }
   }
   
+  public void clearBuffer() {
+    sourceContext.assignedSourceStreamReader.clearBuffer();
+    
+    Iterator<SinkContext> i = sinkContexts.values().iterator();
+    while(i.hasNext()) {
+      SinkContext ctx = i.next();
+      ctx.clearBuffer();
+    }
+  }
+  
   static public class  SourceContext {
     private Source source ;
     private SourceStream assignedSourceStream ;
@@ -152,6 +162,10 @@ public class DataflowTaskContext {
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();
     }
     
+    public void clearBuffer() {
+      assignedSinkStreamWriter.clearBuffer();
+    }
+
     public void completeCommit() {
       // TODO Auto-generated method stub
       
@@ -173,6 +187,8 @@ public class DataflowTaskContext {
       assignedSinkStreamWriter.close();
     }
   }
+
+  
 
 
 }
