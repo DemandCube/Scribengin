@@ -27,10 +27,10 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class DataflowCommand extends Command {
   public DataflowCommand() {
-    add("info",   new Info()) ;
-    add("submit", new Submit()) ;
-    add("hdfs",   new Hdfs()) ;
-    add("kafka",  new Kafka()) ;
+    add("info",   Info.class) ;
+    add("submit", Submit.class) ;
+    add("hdfs",   Hdfs.class) ;
+    add("kafka",  Kafka.class) ;
   }
   
   static public class Info extends SubCommand {

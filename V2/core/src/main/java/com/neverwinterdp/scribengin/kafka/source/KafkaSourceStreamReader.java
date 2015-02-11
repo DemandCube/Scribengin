@@ -13,13 +13,11 @@ import com.neverwinterdp.scribengin.source.SourceStreamReader;
 public class KafkaSourceStreamReader implements SourceStreamReader {
   private SourceStreamDescriptor descriptor;
   private KafkaPartitionReader partitionReader ;
-  private KafkaPartitionReaderIterator partitionReaderIterator;
   
   public KafkaSourceStreamReader(SourceStreamDescriptor descriptor, PartitionMetadata partitionMetadata) {
     this.descriptor = descriptor;
     this.partitionReader = 
         new KafkaPartitionReader(descriptor.attribute("name"), descriptor.attribute("topic"), partitionMetadata);
-    this.partitionReaderIterator = new KafkaPartitionReaderIterator(partitionReader);
   }
   
   @Override
@@ -27,8 +25,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
 
   @Override
   public Record next() throws Exception {
-    if(partitionReaderIterator.hasNext()) return partitionReaderIterator.nextAs(Record.class);
-    return null;
+    return partitionReader.nextAs(Record.class);
   }
 
   @Override
@@ -46,10 +43,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
   static boolean printCommit = false;
   @Override
   public CommitPoint commit() throws Exception {
-    if(!printCommit) {
-      System.err.println("Need to implement the commit point");
-      printCommit = true;
-    }
+    partitionReader.commit();
     return null;
   }
 

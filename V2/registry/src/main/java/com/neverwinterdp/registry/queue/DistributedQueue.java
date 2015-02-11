@@ -40,6 +40,11 @@ public class DistributedQueue {
   public void offer(byte[] data) throws RegistryException {
     registry.create(path + "/", data, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
+  
+  public <T> void offerAs(T object) throws RegistryException {
+    byte[] data = JSONSerializer.INSTANCE.toBytes(object);
+    offer(data);
+  }
 
   /**
    * Retrieves and removes the head of this queue.  This method differs
@@ -52,6 +57,11 @@ public class DistributedQueue {
     return data;
   }
 
+  public <T> T removeAs(Class<T> type) throws RegistryException, Exception  {
+    byte[] data = remove();
+    return JSONSerializer.INSTANCE.fromBytes(data, type);
+  }
+  
   /**
    * Retrieves and removes the head of this queue, or returns <tt>null</tt> if this queue is empty.
    */
@@ -64,7 +74,12 @@ public class DistributedQueue {
     registry.delete(headChildPath);
     return data;
   }
-
+  
+  public <T> T pollAs(Class<T> type) throws RegistryException {
+    byte[] data = poll();
+    return JSONSerializer.INSTANCE.fromBytes(data, type);
+  }
+  
   /**
    * Retrieves, but does not remove, the head of this queue.  This method differs from {@link #peek peek} 
    * only in that it throws an exception if this queue is empty.

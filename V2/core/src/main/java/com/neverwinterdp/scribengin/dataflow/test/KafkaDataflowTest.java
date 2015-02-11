@@ -51,6 +51,7 @@ public class KafkaDataflowTest extends DataflowTest {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("hello-kafka-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
+    dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
 

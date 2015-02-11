@@ -13,6 +13,8 @@ public class DataflowDescriptor {
   private Map<String, SinkDescriptor> sinkDescriptors;
   private int                         numberOfWorkers =  1;
   private int                         numberOfExecutorsPerWorker = 1;
+  private long                        taskMaxExecuteTime = -1;
+  
   private String                      dataProcessor;
   
   public String getName() { return name; }
@@ -44,6 +46,11 @@ public class DataflowDescriptor {
   public int getNumberOfExecutorsPerWorker() { return numberOfExecutorsPerWorker; }
   public void setNumberOfExecutorsPerWorker(int number) {
     this.numberOfExecutorsPerWorker = number;
+  }
+  
+  public long getTaskMaxExecuteTime() { return taskMaxExecuteTime;}
+  public void setTaskMaxExecuteTime(long taskMaxExecuteTime) {
+    this.taskMaxExecuteTime = taskMaxExecuteTime;
   }
   
   public String getDataProcessor() { return dataProcessor; }
