@@ -7,7 +7,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 
 
 public class DataflowTaskExecutorDescriptor {
-  static enum Status { INIT, RUNNING, TERMINATED }
+  public static enum Status { INIT, RUNNING, TERMINATED }
   
   private String id ;
   private Status status = Status.INIT ;

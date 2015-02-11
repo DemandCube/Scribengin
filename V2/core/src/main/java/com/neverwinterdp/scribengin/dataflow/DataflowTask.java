@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.scribe.ScribeInterface;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
