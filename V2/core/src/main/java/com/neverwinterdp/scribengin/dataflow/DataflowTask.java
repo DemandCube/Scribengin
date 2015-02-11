@@ -1,19 +1,20 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.scribe.ScribeInterface;
 import com.neverwinterdp.scribengin.source.SourceStreamReader;
 
 
 public class DataflowTask {
   private DataflowContainer container;
   private DataflowTaskDescriptor descriptor;
-  private DataProcessor processor;
+  private ScribeInterface processor;
   private DataflowTaskContext context;
   
   public DataflowTask(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
     this.container = container;
     this.descriptor = descriptor;
-    Class<DataProcessor> processorType = (Class<DataProcessor>) Class.forName(descriptor.getDataProcessor());
+    Class<ScribeInterface> processorType = (Class<ScribeInterface>) Class.forName(descriptor.getDataProcessor());
     processor = processorType.newInstance();
     DataflowTaskReport report = new DataflowTaskReport();
     context = new DataflowTaskContext(container, descriptor, report);

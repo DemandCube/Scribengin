@@ -4,12 +4,12 @@ import java.util.Random;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.DataProcessor;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
+import com.neverwinterdp.scribengin.scribe.ScribeInterface;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
@@ -72,14 +72,14 @@ public class HelloKafkaDataflowBuilder {
   }
   
   
-  static public class TestCopyDataProcessor implements DataProcessor {
+  static public class TestCopyDataProcessor implements ScribeInterface {
     private int count = 0;
     private Random random = new Random();
     
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
       if(random.nextDouble() < 0.8) {
-        ctx.write(record);
+        ctx.append(record);
         //System.out.println("Write default");
       } else {
         ctx.write("invalid", record);

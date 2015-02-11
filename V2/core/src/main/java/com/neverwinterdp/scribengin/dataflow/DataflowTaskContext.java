@@ -10,6 +10,7 @@ import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.source.CommitPoint;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -38,9 +39,9 @@ public class DataflowTaskContext {
     return sourceContext.assignedSourceStreamReader;
   }
   
-  public void write(Record record) throws Exception {
+  public boolean append(Record record) throws Exception {
     SinkContext sinkContext = sinkContexts.get("default") ;
-    sinkContext.assignedSinkStreamWriter.append(record);
+    return sinkContext.assignedSinkStreamWriter.append(record);
   }
   
   public void write(String sinkName, Record record) throws Exception {
@@ -48,15 +49,40 @@ public class DataflowTaskContext {
     sinkContext.assignedSinkStreamWriter.append(record);
   }
   
-  public void commit() throws Exception {
-    //TODO: implement the proper transaction
+  
+  public boolean prepareCommit() throws Exception {
+    boolean retVal = sourceContext.assignedSourceStreamReader.prepareCommit();
+    
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
-      ctx.commit();
+      if(!ctx.prepareCommit()){
+        retVal = false;
+      }
     }
-    sourceContext.commit();
+    
+    return retVal;
+  }
+  
+  public boolean commit() throws Exception {
+    //TODO: What to do with this - 
+    //What do we do with this commitpoint here?
+    //Check into registry or something?
+    //Something missing here to help coordinate with ZK?
+    //Or should that be the job of the source/sink stream writers?
+    CommitPoint cp = sourceContext.commit();
+    
+    boolean retVal = true;
+    Iterator<SinkContext> i = sinkContexts.values().iterator();
+    while(i.hasNext()) {
+      SinkContext ctx = i.next();
+      if(!ctx.commit()){
+        retVal = false;
+      }
+    }
     report.incrCommitProcessCount();
+    
+    return retVal;
   }
   
   public void rollback() throws Exception {
@@ -64,7 +90,7 @@ public class DataflowTaskContext {
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
-      ctx.rollback();;
+      ctx.rollback();
     }
     sourceContext.rollback();
   }
@@ -79,6 +105,17 @@ public class DataflowTaskContext {
     sourceContext.close();
   }
   
+  public void completeCommit() {
+    // TODO Auto-generated method stub
+    sourceContext.assignedSourceStreamReader.completeCommit();
+    
+    Iterator<SinkContext> i = sinkContexts.values().iterator();
+    while(i.hasNext()) {
+      SinkContext ctx = i.next();
+      ctx.completeCommit();
+    }
+  }
+  
   static public class  SourceContext {
     private Source source ;
     private SourceStream assignedSourceStream ;
@@ -90,8 +127,8 @@ public class DataflowTaskContext {
       this.assignedSourceStreamReader = assignedSourceStream.getReader("DataflowTask");
     }
     
-    public void commit() throws Exception {
-      assignedSourceStreamReader.commit();
+    public CommitPoint commit() throws Exception {
+      return assignedSourceStreamReader.commit();
     }
     
     public void rollback() throws Exception {
@@ -115,8 +152,17 @@ public class DataflowTaskContext {
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();
     }
     
-    public void commit() throws Exception {
-      assignedSinkStreamWriter.commit();
+    public void completeCommit() {
+      // TODO Auto-generated method stub
+      
+    }
+
+    public boolean prepareCommit() throws Exception{
+      return assignedSinkStreamWriter.prepareCommit();
+    }
+
+    public boolean commit() throws Exception {
+      return assignedSinkStreamWriter.commit();
     }
     
     public void rollback() throws Exception {
@@ -127,4 +173,6 @@ public class DataflowTaskContext {
       assignedSinkStreamWriter.close();
     }
   }
+
+
 }
