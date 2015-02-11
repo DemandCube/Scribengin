@@ -100,4 +100,10 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public void clearBuffer() {
+    // TODO Auto-generated method stub
+    
+  }
 }

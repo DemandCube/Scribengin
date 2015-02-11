@@ -129,4 +129,10 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public void clearBuffer() {
+    // TODO Auto-generated method stub
+    
+  }
 }

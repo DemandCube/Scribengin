@@ -63,4 +63,10 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
     
   }
 
+  @Override
+  public void clearBuffer() {
+    // TODO Auto-generated method stub
+    
+  }
+
 }
