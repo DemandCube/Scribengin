@@ -20,11 +20,10 @@ public class HelloKafkaDataflowBuilder {
 
   private int numOfWorkers = 3;
   private int numOfExecutorPerWorker = 3;
-  
-  private DataflowClient dataflowClient;
+  private ScribenginClient scribenginClient;
   
   public HelloKafkaDataflowBuilder(ScribenginClient scribenginClient) {
-    dataflowClient = new DataflowClient(scribenginClient);
+    this.scribenginClient = scribenginClient;
   }
 
   
@@ -68,7 +67,7 @@ public class HelloKafkaDataflowBuilder {
     invalidSink.attribute("zk.connect", zkConnect);
     invalidSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
-    return dataflowClient.submit(dflDescriptor);
+    return scribenginClient.submit(dflDescriptor);
   }
   
   

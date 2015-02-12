@@ -4,7 +4,6 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyDataProcessor;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
@@ -32,7 +31,6 @@ public class KafkaDataflowTest extends DataflowTest {
   protected void doRun(ScribenginShell shell) throws Exception {
     long start = System.currentTimeMillis();
     ScribenginClient scribenginClient = shell.getScribenginClient();
-    DataflowClient dataflowClient = new DataflowClient(scribenginClient);
     RegistryConfig registryConfig = scribenginClient.getRegistry().getRegistryConfig();
     String zkConnect = registryConfig.getConnect();
 
@@ -51,6 +49,7 @@ public class KafkaDataflowTest extends DataflowTest {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("hello-kafka-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
+    dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
 
@@ -75,7 +74,7 @@ public class KafkaDataflowTest extends DataflowTest {
     invalidSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
-    ScribenginWaitingEventListener waitingEventListener = dataflowClient.submit(dflDescriptor);
+    ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();

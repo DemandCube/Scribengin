@@ -7,7 +7,6 @@ import org.apache.hadoop.fs.Path;
 
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
@@ -27,10 +26,10 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class DataflowCommand extends Command {
   public DataflowCommand() {
-    add("info",   new Info()) ;
-    add("submit", new Submit()) ;
-    add("hdfs",   new Hdfs()) ;
-    add("kafka",  new Kafka()) ;
+    add("info",   Info.class) ;
+    add("submit", Submit.class) ;
+    add("hdfs",   Hdfs.class) ;
+    add("kafka",  Kafka.class) ;
   }
   
   static public class Info extends SubCommand {
@@ -80,11 +79,10 @@ public class DataflowCommand extends Command {
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       ScribenginClient scribenginClient= scribenginShell.getScribenginClient();
       try {
-        DataflowClient dataflowClient = new DataflowClient(scribenginClient);
         String dataflowJson = IOUtil.getFileContentAsString(descriptor) ;
         System.out.println("Dataflow JSON:");
         System.out.println(dataflowJson);
-        ScribenginWaitingEventListener eventListener = dataflowClient.submit(dataflowPath, dataflowJson);
+        ScribenginWaitingEventListener eventListener = scribenginClient.submit(dataflowPath, dataflowJson);
         System.out.println("Submited.................");
         eventListener.waitForEvents(60000); 
         System.out.println("Finish wait for event..........");

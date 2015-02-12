@@ -1,10 +1,10 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.Node;
@@ -13,10 +13,13 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.lock.LockOperation;
+import com.neverwinterdp.registry.queue.DistributedQueue;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
+@Singleton
 public class DataflowRegistry {
   final static public String TASKS_PATH = "tasks";
   final static public String TASKS_DESCRIPTORS_PATH = TASKS_PATH + "/descriptors";
@@ -46,7 +49,8 @@ public class DataflowRegistry {
   private Node               status;
   
   private Node               tasksDescriptors;
-  private Node               tasksAvailable;
+  //private Node               tasksAvailable;
+  private DistributedQueue   tasksAvailableQueue;
   private Node               tasksAssigned;
   private Node               tasksFinished;
   private Node               tasksLock;
@@ -75,7 +79,7 @@ public class DataflowRegistry {
     status         = registry.createIfNotExist(dataflowPath + "/status");
     
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
-    tasksAvailable = registry.createIfNotExist(dataflowPath   + "/" + TASKS_AVAILABLE_PATH);
+    tasksAvailableQueue = new DistributedQueue(registry, dataflowPath   + "/" + TASKS_AVAILABLE_PATH) ;
     tasksAssigned  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_ASSIGNED_PATH);
     tasksFinished  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_FINISHED_PATH);
     tasksLock      = registry.createIfNotExist(dataflowPath   + "/" + TASKS_LOCK_PATH);
@@ -87,8 +91,9 @@ public class DataflowRegistry {
     Node taskNode = tasksDescriptors.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
     taskDescriptor.setStoredPath(taskNode.getPath());
     taskNode.setData(taskDescriptor);
+    taskNode.createChild("report", new DataflowTaskReport(), NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
-    tasksAvailable.createChild(nodeName, NodeCreateMode.PERSISTENT);
+    tasksAvailableQueue.offer(nodeName.getBytes());
   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
@@ -104,14 +109,12 @@ public class DataflowRegistry {
     LockOperation<DataflowTaskDescriptor> getAssignedtaskOp = new LockOperation<DataflowTaskDescriptor>() {
       @Override
       public DataflowTaskDescriptor execute() throws Exception {
-        List<String> taskAvailableNames = tasksAvailable.getChildren();
-        if(taskAvailableNames.size() == 0) return null;
-        Collections.sort(taskAvailableNames);
-        String childName = taskAvailableNames.get(0);
-        Node childNode = tasksDescriptors.getChild(childName);
+        byte[] data  = tasksAvailableQueue.poll();
+        if(data == null) return null;
+        String taskName = new String(data);
+        Node childNode = tasksDescriptors.getChild(taskName);
+        tasksAssigned.createChild(taskName, NodeCreateMode.PERSISTENT);
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
-        tasksAssigned.createChild(childName, NodeCreateMode.PERSISTENT);
-        tasksAvailable.getChild(childName).delete();
         return descriptor;
       }
     };
@@ -133,6 +136,23 @@ public class DataflowRegistry {
     lock.execute(commitOp, 5, 1000);
   }
   
+  public void suspendDataflowTaskDescriptor(final DataflowTaskDescriptor descriptor) throws RegistryException {
+    Lock lock = tasksLock.getLock("write") ;
+    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+      @Override
+      public Boolean execute() throws Exception {
+        descriptor.setStatus(Status.SUSPENDED);
+        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        String name = descriptorNode.getName();
+        tasksAvailableQueue.offer(name.getBytes());
+        tasksAssigned.getChild(name).delete();
+        return true;
+      }
+    };
+    lock.execute(commitOp, 5, 1000);
+  }
+  
+  
   public void createTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
     Node worker = workers.getChild(vmDescriptor.getId()) ;
     Node executors = worker.createDescendantIfNotExists("executors");
@@ -144,6 +164,11 @@ public class DataflowRegistry {
     Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
     executor.setData(descriptor);
   }
+ 
+  public void update(DataflowTaskDescriptor descriptor) throws RegistryException {
+    registry.setData(descriptor.getStoredPath(), descriptor);
+  }
+ 
   
   public void create(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
     Node taskNode = registry.get(descriptor.getStoredPath());
@@ -159,6 +184,10 @@ public class DataflowRegistry {
     return tasksDescriptors.getChildrenAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
   }
   
+  public DataflowTaskReport getTaskReport(DataflowTaskDescriptor descriptor) throws RegistryException {
+    return registry.getDataAs(descriptor.getStoredPath() + "/report", DataflowTaskReport.class) ;
+  }
+  
   public List<DataflowTaskReport> getTaskReports(List<DataflowTaskDescriptor> descriptors) throws RegistryException {
     List<String> reportPaths = new ArrayList<String>();
     for(int i = 0; i < descriptors.size(); i++) {
@@ -166,6 +195,8 @@ public class DataflowRegistry {
     }
     return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
+  
+  
   
   public List<String> getWorkers() throws RegistryException {
     return workers.getChildren();

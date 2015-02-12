@@ -92,10 +92,8 @@ public class CommandServlet extends HttpServlet {
       switch(command){
         case "dataflow":
           ScribenginClient sc = new ScribenginClient(this.reg);
-          
-          DataflowClient submitter = new DataflowClient(sc);
           try {
-            submitter.submit(DescriptorBuilder.parseDataflowInput(parseRequestIntoMap(request)));
+            sc.submit(DescriptorBuilder.parseDataflowInput(parseRequestIntoMap(request)));
           } catch (Exception e) {
             response.getWriter().print("DATAFLOW ERROR: "+e.getMessage());
           }

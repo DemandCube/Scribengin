@@ -20,9 +20,10 @@ public class HelloHDFSDataflowBuilder {
   private int numOfWorkers = 3;
   private int numOfExecutorPerWorker = 3;
   private DataflowClient dataflowClient ;
+  private ScribenginClient scribenginClient;
   
   public HelloHDFSDataflowBuilder(ScribenginClient scribenginClient, String dataDir) {
-    dataflowClient = new DataflowClient(scribenginClient);
+    this.scribenginClient = scribenginClient;
     this.dataDir = dataDir ;
   }
 
@@ -46,7 +47,7 @@ public class HelloHDFSDataflowBuilder {
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
-    return dataflowClient.submit(dflDescriptor) ;
+    return scribenginClient.submit(dflDescriptor) ;
   }
 
   static public class TestCopyDataProcessor implements DataProcessor {

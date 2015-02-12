@@ -1,8 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow.worker;
 
-import java.io.IOException;
-
-import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -11,78 +8,105 @@ import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowTaskExecutor {
-  static public enum InterruptEvent { SwitchTask, Exit } ;
-  
-  private DataflowTaskExecutorDescriptor descriptor;
+  private DataflowTaskExecutorDescriptor executorDescriptor;
   private DataflowContainer dataflowContainer ;
-  private InterruptEvent interruptEvent = InterruptEvent.Exit;
-  private ExecutorThread executorThread ;
+  private ExecutorManagerThread executorManagerThread ;
 
   public DataflowTaskExecutor(DataflowTaskExecutorDescriptor  descriptor, DataflowContainer container) throws RegistryException {
-    this.descriptor = descriptor;
-    this.dataflowContainer = container;
+    executorDescriptor = descriptor;
+    dataflowContainer = container;
     DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry() ;
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
     dataflowRegistry.createTaskExecutor(vmDescriptor, descriptor);
   }
   
+  public DataflowTaskExecutorDescriptor getDescriptor() { return this.executorDescriptor ; }
+  
   public void start() {
-    executorThread = new ExecutorThread();
-    executorThread.start();
+    executorManagerThread = new ExecutorManagerThread();
+    executorManagerThread.start();
   }
   
-  public void interrupt(InterruptEvent event) {
-    this.interruptEvent = event;
-    executorThread.interrupt();
-  }
-
   public boolean isAlive() {
-    if(executorThread == null) return false;
-    return executorThread.isAlive();
+    if(executorManagerThread == null) return false;
+    return executorManagerThread.isAlive();
   }
   
   public void execute() { 
-    descriptor.setStatus(DataflowTaskExecutorDescriptor.Status.RUNNING);
+    executorDescriptor.setStatus(DataflowTaskExecutorDescriptor.Status.RUNNING);
     DataflowTask dataflowTask = null;
     DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
-    while(true) {
-      try {
+    try {
+      while(true) {
         DataflowTaskDescriptor taskDescriptor = dataflowRegistry.getAssignedDataflowTaskDescriptor();
-        if(taskDescriptor == null) {
-          descriptor.setStatus(DataflowTaskExecutorDescriptor.Status.TERMINATED);
-          dataflowRegistry.updateTaskExecutor(vmDescriptor, descriptor);
-          return;
-        }
-        descriptor.addAssignedTask(taskDescriptor);
-        dataflowRegistry.updateTaskExecutor(vmDescriptor, descriptor);
+        if(taskDescriptor == null) return;
+
+        executorDescriptor.addAssignedTask(taskDescriptor);
+        dataflowRegistry.updateTaskExecutor(vmDescriptor, executorDescriptor);
         dataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
-        dataflowTask.execute();
-        dataflowRegistry.commitFinishedDataflowTaskDescriptor(taskDescriptor);
-      } catch (InterruptedException e) {
-        if(interruptEvent == InterruptEvent.SwitchTask) {
-          interruptEvent = InterruptEvent.Exit;
-        } else {
-        }
-      } catch (Exception e) {
-        // TODO Auto-generated catch block
-        Registry registry = dataflowContainer.getDataflowRegistry().getRegistry() ;
-        try {
-          StringBuilder b = new StringBuilder() ;
-          b.append("Executor Error and lock dumps\n");
-          registry.get(dataflowContainer.getDataflowRegistry().getDataflowPath() + "/tasks/executors/locks").dump(b);
-          System.err.println(b);
-        } catch (RegistryException | IOException e1) {
-          e1.printStackTrace();
-        }
-        e.printStackTrace();
+        dataflowTask.init();
+        DataflowTaskExecutorThread executorThread = new DataflowTaskExecutorThread(dataflowTask);
+        executorThread.start();
+        executorThread.waitForTimeout(10000);
+        if(dataflowTask.isComplete()) dataflowTask.finish();
+        else dataflowTask.suspend();
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      doExit();
+    }
+  }
+
+  void doExit() {
+    try {
+      DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
+      VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
+      executorDescriptor.setStatus(DataflowTaskExecutorDescriptor.Status.TERMINATED);
+      dataflowRegistry.updateTaskExecutor(vmDescriptor, executorDescriptor);
+    } catch(Exception ex) {
+      ex.printStackTrace();
     }
   }
   
-  public class ExecutorThread extends Thread {
+  public class ExecutorManagerThread extends Thread {
     public void run() {
       execute();
+    }
+  }
+  
+  public class DataflowTaskExecutorThread extends Thread {
+    DataflowTask  dataflowtask;
+    private boolean terminated = false;
+    
+    public DataflowTaskExecutorThread(DataflowTask  dataflowtask) {
+      this.dataflowtask = dataflowtask;
+    }
+
+    public void run() {
+      try {
+        dataflowtask.run();
+        notifyTermination();
+      } catch(Exception ex) {
+        ex.printStackTrace();
+      }
+    }
+    
+    synchronized public void notifyTermination() {
+      terminated = true;
+      notifyAll() ;
+    }
+    
+    synchronized void waitForTimeout(long timeout) throws InterruptedException {
+      wait(timeout);
+      if(!terminated) dataflowtask.interrupt();
+      waitForTerminated();
+    }
+    
+    synchronized void waitForTerminated() throws InterruptedException {
+      if(terminated) return ;
+      wait(3000);
     }
   }
 }

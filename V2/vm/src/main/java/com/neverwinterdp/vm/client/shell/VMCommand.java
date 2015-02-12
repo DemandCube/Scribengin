@@ -1,18 +1,13 @@
 package com.neverwinterdp.vm.client.shell;
 
-import java.util.List;
-
-import com.neverwinterdp.util.text.StringUtil;
-import com.neverwinterdp.util.text.TabularFormater;
-import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class VMCommand extends Command {
   public VMCommand() {
-    add("start", new Start()) ;
-    add("shutdown", new Shutdown()) ;
-    add("info", new Info()) ;
+    add("start", Start.class) ;
+    add("shutdown", Shutdown.class) ;
+    add("info", Info.class) ;
   }
   
   static public class Start extends SubCommand {

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
@@ -40,13 +41,16 @@ public class ScribenginRandomFailureUnitTest {
   public void testDataflows() throws Exception {
     shell.execute(
      "dataflow-test kafka " + 
-     "  --worker 1 --executor-per-worker 3 --duration 300000 " +
-     "  --kafka-num-partition 5 --kafka-write-period 5 --kafka-max-message-per-partition 1000"
+     "  --worker 2 --executor-per-worker 1 --duration 180000 --task-max-execute-time 1000" +
+     "  --kafka-num-partition 5 --kafka-write-period 5 --kafka-max-message-per-partition 5000"
     );
     Thread.sleep(3000);
-    shell.execute("vm info");
+    shell.execute("vm         info");
     shell.execute("scribengin info");
-    shell.execute("dataflow info --history hello-kafka-dataflow-0");
+    shell.execute("dataflow   info --history hello-kafka-dataflow-0");
+    shell.execute("registry   dump");
+    
+    System.out.println(JSONSerializer.INSTANCE.toString(shell.getScribenginClient().getScribenginMasters()));
   }
   
   protected FileSystem getFileSystem() throws Exception { return FileSystem.get(new Configuration()); }

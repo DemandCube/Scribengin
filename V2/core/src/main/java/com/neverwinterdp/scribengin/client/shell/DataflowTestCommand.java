@@ -10,14 +10,14 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 public class DataflowTestCommand extends Command {
   
   public DataflowTestCommand() {
-    add("kafka", new DataflowTestSubCommand<KafkaDataflowTest>(KafkaDataflowTest.class));
+    add("kafka", DataflowTestSubCommand.class);
   }
 
   static public class DataflowTestSubCommand<T extends DataflowTest> extends SubCommand {
-    Class<T> testClass ;
+    Class<? extends DataflowTest> testClass ;
     
-    DataflowTestSubCommand(Class<T> testClass) {
-      this.testClass = testClass;
+    public DataflowTestSubCommand() {
+      this.testClass = KafkaDataflowTest.class;
     }
     
     @Override

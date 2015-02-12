@@ -1,10 +1,7 @@
 package com.neverwinterdp.scribengin.client.shell;
 
-import java.util.List;
-
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
-import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Command;
@@ -14,9 +11,9 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class ScribenginCommand extends Command {
   public ScribenginCommand() {
-    add("start",  new Start()) ;
-    add("shutdown",  new Shutdown()) ;
-    add("info", new Info()) ;
+    add("start",  Start.class) ;
+    add("shutdown",  Shutdown.class) ;
+    add("info", Info.class) ;
   }
   
   static public class Start extends SubCommand {
