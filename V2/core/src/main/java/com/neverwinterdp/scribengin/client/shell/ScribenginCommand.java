@@ -14,6 +14,7 @@ public class ScribenginCommand extends Command {
     add("start",  Start.class) ;
     add("shutdown",  Shutdown.class) ;
     add("info", Info.class) ;
+    //Anthony TODO: add master command and list the scribengin masters in the table format
   }
   
   static public class Start extends SubCommand {

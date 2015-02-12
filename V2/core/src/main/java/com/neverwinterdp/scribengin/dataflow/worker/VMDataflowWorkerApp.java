@@ -17,6 +17,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMApp.Event;
 
 
 public class VMDataflowWorkerApp extends VMApp {
@@ -57,7 +58,20 @@ public class VMDataflowWorkerApp extends VMApp {
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
     try {
+      this.addListener(new VMApp.EventListener() {
+        @Override
+        public void onEvent(VMApp vmApp, Event event) {
+          try {
+            if(event == Event.Shutdown) {
+              dataflowTaskExecutorManager.shutdown();
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+      });
       dataflowTaskExecutorManager.waitForExecutorTermination(5000);
+      waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
       dataflowTaskExecutorManager.shutdown();

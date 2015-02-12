@@ -27,6 +27,10 @@ public class DataflowTaskExecutor {
     executorManagerThread.start();
   }
   
+  public void shutdown() throws Exception {
+    if(isAlive()) executorManagerThread.interrupt();
+  }
+  
   public boolean isAlive() {
     if(executorManagerThread == null) return false;
     return executorManagerThread.isAlive();
@@ -52,6 +56,8 @@ public class DataflowTaskExecutor {
         if(dataflowTask.isComplete()) dataflowTask.finish();
         else dataflowTask.suspend();
       }
+    } catch (InterruptedException e) {
+      dataflowTask.interrupt();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {

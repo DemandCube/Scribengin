@@ -16,9 +16,7 @@ public class DataflowTaskExecutorManager {
 
   @Inject
   private DataflowContainer container;
- 
   private DataflowDescriptor dataflowDescriptor;
-  
   private List<DataflowTaskExecutor> taskExecutors;
   
   public DataflowContainer getDataflowContainer() { return container; }
@@ -41,9 +39,11 @@ public class DataflowTaskExecutorManager {
     logger.info("Finish onInit()");
   }
   
-  public void shutdown() {
+  public void shutdown() throws Exception {
     logger.info("Start shutdown()");
-    //TODO: Use dataflowRegistry to mark the status and notify
+    for(DataflowTaskExecutor sel : taskExecutors) {
+      if(sel.isAlive()) sel.shutdown();
+    }
     logger.info("Finish shutdown()");
   }
   
@@ -58,10 +58,6 @@ public class DataflowTaskExecutorManager {
     while(isAlive()) {
       wait(checkPeriod);
     }
-  }
-  
-  synchronized public void notifyExecutorTermination() {
-    notify() ;
   }
   
   public List<DataflowTaskExecutor> getExecutors() { return taskExecutors; }
