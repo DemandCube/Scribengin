@@ -38,7 +38,7 @@ public class TestSink implements Sink {
 
   @Override
   public SinkStream[] getStreams() {
-    SourceStream[] array = new SourceStream[streams.size()];
+    SinkStream[] array = new SinkStream[streams.size()];
     return (SinkStream[]) streams.toArray(array);
   }
 

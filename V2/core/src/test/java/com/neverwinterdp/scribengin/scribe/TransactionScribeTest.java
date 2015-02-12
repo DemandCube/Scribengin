@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin.scribe;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 
@@ -14,9 +14,11 @@ import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskUnitTest.TestCopyDataProcessor;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
+import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.testSink.TestSink;
+import com.neverwinterdp.testSink.TestSinkWriter;
 import com.neverwinterdp.testSource.TestSource;
 
 public class TransactionScribeTest {
@@ -49,5 +51,13 @@ public class TransactionScribeTest {
       Record r = new Record(Integer.toString(i), Integer.toString(i).getBytes());
       scribe.process(r, ctx);      
     }
+    
+    
+    SinkStream[] streams = sink.getStreams();
+    for(int i=0; i< streams.length; i++){
+      TestSinkWriter x = (TestSinkWriter) streams[i].getWriter();
+      assertTrue(x.getNumMessagesWritten() > 0 );
+    }
+    
   }
 }
