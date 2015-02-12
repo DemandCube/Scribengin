@@ -16,7 +16,7 @@ import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
-import com.neverwinterdp.scribengin.scribe.ScribeInterface;
+import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -91,11 +91,10 @@ public class DataflowTaskUnitTest {
     }
   }
   
-  static public class TestCopyDataProcessor implements ScribeInterface {
+  static public class TestCopyDataProcessor extends ScribeAbstract {
     private int count = 0;
     private Random random = new Random();
     
-    @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
       if(random.nextDouble() < 0.8) ctx.append(record);
       else ctx.write("invalid", record);

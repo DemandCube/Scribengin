@@ -84,10 +84,9 @@ public class TestSinkWriter implements SinkStreamWriter{
   }
 
 
-
   @Override
-  public boolean append(Record record) throws Exception {
-    return buffer.add(record);
+  public void append(Record record) throws Exception {
+    buffer.add(record);
   }
 
 

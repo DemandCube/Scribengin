@@ -29,9 +29,8 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   }
   
   @Override
-  synchronized public boolean append(Record record) throws Exception {
+  synchronized public void append(Record record) throws Exception {
     currentBuffer.append(record);
-    return true;
   }
 
   @Override

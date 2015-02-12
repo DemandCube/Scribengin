@@ -16,9 +16,8 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   }
   
   @Override
-  public boolean append(Record record) throws Exception {
+  public void append(Record record) throws Exception {
     kafkaWriter.send(topic, record);;
-    return true;
   }
 
 

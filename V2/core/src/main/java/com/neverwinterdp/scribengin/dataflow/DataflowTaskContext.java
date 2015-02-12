@@ -39,9 +39,9 @@ public class DataflowTaskContext {
     return sourceContext.assignedSourceStreamReader;
   }
   
-  public boolean append(Record record) throws Exception {
+  public void append(Record record) throws Exception {
     SinkContext sinkContext = sinkContexts.get("default") ;
-    return sinkContext.assignedSinkStreamWriter.append(record);
+    sinkContext.assignedSinkStreamWriter.append(record);
   }
   
   public void write(String sinkName, Record record) throws Exception {
@@ -50,7 +50,7 @@ public class DataflowTaskContext {
   }
   
   
-  public boolean prepareCommit() throws Exception {
+  private boolean prepareCommit() throws Exception {
     boolean retVal = sourceContext.assignedSourceStreamReader.prepareCommit();
     
     Iterator<SinkContext> i = sinkContexts.values().iterator();
@@ -65,27 +65,46 @@ public class DataflowTaskContext {
   }
   
   public boolean commit() throws Exception {
-    //TODO: What to do with this - 
-    //What do we do with this commitpoint here?
-    //Check into registry or something?
-    //Something missing here to help coordinate with ZK?
-    //Or should that be the job of the source/sink stream writers?
-    CommitPoint cp = sourceContext.commit();
     
-    boolean retVal = true;
-    Iterator<SinkContext> i = sinkContexts.values().iterator();
-    while(i.hasNext()) {
-      SinkContext ctx = i.next();
-      if(!ctx.commit()){
-        retVal = false;
+
+    //prepareCommit is a vote to make sure both sink, invalidSink, and source
+    //are ready to commit data, otherwise rollback will occur
+    if(prepareCommit()){
+      //The actual committing of data
+      //TODO: What to do with this - 
+      //What do we do with this commitpoint here?
+      //Check into registry or something?
+      //Something missing here to help coordinate with ZK?
+      //Or should that be the job of the source/sink stream writers?
+      CommitPoint cp = sourceContext.commit();
+      
+      boolean commitStatus = true;
+      Iterator<SinkContext> i = sinkContexts.values().iterator();
+      while(i.hasNext()) {
+        SinkContext ctx = i.next();
+        if(!ctx.commit()){
+          commitStatus = false;
+        }
+      }
+      
+      
+      if(commitStatus){
+        //update any offsets that need to be managed, clear temp data
+        completeCommit();
+        report.incrCommitProcessCount();
+        return true;
+      }
+      else{
+        //Undo anything that could have gone wrong,
+        //undo any commits, go back as if nothing happened
+        rollback();
+        throw new CommitException("Failed to commit!");
       }
     }
-    report.incrCommitProcessCount();
-    
-    return retVal;
+    return false;
   }
   
-  public void rollback() throws Exception {
+  private void rollback() throws Exception {
     //TODO: implement the proper transaction
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
@@ -105,7 +124,7 @@ public class DataflowTaskContext {
     sourceContext.close();
   }
   
-  public void completeCommit() {
+  private void completeCommit() {
     // TODO Auto-generated method stub
     sourceContext.assignedSourceStreamReader.completeCommit();
     
@@ -188,7 +207,13 @@ public class DataflowTaskContext {
     }
   }
 
-  
+  class CommitException extends Exception
+  {
+    public CommitException(String message)
+    {
+      super(message);
+    }
+  }
 
 
 }

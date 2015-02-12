@@ -10,7 +10,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.scribe.ScribeInterface;
+import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
@@ -49,7 +49,7 @@ public class HelloHDFSDataflowBuilder {
     return dataflowClient.submit(dflDescriptor) ;
   }
 
-  static public class TestCopyDataProcessor implements ScribeInterface {
+  static public class TestCopyDataProcessor extends ScribeAbstract {
     private int count = 0;
     private Random random = new Random();
     
