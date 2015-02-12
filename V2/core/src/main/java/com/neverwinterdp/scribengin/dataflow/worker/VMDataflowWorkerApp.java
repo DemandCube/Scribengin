@@ -57,7 +57,7 @@ public class VMDataflowWorkerApp extends VMApp {
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
     try {
-      dataflowTaskExecutorManager.waitForExecutorTermination(1000);
+      dataflowTaskExecutorManager.waitForExecutorTermination(5000);
     } catch(InterruptedException ex) {
     } finally {
       dataflowTaskExecutorManager.shutdown();

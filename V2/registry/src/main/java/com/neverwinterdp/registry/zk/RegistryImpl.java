@@ -130,7 +130,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public Node getRef(String path) throws RegistryException {
-    RefNode refNode = this.getDataAs(path, RefNode.class);
+    RefNode refNode = getDataAs(path, RefNode.class);
     return new Node(this, refNode.getPath()) ;
   }
   

@@ -196,9 +196,21 @@ public class DataflowRegistry {
     return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
   
+  public VMDescriptor getDataflowMaster() throws RegistryException {
+    String leaderPath = dataflowPath + "/" + MASTER_LEADER_PATH;
+    Node node = registry.getRef(leaderPath);
+    return node.getDataAs(VMDescriptor.class);
+  }
   
+  public List<VMDescriptor> getDataflowMasters() throws RegistryException {
+    return registry.getRefChildrenAs(dataflowPath + "/" + MASTER_PATH, VMDescriptor.class);
+  }
   
-  public List<String> getWorkers() throws RegistryException {
+  public List<VMDescriptor> getWorkers() throws RegistryException {
+    return registry.getRefChildrenAs(dataflowPath + "/" + WORKERS_PATH, VMDescriptor.class);
+  }
+  
+  public List<String> getWorkerNames() throws RegistryException {
     return workers.getChildren();
   }
   
