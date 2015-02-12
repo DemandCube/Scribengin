@@ -43,4 +43,15 @@ public class ScribenginCommand extends Command {
       shell.console().println(ScribenginFormater.format("History Dataflows", client.getHistoryDataflowDescriptor()));
     }
   }
+  
+  static public class Master extends SubCommand {
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
+      //Anthony TODO:
+      // 1. use client.getScribenginMasters() and client.getScribenginMaster()
+      // 2. ScribenginFormater.format to see how output the info in the table format
+      shell.console().h1("Scribengin Masters");
+    }
+  }
 }
