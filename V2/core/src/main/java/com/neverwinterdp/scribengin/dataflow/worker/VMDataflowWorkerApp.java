@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Stage;
+import com.mycila.guice.ext.closeable.CloseableInjector;
+import com.mycila.guice.ext.closeable.CloseableModule;
+import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -17,7 +21,6 @@ import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.VMApp.Event;
 
 
 public class VMDataflowWorkerApp extends VMApp {
@@ -54,7 +57,8 @@ public class VMDataflowWorkerApp extends VMApp {
         }
       };
     };
-    Injector injector = Guice.createInjector(module);
+    Injector injector = 
+        Guice.createInjector(Stage.PRODUCTION, new CloseableModule(), new Jsr250Module(), module);
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
     try {
@@ -71,10 +75,10 @@ public class VMDataflowWorkerApp extends VMApp {
         }
       });
       dataflowTaskExecutorManager.waitForExecutorTermination(5000);
-      waitForShutdown();
     } catch(InterruptedException ex) {
     } finally {
       dataflowTaskExecutorManager.shutdown();
+      container.getInstance(CloseableInjector.class).close();
     }
   }
 }

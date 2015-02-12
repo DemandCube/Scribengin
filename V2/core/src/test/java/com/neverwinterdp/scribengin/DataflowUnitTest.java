@@ -50,7 +50,7 @@ public class DataflowUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
 
-    Thread.sleep(10000); //make sure that the dataflow start and running;
+    Thread.sleep(15000); //make sure that the dataflow start and running;
 
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
@@ -64,7 +64,8 @@ public class DataflowUnitTest {
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
       Assert.assertEquals(2, dataflowWorkers.size());
       vmClient.shutdown(dataflowWorkers.get(1));
-      
+      Thread.sleep(2000);
+      shell.execute("registry   dump");
       submitter.waitForTermination(300000);
       
       Thread.sleep(3000);
@@ -84,7 +85,7 @@ public class DataflowUnitTest {
       try {
         String command = 
           "dataflow-test kafka " + 
-          "  --worker 2 --executor-per-worker 2 --duration 90000 --task-max-execute-time 1000" +
+          "  --worker 2 --executor-per-worker 2 --duration 70000 --task-max-execute-time 1000" +
           "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
         shell.execute(command);
       } catch(Exception ex) {

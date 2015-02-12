@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZKUtil;
@@ -392,5 +394,10 @@ public class RegistryImpl implements Registry {
       }
     }
     return new RegistryException(ErrorCode.Unknown, message, t) ;
+  }
+  
+  @PreDestroy
+  public void onDestroy() throws RegistryException {
+    disconnect();
   }
 }

@@ -43,7 +43,7 @@ public class DataflowTaskExecutor {
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
     try {
       while(true) {
-        DataflowTaskDescriptor taskDescriptor = dataflowRegistry.getAssignedDataflowTaskDescriptor();
+        DataflowTaskDescriptor taskDescriptor = dataflowRegistry.assignDataflowTask(vmDescriptor);
         if(taskDescriptor == null) return;
 
         executorDescriptor.addAssignedTask(taskDescriptor);
