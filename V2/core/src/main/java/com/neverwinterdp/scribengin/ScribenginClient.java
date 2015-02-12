@@ -11,10 +11,14 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.event.ScribenginShutdownEventListener;
+import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
+import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
+import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -43,6 +47,12 @@ public class ScribenginClient {
     return descriptor;
   }
   
+  public List<VMDescriptor> getScribenginMasters() throws RegistryException {
+    Registry registry = vmClient.getRegistry();
+    List<VMDescriptor> vmDescriptors = registry.getRefChildrenAs(ScribenginService.LEADER_PATH, VMDescriptor.class) ;
+    return vmDescriptors;
+  }
+  
   public List<DataflowDescriptor> getRunningDataflowDescriptor() throws RegistryException {
     return vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
   }
@@ -63,6 +73,43 @@ public class ScribenginClient {
     return dataflowRegistry;
   }
   
+  public ScribenginWaitingEventListener submit(String dataflowAppHome, String jsonDescriptor) throws Exception {
+    DataflowDescriptor descriptor = JSONSerializer.INSTANCE.fromString(jsonDescriptor, DataflowDescriptor.class) ;
+    return submit(dataflowAppHome, descriptor) ;
+  }
+  
+  public ScribenginWaitingEventListener submit(DataflowDescriptor descriptor) throws Exception {
+    return submit(null, descriptor) ;
+  }
+  
+  public ScribenginWaitingEventListener submit(String localDataflowHome, DataflowDescriptor descriptor) throws Exception {
+    if(localDataflowHome != null) {
+      VMDescriptor vmMaster = getVMClient().getMasterVMDescriptor();
+      VMConfig vmConfig = vmMaster.getVmConfig();
+      String dataflowAppHome = vmConfig.getAppHome() + "/dataflows/" + descriptor.getName();
+      descriptor.setDataflowAppHome(dataflowAppHome);
+      getVMClient().uploadApp(localDataflowHome, dataflowAppHome);
+    }
+    h1("Submit the dataflow " + descriptor.getName());
+    String name = descriptor.getName() ;
+    VMClient vmClient = new VMClient(getRegistry());
+    ScribenginWaitingEventListener waitingEventListener = new ScribenginWaitingEventListener(vmClient.getRegistry());
+    waitingEventListener.waitDataflowLeader(format("Expect %s-master-1 as the leader", name), name,  format("%s-master-1", name));
+    waitingEventListener.waitDataflowStatus("Expect dataflow init status", name, DataflowLifecycleStatus.INIT);
+    waitingEventListener.waitDataflowStatus("Expect dataflow running status", name, DataflowLifecycleStatus.RUNNING);
+    waitingEventListener.waitDataflowStatus("Expect dataflow  finish status", name, DataflowLifecycleStatus.FINISH);
+   
+    VMDescriptor scribenginMaster = getScribenginMaster();
+    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(descriptor) ;
+    CommandResult<Boolean> result = 
+        (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
+    return waitingEventListener ;
+  }
+  
+  private String format(String tmpl, Object ... args) {
+    return String.format(tmpl, args) ;
+  }
+  
   public VMDescriptor createVMScribenginMaster(VMClient vmClient, String name) throws Exception {
     VMConfig vmConfig = new VMConfig() ;
     vmConfig.
@@ -80,7 +127,6 @@ public class ScribenginClient {
     Registry registry = vmClient.getRegistry();
     registry.create(ScribenginShutdownEventListener.EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
-  
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
     return execute(vmDescriptor, command, 30000);

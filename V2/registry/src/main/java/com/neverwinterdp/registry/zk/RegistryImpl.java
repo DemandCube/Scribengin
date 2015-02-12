@@ -239,6 +239,7 @@ public class RegistryImpl implements Registry {
     return holder ;
   }
   
+  @Override
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException {
     List<T> holder = new ArrayList<T>();
     List<String> nodes = getChildren(path);
@@ -249,6 +250,16 @@ public class RegistryImpl implements Registry {
       holder.add(object);
     }
     return holder ;
+  }
+  
+  @Override
+  public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException {
+    List<RefNode> refNodes = getChildrenAs(path, RefNode.class) ;
+    List<String> paths = new ArrayList<>() ;
+    for(int i = 0; i < refNodes.size(); i++) {
+      paths.add(refNodes.get(i).getPath());
+    }
+    return getDataAs(paths, type);
   }
 
   @Override

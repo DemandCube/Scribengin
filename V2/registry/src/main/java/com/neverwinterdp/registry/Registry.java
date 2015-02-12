@@ -34,6 +34,8 @@ public interface Registry {
   public <T> List<T> getChildrenAs(String path, Class<T> type) throws RegistryException;
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException;
   
+  public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException;
+  
   public boolean exists(String path) throws RegistryException ;
   
   public void watchModify(String path, NodeWatcher watcher) throws RegistryException ;

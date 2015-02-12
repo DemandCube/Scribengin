@@ -26,7 +26,8 @@ public class VMScribenginServiceApp extends VMApp {
   public void run() throws Exception {
     Registry registry = getVM().getVMRegistry().getRegistry();
     getVM().getVMRegistry().getRegistry().createIfNotExist(ScribenginService.LEADER_PATH) ;
-    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), ScribenginService.LEADER_PATH) ;
+    RefNode masterVMRef = new RefNode(getVM().getDescriptor().getStoredPath()) ;
+    election = new LeaderElection(getVM().getVMRegistry().getRegistry(), ScribenginService.LEADER_PATH, masterVMRef) ;
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     ScribenginShutdownEventListener shutdownListener = new ScribenginShutdownEventListener(registry) {
