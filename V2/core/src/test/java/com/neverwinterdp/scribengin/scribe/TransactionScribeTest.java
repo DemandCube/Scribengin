@@ -6,15 +6,15 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import com.neverwinterdp.inMemory.sink.TestSink;
-import com.neverwinterdp.inMemory.sink.TestSinkWriter;
-import com.neverwinterdp.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskUnitTest.TestCopyDataProcessor;
+import com.neverwinterdp.scribengin.inMemory.sink.TestSink;
+import com.neverwinterdp.scribengin.inMemory.sink.TestSinkWriter;
+import com.neverwinterdp.scribengin.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStream;

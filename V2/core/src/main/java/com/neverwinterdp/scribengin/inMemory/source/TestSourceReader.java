@@ -1,4 +1,4 @@
-package com.neverwinterdp.inMemory.source;
+package com.neverwinterdp.scribengin.inMemory.source;
 
 import java.util.LinkedList;
 import java.util.UUID;
