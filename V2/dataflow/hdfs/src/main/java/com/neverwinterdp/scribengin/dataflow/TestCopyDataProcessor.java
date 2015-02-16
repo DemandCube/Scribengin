@@ -3,13 +3,13 @@ package com.neverwinterdp.scribengin.dataflow;
 import java.util.Random;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.scribe.ScribeInterface;
+import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 
-public class TestCopyDataProcessor implements ScribeInterface {
+public class TestCopyDataProcessor extends ScribeAbstract {
   private int count = 0;
   private Random random = new Random();
   
-  @Override
+  
   public void process(Record record, DataflowTaskContext ctx) throws Exception {
     if(random.nextDouble() < 0.8) {
       ctx.write("default",record);

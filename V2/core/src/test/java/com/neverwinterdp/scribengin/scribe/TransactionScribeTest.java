@@ -6,6 +6,9 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
+import com.neverwinterdp.inMemory.sink.TestSink;
+import com.neverwinterdp.inMemory.sink.TestSinkWriter;
+import com.neverwinterdp.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
@@ -17,9 +20,6 @@ import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
-import com.neverwinterdp.testSink.TestSink;
-import com.neverwinterdp.testSink.TestSinkWriter;
-import com.neverwinterdp.testSource.TestSource;
 
 public class TransactionScribeTest {
   @Test

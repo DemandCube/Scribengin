@@ -1,4 +1,4 @@
-package com.neverwinterdp.testSource;
+package com.neverwinterdp.inMemory.source;
 
 import java.util.HashMap;
 import java.util.Map;

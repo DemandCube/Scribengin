@@ -34,8 +34,8 @@ public class DataflowTask {
     }
     context = new DataflowTaskContext(container, descriptor, report);
     descriptor.setStatus(Status.PROCESSING);
-    dRegistry.update(descriptor);
-    dRegistry.update(descriptor, report);
+    dRegistry.dataflowTaskUpdate(descriptor);
+    dRegistry.dataflowTaskReport(descriptor, report);
   }
   
   public void run() throws Exception {
@@ -50,23 +50,21 @@ public class DataflowTask {
   }
   
   public void suspend() throws Exception {
-    saveContext(Status.SUSPENDED);
-    container.getDataflowRegistry().suspendDataflowTaskDescriptor(descriptor);
+    saveContext();
+    container.getDataflowRegistry().dataflowTaskSuspend(descriptor);
   }
   
   public void finish() throws Exception {
-    saveContext(Status.TERMINATED);
-    container.getDataflowRegistry().commitFinishedDataflowTaskDescriptor(descriptor);
+    saveContext();
+    container.getDataflowRegistry().dataflowTaskFinish(descriptor);
   }
   
-  void saveContext(Status status) throws Exception {
+  void saveContext() throws Exception {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
     DataflowTaskReport report = context.getReport();
     context.commit();
     context.close();
     report.setFinishTime(System.currentTimeMillis());
-    descriptor.setStatus(status);
-    dRegistry.update(descriptor);
-    dRegistry.update(descriptor, report);
+    dRegistry.dataflowTaskReport(descriptor, report);
   }
 }

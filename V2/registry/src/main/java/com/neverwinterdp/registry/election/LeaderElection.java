@@ -11,6 +11,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
+import com.neverwinterdp.util.JSONSerializer;
 
 public class LeaderElection {
   private Registry  registry ;
@@ -19,10 +20,21 @@ public class LeaderElection {
   private LeaderElectionListener listener ;
   private boolean elected = false ;
   private Node node ;
+  private byte[] info = {};
   
   public LeaderElection(Registry registry, String electionPath) {
     this.registry = registry;
     this.electionPath = electionPath ;
+  }
+  
+  public <T> LeaderElection(Registry registry, String electionPath, byte[] info) {
+    this(registry, electionPath);
+    this.info = info;
+  }
+  
+  public <T> LeaderElection(Registry registry, String electionPath, T info) {
+    this(registry, electionPath);
+    this.info = JSONSerializer.INSTANCE.toBytes(info);
   }
   
   public Registry getRegistry() { return this.registry ; }
@@ -44,7 +56,7 @@ public class LeaderElection {
       throw new RegistryException(ErrorCode.Unknown, "This leader election is already started") ;
     }
     String lockPath = electionPath + "/leader-" ;
-    node = registry.create(lockPath , new byte[0], NodeCreateMode.EPHEMERAL_SEQUENTIAL);
+    node = registry.create(lockPath , info, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
     leaderId = new LeaderId(node.getPath()) ;
     LeaderWatcher watcher = new LeaderWatcher() ;
     watcher.watch();

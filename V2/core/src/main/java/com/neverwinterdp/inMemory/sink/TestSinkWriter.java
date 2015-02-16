@@ -1,4 +1,4 @@
-package com.neverwinterdp.testSink;
+package com.neverwinterdp.inMemory.sink;
 
 
 import java.util.LinkedList;

@@ -17,10 +17,10 @@ public class HelloHDFSDataflowBuilder {
   private FileSystem fs ;
   private int numOfWorkers = 3;
   private int numOfExecutorPerWorker = 3;
-  private DataflowClient dataflowClient ;
+  private ScribenginClient scribenginClient;
   
   public HelloHDFSDataflowBuilder(ScribenginClient scribenginClient, FileSystem fs, String dataDir) {
-    dataflowClient = new DataflowClient(scribenginClient);
+    this.scribenginClient = scribenginClient;
     this.fs = fs ;
     this.dataDir = dataDir ;
   }
@@ -47,7 +47,7 @@ public class HelloHDFSDataflowBuilder {
     SinkDescriptor invalidSink = new SinkDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
-    return dataflowClient.submit(dflDescriptor) ;
+    return scribenginClient.submit(dflDescriptor) ;
   }
 
   public void createSource(int numOfStream, int numOfBuffer, int numOfRecordPerBuffer) throws Exception {

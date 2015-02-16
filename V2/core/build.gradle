@@ -37,7 +37,7 @@ dependencies {
   //TODO: move to use jackson
   compile 'org.json:json:20090211'
   compile group: 'com.google.guava', name: 'guava', version: '13.0'
-
+  compile group: 'com.mycila.guice', name: 'mycila-guice-all', version: '3.2.ga'
   compile group: 'junit', name: 'junit', version: '4.11'
 }
 

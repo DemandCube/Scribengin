@@ -1,4 +1,4 @@
-package com.neverwinterdp.testSink;
+package com.neverwinterdp.inMemory.sink;
 
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;

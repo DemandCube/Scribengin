@@ -68,6 +68,8 @@ public class DataflowRegistry {
   
   public String getTasksFinishedPath() { return tasksFinished.getPath() ;}
   
+  public String getTasksAssignedPath() { return this.tasksAssigned.getPath(); }
+  
   public Registry getRegistry() { return this.registry ; }
   
   public DataflowDescriptor getDataflowDescriptor() throws RegistryException {
@@ -104,7 +106,7 @@ public class DataflowRegistry {
     status.setData(event);
   }
   
-  public DataflowTaskDescriptor getAssignedDataflowTaskDescriptor() throws RegistryException  {
+  public DataflowTaskDescriptor assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
     Lock lock = tasksLock.getLock("write") ;
     LockOperation<DataflowTaskDescriptor> getAssignedtaskOp = new LockOperation<DataflowTaskDescriptor>() {
       @Override
@@ -113,43 +115,13 @@ public class DataflowRegistry {
         if(data == null) return null;
         String taskName = new String(data);
         Node childNode = tasksDescriptors.getChild(taskName);
-        tasksAssigned.createChild(taskName, NodeCreateMode.PERSISTENT);
+        Node assignedTaskNode = tasksAssigned.createChild(taskName, NodeCreateMode.PERSISTENT);
+        assignedTaskNode.createChild("heartbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
         return descriptor;
       }
     };
     return lock.execute(getAssignedtaskOp, 5, 1000);
-  }
-  
-  public void commitFinishedDataflowTaskDescriptor(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
-      @Override
-      public Boolean execute() throws Exception {
-        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
-        String name = descriptorNode.getName();
-        tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
-        tasksAssigned.getChild(name).delete();
-        return true;
-      }
-    };
-    lock.execute(commitOp, 5, 1000);
-  }
-  
-  public void suspendDataflowTaskDescriptor(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
-      @Override
-      public Boolean execute() throws Exception {
-        descriptor.setStatus(Status.SUSPENDED);
-        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
-        String name = descriptorNode.getName();
-        tasksAvailableQueue.offer(name.getBytes());
-        tasksAssigned.getChild(name).delete();
-        return true;
-      }
-    };
-    lock.execute(commitOp, 5, 1000);
   }
   
   
@@ -164,24 +136,61 @@ public class DataflowRegistry {
     Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
     executor.setData(descriptor);
   }
- 
-  public void update(DataflowTaskDescriptor descriptor) throws RegistryException {
+
+  public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
+    Lock lock = tasksLock.getLock("write") ;
+    LockOperation<Boolean> suspendtOp = new LockOperation<Boolean>() {
+      @Override
+      public Boolean execute() throws Exception {
+        descriptor.setStatus(Status.SUSPENDED);
+        dataflowTaskUpdate(descriptor);
+        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        String name = descriptorNode.getName();
+        tasksAvailableQueue.offer(name.getBytes());
+        tasksAssigned.getChild(name).rdelete();
+        return true;
+      }
+    };
+    lock.execute(suspendtOp, 5, 1000);
+  }
+
+  public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
+    Lock lock = tasksLock.getLock("write") ;
+    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+      @Override
+      public Boolean execute() throws Exception {
+        descriptor.setStatus(Status.TERMINATED);
+        dataflowTaskUpdate(descriptor);
+        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        String name = descriptorNode.getName();
+        tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
+        tasksAssigned.getChild(name).rdelete();
+        return true;
+      }
+    };
+    lock.execute(commitOp, 5, 1000);
+  }
+  
+  public void dataflowTaskUpdate(DataflowTaskDescriptor descriptor) throws RegistryException {
     registry.setData(descriptor.getStoredPath(), descriptor);
   }
- 
+  
+  public void dataflowTaskReport(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
+    Node reportNode = registry.get(descriptor.getStoredPath() + "/report");
+    reportNode.setData(report);
+  }
   
   public void create(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
     Node taskNode = registry.get(descriptor.getStoredPath());
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
   }
   
-  public void update(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
-    Node reportNode = registry.get(descriptor.getStoredPath() + "/report");
-    reportNode.setData(report);
-  }
-  
   public List<DataflowTaskDescriptor> getTaskDescriptors() throws RegistryException {
     return tasksDescriptors.getChildrenAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+  }
+  
+  public DataflowTaskDescriptor getTaskDescriptor(String taskName) throws RegistryException {
+    return tasksDescriptors.getChild(taskName).getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
   }
   
   public DataflowTaskReport getTaskReport(DataflowTaskDescriptor descriptor) throws RegistryException {
@@ -196,9 +205,21 @@ public class DataflowRegistry {
     return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
   
+  public VMDescriptor getDataflowMaster() throws RegistryException {
+    String leaderPath = dataflowPath + "/" + MASTER_LEADER_PATH;
+    Node node = registry.getRef(leaderPath);
+    return node.getDataAs(VMDescriptor.class);
+  }
   
+  public List<VMDescriptor> getDataflowMasters() throws RegistryException {
+    return registry.getRefChildrenAs(dataflowPath + "/" + MASTER_PATH, VMDescriptor.class);
+  }
   
-  public List<String> getWorkers() throws RegistryException {
+  public List<VMDescriptor> getWorkers() throws RegistryException {
+    return registry.getRefChildrenAs(dataflowPath + "/" + WORKERS_PATH, VMDescriptor.class);
+  }
+  
+  public List<String> getWorkerNames() throws RegistryException {
     return workers.getChildren();
   }
   

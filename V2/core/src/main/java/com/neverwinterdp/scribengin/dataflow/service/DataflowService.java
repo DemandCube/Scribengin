@@ -1,8 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.inject.Inject;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
@@ -30,7 +27,7 @@ public class DataflowService {
   
   private VMWaitingEventListener workerListener ;
   
-  private List<DataflowServiceEventListener> listeners = new ArrayList<DataflowServiceEventListener>();
+  private AssignedDataflowTaskListener assignedDataflowTaskListener;
   
   public VMConfig getVMConfig() { return this.vmConfig ; }
   
@@ -59,8 +56,10 @@ public class DataflowService {
     System.err.println("onInit.....................");
     workerListener = new VMWaitingEventListener(dataflowRegistry.getRegistry());
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
-    listeners.add(new DataflowServiceInitEventListener());
-    onEvent(DataflowLifecycleStatus.INIT);
+    
+    assignedDataflowTaskListener = new AssignedDataflowTaskListener(dataflowRegistry);
+    
+    new DataflowServiceInititializer().onInit(this);
   }
   
   void onRunning() throws Exception {
@@ -71,12 +70,5 @@ public class DataflowService {
   
   void onFinish() throws Exception {
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
-  }
-  
-  private void onEvent(DataflowLifecycleStatus event) throws Exception {
-    for(int i = 0; i < listeners.size(); i++) {
-      DataflowServiceEventListener listener = listeners.get(i) ;
-      listener.onEvent(this, event);
-    }
   }
 }

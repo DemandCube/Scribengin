@@ -1,7 +1,9 @@
 package com.neverwinterdp.scribengin.client.shell;
 
+import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Command;
@@ -14,6 +16,7 @@ public class ScribenginCommand extends Command {
     add("start",  Start.class) ;
     add("shutdown",  Shutdown.class) ;
     add("info", Info.class) ;
+    add("master", Master.class) ;
   }
   
   static public class Start extends SubCommand {
@@ -42,4 +45,39 @@ public class ScribenginCommand extends Command {
       shell.console().println(ScribenginFormater.format("History Dataflows", client.getHistoryDataflowDescriptor()));
     }
   }
+  
+	static public class Master extends SubCommand {
+		
+		@Parameter(names = "--list", description = "List all running scribengin masters")
+		private boolean list;
+
+		@Parameter(names = "--shutdown", description = "Shutdown current master")
+		private boolean shutdown;
+
+		@Override
+		public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+			ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
+			String leaderPath = client.getScribenginMaster().getStoredPath();
+
+			if (list) {
+				shell.console().h1("Listing Scribengin Masters");
+				shell.console().println(
+						ScribenginFormater.format("Scribengin Masters",	client.getScribenginMasters(), leaderPath));
+
+			} else if (shutdown) {
+	//			shell.console().h1("Shutting down current Scribengin Master");
+				VMClient vmClient = shell.getVMClient();
+				for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
+					if (desc.getStoredPath().equals(leaderPath)) {
+						shell.console().h1("Shutting down leader " + desc.getId());
+						vmClient.shutdown(desc);
+						Thread.sleep(20000);
+					}
+				}
+
+			} else {
+				System.out.println("Please provide either --shutdown or --list");
+			}
+		}
+	}
 }
