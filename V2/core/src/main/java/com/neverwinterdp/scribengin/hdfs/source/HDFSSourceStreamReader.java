@@ -88,4 +88,22 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     FSDataInputStream is = fs.open(dataPaths.get(currentDataPathPos));
     return is;
   }
+
+  @Override
+  public boolean prepareCommit() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public void completeCommit() {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void clearBuffer() {
+    // TODO Auto-generated method stub
+    
+  }
 }

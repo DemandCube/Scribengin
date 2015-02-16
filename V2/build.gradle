@@ -47,7 +47,7 @@ subprojects {
     testLogging.showStandardStreams = true
 
     filter {
-      includeTestsMatching "*UnitTest"
+      //includeTestsMatching "*UnitTest"
     }
     testLogging {
       events "passed", "skipped", "failed"
