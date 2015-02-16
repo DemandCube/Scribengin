@@ -2,11 +2,11 @@ package com.neverwinterdp.scribengin.event;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.event.AppEventListener;
+import com.neverwinterdp.registry.event.NodeEventListener;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 
-abstract public class ScribenginShutdownEventListener extends AppEventListener<ScribenginEvent> {
+abstract public class ScribenginShutdownEventListener extends NodeEventListener<ScribenginEvent> {
   final static public String EVENT_PATH = ScribenginService.EVENTS_PATH + "/shutdown";
   
   public ScribenginShutdownEventListener(Registry registry) throws RegistryException {

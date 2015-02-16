@@ -68,6 +68,8 @@ public class DataflowRegistry {
   
   public String getTasksFinishedPath() { return tasksFinished.getPath() ;}
   
+  public String getTasksAssignedPath() { return this.tasksAssigned.getPath(); }
+  
   public Registry getRegistry() { return this.registry ; }
   
   public DataflowDescriptor getDataflowDescriptor() throws RegistryException {
@@ -122,21 +124,6 @@ public class DataflowRegistry {
     return lock.execute(getAssignedtaskOp, 5, 1000);
   }
   
-  public void commitFinishedDataflowTask(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
-      @Override
-      public Boolean execute() throws Exception {
-        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
-        String name = descriptorNode.getName();
-        tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
-        tasksAssigned.getChild(name).rdelete();
-        return true;
-      }
-    };
-    lock.execute(commitOp, 5, 1000);
-  }
-  
   
   public void createTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
     Node worker = workers.getChild(vmDescriptor.getId()) ;
@@ -152,13 +139,31 @@ public class DataflowRegistry {
 
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
     Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+    LockOperation<Boolean> suspendtOp = new LockOperation<Boolean>() {
       @Override
       public Boolean execute() throws Exception {
         descriptor.setStatus(Status.SUSPENDED);
+        dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
         tasksAvailableQueue.offer(name.getBytes());
+        tasksAssigned.getChild(name).rdelete();
+        return true;
+      }
+    };
+    lock.execute(suspendtOp, 5, 1000);
+  }
+
+  public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
+    Lock lock = tasksLock.getLock("write") ;
+    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+      @Override
+      public Boolean execute() throws Exception {
+        descriptor.setStatus(Status.TERMINATED);
+        dataflowTaskUpdate(descriptor);
+        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        String name = descriptorNode.getName();
+        tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
         tasksAssigned.getChild(name).rdelete();
         return true;
       }
@@ -182,6 +187,10 @@ public class DataflowRegistry {
   
   public List<DataflowTaskDescriptor> getTaskDescriptors() throws RegistryException {
     return tasksDescriptors.getChildrenAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+  }
+  
+  public DataflowTaskDescriptor getTaskDescriptor(String taskName) throws RegistryException {
+    return tasksDescriptors.getChild(taskName).getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
   }
   
   public DataflowTaskReport getTaskReport(DataflowTaskDescriptor descriptor) throws RegistryException {

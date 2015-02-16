@@ -2,11 +2,11 @@ package com.neverwinterdp.vm.event;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.event.AppEventListener;
+import com.neverwinterdp.registry.event.NodeEventListener;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.vm.service.VMService;
 
-abstract public class VMShutdownEventListener extends AppEventListener<VMEvent> {
+abstract public class VMShutdownEventListener extends NodeEventListener<VMEvent> {
   final static public String EVENT_PATH = VMService.EVENTS_PATH + "/shutdown";
   
   public VMShutdownEventListener(Registry registry) throws RegistryException {

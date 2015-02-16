@@ -62,7 +62,7 @@ public class DataflowUnitTest {
       
       VMClient vmClient = scribenginClient.getVMClient();
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
-      Assert.assertEquals(2, dataflowWorkers.size());
+      Assert.assertEquals(3, dataflowWorkers.size());
       vmClient.shutdown(dataflowWorkers.get(1));
       Thread.sleep(2000);
       shell.execute("registry   dump");
@@ -85,7 +85,7 @@ public class DataflowUnitTest {
       try {
         String command = 
           "dataflow-test kafka " + 
-          "  --worker 2 --executor-per-worker 2 --duration 70000 --task-max-execute-time 1000" +
+          "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
           "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
         shell.execute(command);
       } catch(Exception ex) {

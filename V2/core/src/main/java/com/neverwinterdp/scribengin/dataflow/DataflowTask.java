@@ -49,23 +49,21 @@ public class DataflowTask {
   }
   
   public void suspend() throws Exception {
-    saveContext(Status.SUSPENDED);
+    saveContext();
     container.getDataflowRegistry().dataflowTaskSuspend(descriptor);
   }
   
   public void finish() throws Exception {
-    saveContext(Status.TERMINATED);
-    container.getDataflowRegistry().commitFinishedDataflowTask(descriptor);
+    saveContext();
+    container.getDataflowRegistry().dataflowTaskFinish(descriptor);
   }
   
-  void saveContext(Status status) throws Exception {
+  void saveContext() throws Exception {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
     DataflowTaskReport report = context.getReport();
     context.commit();
     context.close();
     report.setFinishTime(System.currentTimeMillis());
-    descriptor.setStatus(status);
-    dRegistry.dataflowTaskUpdate(descriptor);
     dRegistry.dataflowTaskReport(descriptor, report);
   }
 }

@@ -4,12 +4,12 @@ import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 
-abstract public class AppEventListener<T extends Event> extends NodeWatcher {
+abstract public class NodeEventListener<T extends Event> extends NodeWatcher {
   private Registry registry;
   private boolean persistent ;
   private String  watchedPath = null ;
   
-  public AppEventListener(Registry registry, boolean persistent) {
+  public NodeEventListener(Registry registry, boolean persistent) {
     this.registry   = registry;
     this.persistent = persistent;
   }
@@ -40,6 +40,12 @@ abstract public class AppEventListener<T extends Event> extends NodeWatcher {
   
   @Override
   public void onEvent(NodeEvent event) {
+    try {
+      T appEvent = toAppEvent(registry, event) ;
+      onEvent(appEvent);
+    } catch(Exception ex) {
+      ex.printStackTrace();
+    }
     if(persistent) {
       try {
         if(isComplete()) return;
@@ -51,12 +57,6 @@ abstract public class AppEventListener<T extends Event> extends NodeWatcher {
           System.err.println("Stop watching " + event.getPath() + " due to the error: " + ex.getMessage());
         }
       }
-    }
-    try {
-      T appEvent = toAppEvent(registry, event) ;
-      onEvent(appEvent);
-    } catch(Exception ex) {
-      ex.printStackTrace();
     }
   }
   
