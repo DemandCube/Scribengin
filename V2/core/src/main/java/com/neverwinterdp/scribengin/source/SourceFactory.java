@@ -4,8 +4,8 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.neverwinterdp.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
+import com.neverwinterdp.scribengin.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.kafka.source.KafkaSource;
 
 @Singleton
