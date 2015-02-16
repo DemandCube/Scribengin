@@ -40,9 +40,10 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   }
   
   @Override
-  synchronized public void commit() throws Exception {
+  synchronized public boolean commit() throws Exception {
     currentBuffer.commit();
     currentBuffer = nextSinkBuffer();
+    return true;
   }
   
   @Override
@@ -112,5 +113,25 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
       output.close();
       fs.rename(writingPath, completePath);
     }
+  }
+
+
+
+  @Override
+  public boolean prepareCommit() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public void completeCommit() {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void clearBuffer() {
+    // TODO Auto-generated method stub
+    
   }
 }
