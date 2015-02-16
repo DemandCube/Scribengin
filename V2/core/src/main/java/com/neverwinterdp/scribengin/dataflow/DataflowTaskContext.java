@@ -20,6 +20,8 @@ public class DataflowTaskContext {
   private DataflowTaskReport report ;
   private SourceContext sourceContext ;
   private Map<String, SinkContext> sinkContexts = new HashMap<String, SinkContext>();
+  private DataflowRegistry dataflowRegistry;
+  private DataflowTaskDescriptor dataflowTaskDescriptor;
   
   public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws Exception {
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
@@ -30,6 +32,8 @@ public class DataflowTaskContext {
       sinkContexts.put(entry.getKey(), context) ;
     }
     this.report = report ;
+    this.dataflowTaskDescriptor = descriptor;
+    this.dataflowRegistry = container.getDataflowRegistry();
   }
   
   public DataflowTaskReport getReport() { return this.report ;}
@@ -57,6 +61,7 @@ public class DataflowTaskContext {
     }
     sourceContext.commit();
     report.incrCommitProcessCount();
+    dataflowRegistry.dataflowTaskReport(dataflowTaskDescriptor, report);
   }
   
   public void rollback() throws Exception {

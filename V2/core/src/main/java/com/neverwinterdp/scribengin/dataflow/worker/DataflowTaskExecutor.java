@@ -57,6 +57,7 @@ public class DataflowTaskExecutor {
         else dataflowTask.suspend();
       }
     } catch (InterruptedException e) {
+      System.err.println("detect shutdown interrupt for task " + dataflowTask.getDescriptor().getId());
       dataflowTask.interrupt();
     } catch (Exception e) {
       e.printStackTrace();

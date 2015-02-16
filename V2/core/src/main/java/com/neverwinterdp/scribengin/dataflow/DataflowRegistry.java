@@ -93,7 +93,9 @@ public class DataflowRegistry {
     Node taskNode = tasksDescriptors.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
     taskDescriptor.setStoredPath(taskNode.getPath());
     taskNode.setData(taskDescriptor);
-    taskNode.createChild("report", new DataflowTaskReport(), NodeCreateMode.PERSISTENT);
+    DataflowTaskReport report = new DataflowTaskReport();
+    report.setStartTime(System.currentTimeMillis());
+    taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
     tasksAvailableQueue.offer(nodeName.getBytes());
   }

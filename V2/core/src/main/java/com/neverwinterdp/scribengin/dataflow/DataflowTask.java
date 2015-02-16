@@ -28,9 +28,6 @@ public class DataflowTask {
   public void init() throws Exception {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
     DataflowTaskReport report = dRegistry.getTaskReport(descriptor);
-    if(report.getStartTime() == 0) {
-      report.setStartTime(System.currentTimeMillis());
-    }
     context = new DataflowTaskContext(container, descriptor, report);
     descriptor.setStatus(Status.PROCESSING);
     dRegistry.dataflowTaskUpdate(descriptor);
@@ -39,13 +36,21 @@ public class DataflowTask {
   
   public void run() throws Exception {
     DataflowTaskReport report = context.getReport();
+    System.err.println("begin task " + descriptor.getId() + ": " +  " last commit count = " + report.getCommitProcessCount() + ", hash code = " + hashCode()) ;
     SourceStreamReader reader = context.getSourceStreamReader() ;
     Record record = null ;
     while(!interrupt && (record = reader.next()) != null) {
-      processor.process(record, context);
       report.incrProcessCount();
+      processor.process(record, context);
     }
-    if(!interrupt) complete = true;
+    if(!interrupt) {
+      complete = true;
+      System.err.println("end task " + descriptor.getId() + " complete: " +  
+                         " last commit count = " + report.getCommitProcessCount() + ", process count " + report.getProcessCount() + ", hash code = " + hashCode());
+    } else {
+      System.err.println("end task " + descriptor.getId() + " interrupted: " +  
+                         " last commit count = " + report.getCommitProcessCount() + ", process count " + report.getProcessCount() + ", hash code = " + hashCode());
+    }
   }
   
   public void suspend() throws Exception {
@@ -60,9 +65,9 @@ public class DataflowTask {
   
   void saveContext() throws Exception {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
-    DataflowTaskReport report = context.getReport();
     context.commit();
     context.close();
+    DataflowTaskReport report = context.getReport();
     report.setFinishTime(System.currentTimeMillis());
     dRegistry.dataflowTaskReport(descriptor, report);
   }
