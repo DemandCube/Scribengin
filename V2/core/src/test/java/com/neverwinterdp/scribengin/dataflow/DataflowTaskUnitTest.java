@@ -57,7 +57,7 @@ public class DataflowTaskUnitTest {
     for(int i = 0; i < sourceStream.length; i++) {
       DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
       descriptor.setId(i);
-      descriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+      descriptor.setScribe(TestCopyDataProcessor.class.getName());
       descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
       descriptor.add("default", sink.newStream().getDescriptor());
       descriptor.add("invalid", invalidSink.newStream().getDescriptor());

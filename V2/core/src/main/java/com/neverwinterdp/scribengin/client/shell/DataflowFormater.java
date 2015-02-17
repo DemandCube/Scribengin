@@ -10,13 +10,13 @@ import com.neverwinterdp.util.text.TabularFormater;
 
 public class DataflowFormater {
   static public String formatDescriptor(String title, List<DataflowTaskDescriptor> descriptors) {
-    TabularFormater formater = new TabularFormater("Id", "Data Processor", "Status");
+    TabularFormater formater = new TabularFormater("Id", "Scribe", "Status");
     formater.setIndent("  ");
     for(int i = 0; i < descriptors.size(); i++) {
       DataflowTaskDescriptor descriptor = descriptors.get(i) ;
       formater.addRow(
           descriptor.getId(), 
-          descriptor.getDataProcessor(),
+          descriptor.getScribe(),
           descriptor.getStatus()
       );
     }

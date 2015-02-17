@@ -101,7 +101,7 @@ public class CommandServletDataFlowUnitTest {
     assertEquals(10, dfDesc.getNumberOfWorkers());
     assertEquals(20, dfDesc.getNumberOfExecutorsPerWorker());
     assertEquals("dataflowName", dfDesc.getName());
-    assertEquals("dataflowDataprocessor", dfDesc.getDataProcessor());
+    assertEquals("dataflowDataprocessor", dfDesc.getScribe());
     
 
     

@@ -12,7 +12,7 @@ public class DataflowTaskDescriptor {
 
   private int                               id;
   private Status                            status = Status.INIT;
-  private String                            dataProcessor;
+  private String                            scribe;
   private SourceStreamDescriptor            sourceStreamDescriptor;
   private Map<String, SinkStreamDescriptor> sinkStreamDescriptors;
   private String                            storedPath;
@@ -23,10 +23,8 @@ public class DataflowTaskDescriptor {
   public Status getStatus() { return this.status; }
   public void setStatus(Status status) { this.status = status; }
   
-  public String getDataProcessor() { return dataProcessor;}
-  public void setDataProcessor(String dataflowProcessor) {
-    this.dataProcessor = dataflowProcessor;
-  }
+  public String getScribe() { return scribe;}
+  public void setScribe(String scribe) { this.scribe = scribe; }
   
   public SourceStreamDescriptor getSourceStreamDescriptor() { return sourceStreamDescriptor; }
   public void setSourceStreamDescriptor(SourceStreamDescriptor sourceStreamDescriptor) {

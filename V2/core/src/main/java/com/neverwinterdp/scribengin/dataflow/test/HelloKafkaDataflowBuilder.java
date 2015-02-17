@@ -4,7 +4,6 @@ import java.util.Random;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
@@ -45,7 +44,7 @@ public class HelloKafkaDataflowBuilder {
     dflDescriptor.setName("hello-kafka-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
-    dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+    dflDescriptor.setScribe(TestCopyScribe.class.getName());
     
     SourceDescriptor sourceDescriptor = new SourceDescriptor("KAFKA") ;
     sourceDescriptor.attribute("name", name);
@@ -71,7 +70,7 @@ public class HelloKafkaDataflowBuilder {
   }
   
   
-  static public class TestCopyDataProcessor extends ScribeAbstract {
+  static public class TestCopyScribe extends ScribeAbstract {
     private int count = 0;
     private Random random = new Random();
     

@@ -5,7 +5,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyDataProcessor;
+import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
@@ -51,7 +51,7 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
-    dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+    dflDescriptor.setScribe(TestCopyScribe.class.getName());
 
     SourceDescriptor sourceDescriptor = new SourceDescriptor("KAFKA") ;
     sourceDescriptor.attribute("name", name);

@@ -16,8 +16,8 @@ public class DataflowTask {
   public DataflowTask(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
     this.container = container;
     this.descriptor = descriptor;
-    Class<ScribeAbstract> processorType = (Class<ScribeAbstract>) Class.forName(descriptor.getDataProcessor());
-    processor = processorType.newInstance();
+    Class<ScribeAbstract> scribeType = (Class<ScribeAbstract>) Class.forName(descriptor.getScribe());
+    processor = scribeType.newInstance();
   }
   
   public DataflowTaskDescriptor getDescriptor() { return descriptor ; }

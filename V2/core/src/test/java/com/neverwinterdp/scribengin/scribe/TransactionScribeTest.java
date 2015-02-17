@@ -37,7 +37,7 @@ public class TransactionScribeTest {
     DataflowTaskReport report = new DataflowTaskReport();
     
     descriptor.setId(0);
-    descriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+    descriptor.setScribe(TestCopyDataProcessor.class.getName());
     descriptor.setSourceStreamDescriptor(source.getStream(0).getDescriptor());
     descriptor.add("default", sink.newStream().getDescriptor());
     descriptor.add("invalid", invalidSink.newStream().getDescriptor());

@@ -43,7 +43,7 @@ public class DataflowServiceInititializer {
     for(int i = 0; i < sourceStream.length; i++) {
       DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
       descriptor.setId(i);
-      descriptor.setDataProcessor(dataflowDescriptor.getDataProcessor());
+      descriptor.setScribe(dataflowDescriptor.getScribe());
       descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
       for(Map.Entry<String, Sink> entry : sinks.entrySet()) {
         descriptor.add(entry.getKey(), entry.getValue().newStream().getDescriptor());

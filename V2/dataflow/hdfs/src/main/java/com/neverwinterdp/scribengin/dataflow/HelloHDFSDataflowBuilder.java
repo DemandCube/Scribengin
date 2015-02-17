@@ -39,7 +39,7 @@ public class HelloHDFSDataflowBuilder {
     dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
-    dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+    dflDescriptor.setScribe(TestCopyDataProcessor.class.getName());
     SourceDescriptor sourceDescriptor = new SourceDescriptor("HDFS", dataDir + "/source") ;
     dflDescriptor.setSourceDescriptor(sourceDescriptor);
     SinkDescriptor defaultSink = new SinkDescriptor("HDFS", dataDir + "/sink");
