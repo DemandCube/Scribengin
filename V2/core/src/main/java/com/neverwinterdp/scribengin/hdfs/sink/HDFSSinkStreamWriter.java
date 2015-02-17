@@ -34,16 +34,31 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public boolean rollback() throws Exception {
+  public void rollback() throws Exception {
     currentBuffer.rollback();
-    return true;
+  }
+
+  @Override
+  public void prepareCommit() throws Exception {
+    //TODO: reimplement correctly 2 phases commit
+  }
+
+  @Override
+  public void completeCommit() throws Exception {
+  //TODO: reimplement correctly 2 phases commit
+    currentBuffer.commit();
+    currentBuffer = nextSinkBuffer();
   }
   
   @Override
-  synchronized public boolean commit() throws Exception {
-    currentBuffer.commit();
-    currentBuffer = nextSinkBuffer();
-    return true;
+  synchronized public void commit() throws Exception {
+    try {
+    prepareCommit();
+    completeCommit();
+    } catch(Exception ex) {
+      rollback();
+      throw ex;
+    }
   }
   
   @Override
@@ -113,25 +128,5 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
       output.close();
       fs.rename(writingPath, completePath);
     }
-  }
-
-
-
-  @Override
-  public boolean prepareCommit() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void completeCommit() {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void clearBuffer() {
-    // TODO Auto-generated method stub
-    
   }
 }

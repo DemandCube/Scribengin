@@ -29,6 +29,7 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
   
   private int commitPoint ;
   private int currPosition ;
+  private CommitPoint lastCommitInfo;
   
   public HDFSSourceStreamReader(String name, FileSystem fs, SourceStreamDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this.name = name ;
@@ -71,13 +72,23 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     System.err.println("This method is not implemented");
     currPosition = commitPoint ;
   }
-  
-  public CommitPoint commit() throws Exception {
-    System.err.println("This method is not implemented");
-    CommitPoint cp = new CommitPoint(name, commitPoint, currPosition) ;
-    this.commitPoint = currPosition ;
-    return cp ;
+
+  @Override
+  public void prepareCommit() {
   }
+
+  @Override
+  public void completeCommit() {
+    // TODO Auto-generated method stub
+  }
+  
+  public void commit() throws Exception {
+    System.err.println("This method is not implemented");
+    lastCommitInfo = new CommitPoint(name, commitPoint, currPosition) ;
+    this.commitPoint = currPosition ;
+  }
+  
+  public CommitPoint getLastCommitInfo() { return this.lastCommitInfo; }
   
   public void close() throws Exception {
   }
@@ -87,23 +98,5 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     if(currentDataPathPos >= dataPaths.size()) return null;
     FSDataInputStream is = fs.open(dataPaths.get(currentDataPathPos));
     return is;
-  }
-
-  @Override
-  public boolean prepareCommit() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void completeCommit() {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void clearBuffer() {
-    // TODO Auto-generated method stub
-    
   }
 }

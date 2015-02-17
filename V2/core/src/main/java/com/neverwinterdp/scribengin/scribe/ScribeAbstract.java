@@ -8,6 +8,8 @@ public abstract class ScribeAbstract {
   
   public abstract void process(Record record, DataflowTaskContext ctx) throws Exception;
   
+  public ScribeState getState() { return this.state; }
+  
   public void setState(ScribeState newState){
     this.state = newState;
   }

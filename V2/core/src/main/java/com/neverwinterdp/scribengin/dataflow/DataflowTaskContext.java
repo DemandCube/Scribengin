@@ -10,7 +10,6 @@ import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
-import com.neverwinterdp.scribengin.source.CommitPoint;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -53,59 +52,25 @@ public class DataflowTaskContext {
     sinkContext.assignedSinkStreamWriter.append(record);
   }
   
-  
-  private boolean prepareCommit() throws Exception {
-    boolean retVal = sourceContext.assignedSourceStreamReader.prepareCommit();
-    
+  private void prepareCommit() throws Exception {
+    sourceContext.assignedSourceStreamReader.prepareCommit();
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
-      if(!ctx.prepareCommit()){
-        retVal = false;
-      }
+      ctx.prepareCommit() ;
     }
-    
-    return retVal;
   }
   
   public boolean commit() throws Exception {
-    
-
     //prepareCommit is a vote to make sure both sink, invalidSink, and source
     //are ready to commit data, otherwise rollback will occur
-    if(prepareCommit()){
-      //The actual committing of data
-      //TODO: What to do with this - 
-      //What do we do with this commitpoint here?
-      //Check into registry or something?
-      //Something missing here to help coordinate with ZK?
-      //Or should that be the job of the source/sink stream writers?
-      CommitPoint cp = sourceContext.commit();
-      
-      boolean commitStatus = true;
-      Iterator<SinkContext> i = sinkContexts.values().iterator();
-      while(i.hasNext()) {
-        SinkContext ctx = i.next();
-        if(!ctx.commit()){
-          commitStatus = false;
-        }
-      }
-      
-      
-      if(commitStatus){
-        //update any offsets that need to be managed, clear temp data
-        completeCommit();
-        report.incrCommitProcessCount();
-        return true;
-      }
-      else{
-        //Undo anything that could have gone wrong,
-        //undo any commits, go back as if nothing happened
-        rollback();
-        throw new CommitException("Failed to commit!");
-      }
+    try {
+      prepareCommit() ;
+      completeCommit();
+    } catch(Exception ex) {
+      rollback();
+      throw ex;
     }
-    sourceContext.commit();
     report.incrCommitProcessCount();
     dataflowRegistry.dataflowTaskReport(dataflowTaskDescriptor, report);
     return false;
@@ -131,25 +96,15 @@ public class DataflowTaskContext {
     sourceContext.close();
   }
   
-  private void completeCommit() {
-    // TODO Auto-generated method stub
-    sourceContext.assignedSourceStreamReader.completeCommit();
-    
+  private void completeCommit() throws Exception {
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
       ctx.completeCommit();
     }
-  }
-  
-  public void clearBuffer() {
-    sourceContext.assignedSourceStreamReader.clearBuffer();
-    
-    Iterator<SinkContext> i = sinkContexts.values().iterator();
-    while(i.hasNext()) {
-      SinkContext ctx = i.next();
-      ctx.clearBuffer();
-    }
+    //The source should commit after sink commit. In the case the source or sink does not support
+    //2 phases commit, it will cause the data to duplicate only, not loss
+    sourceContext.assignedSourceStreamReader.completeCommit();
   }
   
   static public class  SourceContext {
@@ -163,8 +118,16 @@ public class DataflowTaskContext {
       this.assignedSourceStreamReader = assignedSourceStream.getReader("DataflowTask");
     }
     
-    public CommitPoint commit() throws Exception {
-      return assignedSourceStreamReader.commit();
+    public void prepapreCommit() throws Exception {
+      assignedSourceStreamReader.prepareCommit();
+    }
+    
+    public void completeCommit() throws Exception {
+      assignedSourceStreamReader.completeCommit();
+    }
+    
+    public void commit() throws Exception {
+      assignedSourceStreamReader.commit();
     }
     
     public void rollback() throws Exception {
@@ -187,22 +150,17 @@ public class DataflowTaskContext {
       this.assignedSinkStream = sink.getStream(streamDescriptor);
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();
     }
+
+    public void prepareCommit() throws Exception{
+      assignedSinkStreamWriter.prepareCommit();
+    }
     
-    public void clearBuffer() {
-      assignedSinkStreamWriter.clearBuffer();
+    public void completeCommit() throws Exception {
+      assignedSinkStreamWriter.completeCommit();
     }
 
-    public void completeCommit() {
-      // TODO Auto-generated method stub
-      
-    }
-
-    public boolean prepareCommit() throws Exception{
-      return assignedSinkStreamWriter.prepareCommit();
-    }
-
-    public boolean commit() throws Exception {
-      return assignedSinkStreamWriter.commit();
+    public void commit() throws Exception {
+      assignedSinkStreamWriter.commit();
     }
     
     public void rollback() throws Exception {
@@ -211,12 +169,6 @@ public class DataflowTaskContext {
     
     public void close() throws Exception {
       assignedSinkStreamWriter.close();
-    }
-  }
-
-  class CommitException extends Exception {
-    public CommitException(String message) {
-      super(message);
     }
   }
 }

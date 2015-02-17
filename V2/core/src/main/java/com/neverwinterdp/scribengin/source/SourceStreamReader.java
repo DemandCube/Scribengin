@@ -10,9 +10,9 @@ public interface SourceStreamReader {
   public Record next() throws Exception;
   public Record[] next(int size) throws Exception ;
   public void rollback() throws Exception;
-  public CommitPoint commit() throws Exception;
+  public void prepareCommit() throws Exception ;
+  public void completeCommit() throws Exception ;
+  public void commit() throws Exception;
+  public CommitPoint getLastCommitInfo() ;
   public void close() throws Exception;
-  public boolean prepareCommit();
-  public void completeCommit();
-  public void clearBuffer();
 }

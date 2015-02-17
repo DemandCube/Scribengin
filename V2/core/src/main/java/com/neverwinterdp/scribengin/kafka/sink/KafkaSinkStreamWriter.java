@@ -27,31 +27,18 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public boolean rollback() throws Exception {
-    return false;
+  public void rollback() throws Exception {
   }
 
   @Override
-  public boolean commit() throws Exception {
-    // TODO Auto-generated method stub
-    return false;
+  public void commit() throws Exception {
   }
 
   @Override
-  public boolean prepareCommit() {
-    // TODO Auto-generated method stub
-    return false;
+  public void prepareCommit() {
   }
 
   @Override
   public void completeCommit() {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void clearBuffer() {
-    // TODO Auto-generated method stub
-    
   }
 }

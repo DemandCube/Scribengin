@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
-public class TestSinkWriter implements SinkStreamWriter{
+public class TestSinkWriter implements SinkStreamWriter {
   private LinkedList<Record> list;
   private LinkedList<Record> buffer;
   int numMessagesWritten;
@@ -34,19 +34,15 @@ public class TestSinkWriter implements SinkStreamWriter{
 
 
   @Override
-  public boolean prepareCommit() {
-    return true;
+  public void prepareCommit() {
   }
 
 
   @Override
-  public boolean commit() {
-    if(buffer.isEmpty()){
-      return true;
-    }
+  public void commit() {
+    if(buffer.isEmpty()) return ;
     this.numMessagesWritten += list.size();
-    //return list.addAll(buffer);
-    return list.addAll(buffer);
+    list.addAll(buffer);
   }
 
 
@@ -54,7 +50,6 @@ public class TestSinkWriter implements SinkStreamWriter{
   @Override
   public void completeCommit() {
     buffer.clear();
-    //return true;
   }
 
   public long getBufferSize() {
@@ -65,7 +60,7 @@ public class TestSinkWriter implements SinkStreamWriter{
 
 
   @Override
-  public boolean rollback() throws Exception{
+  public void rollback() throws Exception {
     for(int i = 0; i < buffer.size(); i++){
       for(int j = 0; j < list.size(); j++){
         if(buffer.get(i).equals(list.get(j))){
@@ -74,7 +69,6 @@ public class TestSinkWriter implements SinkStreamWriter{
       }
     }
     buffer.clear();
-    return true;
   }
   
 
@@ -95,9 +89,6 @@ public class TestSinkWriter implements SinkStreamWriter{
     return this.numMessagesWritten;
   }
 
-
-
-  @Override
   public void clearBuffer() {
     buffer.clear();
   }

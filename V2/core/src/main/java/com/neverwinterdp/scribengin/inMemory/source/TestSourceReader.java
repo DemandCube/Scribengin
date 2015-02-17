@@ -12,6 +12,7 @@ public class TestSourceReader implements SourceStreamReader{
   int lastCommitted;
   int currNum;
   String name;
+  private CommitPoint lastCommitInfo;
   
   public TestSourceReader(int startNum){
     this.currNum = startNum;
@@ -26,31 +27,27 @@ public class TestSourceReader implements SourceStreamReader{
   
 
   @Override
-  public boolean prepareCommit() {
-    return true;
+  public void prepareCommit() {
   }
 
   @Override
-  public CommitPoint commit() {
-    return new CommitPoint(this.name, this.lastCommitted, this.currNum);
-    //return true;
+  public void commit() {
+    lastCommitInfo = new CommitPoint(this.name, this.lastCommitted, this.currNum);
   }
 
-  @Override
-  public void clearBuffer() {
-    this.currNum = this.lastCommitted;
-  }
+//  @Override
+//  public void clearBuffer() {
+//    this.currNum = this.lastCommitted;
+//  }
 
   @Override
   public void completeCommit() {
     this.lastCommitted = this.currNum;
-    //return true;
   }
 
   @Override
   public void rollback() {
     this.currNum = this.lastCommitted;
-    //return true;
   }
 
   @Override
@@ -66,11 +63,10 @@ public class TestSourceReader implements SourceStreamReader{
   //  return this.currNum < Integer.MAX_VALUE;
   //}
 
+  public CommitPoint getLastCommitInfo() { return this.lastCommitInfo; }
+  
   @Override
-  public String getName() {
-    return this.name;
-  }
-
+  public String getName() { return this.name; }
 
   @Override
   public Record[] next(int size) throws Exception {
@@ -84,14 +80,10 @@ public class TestSourceReader implements SourceStreamReader{
 
   @Override
   public void close() throws Exception {
-    
   }
 
   
   public int getNumMessagesWritten(){
     return this.lastCommitted;
   }
-
-
-
 }

@@ -14,17 +14,11 @@ public class SimpleCopyScribe extends ScribeAbstract {
     ctx.append(record);
     count++ ;
     if(count == 100) {
-      this.setState(ScribeState.COMMITTING);
+      setState(ScribeState.COMMITTING);
       ctx.commit();
       count = 0;
-    }
-    else{
-      this.setState(ScribeState.BUFFERING);
+    } else{
+      setState(ScribeState.BUFFERING);
     }
   }
-
-  public ScribeState getState() {
-    return this.state;
-  }
-
 }

@@ -13,6 +13,7 @@ import com.neverwinterdp.scribengin.source.SourceStreamReader;
 public class KafkaSourceStreamReader implements SourceStreamReader {
   private SourceStreamDescriptor descriptor;
   private KafkaPartitionReader partitionReader ;
+  private CommitPoint lastCommitInfo ;
   
   public KafkaSourceStreamReader(SourceStreamDescriptor descriptor, PartitionMetadata partitionMetadata) {
     this.descriptor = descriptor;
@@ -40,33 +41,32 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
     throw new Exception("To implement") ;
   }
 
-  static boolean printCommit = false;
   @Override
-  public CommitPoint commit() throws Exception {
-    partitionReader.commit();
-    return null;
+  public void prepareCommit() throws Exception {
+    //TODO: implement 2 phases commit correctly
   }
 
+  @Override
+  public void completeCommit() throws Exception {
+    //TODO: implement 2 phases commit correctly
+    partitionReader.commit();
+  }
+  
+  @Override
+  public void commit() throws Exception {
+    try {
+      prepareCommit() ;
+      completeCommit() ;
+    } catch(Exception ex) {
+      rollback();
+      throw ex;
+    }
+  }
+  
+  public CommitPoint getLastCommitInfo() { return this.lastCommitInfo ; }
+  
   @Override
   public void close() throws Exception {
   }
-
-  @Override
-  public boolean prepareCommit() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void completeCommit() {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void clearBuffer() {
-    // TODO Auto-generated method stub
-    
-  }
-
+ 
 }
