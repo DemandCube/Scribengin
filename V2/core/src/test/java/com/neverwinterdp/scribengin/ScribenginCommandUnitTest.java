@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin;
 
-import static com.neverwinterdp.scribengin.client.shell.ScribenginFormater.format;
+import static com.neverwinterdp.scribengin.client.shell.Formater.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

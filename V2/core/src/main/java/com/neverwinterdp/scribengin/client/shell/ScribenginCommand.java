@@ -18,7 +18,7 @@ public class ScribenginCommand extends Command {
     add("info", Info.class) ;
     add("master", Master.class) ;
   }
-  
+
   static public class Start extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
@@ -27,7 +27,7 @@ public class ScribenginCommand extends Command {
       clusterBuilder.startScribenginMasters();
     }
   }
-  
+
   static public class Shutdown extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
@@ -35,49 +35,51 @@ public class ScribenginCommand extends Command {
       client.shutdown();
     }
   }
-  
+
   static public class Info extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
       shell.console().h1("Scribengin Info");
-      shell.console().println(ScribenginFormater.format("Running Dataflows", client.getRunningDataflowDescriptor()));
-      shell.console().println(ScribenginFormater.format("History Dataflows", client.getHistoryDataflowDescriptor()));
+      Formater.DataflowList runningDflFormater = new Formater.DataflowList(client.getRunningDataflowDescriptor());
+      shell.console().println(runningDflFormater.format("Running Dataflows"));
+      Formater.DataflowList historyDflFormater = new Formater.DataflowList(client.getHistoryDataflowDescriptor());
+      shell.console().println(historyDflFormater.format("History Dataflows"));
     }
   }
-  
-	static public class Master extends SubCommand {
-		
-		@Parameter(names = "--list", description = "List all running scribengin masters")
-		private boolean list;
 
-		@Parameter(names = "--shutdown", description = "Shutdown current master")
-		private boolean shutdown;
+  static public class Master extends SubCommand {
 
-		@Override
-		public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-			ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
-			String leaderPath = client.getScribenginMaster().getStoredPath();
+    @Parameter(names = "--list", description = "List all running scribengin masters")
+    private boolean list;
 
-			if (list) {
-				shell.console().h1("Listing Scribengin Masters");
-				shell.console().println(
-						ScribenginFormater.format("Scribengin Masters",	client.getScribenginMasters(), leaderPath));
+    @Parameter(names = "--shutdown", description = "Shutdown current master")
+    private boolean shutdown;
 
-			} else if (shutdown) {
-	//			shell.console().h1("Shutting down current Scribengin Master");
-				VMClient vmClient = shell.getVMClient();
-				for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
-					if (desc.getStoredPath().equals(leaderPath)) {
-						shell.console().h1("Shutting down leader " + desc.getId());
-						vmClient.shutdown(desc);
-						Thread.sleep(20000);
-					}
-				}
+    @Override
+    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
+      String leaderPath = client.getScribenginMaster().getStoredPath();
 
-			} else {
-				System.out.println("Please provide either --shutdown or --list");
-			}
-		}
-	}
+      if (list) {
+        shell.console().h1("Listing Scribengin Masters");
+        shell.console().println(
+            Formater.format("Scribengin Masters",	client.getScribenginMasters(), leaderPath));
+
+      } else if (shutdown) {
+        //			shell.console().h1("Shutting down current Scribengin Master");
+        VMClient vmClient = shell.getVMClient();
+        for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
+          if (desc.getStoredPath().equals(leaderPath)) {
+            shell.console().h1("Shutting down leader " + desc.getId());
+            vmClient.shutdown(desc);
+            Thread.sleep(20000);
+          }
+        }
+
+      } else {
+        System.out.println("Please provide either --shutdown or --list");
+      }
+    }
+  }
 }

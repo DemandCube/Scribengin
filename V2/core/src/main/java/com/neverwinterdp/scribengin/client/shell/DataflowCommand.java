@@ -53,16 +53,16 @@ public class DataflowCommand extends Command {
       console.h1("Dataflow " + dRegistry.getDataflowPath());
       console.println("\nTasks:\n");
       List<DataflowTaskDescriptor> taskDescriptors = dRegistry.getTaskDescriptors();
-      console.println(DataflowFormater.formatDescriptor("All Tasks", taskDescriptors));
+      console.println(Formater.formatDescriptor("All Tasks", taskDescriptors));
       List<DataflowTaskReport> taskReports = dRegistry.getTaskReports(taskDescriptors) ;
-      console.print(DataflowFormater.formatReport("Report", taskReports, "  "));
+      console.print(Formater.formatReport("Report", taskReports, "  "));
       
       console.println("Workers:\n");
       List<String> workers = dRegistry.getWorkerNames();
       for(String worker : workers) {
         List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getExecutors(worker);
         console.println("\n  Worker: " + worker + "\n");
-        console.println(DataflowFormater.formatExecutor("Executors", descriptors, "    "));
+        console.println(Formater.formatExecutor("Executors", descriptors, "    "));
       }
     }
   }
