@@ -1,0 +1,39 @@
+archivesBaseName = 'scribengin.dataflow.s3'
+
+eclipse {
+  project {
+    name = 'scribengin.dataflow.s3'
+  }
+}
+
+//Move project(':core') to bottom of .classpath file
+//to avoid clashing versions of jetty
+eclipse.classpath.file{
+        whenMerged{ classpath ->
+            def projectRefs = classpath.entries.findAll{entry -> entry.path =~ /scribengin\.core/}
+            //move the project references to the end of the list:
+            classpath.entries.removeAll(projectRefs)
+            classpath.entries.addAll(projectRefs)   
+        }   
+    }
+
+configurations.all {
+  //This is because hadoop uses and older version of jetty,
+  //and the proxy server needs version 3
+  //exclude(group: 'javax.servlet', module: 'servlet-api', version: '2.5')
+}
+
+dependencies {
+  compile project(':registry')
+  compile project(':vm')
+  compile project(':core')
+
+  compile group: 'com.neverwinterdp', name: 'commons.jetty', version: '1.0-SNAPSHOT'
+
+  compile(group: "org.apache.hadoop", name: "hadoop-common", version: "2.4.0") {
+    transitive = false
+  }
+
+  compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+  compile 'com.amazonaws:aws-java-sdk:1.9.6'
+}

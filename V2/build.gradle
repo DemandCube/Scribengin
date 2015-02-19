@@ -1,64 +1,75 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'maven'
-apply plugin: 'jacoco'
+allprojects {
+}
 
-jacoco {
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}
+
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'eclipse'
+  apply plugin: 'maven'
+  apply plugin: 'maven-publish'
+  apply plugin: 'jacoco'
+
+  jacoco {
     toolVersion = "0.6.2.201302030002"
     reportsDir = file("$buildDir/JacocoReportDir")
-}
-
-archivesBaseName = 'scribengin.v2'
-
-eclipse {
-  project {
-    name = 'scribengin.v2'
   }
-
-  classpath {
-    downloadSources=true
-  }
-}
-
-
-eclipse.classpath.defaultOutputDir = file( 'build/classes' )
-
-group = 'com.neverwinterdp'
-sourceCompatibility = 1.7
-version = '1.0-SNAPSHOT'
-configurations.compile.transitive = true
-
-repositories {
-  mavenLocal()
-  mavenCentral()
-}
-
-configurations.all {
-  exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
-  exclude(group: 'storm', name: 'storm', version: '0.8.1')
-
-  resolutionStrategy {
-    force 'com.google.guava:guava:13.0'
-  }
-}
-
-dependencies {
-  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
-  compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
-  compile 'org.json:json:20090211'
-  compile group:  'com.fasterxml', name : 'jackson-module-json-org', version: '0.9.1'
-  compile 'com.amazonaws:aws-java-sdk:1.9.6'
-  compile group: 'com.google.inject', name: 'guice', version: '3.0'
-  compile 'org.mapdb:mapdb:1.0.6'
   
-  testCompile group: 'junit', name: 'junit', version: '4.11'
-}
+  eclipse {
+    classpath {
+      downloadSources=true
+    }
+  }
 
-test {
-  forkEvery = 1
-  ignoreFailures = true
-  testLogging.showStandardStreams = true
-  testLogging {
-    events "passed", "skipped", "failed"
+  eclipse.classpath.defaultOutputDir = file( 'build/classes' )
+
+  group = 'com.neverwinterdp'
+  sourceCompatibility = 1.7
+  version = '1.0-SNAPSHOT'
+  configurations.compile.transitive = true
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+  }
+
+  dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+  }
+
+  test {
+    forkEvery = 1
+    ignoreFailures = true
+    testLogging.showStandardStreams = true
+
+    filter {
+      //includeTestsMatching "*UnitTest"
+    }
+    testLogging {
+      events "passed", "skipped", "failed"
+    }
+  }
+
+  task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+  }
+
+  configurations {
+    tests
+    published.extendsFrom tests, archives
+  }
+
+
+  install {
+    configuration = configurations.published
+  }
+
+  artifacts {
+    tests testJar
   }
 }

@@ -1,0 +1,13 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'scribengin.server'
+
+eclipse {
+  project {
+    name = 'scribengin.server'
+  }
+}
+
+dependencies {
+  compile group: 'com.neverwinterdp', name: 'queuengin', version: '1.0-SNAPSHOT'
+}
