@@ -20,7 +20,7 @@ The structure directory of the scribengin docker
   README.md 
 ````
 
-##The Dockerfile file##
+#####Dockerfile
 
 The Dockerfile contains the commands to build an ubuntu images with the required components.
 
@@ -30,7 +30,7 @@ The Dockerfile contains the commands to build an ubuntu images with the required
 4. Copy the bootstrap/post-install to the /tmp directory
 5. Run the script /tmp/post-install/post-install.sh. Due to the file security bug in the docker, certain commands cannot be performed in the Dockerfile and need to be run in the post-install.sh script.
 
-##The bootstrap/post-install/post-install.sh file##
+#####The bootstrap/post-install/post-install.sh file
 
 The post-install.sh script run the commands to:
 
@@ -40,7 +40,7 @@ The post-install.sh script run the commands to:
 
 
 
-##The docker.sh file##
+#####The docker.sh file
 
 ````
 The cluster.sh script options: 
@@ -57,15 +57,15 @@ run                   : To run the containers(hadoop, zookeeper, kafka...)
   scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container
 ````
 
-#To build and run scribengin with docker#
+#To build the Docker cluster and run Scribengin#
 
-##To build the linux os image
+#####To build the linux os image
 
 ````
 $./docker.sh image clean  && ./docker.sh image build
 ````
 
-##To launch all the required vm for the scribengin 
+#####To launch all the required vm for the scribengin 
 
 ````
 $./docker.sh container clean && ./docker.sh container run
@@ -81,19 +81,40 @@ The command also run the update-hosts command to update the /etc/hosts of all th
 
 You can run the command 'docker ps' to make sure that all those containers are launched
 
-##Login to any containers##
+#####Editing your /etc/hosts file
 
-You may login to any containers with the neverwinterdp user. The password of the neverwinterdp user is 'neverwinterdp'
+The ```./docker.sh container run``` command should print out the name and the information about the hostnames and ip of the containers. Copy the output from your console to /etc/hosts.  The following is an example of what you're looking for (Don't actually copy the following into your hosts file)
+````
+#Copy this print out to your /etc/hosts
+#DON'T ACTUALLY COPY THIS SNIPPET, GRAB THE OUTPUT FROM YOUR CONSOLE!!
+172.17.0.81 kafka-3
+172.17.0.80 kafka-2
+172.17.0.79 kafka-1
+172.17.0.78 zookeeper
+172.17.0.77 hadoop-worker-3
+172.17.0.76 hadoop-worker-2
+172.17.0.75 hadoop-worker-1
+172.17.0.74 hadoop-master
+````
+
+If you use the MAC OS, you need to route the ip
+````
+  ./docker.sh ip-route
+````
+
+#####Login to any containers
+
+You may login to any containers with the neverwinterdp user. The password of the neverwinterdp user is **'neverwinterdp'**
 
 ````
 $./docker.sh ssh neverwinterdp@hadoop-master
 ````
 
-##The bootstrap/post-install/cluster.sh file##
+#####The bootstrap/post-install/cluster.sh file
 
 The cluster.sh contains several command and sub commands to launch and manage the different components of the cluster
 
-##To run the scribengin and the required componnents##
+#####To run scribengin and the required components **(while logged into hadoop-master)**
 
 We need to go to the /opt directory and run the ./cluster start --clean command
 
@@ -102,17 +123,27 @@ $cd /opt
 $./cluster.sh start --clean
 ````
 
-To access the webui:
+#####To access the webui:
 
 1. To access the dfs webui http://${docker.host.ip}:50070
 1. To access the yarn webui http://${docker.host.ip}:8088, you should see the scribengin master running here(But it is in the development)
 
-To stop the cluster
+
+#####Build and run Scribengin
+````
+ cd path-to/Scribengin/V2
+ gradle clean build install release -x test
+ ./release/build/release/scribengin/bin/scribengin.sh
+````
+
+#####To stop the cluster
 
 ````
 $./cluster.sh stop
 ````
-#Run Scribengin#
+
+
+#Rebuilding the Scribengin Cluster
 
 Checkout Scribengin from github
 ````
