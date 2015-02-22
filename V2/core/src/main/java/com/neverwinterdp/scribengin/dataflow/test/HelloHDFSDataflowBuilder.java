@@ -2,8 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.Random;
 
-import org.apache.hadoop.fs.FileSystem;
-
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;

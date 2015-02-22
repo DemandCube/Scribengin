@@ -2,7 +2,7 @@
   "name" : "hello-hdfs-dataflow",
   "numberOfWorkers" : 3,
   "numberOfExecutorsPerWorker" : 3,
-  "dataProcessor" : "com.neverwinterdp.scribengin.dataflow.TestCopyDataProcessor",
+  "scribe" : "com.neverwinterdp.scribengin.dataflow.TestCopyDataProcessor",
 
   "sourceDescriptor" : {
     "location" : "/data/source",
