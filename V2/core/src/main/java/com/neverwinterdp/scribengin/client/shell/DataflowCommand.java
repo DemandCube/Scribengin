@@ -90,7 +90,7 @@ public class DataflowCommand extends Command {
         ex.printStackTrace();
       } finally {
         Thread.sleep(3000);
-        shell.execute("vm list");
+        shell.execute("vm info");
         shell.execute("registry dump --path /");
       }
     }

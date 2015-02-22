@@ -200,9 +200,73 @@ Launch zookeeper, kafka and hadoop
 ````
 
 
-Build and run Scribengin
+#Build and run Scribengin#
+
+Build the scribengin code
+
 ````
  cd path-to/Scribengin/V2
- gradle clean build install release -x test
- ./build/release/Scribengin.V2/bin/scribengin.sh
+ gradle clean build install -x test
 ````
+
+To package the scribengin code
+
+````
+ cd V2/release
+ gradle release -x test
+````
+
+*To run the scribengin we will need:*
+
+Launch the dependencies such zookeeper , kafka, hadoop. The script
+
+````
+  ./cluster.sh start --clean
+````
+
+will help to launch the zookeeper , kafka and hadoop.
+
+*Launch the scribengin application*
+
+This command will launch the yarn vm framework
+
+````
+  cd V2/release/build/release/scribengin
+  ./bin/shell vm start
+````
+
+Check http://hadoop-master:8088/cluster address with a browser, you should see the vm-master-1  with the RUNNING status
+
+This command will launch the scribengin application
+
+````
+  ./bin/shell scribengin start
+````
+
+You can check the scribengin status by running the command 
+````
+  ./bin/shell vm info
+````
+and 
+````
+  ./bin/shell scribengin info
+````
+
+
+*Submit a hello hdfs dataflow*
+
+Create hdfs data source that will be used by the hello hdfs dataflow
+
+````
+  ./bin/shell dataflow hdfs --create-source
+````
+
+Check http://hadoop-master:50070 and go to Utilities > Browse the file system, you should find the data is created in /data/source directory
+
+Submit the dataflow
+
+````
+  ./bin/shell.sh dataflow submit --deploy ../dataflows/hdfs --descriptor ../dataflows/hdfs/dataflow.json
+````
+
+If the dataflow is submitted successfully, you should see the status and registry structure print out on the console
