@@ -21,7 +21,7 @@ import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
-public class TransactionScribeTest {
+public class TransactionScribeUnitTest {
   @Test
   public void TestTransactionScribe() throws Exception{
     SimpleCopyScribe scribe = new SimpleCopyScribe();
