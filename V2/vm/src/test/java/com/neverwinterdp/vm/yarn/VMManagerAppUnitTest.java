@@ -1,8 +1,5 @@
 package com.neverwinterdp.vm.yarn;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.MiniYARNCluster;
@@ -78,26 +75,25 @@ public class VMManagerAppUnitTest {
     appClient.run(vmConfig, new YarnConfiguration(miniYarnCluster.getConfig()));
     Thread.sleep(10000);
     
-    shell.execute("vm list");
+    shell.execute("vm info");
     VMDescriptor vmMaster1 = shell.getVMClient().getMasterVMDescriptor();
     
     VMDescriptor vmDummy1 = allocateVMDummy(vmClient, "vm-dummy-1") ;
-    shell.execute("vm list");
+    shell.execute("vm info");
     Thread.sleep(5000);
 
     VMDescriptor vmDummy2 = allocateVMDummy(vmClient, "vm-dummy-2") ;
-    shell.execute("vm list");
+    shell.execute("vm info");
     Thread.sleep(5000);
     
     shutdown(vmClient, vmDummy1);
     shutdown(vmClient, vmDummy2);
     Thread.sleep(1000);
-    shell.execute("vm list");
+    shell.execute("vm info");
     shell.execute("registry dump");
     shutdown(vmClient, vmMaster1);
     Thread.sleep(1000);
-    shell.execute("vm list");
-    shell.execute("vm history");
+    shell.execute("vm info");
   }
   
   private String[] createVMConfigArgs(String name) {
@@ -111,7 +107,7 @@ public class VMManagerAppUnitTest {
         "--registry-implementation", RegistryImpl.class.getName(),
         "--vm-application",VMServiceApp.class.getName(),
         "--prop:implementation:" + VMServicePlugin.class.getName() + "=" + YarnVMServicePlugin.class.getName(),
-        "--yarn:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
+        "--hadoop:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
     } ;
     return args;
   }
@@ -126,7 +122,7 @@ public class VMManagerAppUnitTest {
         "--registry-db-domain", "/NeverwinterDP", 
         "--registry-implementation", RegistryImpl.class.getName(),
         "--vm-application", VMDummyApp.class.getName(),
-        "--yarn:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
+        "--hadoop:yarn.resourcemanager.scheduler.address=0.0.0.0:8030"
     } ;
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     VMConfig vmConfig = new VMConfig() ;
