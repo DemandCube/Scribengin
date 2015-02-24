@@ -16,29 +16,35 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   }
   
   @Override
-  public void append(Record record) throws Exception {
-    kafkaWriter.send(topic, record);;
+  public boolean append(Record record) throws Exception {
+    kafkaWriter.send(topic, record);
+    return true;
   }
 
 
   @Override
-  public void close() throws Exception {
+  public boolean close() throws Exception {
     kafkaWriter.close();
+    return true;
   }
 
   @Override
-  public void rollback() throws Exception {
+  public boolean rollback() throws Exception {
+    return true;
   }
 
   @Override
-  public void commit() throws Exception {
+  public boolean commit() throws Exception {
+    return true;
   }
 
   @Override
-  public void prepareCommit() {
+  public boolean prepareCommit() {
+    return true;
   }
 
   @Override
-  public void completeCommit() {
+  public boolean completeCommit() {
+    return true;
   }
 }
