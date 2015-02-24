@@ -20,7 +20,7 @@ The structure directory of the scribengin docker
   README.md 
 ````
 
-##The Dockerfile file##
+#####Dockerfile
 
 The Dockerfile contains the commands to build an ubuntu images with the required components.
 
@@ -30,7 +30,7 @@ The Dockerfile contains the commands to build an ubuntu images with the required
 4. Copy the bootstrap/post-install to the /tmp directory
 5. Run the script /tmp/post-install/post-install.sh. Due to the file security bug in the docker, certain commands cannot be performed in the Dockerfile and need to be run in the post-install.sh script.
 
-##The bootstrap/post-install/post-install.sh file##
+#####The bootstrap/post-install/post-install.sh file
 
 The post-install.sh script run the commands to:
 
@@ -40,7 +40,7 @@ The post-install.sh script run the commands to:
 
 
 
-##The docker.sh file##
+#####The docker.sh file
 
 ````
 The cluster.sh script options: 
@@ -57,18 +57,36 @@ run                   : To run the containers(hadoop, zookeeper, kafka...)
   scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container
 ````
 
-#To build and run scribengin with docker#
+#To build the Docker cluster and run Scribengin#
 
-##To build the linux os image
+#####Get Scribengin
+```
+git clone http://github.com/DemandCube/Scribengin
+```
+
+#####Dependencies
+1. [Install Docker according to the documentation](https://docs.docker.com/installation/)
+2. Make sure git is set up
+3. Run the script to install other DemandCube dependencies
+  
+  ```
+  cd pathTo/Scribengin/V2
+  ./installDependencies.sh
+  ```
+
+#####To build the linux os image
 
 ````
-$./docker.sh image clean  && ./docker.sh image build
+cd path-to/Scribengin/V2/docker/scribengin
+$./docker.sh image clean
+$./docker.sh image build
 ````
 
-##To launch all the required vm for the scribengin 
+#####To launch all the required vm for the scribengin 
 
 ````
-$./docker.sh container clean && ./docker.sh container run
+$./docker.sh container clean
+$./docker.sh container run
 ````
 
 This command will:
@@ -81,58 +99,7 @@ The command also run the update-hosts command to update the /etc/hosts of all th
 
 You can run the command 'docker ps' to make sure that all those containers are launched
 
-##Login to any containers##
-
-You may login to any containers with the neverwinterdp user. The password of the neverwinterdp user is 'neverwinterdp'
-
-````
-$./docker.sh ssh neverwinterdp@hadoop-master
-````
-
-##The bootstrap/post-install/cluster.sh file##
-
-The cluster.sh contains several command and sub commands to launch and manage the different components of the cluster
-
-##To run the scribengin and the required componnents##
-
-We need to go to the /opt directory and run the ./cluster start --clean command
-
-````
-$cd /opt
-$./cluster.sh start --clean
-````
-
-To access the webui:
-
-1. To access the dfs webui http://${docker.host.ip}:50070
-1. To access the yarn webui http://${docker.host.ip}:8088, you should see the scribengin master running here(But it is in the development)
-
-To stop the cluster
-
-````
-$./cluster.sh stop
-````
-#Run Scribengin#
-
-Checkout Scribengin from github
-````
-  git pull
-````
-
-Go to Scribengin/V2/docker/scribengin
-````
-  cd path-to/Scribengin/V2/docker/scribengin
-````
-
-Build the docker image base on the latest ubuntu. Check the Dockerfile for more information
-````
-  ./docker.sh image build
-````
-
-Launch the containers to run hadoop, zookeeper, kafka
-````
-  ./docker.sh container run
-````
+#####Editing your /etc/hosts file
 
 The ```./docker.sh container run``` command should print out the name and the information about the hostnames and ip of the containers. Copy the output from your console to /etc/hosts.  The following is an example of what you're looking for (Don't actually copy the following into your hosts file)
 ````
@@ -153,25 +120,114 @@ If you use the MAC OS, you need to route the ip
   ./docker.sh ip-route
 ````
 
-Login to the hadoop-master or any container. The password is 'neverwinterdp'
+#####Login to any containers
+
+You may login to any containers with the neverwinterdp user. The password of the neverwinterdp user is **'neverwinterdp'**
+
 ````
-  ssh neverwinterdp@hadoop-master
+$./docker.sh ssh neverwinterdp@hadoop-master
+#Password is 'neverwinterdp'
 ````
 
-Go to /opt directory, you should have the cluster.sh script , hadoop, zookeeper, kafka installed here.
+#####The bootstrap/post-install/cluster.sh file
+
+The cluster.sh contains several command and sub commands to launch and manage the different components of the cluster
+
+#####To run scribengin and the required components **(while logged into hadoop-master)**
+
+We need to go to the /opt directory and run the ./cluster start --clean command
+
 ````
-  cd /opt
+$cd /opt
+$./cluster.sh start --clean
 ````
 
-Launch zookeeper, kafka and hadoop
+#####To access the webui:
+
+1. To access the dfs webui http://${docker.host.ip}:50070
+1. To access the yarn webui http://${docker.host.ip}:8088, you should see the scribengin master running here(But it is in the development)
+
+#####To stop the cluster
+
 ````
+  ./cluster.sh stop
+````
+
+But I think currently there is a bug with zookeeper or kafka shutdown script. You better use the command
+````
+  ./cluster.sh exec "pkill -9 java"
+````
+This command will kill all the java processes on all the  machines
+
+
+#Build and run Scribengin#
+
+Build the scribengin code
+
+````
+ cd path-to/Scribengin/V2
+ gradle clean build install -x test
+````
+
+To package the scribengin code
+
+````
+ cd path-to/Scribengin/V2/release
+ gradle release -x test
+````
+
+*To run the scribengin we will need:*
+
+Launch the dependencies such zookeeper , kafka, hadoop. The script
+
+````
+  cd path-to/Scribengin/V2/docker/scribengin/bootstrap/post-install/
   ./cluster.sh start --clean
 ````
 
+will help to launch the zookeeper , kafka and hadoop.
 
-Build and run Scribengin
+*Launch the scribengin application*
+
+This command will launch the yarn vm framework
+
 ````
- cd path-to/Scribengin/V2
- gradle clean build install release -x test
- ./build/release/Scribengin.V2/bin/scribengin.sh
+  cd V2/release/build/release/scribengin
+  ./bin/shell.sh vm start
 ````
+
+Check http://hadoop-master:8088/cluster address with a browser, you should see the vm-master-1  with the RUNNING status
+
+This command will launch the scribengin application
+
+````
+  ./bin/shell.sh scribengin start
+````
+
+You can check the scribengin status by running the command 
+````
+  ./bin/shell.sh vm info
+````
+and 
+````
+  ./bin/shell.sh scribengin info
+````
+
+
+*Submit a hello hdfs dataflow*
+
+Create hdfs data source that will be used by the hello hdfs dataflow
+
+````
+  ./bin/shell.sh dataflow hdfs --create-source
+````
+
+Check http://hadoop-master:50070 and go to Utilities > Browse the file system, you should find the data is created in /data/source directory
+
+Submit the dataflow
+
+````
+  ./bin/shell.sh dataflow submit --deploy ../dataflows/hdfs --descriptor ../dataflows/hdfs/dataflow.json
+````
+
+If the dataflow is submitted successfully, you should see the status and registry structure print out on the console

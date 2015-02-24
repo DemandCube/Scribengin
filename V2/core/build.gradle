@@ -12,8 +12,8 @@ repositories {
 }
 
 configurations.all {
-  exclude(group: 'ring', name: 'ring-core', version: '0.3.11')
-  exclude(group: 'storm', name: 'storm', version: '0.8.1')
+  exclude(group: 'ring', module: 'ring-core')
+  exclude(group: 'storm', module: 'storm')
   
   //This is because hadoop uses and older version of jetty,
   //and the proxy server needs version 3

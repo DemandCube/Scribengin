@@ -53,16 +53,19 @@ public class DataflowCommand extends Command {
       console.h1("Dataflow " + dRegistry.getDataflowPath());
       console.println("\nTasks:\n");
       List<DataflowTaskDescriptor> taskDescriptors = dRegistry.getTaskDescriptors();
-      console.println(Formater.formatDescriptor("All Tasks", taskDescriptors));
+      Formater.DataFlowTaskDescriptorList taskList = new Formater.DataFlowTaskDescriptorList(taskDescriptors);
+      console.println(taskList.format("All Tasks"));
       List<DataflowTaskReport> taskReports = dRegistry.getTaskReports(taskDescriptors) ;
-      console.print(Formater.formatReport("Report", taskReports, "  "));
+      Formater.DataflowTaskReportList reportList = new Formater.DataflowTaskReportList(taskReports);
+      console.print(reportList.format("Report", "  "));
       
       console.println("Workers:\n");
       List<String> workers = dRegistry.getWorkerNames();
       for(String worker : workers) {
         List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getExecutors(worker);
         console.println("\n  Worker: " + worker + "\n");
-        console.println(Formater.formatExecutor("Executors", descriptors, "    "));
+        Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
+        console.println(executorList.format("Executors", "    "));
       }
     }
   }
@@ -90,7 +93,7 @@ public class DataflowCommand extends Command {
         ex.printStackTrace();
       } finally {
         Thread.sleep(3000);
-        shell.execute("vm list");
+        shell.execute("vm info");
         shell.execute("registry dump --path /");
       }
     }

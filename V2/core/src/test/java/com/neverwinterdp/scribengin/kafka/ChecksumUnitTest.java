@@ -15,7 +15,7 @@ public class ChecksumUnitTest {
     }
     System.out.println("MD5 fingerprint: " + Base64.encodeBase64String(md5.digest()));
     System.out.println("-------------------------------------");
-    for(int i = 0; i < 20; i++) {
+    for(int i = 9 ; i <= 0 ; i--) {
       String key = "key - " + i;
       byte[] bytes = key.getBytes();
       md5.update(bytes, 0, bytes.length);

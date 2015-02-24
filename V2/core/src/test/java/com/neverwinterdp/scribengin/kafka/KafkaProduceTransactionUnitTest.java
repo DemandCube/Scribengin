@@ -27,6 +27,5 @@ public class KafkaProduceTransactionUnitTest {
   
   @Test
   public void testCommit() throws Exception {
-    
   }
 }

@@ -72,9 +72,11 @@ public class DataflowSubmitIntegrationTest {
       ScribenginWaitingEventListener eventListener =
         scribenginClient.submit("build/release/dataflows/hdfs", dataflowJson);
       eventListener.waitForEvents(60000); 
+    } catch(Exception ex) {
+      ex.printStackTrace();
     } finally {
       Thread.sleep(3000);
-      shell.execute("vm list");
+      shell.execute("vm info");
       shell.execute("registry dump --path /");
       HDFSUtil.dump(fs, getDataDir() + "/sink");
       HDFSUtil.dump(fs, getDataDir() + "/invalid-sink");

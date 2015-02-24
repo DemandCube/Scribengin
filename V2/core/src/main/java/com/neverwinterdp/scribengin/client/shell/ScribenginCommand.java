@@ -13,17 +13,18 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 
 public class ScribenginCommand extends Command {
   public ScribenginCommand() {
-    add("start",  Start.class) ;
-    add("shutdown",  Shutdown.class) ;
-    add("info", Info.class) ;
-    add("master", Master.class) ;
+    add("start", Start.class);
+    add("shutdown", Shutdown.class);
+    add("info", Info.class);
+    add("master", Master.class);
   }
 
   static public class Start extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      VMClient vmClient = shell.getVMClient() ;
-      ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(vmClient)) ;
+      VMClient vmClient = shell.getVMClient();
+      ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(
+          vmClient));
       clusterBuilder.startScribenginMasters();
     }
   }
@@ -31,7 +32,7 @@ public class ScribenginCommand extends Command {
   static public class Shutdown extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
+      ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
       client.shutdown();
     }
   }
@@ -39,11 +40,13 @@ public class ScribenginCommand extends Command {
   static public class Info extends SubCommand {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      ScribenginClient client = ((ScribenginShell)shell).getScribenginClient();
+      ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
       shell.console().h1("Scribengin Info");
-      Formater.DataflowList runningDflFormater = new Formater.DataflowList(client.getRunningDataflowDescriptor());
+      Formater.DataflowList runningDflFormater = new Formater.DataflowList(
+          client.getRunningDataflowDescriptor());
       shell.console().println(runningDflFormater.format("Running Dataflows"));
-      Formater.DataflowList historyDflFormater = new Formater.DataflowList(client.getHistoryDataflowDescriptor());
+      Formater.DataflowList historyDflFormater = new Formater.DataflowList(
+          client.getHistoryDataflowDescriptor());
       shell.console().println(historyDflFormater.format("History Dataflows"));
     }
   }
@@ -63,11 +66,10 @@ public class ScribenginCommand extends Command {
 
       if (list) {
         shell.console().h1("Listing Scribengin Masters");
-        shell.console().println(
-            Formater.format("Scribengin Masters",	client.getScribenginMasters(), leaderPath));
-
+        Formater.VmList formatter = new Formater.VmList(client.getScribenginMasters(), leaderPath);
+        shell.console().println(formatter.format("Scribengin Masters"));
       } else if (shutdown) {
-        //			shell.console().h1("Shutting down current Scribengin Master");
+        // shell.console().h1("Shutting down current Scribengin Master");
         VMClient vmClient = shell.getVMClient();
         for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
           if (desc.getStoredPath().equals(leaderPath)) {
@@ -76,7 +78,6 @@ public class ScribenginCommand extends Command {
             Thread.sleep(20000);
           }
         }
-
       } else {
         System.out.println("Please provide either --shutdown or --list");
       }

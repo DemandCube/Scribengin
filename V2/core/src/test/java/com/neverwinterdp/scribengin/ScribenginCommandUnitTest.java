@@ -1,84 +1,76 @@
 package com.neverwinterdp.scribengin;
 
-import static com.neverwinterdp.scribengin.client.shell.Formater.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
+import java.util.List;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.client.shell.Formater;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 
 public class ScribenginCommandUnitTest {
-	static {
-		System.setProperty("java.net.preferIPv4Stack", "true");
-		System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
-	}
+  static {
+    System.setProperty("java.net.preferIPv4Stack", "true");
+    System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
+  }
 
-	protected  ScribenginClusterBuilder clusterBuilder;
-	protected ScribenginShell shell;
+  protected static ScribenginClusterBuilder clusterBuilder;
+  protected static ScribenginShell          shell;
 
-	@Before
-	public  void setup() throws Exception {
-		clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
-		clusterBuilder.clean();
-		clusterBuilder.startVMMasters();
-		Thread.sleep(3000);
-		clusterBuilder.startScribenginMasters();
-		shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
-	}
+  @BeforeClass
+  public static void setup() throws Exception {
+    clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
+    clusterBuilder.clean();
+    clusterBuilder.startVMMasters();
+    Thread.sleep(3000);
+    clusterBuilder.startScribenginMasters();
+    shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+  }
 
-	@After
-	public  void teardown() throws Exception {
-		clusterBuilder.shutdown();
-	}
+  @AfterClass
+  public static void teardown() throws Exception {
+    clusterBuilder.shutdown();
+  }
 
-	protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
-		EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
-		return builder;
-	}
+  protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
+    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
+    return builder;
+  }
 
-	@Test
-	public void testMasterListCommand() throws Exception {
+  @Test
+  public void testMasterListCommand() throws Exception {
 
-		ScribenginClient scribenginClient = shell.getScribenginClient();
-		assertEquals(2, scribenginClient.getScribenginMasters().size());
+    ScribenginClient scribenginClient = shell.getScribenginClient();
+    assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-		shell.execute("registry dump");
-		shell.execute("scribengin master --list");
+    shell.execute("registry dump");
+    shell.execute("scribengin master --list");
+    List<VMDescriptor> descriptors = scribenginClient.getScribenginMasters();
 
-		String formattedText = format("Masters", scribenginClient.getScribenginMasters(),
-				"/vm/allocated/vm-scribengin-master-2");
-		assertTrue(formattedText.contains("vm-scribengin-master-1"));
-		assertTrue(formattedText.contains("/vm/allocated/vm-scribengin-master-2"));
+    Formater.VmList formater = new Formater.VmList(descriptors,"/vm/allocated/vm-scribengin-master-2");
+    String formattedText = formater.format("Masters");
+    assertTrue(formattedText.contains("vm-scribengin-master-1"));
+    assertTrue(formattedText.contains("/vm/allocated/vm-scribengin-master-2"));
 
-	}
+  }
 
-	@Test
-	public void testMasterShutdownCommand() throws Exception {
+  
 
-		ScribenginClient scribenginClient = shell.getScribenginClient();
-		assertEquals(2, scribenginClient.getScribenginMasters().size());
+  @Test
+  public void testMasterInvalidCommand() throws Exception {
 
-		shell.execute("registry  dump");
-		shell.execute("scribengin master  --shutdown");
-		assertEquals(1, scribenginClient.getScribenginMasters().size());
-		
+    ScribenginClient scribenginClient = shell.getScribenginClient();
+    assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-		shell.execute("registry   dump");
-	}
-
-	@Test
-	public void testMasterInvalidCommand() throws Exception {
-
-		ScribenginClient scribenginClient = shell.getScribenginClient();
-		assertEquals(2, scribenginClient.getScribenginMasters().size());
-
-		// shell.execute("registry   dump");
-		shell.execute("scribengin master  --dummy");
-	}
+    // shell.execute("registry   dump");
+    shell.execute("scribengin master  --dummy");
+  }
 }
