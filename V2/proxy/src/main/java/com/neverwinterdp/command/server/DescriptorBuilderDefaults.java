@@ -1,13 +1,13 @@
 package com.neverwinterdp.command.server;
 
-import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyDataProcessor;
+import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 
 
 public class DescriptorBuilderDefaults {
   public static final String _dataflowName          = "defaultDataFlow";
   public static final int    _numWorkers            = 1;
   public static final int    _numExecutorsPerWorker = 1;
-  public static final String _dataProcessorClass    = TestCopyDataProcessor.class.getName();
+  public static final String _dataProcessorClass    = TestCopyScribe.class.getName();
   
   public static final String _kafkaName       = "KAFKA";
   public static final String _kafkaTopic      = "defaultTopic";

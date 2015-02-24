@@ -2,15 +2,13 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.Random;
 
-import org.apache.hadoop.fs.FileSystem;
-
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.DataProcessor;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
@@ -39,7 +37,7 @@ public class HelloHDFSDataflowBuilder {
     dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
-    dflDescriptor.setDataProcessor(TestCopyDataProcessor.class.getName());
+    dflDescriptor.setScribe(TestCopyScribe.class.getName());
     SourceDescriptor sourceDescriptor = new SourceDescriptor("HDFS", dataDir + "/source") ;
     dflDescriptor.setSourceDescriptor(sourceDescriptor);
     SinkDescriptor defaultSink = new SinkDescriptor("HDFS", dataDir + "/sink");
@@ -50,14 +48,14 @@ public class HelloHDFSDataflowBuilder {
     return scribenginClient.submit(dflDescriptor) ;
   }
 
-  static public class TestCopyDataProcessor implements DataProcessor {
+  static public class TestCopyScribe extends ScribeAbstract {
     private int count = 0;
     private Random random = new Random();
     
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
       if(random.nextDouble() < 0.8) {
-        ctx.write(record);
+        ctx.append(record);
         //System.out.println("Write default");
       } else {
         ctx.write("invalid", record);

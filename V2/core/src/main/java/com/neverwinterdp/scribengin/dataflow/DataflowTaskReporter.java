@@ -11,6 +11,6 @@ public class DataflowTaskReporter {
   
   public void report(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws Exception {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
-    dRegistry.update(descriptor, report);
+    dRegistry.dataflowTaskReport(descriptor, report);
   }
 }

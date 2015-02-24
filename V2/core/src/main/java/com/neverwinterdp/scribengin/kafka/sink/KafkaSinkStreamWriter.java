@@ -20,9 +20,6 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
     kafkaWriter.send(topic, record);;
   }
 
-  @Override
-  public void commit() throws Exception {
-  }
 
   @Override
   public void close() throws Exception {
@@ -30,7 +27,18 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public boolean rollback() throws Exception {
-    return false;
+  public void rollback() throws Exception {
+  }
+
+  @Override
+  public void commit() throws Exception {
+  }
+
+  @Override
+  public void prepareCommit() {
+  }
+
+  @Override
+  public void completeCommit() {
   }
 }

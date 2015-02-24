@@ -89,7 +89,7 @@ public class DescriptorBuilder {
     dflDescriptor.setName(dataflowName);
     dflDescriptor.setNumberOfWorkers(numWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numExecutorsPerWorker);
-    dflDescriptor.setDataProcessor(dataProcessorClass);
+    dflDescriptor.setScribe(dataProcessorClass);
     return dflDescriptor;
   }
   

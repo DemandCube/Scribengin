@@ -20,6 +20,8 @@ public class DataflowTaskContext {
   private DataflowTaskReport report ;
   private SourceContext sourceContext ;
   private Map<String, SinkContext> sinkContexts = new HashMap<String, SinkContext>();
+  private DataflowRegistry dataflowRegistry;
+  private DataflowTaskDescriptor dataflowTaskDescriptor;
   
   public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws Exception {
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
@@ -30,6 +32,8 @@ public class DataflowTaskContext {
       sinkContexts.put(entry.getKey(), context) ;
     }
     this.report = report ;
+    this.dataflowTaskDescriptor = descriptor;
+    this.dataflowRegistry = container.getDataflowRegistry();
   }
   
   public DataflowTaskReport getReport() { return this.report ;}
@@ -38,7 +42,7 @@ public class DataflowTaskContext {
     return sourceContext.assignedSourceStreamReader;
   }
   
-  public void write(Record record) throws Exception {
+  public void append(Record record) throws Exception {
     SinkContext sinkContext = sinkContexts.get("default") ;
     sinkContext.assignedSinkStreamWriter.append(record);
   }
@@ -48,23 +52,36 @@ public class DataflowTaskContext {
     sinkContext.assignedSinkStreamWriter.append(record);
   }
   
-  public void commit() throws Exception {
-    //TODO: implement the proper transaction
+  private void prepareCommit() throws Exception {
+    sourceContext.assignedSourceStreamReader.prepareCommit();
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
-      ctx.commit();
+      ctx.prepareCommit() ;
     }
-    sourceContext.commit();
-    report.incrCommitProcessCount();
   }
   
-  public void rollback() throws Exception {
+  public boolean commit() throws Exception {
+    //prepareCommit is a vote to make sure both sink, invalidSink, and source
+    //are ready to commit data, otherwise rollback will occur
+    try {
+      prepareCommit() ;
+      completeCommit();
+    } catch(Exception ex) {
+      rollback();
+      throw ex;
+    }
+    report.incrCommitProcessCount();
+    dataflowRegistry.dataflowTaskReport(dataflowTaskDescriptor, report);
+    return false;
+  }
+  
+  private void rollback() throws Exception {
     //TODO: implement the proper transaction
     Iterator<SinkContext> i = sinkContexts.values().iterator();
     while(i.hasNext()) {
       SinkContext ctx = i.next();
-      ctx.rollback();;
+      ctx.rollback();
     }
     sourceContext.rollback();
   }
@@ -79,6 +96,17 @@ public class DataflowTaskContext {
     sourceContext.close();
   }
   
+  private void completeCommit() throws Exception {
+    Iterator<SinkContext> i = sinkContexts.values().iterator();
+    while(i.hasNext()) {
+      SinkContext ctx = i.next();
+      ctx.completeCommit();
+    }
+    //The source should commit after sink commit. In the case the source or sink does not support
+    //2 phases commit, it will cause the data to duplicate only, not loss
+    sourceContext.assignedSourceStreamReader.completeCommit();
+  }
+  
   static public class  SourceContext {
     private Source source ;
     private SourceStream assignedSourceStream ;
@@ -88,6 +116,14 @@ public class DataflowTaskContext {
       this.source = factory.create(streamDescriptor) ;
       this.assignedSourceStream = source.getStream(streamDescriptor.getId());
       this.assignedSourceStreamReader = assignedSourceStream.getReader("DataflowTask");
+    }
+    
+    public void prepapreCommit() throws Exception {
+      assignedSourceStreamReader.prepareCommit();
+    }
+    
+    public void completeCommit() throws Exception {
+      assignedSourceStreamReader.completeCommit();
     }
     
     public void commit() throws Exception {
@@ -114,7 +150,15 @@ public class DataflowTaskContext {
       this.assignedSinkStream = sink.getStream(streamDescriptor);
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();
     }
+
+    public void prepareCommit() throws Exception{
+      assignedSinkStreamWriter.prepareCommit();
+    }
     
+    public void completeCommit() throws Exception {
+      assignedSinkStreamWriter.completeCommit();
+    }
+
     public void commit() throws Exception {
       assignedSinkStreamWriter.commit();
     }

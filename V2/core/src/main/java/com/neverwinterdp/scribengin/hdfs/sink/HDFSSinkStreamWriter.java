@@ -34,15 +34,31 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public boolean rollback() throws Exception {
+  public void rollback() throws Exception {
     currentBuffer.rollback();
-    return true;
+  }
+
+  @Override
+  public void prepareCommit() throws Exception {
+    //TODO: reimplement correctly 2 phases commit
+  }
+
+  @Override
+  public void completeCommit() throws Exception {
+  //TODO: reimplement correctly 2 phases commit
+    currentBuffer.commit();
+    currentBuffer = nextSinkBuffer();
   }
   
   @Override
   synchronized public void commit() throws Exception {
-    currentBuffer.commit();
-    currentBuffer = nextSinkBuffer();
+    try {
+    prepareCommit();
+    completeCommit();
+    } catch(Exception ex) {
+      rollback();
+      throw ex;
+    }
   }
   
   @Override

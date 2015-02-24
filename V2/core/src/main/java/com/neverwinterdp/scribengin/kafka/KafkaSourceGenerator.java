@@ -13,6 +13,7 @@ import kafka.utils.ZKStringSerializer$;
 import org.I0Itec.zkclient.ZkClient;
 
 import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.RecordChecksum;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
@@ -28,12 +29,13 @@ public class KafkaSourceGenerator {
   private long                          duration                = 5 * 1000;
   private long                          writePeriod             = 0;
 
+  private RecordChecksum checksum ;
   private Map<Integer, StreamGenerator> streamGenerators = new HashMap<Integer, StreamGenerator>();
   
-  
-  public KafkaSourceGenerator(String name, String zkConnect) {
+  public KafkaSourceGenerator(String name, String zkConnect) throws Exception {
     this.name = name;
     this.zkConnect = zkConnect;
+    checksum = new RecordChecksum();
   }
   
   public KafkaSourceGenerator setMaxNumOfRecordPerStream(int num) { 
@@ -126,6 +128,7 @@ public class KafkaSourceGenerator {
           if(writePeriod > 0) Thread.sleep(writePeriod);
           Record record = new Record("key-" + i, hello.getBytes());
           writer.append(record);
+          checksum.update(record);
           count++ ;
           if(writePeriod > 0) {
            long currentDuration =  System.currentTimeMillis() - startTime;

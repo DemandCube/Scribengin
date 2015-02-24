@@ -15,7 +15,7 @@ public class DataflowDescriptor {
   private int                         numberOfExecutorsPerWorker = 1;
   private long                        taskMaxExecuteTime = -1;
   
-  private String                      dataProcessor;
+  private String                      scribe;
   
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
@@ -53,8 +53,6 @@ public class DataflowDescriptor {
     this.taskMaxExecuteTime = taskMaxExecuteTime;
   }
   
-  public String getDataProcessor() { return dataProcessor; }
-  public void setDataProcessor(String dataProcessor) {
-    this.dataProcessor = dataProcessor;
-  }
+  public String getScribe() { return scribe; }
+  public void setScribe(String scribe) { this.scribe = scribe; }
 }

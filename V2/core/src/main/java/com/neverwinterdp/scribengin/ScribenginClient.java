@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
+import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -101,9 +102,8 @@ public class ScribenginClient {
    
     VMDescriptor scribenginMaster = getScribenginMaster();
     Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(descriptor) ;
-    CommandResult<Boolean> result = 
-        (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
-    return waitingEventListener ;
+    CommandResult<Boolean> result = (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
+    return waitingEventListener;
   }
   
   private String format(String tmpl, Object ... args) {
@@ -120,6 +120,12 @@ public class ScribenginClient {
     vmClient.configureEnvironment(vmConfig);
     VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
     return vmDescriptor;
+  }
+  
+  public DataflowClient getDataflowClient(String dataflowName) throws Exception {
+    String dataflowPath = ScribenginService.getDataflowPath(dataflowName);
+    DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
+    return dataflowClient ;
   }
   
   public void shutdown() throws Exception {

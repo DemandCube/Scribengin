@@ -4,7 +4,7 @@ import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.Event;
 
 public class ScribenginEvent extends Event {
-  static public enum DataflowAttr { status, descriptor }
+  static public enum DataflowAttr   { status, descriptor }
   static public enum ScribenginAttr { dataflow_status, dataflow_descriptor }
   
   final static public String DATAFLOW_STATUS = "dataflow-status" ;
