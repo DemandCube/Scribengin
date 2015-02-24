@@ -77,13 +77,16 @@ git clone http://github.com/DemandCube/Scribengin
 #####To build the linux os image
 
 ````
-$./docker.sh image clean  && ./docker.sh image build
+cd path-to/Scribengin/V2/docker/scribengin
+$./docker.sh image clean
+$./docker.sh image build
 ````
 
 #####To launch all the required vm for the scribengin 
 
 ````
-$./docker.sh container clean && ./docker.sh container run
+$./docker.sh container clean
+$./docker.sh container run
 ````
 
 This command will:
@@ -123,6 +126,7 @@ You may login to any containers with the neverwinterdp user. The password of the
 
 ````
 $./docker.sh ssh neverwinterdp@hadoop-master
+#Password is 'neverwinterdp'
 ````
 
 #####The bootstrap/post-install/cluster.sh file
@@ -168,7 +172,7 @@ Build the scribengin code
 To package the scribengin code
 
 ````
- cd V2/release
+ cd path-to/Scribengin/V2/release
  gradle release -x test
 ````
 
@@ -177,6 +181,7 @@ To package the scribengin code
 Launch the dependencies such zookeeper , kafka, hadoop. The script
 
 ````
+  cd path-to/Scribengin/V2/docker/scribengin/bootstrap/post-install/
   ./cluster.sh start --clean
 ````
 
@@ -188,7 +193,7 @@ This command will launch the yarn vm framework
 
 ````
   cd V2/release/build/release/scribengin
-  ./bin/shell vm start
+  ./bin/shell.sh vm start
 ````
 
 Check http://hadoop-master:8088/cluster address with a browser, you should see the vm-master-1  with the RUNNING status
@@ -196,16 +201,16 @@ Check http://hadoop-master:8088/cluster address with a browser, you should see t
 This command will launch the scribengin application
 
 ````
-  ./bin/shell scribengin start
+  ./bin/shell.sh scribengin start
 ````
 
 You can check the scribengin status by running the command 
 ````
-  ./bin/shell vm info
+  ./bin/shell.sh vm info
 ````
 and 
 ````
-  ./bin/shell scribengin info
+  ./bin/shell.sh scribengin info
 ````
 
 
@@ -214,7 +219,7 @@ and
 Create hdfs data source that will be used by the hello hdfs dataflow
 
 ````
-  ./bin/shell dataflow hdfs --create-source
+  ./bin/shell.sh dataflow hdfs --create-source
 ````
 
 Check http://hadoop-master:50070 and go to Utilities > Browse the file system, you should find the data is created in /data/source directory
