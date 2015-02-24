@@ -59,6 +59,20 @@ run                   : To run the containers(hadoop, zookeeper, kafka...)
 
 #To build the Docker cluster and run Scribengin#
 
+#####Get Scribengin
+```
+git clone http://github.com/DemandCube/Scribengin
+```
+
+#####Dependencies
+1. [Install Docker according to the documentation](https://docs.docker.com/installation/)
+2. Make sure git is set up
+3. ```
+#Run the script to install other DemandCube dependencies
+cd pathTo/Scribengin/V2
+./installDependencies.sh
+```
+
 #####To build the linux os image
 
 ````
