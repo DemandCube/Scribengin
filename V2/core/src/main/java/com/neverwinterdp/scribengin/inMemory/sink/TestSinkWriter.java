@@ -34,25 +34,22 @@ public class TestSinkWriter implements SinkStreamWriter {
 
 
   @Override
-  public boolean prepareCommit() {
-    return true;
+  public void prepareCommit() {
   }
 
 
   @Override
-  public boolean commit() {
-    if(buffer.isEmpty()) return false;
+  public void commit() {
+    if(buffer.isEmpty()) return ;
     this.numMessagesWritten += list.size();
     list.addAll(buffer);
-    return true;
   }
 
 
 
   @Override
-  public boolean completeCommit() {
+  public void completeCommit() {
     buffer.clear();
-    return true;
   }
 
   public long getBufferSize() {
@@ -63,7 +60,7 @@ public class TestSinkWriter implements SinkStreamWriter {
 
 
   @Override
-  public boolean rollback() throws Exception {
+  public void rollback() throws Exception {
     for(int i = 0; i < buffer.size(); i++){
       for(int j = 0; j < list.size(); j++){
         if(buffer.get(i).equals(list.get(j))){
@@ -72,20 +69,18 @@ public class TestSinkWriter implements SinkStreamWriter {
       }
     }
     buffer.clear();
-    return true;
   }
   
 
   @Override
-  public boolean close() throws Exception {
-    return true;
+  public void close() throws Exception {
+    
   }
 
 
   @Override
-  public boolean append(Record record) throws Exception {
+  public void append(Record record) throws Exception {
     buffer.add(record);
-    return true;
   }
 
 

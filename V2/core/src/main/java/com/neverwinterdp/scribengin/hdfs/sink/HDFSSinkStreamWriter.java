@@ -29,33 +29,29 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   }
   
   @Override
-  synchronized public boolean append(Record record) throws Exception {
+  synchronized public void append(Record record) throws Exception {
     currentBuffer.append(record);
-    return true;
   }
 
   @Override
-  public boolean rollback() throws Exception {
+  public void rollback() throws Exception {
     currentBuffer.rollback();
-    return true;
   }
 
   @Override
-  public boolean prepareCommit() throws Exception {
+  public void prepareCommit() throws Exception {
     //TODO: reimplement correctly 2 phases commit
-    return true;
   }
 
   @Override
-  public boolean completeCommit() throws Exception {
+  public void completeCommit() throws Exception {
   //TODO: reimplement correctly 2 phases commit
     currentBuffer.commit();
     currentBuffer = nextSinkBuffer();
-    return true;
   }
   
   @Override
-  synchronized public boolean commit() throws Exception {
+  synchronized public void commit() throws Exception {
     try {
     prepareCommit();
     completeCommit();
@@ -63,11 +59,10 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
       rollback();
       throw ex;
     }
-    return true;
   }
   
   @Override
-  synchronized public boolean close() throws Exception {
+  synchronized public void close() throws Exception {
     if(currentBuffer.count > 0) {
       currentBuffer.commit();
     } else {
@@ -77,7 +72,7 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
     FileStatus[] status = fs.listStatus(new Path(bufferLocation));
     if(status.length == 0) {
       fs.delete(new Path(this.bufferLocation), true);
-      return false;
+      return;
     } else {
       Path[] bufferSrc = new Path[status.length];
       for(int i = 0; i < bufferSrc.length; i++) {
@@ -86,7 +81,6 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
       HDFSUtil.concat(fs, datDestination, bufferSrc, true);
       fs.delete(new Path(this.bufferLocation), true);
     }
-    return true;
   }
   
   private SinkBuffer nextSinkBuffer() throws IOException {
