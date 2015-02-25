@@ -8,10 +8,10 @@ public interface SinkStreamWriter {
    * @return true if we should keep appending, false if ready to commit
    * @throws Exception
    */
-  public void append(Record record) throws Exception ;
-  public void commit() throws Exception ;
-  public void close()  throws  Exception ;
-  public void rollback() throws Exception;
-  public void prepareCommit() throws Exception ;
-  public void completeCommit() throws Exception ;
+  public boolean append(Record record) throws Exception ;
+  public boolean commit() throws Exception ;
+  public boolean close()  throws  Exception ;
+  public boolean rollback() throws Exception;
+  public boolean prepareCommit() throws Exception ;
+  public boolean completeCommit() throws Exception ;
 }
