@@ -104,46 +104,41 @@ public class S3SinkStream implements SinkStreamWriter {
    */
   // This is where we create the bucket.
   @Override
-  public boolean prepareCommit() {
+  public void prepareCommit() throws Exception {
     logger.info("prepareCommit");
     if (!validS3Sink) {
 
-      try {
-        // check if bucket exist
-        if (!s3Client.doesBucketExist(bucketName)) {
-          System.out.println("bucket does not exist.");
-          logger.info("Bucket does not Exist");
-          s3Client.createBucket(bucketName);
+      // check if bucket exist
+      if (!s3Client.doesBucketExist(bucketName)) {
+        System.out.println("bucket does not exist.");
+        logger.info("Bucket does not Exist");
+        s3Client.createBucket(bucketName);
 
-        }
-
-        logger.info("Bucket Exist");
-        /*
-         * BucketVersioningConfiguration configuration = new
-         * BucketVersioningConfiguration( bucketVersionConfig);
-         * SetBucketVersioningConfigurationRequest request = new
-         * SetBucketVersioningConfigurationRequest( bucketName, configuration);
-         * s3Client.setBucketVersioningConfiguration(request);
-         */
-        AccessControlList acl = s3Client.getBucketAcl(bucketName);
-        List<Permission> permissions = new ArrayList<Permission>();
-        for (Grant grant : acl.getGrants()) {
-          permissions.add(grant.getPermission());
-        }
-        if (permissions.contains(Permission.FullControl) || permissions.contains(Permission.Write)) {
-          validS3Sink = true;
-        }
-
-      } catch (Exception e) {
-        logger.error("Caught Exception when perparing commit " + e.getMessage());
-        validS3Sink = false;
       }
+
+      logger.info("Bucket Exist");
+      /*
+       * BucketVersioningConfiguration configuration = new
+       * BucketVersioningConfiguration( bucketVersionConfig);
+       * SetBucketVersioningConfigurationRequest request = new
+       * SetBucketVersioningConfigurationRequest( bucketName, configuration);
+       * s3Client.setBucketVersioningConfiguration(request);
+       */
+      AccessControlList acl = s3Client.getBucketAcl(bucketName);
+      List<Permission> permissions = new ArrayList<Permission>();
+      for (Grant grant : acl.getGrants()) {
+        permissions.add(grant.getPermission());
+      }
+      if (permissions.contains(Permission.FullControl) || permissions.contains(Permission.Write)) {
+        validS3Sink = true;
+      }
+
     } else {
       validS3Sink = true;
     }
     logger.info("validS3Sink = " + validS3Sink);
     System.out.println("validS3Sink = " + validS3Sink);
-    return validS3Sink;
+
   }
 
   /*
@@ -152,7 +147,7 @@ public class S3SinkStream implements SinkStreamWriter {
    * @see com.neverwinterdp.scribengin.stream.Stream#commit()
    */
   @Override
-  public boolean commit() throws IOException {
+  public void commit() throws Exception {
     System.out.println("committing");
     logger.info("commit");
     buffer.purgeMemoryToDisk();
@@ -194,7 +189,7 @@ public class S3SinkStream implements SinkStreamWriter {
         Throwables.propagate(ace);
       }
     }
-    return true;
+   
   }
 
   /*
@@ -204,15 +199,11 @@ public class S3SinkStream implements SinkStreamWriter {
    */
   @Override
   // TODO check that files have correctly been uploaded to s3?
-  public boolean completeCommit() {
+  public void completeCommit() throws Exception {
     logger.info("completeCommit");
-    try {
-      buffer.clear();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    buffer.clear();
     uploadedFilesPath.clear();
-    return true;
+
   }
 
   /*
@@ -222,16 +213,8 @@ public class S3SinkStream implements SinkStreamWriter {
    * neverwinterdp.scribengin.tuple.Record)
    */
   @Override
-  public boolean append(Record tuple) {
-    logger.info("bufferRecord");
-    try {
-      // TODO buffer.add doesn't throw exception
-      buffer.add(tuple);
-      return true;
-    } catch (Exception e) {
-      logger.error("Caught Exception when  buffering Record" + e.getMessage());
-      return false;
-    }
+  public void append(Record tuple) throws Exception{
+    buffer.add(tuple);
   }
 
   /*
@@ -241,31 +224,27 @@ public class S3SinkStream implements SinkStreamWriter {
    */
   // TODO if we are using versioning delete the version
   @Override
-  public boolean rollback() {
-    boolean retVal = true;
+  public void rollback() throws Exception {
+
     // TODO remove from uploadedFilesPath
     for (String path : uploadedFilesPath.keySet()) {
-      try {
-        System.out.println("deleted " + path);
-        s3Client.deleteObject(bucketName, path);
-      } catch (Exception e) {
-        logger.error("Caught Exception when rolling back " + e.getMessage());
-        retVal = false;
-      }
+      System.out.println("deleted " + path);
+      s3Client.deleteObject(bucketName, path);
     }
     uploadedFilesPath.clear();
-    return retVal;
 
   }
+  
+  @Override
+  public void close() throws Exception {
+    logger.info("clear buffer");
+    try {
+      buffer.clear();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.neverwinterdp.scribengin.stream.sink.SinkStream#setSinkPartitioner(
-   * com.neverwinterdp.scribengin.stream.sink.partitioner.SinkPartitioner)
-   */
-  // @Override
+  }
   public void setSinkPartitioner(SinkPartitioner sinkPartitioner) {
     this.partitioner = sinkPartitioner;
 
@@ -291,15 +270,6 @@ public class S3SinkStream implements SinkStreamWriter {
     this.bucketName = bucketName;
   }
 
-  @Override
-  public boolean close() throws Exception {
-    logger.info("clear buffer");
-    try {
-      buffer.clear();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return true;
-  }
+
 
 }
