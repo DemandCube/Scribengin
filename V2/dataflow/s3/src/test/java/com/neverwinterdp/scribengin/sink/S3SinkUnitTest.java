@@ -84,7 +84,7 @@ public class S3SinkUnitTest {
 	}
 
 	@Test(expected = AmazonS3Exception.class)
-	public void testBadCredentials() throws IOException {
+	public void testBadCredentials() throws Exception {
 		Map<String, String> env = System.getenv();
 		Map<String, String> fakeEnv = new ConcurrentHashMap<String, String>();
 		try {
@@ -104,8 +104,8 @@ public class S3SinkUnitTest {
 			init("s3.tuplesCountLimited.properties");
 			int tuples = s3SinkConfig.getChunkSize();
 			for (int i = 0; i < tuples; i++) {
-				assertTrue(sink.append(new Record(Integer.toString(i),
-						Integer.toString(i).getBytes())));
+				sink.append(new Record(Integer.toString(i),
+						Integer.toString(i).getBytes()));
 			}
 			sink.commit();
 		} finally {
@@ -117,12 +117,12 @@ public class S3SinkUnitTest {
 	}
 
 	@Test(expected = FileNotFoundException.class)
-	public void testUploadNonExistentFile() throws IOException {
+	public void testUploadNonExistentFile() throws Exception {
 		init("s3.tuplesCountLimited.properties");
 		int tuples = 8;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		// delete files from
 		for (String file : sink.getBuffer().getFiles()) {
@@ -133,46 +133,35 @@ public class S3SinkUnitTest {
 	}
 
 	@Test(expected = AmazonClientException.class)
-	public void testUploadToNonExistentBucket() throws IOException {
+	public void testUploadToNonExistentBucket() throws Exception {
 		init("s3.noneexistentbucket.properties");
 		int tuples = 8;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		sink.commit();
 
 	}
 
 	@Test(expected = AmazonClientException.class)
-	public void testUploadToNonWritableBucket() throws IOException {
+	public void testUploadToNonWritableBucket() throws Exception {
 		init("s3.noneexistentbucket.properties");
 		int tuples = 8;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		sink.commit();
 	}
 
-	// TODO Our sink checks for existence of bucket before attempting to create
-	// a new one
 	@Test
-	public void testCreateExistingBucket() {
-		init("s3.tuplesCountLimited.properties");
-
-		boolean sinkExists = sink.prepareCommit();
-		s3.doesBucketExist(s3SinkConfig.getBucketName());
-		assertTrue(sinkExists);
-	}
-
-	@Test
-	public void testUploadSmallFile() throws IOException {
+	public void testUploadSmallFile() throws Exception {
 		init("s3.tuplesCountLimited.properties");
 		int tuples = s3SinkConfig.getChunkSize();// ensure its 1 file
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		List<String> fileHashes = new ArrayList<>();
 
@@ -190,13 +179,13 @@ public class S3SinkUnitTest {
 
 	// upload 10 small to a bucket
 	@Test
-	public void testUploadManyFiles() throws IOException {
+	public void testUploadManyFiles() throws Exception {
 		init("s3.tuplesCountLimited.properties");
 		int filesCount = 10;
 		int tuples = s3SinkConfig.getChunkSize() * filesCount;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		List<String> md5s = new ArrayList<>();
 		for (String file : sink.getBuffer().getFiles()) {
@@ -211,14 +200,14 @@ public class S3SinkUnitTest {
 	}
 
 	@Test
-	public void testUploadManyFilesToManyBuckets() throws IOException {
+	public void testUploadManyFilesToManyBuckets() throws Exception {
 		// is there a better way of doing this?
 		init("s3.tuplesCountLimited.properties");
 		String bucket2 = "nellouze";
 		int filesCount = 10;
 		int tuples = s3SinkConfig.getChunkSize() * filesCount;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
 		}
 		List<String> md5s = new ArrayList<>();
 		for (String file : sink.getBuffer().getFiles()) {
@@ -235,8 +224,8 @@ public class S3SinkUnitTest {
 		sink.setBucketName(bucket2);
 
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		md5s = new ArrayList<>();
 		for (String file : sink.getBuffer().getFiles()) {
@@ -256,19 +245,19 @@ public class S3SinkUnitTest {
 
 	// TODO convert to test versioning config
 	@Test(expected = AmazonClientException.class)
-	public void testUploadFileTwice() throws IOException {
+	public void testUploadFileTwice() throws Exception {
 		init("s3.tuplesCountLimited.properties");
 		int tuples = s3SinkConfig.getChunkSize();// ensure its 1 file
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		sink.commit();
 		sink.completeCommit();
 
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 
 		sink.commit();
@@ -277,12 +266,12 @@ public class S3SinkUnitTest {
 	}
 
 	@Test
-	public void testSimpleRollBack() throws IOException {
+	public void testSimpleRollBack() throws Exception {
 		init("s3.tuplesCountLimited.properties");
 		int tuples = s3SinkConfig.getChunkSize() * 2;
 		for (int i = 0; i < tuples; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
 		sink.commit();
 		sink.rollback();
@@ -294,7 +283,7 @@ public class S3SinkUnitTest {
 	}
 
 	@Test
-	public void testInteruptCommit() throws IOException {
+	public void testInteruptCommit() throws Exception {
 		// commit in thread, wait a minute, interupt, logback, files in bucket
 		// should be ==0;
 		init("s3.tuplesCountLimited.properties");
@@ -310,7 +299,7 @@ public class S3SinkUnitTest {
 			public void run() {
 				try {
 					sink.commit();
-				} catch (IOException e) {
+				} catch (Exception e) {
 					System.out.println("we were interupted? " + e);
 				}
 			}
@@ -334,7 +323,7 @@ public class S3SinkUnitTest {
 	// Upload 10 5GB files to a bucket
 	@Test(expected = IllegalArgumentException.class)
 	@Ignore
-	public void testUploadOneBigFiles() throws IOException {
+	public void testUploadOneBigFiles() throws Exception {
 		init("s3.largeFiles.properties");
 
 		long chunks = 13629999L;
@@ -345,7 +334,7 @@ public class S3SinkUnitTest {
 			tuple = new Record(Integer.toString(i), Integer.toString(i)
 					.getBytes());
 
-			assertTrue(sink.append(tuple));
+			sink.append(tuple);
 		}
 		sink.commit();
 		assertTrue(s3.listObjects(bucketName).getObjectSummaries().size() == 0);
@@ -354,7 +343,7 @@ public class S3SinkUnitTest {
 	// Attempt to upload 10 4GB files
 	@Test(expected = AmazonClientException.class)
 	@Ignore
-	public void testUploadTenBigFilesToTenBuckets() throws IOException {
+	public void testUploadTenBigFilesToTenBuckets() throws Exception {
 		init("s3.4GBFiles.properties");
 
 		long chunks = s3SinkConfig.getChunkSize() * 4;
@@ -365,7 +354,7 @@ public class S3SinkUnitTest {
 			tuple = new Record(Integer.toString(i), Integer.toString(i)
 					.getBytes());
 
-			assertTrue(sink.append(tuple));
+			sink.append(tuple);
 		}
 		sink.commit();
 		assertTrue(s3.listObjects(bucketName).getObjectSummaries().size() == 4);
@@ -373,24 +362,21 @@ public class S3SinkUnitTest {
 
 	/**
 	 * Records count limited.
-	 * 
-	 * @throws IOException
-	 *             the IO exception
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
 
 	@Test
-	public void tuplesCountLimited() throws IOException, InterruptedException {
+	public void tuplesCountLimited() throws Exception {
 
 		init("s3.tuplesCountLimited.properties");
 		int i = 0;
 		for (i = 0; i < 8; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
-		assertTrue(sink.prepareCommit());
-		assertTrue(sink.commit());
-		assertTrue(sink.completeCommit());
+		sink.prepareCommit();
+		sink.commit();
+		sink.completeCommit();
 		for (S3ObjectSummary object : s3.listObjects(bucketName)
 				.getObjectSummaries()) {
 			System.out.println("deleting " + object.getKey());
@@ -403,71 +389,62 @@ public class S3SinkUnitTest {
 
 	/**
 	 * Records time limited.
-	 * 
-	 * @throws IOException
-	 *             the IO exception
-	 * @throws InterruptedException
-	 *             the interrupted exception
+	 * @throws Exception 
 	 */
 
 	@Test
-	public void tuplesTimeLimited() throws IOException, InterruptedException {
+	public void tuplesTimeLimited() throws Exception {
 
 		init("s3.tuplesTimeLimited.properties");
 		int i = 0;
 		for (i = 0; i < 8; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i),
-					new byte[1024])));
+			sink.append(new Record(Integer.toString(i),
+					new byte[1024]));
 			Thread.sleep(1000);
 		}
-		assertTrue(sink.prepareCommit());
-		assertTrue(sink.commit());
-		assertTrue(sink.completeCommit());
+		sink.prepareCommit();
+		sink.commit();
+		sink.completeCommit();
 		checkFilesExist();
 	}
 
 	/**
 	 * Records size limited.
-	 * 
-	 * @throws IOException
-	 *             the IO exception
-	 * @throws InterruptedException
+	 * @throws Exception 
 	 */
 
 	@Test
-	public void tuplesSizeLimited() throws IOException, InterruptedException {
+	public void tuplesSizeLimited() throws Exception {
 
 		init("s3.tuplesSizeLimited.properties");
 		int i = 0;
 		for (i = 0; i < 8; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i),
-					new byte[1024])));
+			sink.append(new Record(Integer.toString(i),
+					new byte[1024]));
 		}
-		assertTrue(sink.prepareCommit());
-		assertTrue(sink.commit());
-		assertTrue(sink.completeCommit());
+		sink.prepareCommit();
+		sink.commit();
+		sink.completeCommit();
 		checkFilesExist();
 	}
 
 	/**
 	 * Test rollback.
-	 * 
-	 * @throws IOException
-	 *             the IO exception
+	 * @throws Exception 
 	 */
 
 	@Test
-	public void testRollback() throws IOException {
+	public void testRollback() throws Exception {
 
 		init("s3.tuplesCountLimited.properties");
 		int i = 0;
 		for (i = 0; i < 8; i++) {
-			assertTrue(sink.append(new Record(Integer.toString(i), Integer
-					.toString(i).getBytes())));
+			sink.append(new Record(Integer.toString(i), Integer
+					.toString(i).getBytes()));
 		}
-		assertTrue(sink.prepareCommit());
-		assertTrue(sink.commit());
-		assertTrue(sink.rollback());
+		sink.prepareCommit();
+		sink.commit();
+		sink.rollback();
 
 	}
 
