@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.util.Label;
 
-public class OffsetPartitionTest {
+public class OffsetPartitionUnitTest {
 
   private final String topic = "topic";
   private final int kafkaPartition = 0;

@@ -22,7 +22,7 @@ import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.util.Label;
 
-public class SinkBufferTest {
+public class SinkBufferUnitTest {
 
   private SinkBuffer buffer;
   S3SinkConfig config;

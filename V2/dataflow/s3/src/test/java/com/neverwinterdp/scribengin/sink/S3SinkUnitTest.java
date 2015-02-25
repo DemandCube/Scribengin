@@ -39,7 +39,7 @@ import com.neverwinterdp.scribengin.Record;
  * The Class S3SinkTest.
  */
 
-public class S3SinkTest {
+public class S3SinkUnitTest {
 	static {
 		System.setProperty("log4j.configuration",
 				"file:src/test/resources/log4j.properties");

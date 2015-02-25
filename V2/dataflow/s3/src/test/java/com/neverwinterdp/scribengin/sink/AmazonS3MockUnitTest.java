@@ -15,7 +15,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.neverwinterdp.scribengin.sink.AmazonS3Mock.ExceptionType;
 
-public class AmazonS3MockTest {
+public class AmazonS3MockUnitTest {
 
   @Before
   public void setUp() throws Exception {
