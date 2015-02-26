@@ -7,7 +7,7 @@ import java.util.Map;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
-import com.neverwinterdp.scribengin.kafka.KafkaClient;
+import com.neverwinterdp.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStream;

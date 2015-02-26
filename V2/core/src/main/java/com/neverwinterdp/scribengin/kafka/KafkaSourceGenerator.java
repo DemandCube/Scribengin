@@ -12,6 +12,7 @@ import kafka.utils.ZKStringSerializer$;
 
 import org.I0Itec.zkclient.ZkClient;
 
+import com.neverwinterdp.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.RecordChecksum;
 import com.neverwinterdp.scribengin.sink.Sink;

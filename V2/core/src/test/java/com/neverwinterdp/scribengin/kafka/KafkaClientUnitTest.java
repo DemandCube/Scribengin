@@ -6,6 +6,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.kafka.KafkaClient;
+import com.neverwinterdp.kafka.ZookeeperUtil;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;

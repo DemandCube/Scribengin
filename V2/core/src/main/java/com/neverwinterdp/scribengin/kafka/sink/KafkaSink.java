@@ -2,7 +2,7 @@ package com.neverwinterdp.scribengin.kafka.sink;
 
 import java.util.LinkedHashMap;
 
-import com.neverwinterdp.scribengin.kafka.KafkaClient;
+import com.neverwinterdp.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStream;

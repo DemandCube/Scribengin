@@ -10,10 +10,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.kafka.KafkaClient;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.scribengin.kafka.KafkaClient;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaWriter;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.vm.client.VMClient;
