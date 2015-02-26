@@ -1,0 +1,82 @@
+archivesBaseName = 'jvmagent.registry'
+
+eclipse {
+  project {
+    name = 'jvmagent.registry'
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations {
+  packageJars {
+    transitive = false
+  }
+}
+
+dependencies {
+  compile project(':registry')
+  compile project(':jvmagent/bootstrap')
+
+  packageJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
+  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
+  packageJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
+  packageJars group: 'com.neverwinterdp',    name: 'scribengin.registry', version: '1.0+'
+  packageJars group: 'com.neverwinterdp',    name: 'jvmagent.bootstrap', version: '1.0+'
+
+  packageJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  packageJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
+}
+
+jar {
+  manifest {
+    attributes(
+      "Agent-Class":   "com.neverwinterdp.jvmagent.registry.RegistryAgent",
+      "Premain-Class": "com.neverwinterdp.jvmagent.registry.RegistryAgent"
+    )
+  }
+}
+
+task release (dependsOn: 'build') << {
+  def releaseDir = "${buildDir}/release"
+
+  println "Copy the dependency library"
+  configurations.packageJars.each { File file -> 
+    copy {
+      from file
+      into "${releaseDir}"
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}"
+  }
+
+  copy {
+    from "src/main/plugin"
+    into "${releaseDir}"
+  }
+}
+
+task fullJar(type: Jar) {
+  from sourceSets.main.output
+  classifier = 'full'
+
+  manifest {
+    attributes(
+      "Agent-Class":   "com.neverwinterdp.jvmagent.registry.RegistryAgent",
+      "Premain-Class": "com.neverwinterdp.jvmagent.registry.RegistryAgent"
+    )
+  }
+
+  from configurations.packageJars.collect { 
+    it.isDirectory() ? it : zipTree(it) 
+  }
+}
