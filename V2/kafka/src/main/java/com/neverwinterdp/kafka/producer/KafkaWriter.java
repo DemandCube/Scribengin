@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.kafka.sink;
+package com.neverwinterdp.kafka.producer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.neverwinterdp.util.JSONSerializer;
-
 import kafka.javaapi.producer.Producer;
-
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
+
+import com.neverwinterdp.kafka.SimplePartitioner;
+import com.neverwinterdp.util.JSONSerializer;
 
 /**
  * @author Tuan Nguyen

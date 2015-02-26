@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.kafka.source;
+package com.neverwinterdp.kafka.consumer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

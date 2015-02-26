@@ -6,17 +6,32 @@ import java.util.Properties;
 import com.neverwinterdp.jvmagent.bootstrap.BootstrapAgentPlugin;
 
 public class RegistryAgent implements BootstrapAgentPlugin {
+  private RegistryAgentConfig config ;
   private JVMRegistry jvmRegistry;
   
-  public void premain(Properties props, Instrumentation inst) throws Exception {
-    RegistryAgentConfig config = new RegistryAgentConfig(props);
-    jvmRegistry = new JVMRegistry(config);
-    JVMInfo jvmInfo = new JVMInfo() ;
-    jvmRegistry.create(jvmInfo);
-    System.out.println(jvmInfo);
+  public void run(Properties props, Instrumentation inst) {
+    config = new RegistryAgentConfig(props);
+    RegistryAgentRunner runner = new RegistryAgentRunner();
+    runner.start();
   }
   
-  public void agentmain(Properties props, Instrumentation inst) throws Exception {
-    System.out.println("call agentmain ");
+  class RegistryAgentRunner extends Thread {
+    public void run() {
+      for(int i = 0; i < 5; i++) {
+        Exception error = null;
+        try { 
+          jvmRegistry = new JVMRegistry(config);
+          jvmRegistry.connect(5000);
+          JVMInfo jvmInfo = new JVMInfo() ;
+          jvmRegistry.create(jvmInfo);
+          System.out.println(jvmInfo);
+        } catch(Exception ex) {
+          error = ex;
+          ex.printStackTrace();
+        }
+        if(error == null) return ;
+        System.err.println("Error: " + error.getMessage());
+      }
+    }
   }
 }

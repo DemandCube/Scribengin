@@ -27,21 +27,11 @@ dependencies {
   packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
 
   packageJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
-  packageJars group: 'com.neverwinterdp',    name: 'scribengin.registry', version: '1.0+'
-  //packageJars group: 'com.neverwinterdp',    name: 'jvmagent.bootstrap', version: '1.0+'
+  packageJars project(':registry')
   packageJars project(':jvmagent/bootstrap')
 
   packageJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
   packageJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
-}
-
-jar {
-  manifest {
-    attributes(
-      "Agent-Class":   "com.neverwinterdp.jvmagent.registry.RegistryAgent",
-      "Premain-Class": "com.neverwinterdp.jvmagent.registry.RegistryAgent"
-    )
-  }
 }
 
 task release (dependsOn: 'build') << {

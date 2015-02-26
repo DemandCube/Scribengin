@@ -11,3 +11,5 @@ include 'release'
 include 'jvmagent/bootstrap'
 include 'jvmagent/registry'
 include 'jvmagent/DemoApp'
+
+include 'kafka'

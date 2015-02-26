@@ -35,11 +35,11 @@ public class KafkaServerLauncher implements Server {
     
     properties.put("controlled.shutdown.enable", "true");
     properties.put("auto.leader.rebalance.enable", "true");
-    properties.put("controller.socket.timeout.ms", "90000");
+    properties.put("controller.socket.timeout.ms", "30000");
     properties.put("controlled.shutdown.enable", "true");
     properties.put("controlled.shutdown.max.retries", "3");
-    properties.put("controlled.shutdown.retry.backoff.ms", "60000");
-    properties.put("retry.backoff.ms", "1000");
+    properties.put("controlled.shutdown.retry.backoff.ms", "5000");
+    properties.put("retry.backoff.ms", "300");
   }
   
   public KafkaServerLauncher(int id, String dataDir, int port) {

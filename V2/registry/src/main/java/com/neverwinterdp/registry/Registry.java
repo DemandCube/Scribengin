@@ -6,7 +6,10 @@ import com.neverwinterdp.registry.event.NodeWatcher;
 
 public interface Registry {
   public RegistryConfig getRegistryConfig() ;
+  
   public Registry connect() throws RegistryException ;
+  public Registry connect(long timeout) throws RegistryException;
+  
   public void disconnect() throws RegistryException ;
   public boolean isConnect();
   

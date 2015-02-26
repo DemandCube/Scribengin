@@ -64,13 +64,36 @@ public class RegistryImpl implements Registry {
   
   @Override
   public Registry connect() throws RegistryException {
+    return connect(5000) ;
+  }
+  
+  @Override
+  public Registry connect(long timeout) throws RegistryException {
     try {
       zkClient = new ZooKeeper(config.getConnect(), 15000, new RegistryWatcher());
     } catch (IOException ex) {
       throw new RegistryException(ErrorCode.Connection, ex) ;
     }
-    zkCreateIfNotExist(config.getDbDomain()) ;
-    return this ;
+    long waitTime = 0 ;
+    while(waitTime < timeout) {
+      if(zkClient.getState().isConnected()) {
+        zkCreateIfNotExist(config.getDbDomain()) ;
+        return this;
+      }
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        throw new RegistryException(ErrorCode.Connection, "Cannot connect due to the interrupt") ;
+      }
+      waitTime += 500;
+    }
+    try {
+      zkClient.close();
+    } catch (InterruptedException e) {
+      throw new RegistryException(ErrorCode.Connection, "Cannot connect after " + timeout + "ms") ;
+    }
+    zkClient = null ;
+    throw new RegistryException(ErrorCode.Connection, "Cannot connect after " + timeout + "ms") ;
   }
 
   @Override
@@ -85,16 +108,25 @@ public class RegistryImpl implements Registry {
     }
   }
 
+  public void checkConnected() throws RegistryException {
+    if(!isConnect()) {
+      throw new RegistryException(ErrorCode.Connection, "Not connected to a zookeeper server") ;
+    }
+  }
+  
   @Override
-  public boolean isConnect() { return zkClient != null; }
+  public boolean isConnect() { return zkClient != null && zkClient.getState().isConnected(); }
+  
   
   @Override
   public Node create(String path, NodeCreateMode mode) throws RegistryException {
+    checkConnected();
     return create(path, new byte[0], mode);
   }
   
   @Override
   public void createRef(String path, String toPath, NodeCreateMode mode) throws RegistryException {
+    checkConnected();
     RefNode refNode = new RefNode();
     refNode.setPath(toPath);
     create(path, refNode, mode);
@@ -102,6 +134,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public  Node create(String path, byte[] data, NodeCreateMode mode) throws RegistryException {
+    checkConnected();
     try {
       String retPath = zkClient.create(realPath(path), data, DEFAULT_ACL, toCreateMode(mode)) ;
       if(mode == NodeCreateMode.PERSISTENT_SEQUENTIAL || mode == NodeCreateMode.EPHEMERAL_SEQUENTIAL) {
@@ -115,29 +148,34 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> Node create(String path, T data, NodeCreateMode mode) throws RegistryException {
+    checkConnected();
     byte[] bytes = JSONSerializer.INSTANCE.toBytes(data); 
     return create(path, bytes, mode);
   }
   
   @Override
   public Node createIfNotExist(String path) throws RegistryException {
+    checkConnected();
     zkCreateIfNotExist(realPath(path));
     return new Node(this, path) ;
   }
   
   @Override
   public Node get(String path) throws RegistryException {
+    checkConnected();
     return new Node(this, path) ;
   }
   
   @Override
   public Node getRef(String path) throws RegistryException {
+    checkConnected();
     RefNode refNode = getDataAs(path, RefNode.class);
     return new Node(this, refNode.getPath()) ;
   }
   
   @Override
   public byte[] getData(String path) throws RegistryException {
+    checkConnected();
     try {
       return zkClient.getData(realPath(path), null, new Stat()) ;
     } catch (KeeperException | InterruptedException e) {
@@ -147,6 +185,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException {
+    checkConnected();
     try {
       byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
       if(bytes == null || bytes.length == 0) return null;
@@ -157,6 +196,7 @@ public class RegistryImpl implements Registry {
   }
   
   public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException {
+    checkConnected();
     try {
       byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
       if(bytes == null || bytes.length == 0) return null;
@@ -168,6 +208,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException {
+    checkConnected();
     List<T> holder = new ArrayList<T>();
     for(String path : paths) {
       holder.add(getDataAs(path, type));
@@ -177,6 +218,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException {
+    checkConnected();
     List<T> holder = new ArrayList<T>();
     for(String path : paths) {
       holder.add(getDataAs(path, type, mapper));
@@ -185,6 +227,7 @@ public class RegistryImpl implements Registry {
   }
   
   public void setData(String path, byte[] data) throws RegistryException {
+    checkConnected();
     try {
       Stat stat = zkClient.setData(realPath(path), data, -1) ;
     } catch (KeeperException | InterruptedException e) {
@@ -193,12 +236,14 @@ public class RegistryImpl implements Registry {
   }
   
   public <T> void setData(String path, T data) throws RegistryException {
+    checkConnected();
     byte[] bytes = JSONSerializer.INSTANCE.toBytes(data) ;
     setData(path, bytes);
   }
   
   
   public List<String> getChildren(String path) throws RegistryException {
+    checkConnected();
     try {
       List<String> names = zkClient.getChildren(realPath(path), false);
       return names ;
@@ -208,6 +253,7 @@ public class RegistryImpl implements Registry {
   }
   
   public List<String> getChildrenPath(String path) throws RegistryException {
+    checkConnected();
     try {
       List<String> names = zkClient.getChildren(realPath(path), false);
       List<String> paths = new ArrayList<String>() ;
@@ -221,6 +267,7 @@ public class RegistryImpl implements Registry {
   }
   
   public List<String> getChildren(String path, boolean watch) throws RegistryException {
+    checkConnected();
     try {
       List<String> names = zkClient.getChildren(realPath(path), watch);
       return names ;
@@ -230,6 +277,7 @@ public class RegistryImpl implements Registry {
   }
   
   public <T> List<T> getChildrenAs(String path, Class<T> type) throws RegistryException {
+    checkConnected();
     List<T> holder = new ArrayList<T>();
     List<String> nodes = getChildren(path);
     Collections.sort(nodes);
@@ -243,6 +291,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException {
+    checkConnected();
     List<T> holder = new ArrayList<T>();
     List<String> nodes = getChildren(path);
     Collections.sort(nodes);
@@ -256,6 +305,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException {
+    checkConnected();
     List<RefNode> refNodes = getChildrenAs(path, RefNode.class) ;
     List<String> paths = new ArrayList<>() ;
     for(int i = 0; i < refNodes.size(); i++) {
@@ -266,6 +316,7 @@ public class RegistryImpl implements Registry {
 
   @Override
   public boolean exists(String path) throws RegistryException {
+    checkConnected();
     try {
       Stat stat = zkClient.exists(realPath(path), false) ;
       if(stat != null) return true ;
@@ -277,6 +328,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public void watchModify(String path, NodeWatcher watcher) throws RegistryException {
+    checkConnected();
     try {
       zkClient.getData(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher), new Stat()) ;
     } catch (InterruptedException | KeeperException e) {
@@ -286,6 +338,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public void watchExists(String path, NodeWatcher watcher) throws RegistryException {
+    checkConnected();
     try {
       zkClient.exists(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher)) ;
     } catch (InterruptedException | KeeperException e) {
@@ -295,6 +348,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public void watchChildren(String path, NodeWatcher watcher) throws RegistryException {
+    checkConnected();
     try {
       List<String> names = zkClient.getChildren(realPath(path), new ZKNodeWatcher(config.getDbDomain(), watcher)) ;
     } catch (KeeperException e) {
@@ -306,6 +360,7 @@ public class RegistryImpl implements Registry {
   
   @Override
   public void delete(String path) throws RegistryException {
+    checkConnected();
     try {
       zkClient.delete(realPath(path), -1);
     } catch (InterruptedException | KeeperException e) {
@@ -315,6 +370,7 @@ public class RegistryImpl implements Registry {
  
   @Override
   public void rdelete(String path) throws RegistryException {
+    checkConnected();
     try {
       PathUtils.validatePath(path);
       List<String> tree = ZKUtil.listSubTreeBFS(zkClient, realPath(path));
@@ -348,6 +404,7 @@ public class RegistryImpl implements Registry {
   }
   
   private void zkCreateIfNotExist(String path) throws RegistryException {
+    checkConnected();
     try {
       if (zkClient.exists(path, false) != null) new Node(this, path);
       StringBuilder pathB = new StringBuilder();
