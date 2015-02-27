@@ -3,6 +3,9 @@ package com.neverwinterdp.kafka.tool;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
@@ -22,11 +25,11 @@ import com.neverwinterdp.kafka.producer.KafkaWriter;
  *    the number of message equals to the number of sent message in writer
  * 3. Exit the tool, when either the readers consume all the messages or the exit-wait-time expires. The exit-wait-time
  *    start when all the writers terminate.
- *    
+ *
  * @author Tuan
  */
-public class StabilityTool {
-  final static public String NAME = "StabilityTool";
+public class StabilityCheckTool {
+  final static public String NAME = "StabilityCheckTool";
   
   @Parameter(names = "--zk-connect", description = "The zk connect string")
   private String zkConnect = "127.0.0.1:2181";
@@ -52,6 +55,9 @@ public class StabilityTool {
   @Parameter(names = "--exit-wait-time", description = "The message size in bytes")
   private long    exitWaitTime = 10000;
   
+  private Map<String, String> kafkaProducerProps = new HashMap<String, String>();
+  
+  private String sampleData ;
   
   public void run(String[] args) throws Exception {
     new JCommander(this, args);
@@ -59,22 +65,38 @@ public class StabilityTool {
   }
   
   public void run() throws Exception {
-    Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
-    Map<Integer, PartitionMessageReader> readers = new HashMap<Integer, PartitionMessageReader>();
+    byte[] sampleDataBytes = new byte[messageSize];
+    sampleData = new String(sampleDataBytes);
     
-    Map<String, String> kafkaProducerProps = new HashMap<String, String>();
-    kafkaProducerProps.put("partitioner.class", KeyPartitioner.class.getName());
+    Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
+    ExecutorService writerService = Executors.newFixedThreadPool(numberOfPartition);
+    
+    Map<Integer, PartitionMessageReader> readers = new HashMap<Integer, PartitionMessageReader>();
+    ExecutorService readerService = Executors.newFixedThreadPool(numberOfPartition);
+    
+    kafkaProducerProps.put("partitioner.class", PartitionIdPartitioner.class.getName());
+    
     
     KafkaTool kafkaTool = new KafkaTool(NAME, zkConnect);
     kafkaTool.connect();
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
     for(PartitionMetadata sel : partitionMetadataHolder) {
+      PartitionMessageWriter writer = new PartitionMessageWriter(sel);
+      writers.put(sel.partitionId(), writer);
+      writerService.submit(writer);
       
+      PartitionMessageReader reader = new PartitionMessageReader(sel);
+      readers.put(sel.partitionId(), reader);
+      //readerService.submit(reader);
     }
+    writerService.shutdown();
+    writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
+  
+    
   }
   
-  public class PartitionMessageWriter extends Thread {
+  public class PartitionMessageWriter implements Runnable {
     private PartitionMetadata metadata;
     private int writeCount = 0;
     
@@ -83,12 +105,44 @@ public class StabilityTool {
     }
     
     public void run() {
-      KafkaWriter writer = new KafkaWriter(NAME, zkConnect);
-      
+      KafkaWriter writer = new KafkaWriter(NAME, kafkaProducerProps, zkConnect);
+      String key = "p:" + metadata.partitionId() + ":" + writeCount ;
+      try {
+        boolean terminated = false ;
+        long startTime = System.currentTimeMillis();
+        while(!terminated) {
+          writer.send(topic, key, sampleData);
+          writeCount++;
+          //Check max message per partition
+          if(writeCount >= maxMessagePerPartition) {
+            terminated = true;
+          } else if(writePeriod > 0) {
+            Thread.sleep(writePeriod);
+            //Check max duration time to run
+            if(System.currentTimeMillis() - startTime > maxDuration) {
+              terminated = true;
+            }
+          } else {
+            //In case the thread write continuosly, check max duration every 100 message for the efficiency
+            if(writeCount % 100 == 0) {
+              if(System.currentTimeMillis() - startTime > maxDuration) {
+                terminated = true;
+              }
+            }
+          }
+        }
+      } catch (InterruptedException e) {
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        if(writer != null) {
+          writer.close();
+        }
+      }
     }
   }
   
-  public class PartitionMessageReader extends Thread {
+  public class PartitionMessageReader implements Runnable {
     private PartitionMetadata metadata;
     private int readCount = 0;
     
@@ -101,13 +155,22 @@ public class StabilityTool {
     }
   }
   
-  public class KeyPartitioner implements Partitioner {
-    public KeyPartitioner(VerifiableProperties props) {}
+  public class PartitionIdPartitioner implements Partitioner {
+    public PartitionIdPartitioner(VerifiableProperties props) {}
 
     public int partition(Object key, int numPartitions) {
       String keyStr = (String) key;
-      int partition = Math.abs(keyStr.hashCode() % numPartitions);
+      String[] parts = keyStr.split(":");
+      int partition = Integer.parseInt(parts[1]);
+      if(partition > numPartitions) {
+        throw new RuntimeException("Invalid partition " + partition) ;
+      }
       return partition;
     }
+  }
+  
+  static public void main(String[] args) throws Exception {
+    StabilityCheckTool tool = new StabilityCheckTool();
+    tool.run(args);
   }
 }
