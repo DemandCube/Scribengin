@@ -61,6 +61,9 @@ RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4
 RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
 RUN mv /opt/hadoop-2.4.0 /opt/hadoop
 
+#Move jvmagent to VM
+RUN mkdir -p /opt/jvmagent/
+#ADD ~/.m2/repository/com/neverwinterdp/jvmagent.bootstrap/1.0-SNAPSHOT/jvmagent.bootstrap-1.0-SNAPSHOT.jar /opt/jvmagent/jvmagent.jar
 
 
 #Run Post installation
