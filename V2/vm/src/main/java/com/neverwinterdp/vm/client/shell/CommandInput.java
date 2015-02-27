@@ -28,7 +28,7 @@ public class CommandInput {
   public CommandInput(String[] args, boolean parseSubCommand) {
     command = args[0] ;
     args = shift(args) ;
-    if(args == null) return ;
+    if(args == null || args.length == 0) return ;
     if(parseSubCommand && !args[0].startsWith("-")) {
       subCommand = args[0] ;
       args = shift(args) ;
