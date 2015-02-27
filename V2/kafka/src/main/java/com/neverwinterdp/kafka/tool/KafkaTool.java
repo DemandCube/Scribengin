@@ -1,4 +1,4 @@
-package com.neverwinterdp.kafka;
+package com.neverwinterdp.kafka.tool;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
+import kafka.admin.AdminUtils;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetRequest;
@@ -18,17 +20,21 @@ import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.TopicMetadataResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
+import kafka.utils.ZKStringSerializer$;
 
+import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-public class KafkaClient implements Closeable {
+import com.neverwinterdp.kafka.BrokerRegistration;
+
+public class KafkaTool implements Closeable {
   private String name;
   private String zkConnects;
   private ZooKeeper zkClient ;
   private SimpleConsumer consumer ;
 
-  public KafkaClient(String name, String zkConnects) {
+  public KafkaTool(String name, String zkConnects) {
     this.name = name;
     this.zkConnects = zkConnects;
   }
@@ -61,6 +67,18 @@ public class KafkaClient implements Closeable {
     }
   }
   
+  public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
+    // Create a ZooKeeper client
+    int sessionTimeoutMs = 1000;
+    int connectionTimeoutMs = 1000;
+    ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
+    // Create a topic named "myTopic" with 8 partitions and a replication factor of 3
+    Properties topicConfig = new Properties();
+    AdminUtils.createTopic(zkClient, topicName, numPartitions, numOfReplication, topicConfig);
+    Thread.sleep(3000);
+    zkClient.close();
+  }
+  
   public String getKafkaBrokerList() throws KeeperException, InterruptedException  {
     StringBuilder b = new StringBuilder();
     List<BrokerRegistration> registrations = getBrokerRegistration();
@@ -78,7 +96,7 @@ public class KafkaClient implements Closeable {
     for(int i = 0; i < ids.size(); i++) {
       String brokerId = ids.get(i);
       BrokerRegistration registration = 
-          ZookeeperUtil.getDataAs(zkClient, "/brokers/ids/" + brokerId, BrokerRegistration.class);
+        ZKTool.getDataAs(zkClient, "/brokers/ids/" + brokerId, BrokerRegistration.class);
       registration.setBrokerId(brokerId);
       holder.add(registration);
     }
@@ -131,7 +149,7 @@ public class KafkaClient implements Closeable {
     OffsetResponse response = consumer.getOffsetsBefore(request);
 
     if (response.hasError()) {
-      System.out.println("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition) );
+      System.out.println("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition));
       return 0;
     }
     long[] offsets = response.offsets(topic, partition);

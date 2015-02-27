@@ -1,4 +1,4 @@
-package com.neverwinterdp.kafka;
+package com.neverwinterdp.kafka.tool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.neverwinterdp.util.JSONSerializer;
 
-public class ZookeeperUtil {
+public class ZKTool {
   static public void dump(ZooKeeper zkClient, String path) throws KeeperException, InterruptedException {
     System.out.println(path) ;
     List<String> children = zkClient.getChildren(path, false);

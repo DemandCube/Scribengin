@@ -1,7 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
 import com.beust.jcommander.Parameter;
-import com.neverwinterdp.kafka.KafkaClient;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -41,7 +41,7 @@ public class KafkaDataflowTest extends DataflowTest {
     generator.setMaxNumOfRecordPerStream(maxMessagePerPartition);
     generator.generate(SOURCE_TOPIC);
 
-    KafkaClient client = new KafkaClient(name, zkConnect) ;
+    KafkaTool client = new KafkaTool(name, zkConnect) ;
     client.connect();
     String brokerList = client.getKafkaBrokerList() ;
     client.close();
