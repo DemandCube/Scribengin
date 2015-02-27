@@ -268,12 +268,11 @@ function kafka_start() {
       #unknown option
     esac
   done
-
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
     kafka_clean
   fi
-
+ 
   h1 "Start kafka"
   servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh"
   servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
@@ -312,7 +311,18 @@ elif [ "$COMMAND" = "sync" ] ; then
   cluster_sync
 elif [ "$COMMAND" = "start" ] ; then
   zookeeper_start $@
-#  kafka_start $@
+  withKafka=false
+  for i in "$@"; do
+    case $i in
+      --with-kafka)
+      withKafka=true
+      ;;
+      #unknown option
+    esac
+  done
+  if  $withKafka  ; then
+    kafka_start $@
+  fi
   hadoop_start $@
 elif [ "$COMMAND" = "stop" ] ; then
   hadoop_stop $@
