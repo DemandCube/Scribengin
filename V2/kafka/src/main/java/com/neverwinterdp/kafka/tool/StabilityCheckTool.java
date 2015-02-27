@@ -9,12 +9,11 @@ import java.util.concurrent.TimeUnit;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
-import kafka.producer.Partitioner;
-import kafka.utils.VerifiableProperties;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
+import com.neverwinterdp.util.text.TabularFormater;
 
 /**
  * The goal of the tool is to test the stability of kafka with random network, broker, disk failure.
@@ -52,6 +51,9 @@ public class StabilityCheckTool {
   @Parameter(names = "--message-size", description = "The message size in bytes")
   private int    messageSize = 100;
   
+  @Parameter(names = "--replication", description = "The number of the replication")
+  private int    replication = 1;
+  
   @Parameter(names = "--exit-wait-time", description = "The message size in bytes")
   private long    exitWaitTime = 10000;
   
@@ -74,15 +76,14 @@ public class StabilityCheckTool {
     Map<Integer, PartitionMessageReader> readers = new HashMap<Integer, PartitionMessageReader>();
     ExecutorService readerService = Executors.newFixedThreadPool(numberOfPartition);
     
-    kafkaProducerProps.put("partitioner.class", PartitionIdPartitioner.class.getName());
-    
-    
     KafkaTool kafkaTool = new KafkaTool(NAME, zkConnect);
     kafkaTool.connect();
+    String kafkaConnects = kafkaTool.getKafkaBrokerList();
+    kafkaTool.createTopic(topic, replication, numberOfPartition);
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
     for(PartitionMetadata sel : partitionMetadataHolder) {
-      PartitionMessageWriter writer = new PartitionMessageWriter(sel);
+      PartitionMessageWriter writer = new PartitionMessageWriter(sel, kafkaConnects);
       writers.put(sel.partitionId(), writer);
       writerService.submit(writer);
       
@@ -92,25 +93,36 @@ public class StabilityCheckTool {
     }
     writerService.shutdown();
     writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
-  
     
+    TabularFormater formater = new TabularFormater("Partition", "Write", "Read");
+    formater.setIndent("  ");
+    for (PartitionMetadata sel : partitionMetadataHolder) {
+      int partitionId = sel.partitionId();
+      PartitionMessageWriter writer = writers.get(partitionId);
+      PartitionMessageReader reader = readers.get(partitionId);
+      formater.addRow(sel.partitionId(), writer.writeCount, reader.readCount);
+    }
+    
+    System.out.println(formater.getFormatText());
+    kafkaTool.close();
   }
   
   public class PartitionMessageWriter implements Runnable {
     private PartitionMetadata metadata;
+    private String kafkaConnects ;
     private int writeCount = 0;
     
-    PartitionMessageWriter(PartitionMetadata metadata) {
+    PartitionMessageWriter(PartitionMetadata metadata, String kafkaConnects) {
       this.metadata = metadata;
+      this.kafkaConnects = kafkaConnects;
     }
     
     public void run() {
-      KafkaWriter writer = new KafkaWriter(NAME, kafkaProducerProps, zkConnect);
-      String key = "p:" + metadata.partitionId() + ":" + writeCount ;
+      KafkaWriter writer = new KafkaWriter(NAME, kafkaProducerProps, kafkaConnects);
       try {
         boolean terminated = false ;
-        long startTime = System.currentTimeMillis();
         while(!terminated) {
+          String key = "p:" + metadata.partitionId() + ":" + writeCount ;
           writer.send(topic, key, sampleData);
           writeCount++;
           //Check max message per partition
@@ -118,17 +130,6 @@ public class StabilityCheckTool {
             terminated = true;
           } else if(writePeriod > 0) {
             Thread.sleep(writePeriod);
-            //Check max duration time to run
-            if(System.currentTimeMillis() - startTime > maxDuration) {
-              terminated = true;
-            }
-          } else {
-            //In case the thread write continuosly, check max duration every 100 message for the efficiency
-            if(writeCount % 100 == 0) {
-              if(System.currentTimeMillis() - startTime > maxDuration) {
-                terminated = true;
-              }
-            }
           }
         }
       } catch (InterruptedException e) {
@@ -152,20 +153,6 @@ public class StabilityCheckTool {
     
     public void run() {
       
-    }
-  }
-  
-  public class PartitionIdPartitioner implements Partitioner {
-    public PartitionIdPartitioner(VerifiableProperties props) {}
-
-    public int partition(Object key, int numPartitions) {
-      String keyStr = (String) key;
-      String[] parts = keyStr.split(":");
-      int partition = Integer.parseInt(parts[1]);
-      if(partition > numPartitions) {
-        throw new RuntimeException("Invalid partition " + partition) ;
-      }
-      return partition;
     }
   }
   

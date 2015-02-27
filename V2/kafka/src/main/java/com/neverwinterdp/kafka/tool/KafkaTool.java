@@ -24,6 +24,8 @@ import kafka.utils.ZKStringSerializer$;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.neverwinterdp.kafka.BrokerRegistration;
@@ -40,7 +42,12 @@ public class KafkaTool implements Closeable {
   }
   
   public void connect() throws Exception {
-    zkClient = new ZooKeeper(zkConnects, 15000, null);
+    Watcher watcher = new  Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+      }
+    };
+    zkClient = new ZooKeeper(zkConnects, 15000, watcher);
     nextLeader();
   }
   

@@ -1,16 +1,14 @@
 package com.neverwinterdp.kafka.producer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 
-import com.neverwinterdp.kafka.SimplePartitioner;
 import com.neverwinterdp.util.JSONSerializer;
 
 /**
@@ -20,7 +18,7 @@ import com.neverwinterdp.util.JSONSerializer;
 public class KafkaWriter {
   private String name;
   private Properties kafkaProperties;
-  private Producer<String, String> producer;
+  private KafkaProducer<String, String> producer;
   private AtomicLong idTracker = new AtomicLong();
 
   public String getName() {
@@ -38,14 +36,9 @@ public class KafkaWriter {
   public KafkaWriter(String name, Map<String, String> props, String kafkaBrokerUrls) {
     this.name = name;
     Properties kafkaProps = new Properties();
-    kafkaProps.put("serializer.class", "kafka.serializer.StringEncoder");
-    kafkaProps.put("partitioner.class", SimplePartitioner.class.getName());
-    kafkaProps.put("request.required.acks", "1");
-    //TODO: Review, when the topic is auto created, producer can fail since kafka and zookeeper do not have enough time
-    //to assign the partition leader for the first tries.
-    kafkaProps.put("message.send.max.retries", "5");
-    //kafkaProps.put("topic.metadata.refresh.interval.ms", "0");
-    kafkaProps.put("metadata.broker.list", kafkaBrokerUrls);
+    kafkaProps.put("bootstrap.servers", kafkaBrokerUrls);
+    kafkaProps.put("value.serializer", StringSerializer.class.getName());
+    kafkaProps.put("key.serializer",   StringSerializer.class.getName());
     if (props != null) {
       kafkaProps.putAll(props);
     }
@@ -55,19 +48,24 @@ public class KafkaWriter {
 
   public void reconnect() {
     if (producer != null) producer.close();
-    ProducerConfig config = new ProducerConfig(kafkaProperties);
-    producer = new Producer<String, String>(config);
+    producer = new KafkaProducer<String, String>(kafkaProperties);
   }
 
   public void send(String topic, String data) throws Exception {
     String key = name + idTracker.getAndIncrement();
-    producer.send(new KeyedMessage<String, String>(topic, key, data));
+    ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, data);
+    producer.send(record);
   }
   
   public void send(String topic, String key, String data) throws Exception {
-    producer.send(new KeyedMessage<String, String>(topic, key, data));
+    ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, data);
+    producer.send(record);
   }
   
+  public void send(String topic, int partition, String key, String data) throws Exception {
+    ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, partition, key, data);
+    producer.send(record);
+  }
   
   public <T> void send(String topic, T obj) throws Exception {
     String json = JSONSerializer.INSTANCE.toString(obj);
@@ -75,12 +73,11 @@ public class KafkaWriter {
   }
 
   public void send(String topic, List<String> dataHolder) throws Exception {
-    List<KeyedMessage<String, String>> holder = new ArrayList<KeyedMessage<String, String>>();
     for (int i = 0; i < dataHolder.size(); i++) {
       String key = name + idTracker.getAndIncrement();
-      holder.add(new KeyedMessage<String, String>(topic, key, dataHolder.get(i)));
+      ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, dataHolder.get(i));
+      producer.send(record);
     }
-    producer.send(holder);
   }
 
   public void close() {

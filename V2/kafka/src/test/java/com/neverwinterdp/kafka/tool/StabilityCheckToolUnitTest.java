@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.util.FileUtil;
 
 public class StabilityCheckToolUnitTest {
   static {
@@ -15,11 +16,10 @@ public class StabilityCheckToolUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    cluster = new KafkaCluster("./build/kafka", 1, 3);
-    cluster.setReplication(2);
-    cluster.setNumOfPartition(1);
+    FileUtil.removeIfExist("./build/cluster", false);
+    cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.start();
-    Thread.sleep(2000);
+    Thread.sleep(5000);
   }
   
   @After
@@ -30,8 +30,9 @@ public class StabilityCheckToolUnitTest {
   @Test
   public void testStabilityTool() throws Exception {
     String[] args = {
-      "--write-period", "100",
-      "--message-size", "500"
+      "--zk-connect", cluster.getZKConnect(),
+      "--write-period", "10",
+      "--message-size", "500",
     };
     StabilityCheckTool.main(args);
   }

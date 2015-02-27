@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.util.FileUtil;
 
 public class KafkaPartitionReaderUnitTest {
   static {
@@ -23,6 +24,8 @@ public class KafkaPartitionReaderUnitTest {
 
   @Before
   public void setUp() throws Exception {
+    FileUtil.removeIfExist("./build/cluster", false);
+    
     cluster = new KafkaCluster("./build/cluster", 1, 1);
     cluster.setNumOfPartition(5);
     cluster.start();
@@ -40,11 +43,10 @@ public class KafkaPartitionReaderUnitTest {
     KafkaWriter writer = new KafkaWriter(NAME, cluster.getKafkaConnect());
     for(int i = 0; i < 100; i++) {
       String hello = "Hello " + i;
-      writer.send("hello", hello);
+      writer.send("hello", 0, "key-" + i, hello);
     }
     writer.close();
     
-    System.out.println("...............................");
     readFromPartition(NAME, 0, 1);
     readFromPartition(NAME, 0, 2);
     readFromPartition(NAME, 0, 3);
@@ -63,6 +65,7 @@ public class KafkaPartitionReaderUnitTest {
     }
     partitionReader.commit();
     partitionReader.close();
+    kafkaTool.close();
   }
   
   private PartitionMetadata findPartition(List<PartitionMetadata> list, int partition) {

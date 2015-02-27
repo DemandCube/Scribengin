@@ -29,7 +29,6 @@ public class KafkaServerLauncher implements Server {
     properties.put("broker.id", "1");
     properties.put("auto.create.topics.enable", "true");
     properties.put("log.dirs", "./build/data/kafka");
-    properties.put("enable.zookeeper", "true");
     properties.put("zookeeper.connect", "127.0.0.1:2181");
     properties.put("default.replication.factor", "1");
     
@@ -39,7 +38,6 @@ public class KafkaServerLauncher implements Server {
     properties.put("controlled.shutdown.enable", "true");
     properties.put("controlled.shutdown.max.retries", "3");
     properties.put("controlled.shutdown.retry.backoff.ms", "5000");
-    properties.put("retry.backoff.ms", "300");
   }
   
   public KafkaServerLauncher(int id, String dataDir, int port) {
