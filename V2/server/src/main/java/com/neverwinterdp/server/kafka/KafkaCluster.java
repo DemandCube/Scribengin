@@ -124,10 +124,14 @@ public class KafkaCluster {
   }
 
   public void shutdown() {
+    System.out.println("Shutdown Kafka Servers");
+    System.out.println("======================");
     for (Server server : kafkaServers.values()) {
       server.shutdown();
     }
 
+    System.out.println("Shutdown Zookeeper Servers");
+    System.out.println("==========================");
     for (Server server : zookeeperServers.values()) {
       server.shutdown();
     }

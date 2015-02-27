@@ -10,7 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.kafka.KafkaClient;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
@@ -59,9 +59,9 @@ public class KafkaPartitionReaderUnitTest {
   }
   
   private void readFromPartition(String consumerName, int partition, int maxRead) throws Exception {
-    KafkaClient kafkaClient = new KafkaClient(consumerName, cluster.getZKConnect());
-    kafkaClient.connect();
-    TopicMetadata topicMetadata = kafkaClient.findTopicMetadata("hello");
+    KafkaTool kafkaTool = new KafkaTool(consumerName, cluster.getZKConnect());
+    kafkaTool.connect();
+    TopicMetadata topicMetadata = kafkaTool.findTopicMetadata("hello");
     PartitionMetadata partitionMetadata = findPartition(topicMetadata.partitionsMetadata(), partition);
     KafkaPartitionReader partitionReader = new KafkaPartitionReader(consumerName, "hello", partitionMetadata);
     List<byte[]> messages = partitionReader.fetch(10000, maxRead);

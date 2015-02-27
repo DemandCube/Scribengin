@@ -13,8 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.kafka.KafkaClient;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 
@@ -45,14 +45,14 @@ public class KafkaProducerUnitTest {
     kafkaProps.put("message.send.max.retries", "5");
     kafkaProps.put("retry.backoff.ms", "300");
     
-    KafkaClient kafkaClient = new KafkaClient("test", cluster.getZKConnect());
-    kafkaClient.connect();
+    KafkaTool kafkaTool = new KafkaTool("test", cluster.getZKConnect());
+    kafkaTool.connect();
     KafkaWriter writer = new KafkaWriter("test", kafkaProps, cluster.getKafkaConnect());
     for(int i = 0; i < 10; i++) {
       writer.send("test", "test-1-" + i);
     }
     System.out.println("Send before leader shutdown");
-    TopicMetadata topicMeta = kafkaClient.findTopicMetadata("test");
+    TopicMetadata topicMeta = kafkaTool.findTopicMetadata("test");
     PartitionMetadata partitionMeta = topicMeta.partitionsMetadata().get(0);
     Broker partitionLeader = partitionMeta.leader() ;
     Server kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
@@ -63,11 +63,11 @@ public class KafkaProducerUnitTest {
     }
     System.out.println("Send after leader shutdown");
     writer.close();
-    kafkaClient.close();
+    kafkaTool.close();
     System.out.println("send done...");
     
-    kafkaClient.connect();
-    topicMeta = kafkaClient.findTopicMetadata("test");
+    kafkaTool.connect();
+    topicMeta = kafkaTool.findTopicMetadata("test");
     partitionMeta = topicMeta.partitionsMetadata().get(0);
     KafkaPartitionReader partitionReader = new KafkaPartitionReader("test", "test", partitionMeta);
     List<byte[]> messages = partitionReader.fetch(10000, 30);
@@ -78,6 +78,6 @@ public class KafkaProducerUnitTest {
     partitionReader.commit();
     partitionReader.close();
 
-    kafkaClient.close();
+    kafkaTool.close();
   }
 }

@@ -79,6 +79,7 @@ public class VMManagerAppUnitTest  {
     } finally {
       Thread.sleep(3000);
       shell.execute("registry dump");
+      shell.execute("help");
     }
   }
 

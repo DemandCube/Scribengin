@@ -64,6 +64,11 @@ public class KafkaWriter {
     producer.send(new KeyedMessage<String, String>(topic, key, data));
   }
   
+  public void send(String topic, String key, String data) throws Exception {
+    producer.send(new KeyedMessage<String, String>(topic, key, data));
+  }
+  
+  
   public <T> void send(String topic, T obj) throws Exception {
     String json = JSONSerializer.INSTANCE.toString(obj);
     send(topic, json);

@@ -2,7 +2,7 @@ package com.neverwinterdp.scribengin.kafka.sink;
 
 import java.util.LinkedHashMap;
 
-import com.neverwinterdp.kafka.KafkaClient;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.scribengin.sink.Sink;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStream;
@@ -27,11 +27,11 @@ public class KafkaSink implements Sink {
   }
   
   private void init(SinkDescriptor descriptor) throws Exception {
-    KafkaClient kafkaClient = new KafkaClient(descriptor.attribute("name"), descriptor.attribute("zk.connect")) ;
-    kafkaClient.connect();
-    descriptor.attribute("broker.list", kafkaClient.getKafkaBrokerList());
+    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("name"), descriptor.attribute("zk.connect")) ;
+    kafkaTool.connect();
+    descriptor.attribute("broker.list", kafkaTool.getKafkaBrokerList());
     this.descriptor  = descriptor ;
-    kafkaClient.close();
+    kafkaTool.close();
   }
   
   @Override

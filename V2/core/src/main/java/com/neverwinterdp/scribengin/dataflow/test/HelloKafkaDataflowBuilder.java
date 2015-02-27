@@ -2,7 +2,7 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.Random;
 
-import com.neverwinterdp.kafka.KafkaClient;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
@@ -35,7 +35,7 @@ public class HelloKafkaDataflowBuilder {
   }
 
   public ScribenginWaitingEventListener submit() throws Exception {
-    KafkaClient client = new KafkaClient(name, zkConnect) ;
+    KafkaTool client = new KafkaTool(name, zkConnect) ;
     client.connect();
     String brokerList = client.getKafkaBrokerList() ;
     client.close();
