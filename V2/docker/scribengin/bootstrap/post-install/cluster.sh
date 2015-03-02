@@ -210,6 +210,18 @@ function hadoop_console_tail() {
   servers_exec "$HADOOP_SERVERS" "find  /opt/hadoop/logs -name 'stderr' -exec tail $@ {} \; -print"
 }
 
+function hadoop_kill_data_node(){
+  h1 "kill datanode on $@"
+  servers_exec "$@" "pkill -9 -f datanode"
+}
+
+function hadoop_kill_yarn_node(){
+  h1 "kill resourcemanager on $@"
+  servers_exec "$@" "pkill -9 -f resourcemanager"
+  h1 "kill nodemanager on $@"
+  servers_exec "$@" "pkill -9 -f nodemanager"
+}
+
 function zookeeper_clean() {
   h1 "Clean zookeeper data and logs"
   inst $'This step will:\n
@@ -249,6 +261,12 @@ function zookeeper_log_grep() {
   servers_exec "$ZOOKEEPER_SERVERS" "find  /opt/zookeeper/logs -name '*' -exec grep $@ {} \; -print"
 }
 
+function zookeeper_kill_node(){
+  h1 "kill zookeeper on $@"
+  servers_exec "$@" "pkill -9 -f QuorumPeerMain"
+}
+
+
 function kafka_clean() {
   h1 "Clean kafka data and logs"
   inst $'This step will: \n
@@ -287,6 +305,11 @@ function kafka_stop() {
 function kafka_log_grep() {
   h1 "kafka Logs"
   servers_exec "$KAFKA_SERVERS" "find  /opt/kafka/logs -name '*.log' -exec grep $@ {} \; -print"
+}
+
+function kafka_kill_node(){
+  h1 "kill kafka on $@"
+  servers_exec "$@" "pkill -9 -f kafka"
 }
 
 parse_hosts_file 
@@ -348,6 +371,8 @@ elif [ "$COMMAND" = "zookeeper" ] ; then
     zookeeper_clean
   elif [ "$SUB_COMMAND" = "log-grep" ] ; then
     zookeeper_log_grep $@
+  elif [ "$SUB_COMMAND" = "--kill-node" ] ; then
+    zookeeper_kill_node $@
   fi
 elif [ "$COMMAND" = "kafka" ] ; then
   SUB_COMMAND=$1
@@ -360,6 +385,8 @@ elif [ "$COMMAND" = "kafka" ] ; then
     kafka_clean
   elif [ "$SUB_COMMAND" = "log-grep" ] ; then
     kafka_log_grep $@
+  elif [ "$SUB_COMMAND" = "--kill-node" ] ; then
+    kafka_kill_node $@
   fi
 elif [ "$COMMAND" = "hadoop" ] ; then
   SUB_COMMAND=$1
@@ -376,6 +403,10 @@ elif [ "$COMMAND" = "hadoop" ] ; then
     hadoop_std_grep $@
   elif [ "$SUB_COMMAND" = "console-tail" ] ; then
     hadoop_console_tail $@
+  elif [ "$SUB_COMMAND" = "--kill-data-node" ] ; then
+    hadoop_kill_data_node $@
+  elif [ "$SUB_COMMAND" = "--kill-yarn-node" ] ; then
+    hadoop_kill_yarn_node $@
   fi
 else
   echo "cluster command options: "
