@@ -12,6 +12,7 @@ import kafka.utils.ZKStringSerializer$;
 
 import org.I0Itec.zkclient.ZkClient;
 
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.RecordChecksum;
 import com.neverwinterdp.scribengin.sink.Sink;
@@ -70,7 +71,7 @@ public class KafkaSourceGenerator {
     sinkDescriptor.attribute("name", name);
     sinkDescriptor.attribute("topic", topic);
     sinkDescriptor.attribute("zk.connect", zkConnect);
-    KafkaClient client = new KafkaClient(name, zkConnect) ;
+    KafkaTool client = new KafkaTool(name, zkConnect) ;
     client.connect();
     sinkDescriptor.attribute("broker.list", client.getKafkaBrokerList());
     client.close();

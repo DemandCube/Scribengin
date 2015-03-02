@@ -7,7 +7,7 @@ import java.util.Map;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
-import com.neverwinterdp.scribengin.kafka.KafkaClient;
+import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.scribengin.source.Source;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 import com.neverwinterdp.scribengin.source.SourceStream;
@@ -31,16 +31,16 @@ public class KafkaSource implements Source {
 
   void init(SourceDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
-    KafkaClient kafkaClient = new KafkaClient(descriptor.attribute("name"), descriptor.attribute("zk.connect"));
-    kafkaClient.connect();
-    TopicMetadata topicMetdadata = kafkaClient.findTopicMetadata(descriptor.attribute("topic"));
+    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("name"), descriptor.attribute("zk.connect"));
+    kafkaTool.connect();
+    TopicMetadata topicMetdadata = kafkaTool.findTopicMetadata(descriptor.attribute("topic"));
     List<PartitionMetadata> partitionMetadatas = topicMetdadata.partitionsMetadata();
     for(int i = 0; i < partitionMetadatas.size(); i++) {
       PartitionMetadata partitionMetadata = partitionMetadatas.get(i);
       KafkaSourceStream sourceStream = new KafkaSourceStream(descriptor, partitionMetadata);
       sourceStreams.put(sourceStream.getId(), sourceStream);
     }
-    kafkaClient.close();
+    kafkaTool.close();
   }
   
   @Override

@@ -3,6 +3,7 @@ package com.neverwinterdp.server.kafka;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -102,21 +103,35 @@ public class KafkaCluster {
     return kafkaServers;
   }
 
+  public Server findKafkaServerByPort(int port) {
+    Iterator<Server> i = kafkaServers.values().iterator();
+    while(i.hasNext()) {
+      Server server = i.next();
+      if(server.getPort() == port) return server;
+    }
+    return null ;
+  }
+  
   public Server[] getKafkaServers() {
     Server[] server = new Server[kafkaServers.size()];
     kafkaServers.values().toArray(server);
     return server;
   }
+  
 
   public Map<String, Server> getzookeeperServers() {
     return zookeeperServers;
   }
 
   public void shutdown() {
+    System.out.println("Shutdown Kafka Servers");
+    System.out.println("======================");
     for (Server server : kafkaServers.values()) {
       server.shutdown();
     }
 
+    System.out.println("Shutdown Zookeeper Servers");
+    System.out.println("==========================");
     for (Server server : zookeeperServers.values()) {
       server.shutdown();
     }

@@ -76,7 +76,6 @@ public class VMServiceApp extends VMApp {
         appContainer = Guice.createInjector(module);
         vmService = appContainer.getInstance(VMService.class);
         VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
-        
         for(VMDescriptor sel : vmDescriptor) {
           if(vmService.isRunning(sel)) vmService.watch(sel);
           else vmService.unregister(sel);

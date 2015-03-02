@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.kafka;
+package com.neverwinterdp.kafka;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

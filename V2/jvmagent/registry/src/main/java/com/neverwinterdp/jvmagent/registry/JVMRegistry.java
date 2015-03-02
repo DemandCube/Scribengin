@@ -16,7 +16,10 @@ public class JVMRegistry {
     RegistryConfig registryConfig = RegistryConfig.getDefault();
     registryConfig.setConnect(config.getZookeeperConnect());
     registry = new RegistryImpl(registryConfig);
-    registry.connect();
+  }
+  
+  public void connect(long timeout) throws RegistryException {
+    registry.connect(timeout);
     registry.createIfNotExist(JVM_REGISTRY_PATH) ;
   }
   

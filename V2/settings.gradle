@@ -1,6 +1,7 @@
 include 'server'
 include 'registry'
 include 'vm'
+include 'kafka'
 include 'core'
 include 'proxy'
 include 'dataflow/hdfs'
@@ -11,3 +12,4 @@ include 'release'
 include 'jvmagent/bootstrap'
 include 'jvmagent/registry'
 include 'jvmagent/DemoApp'
+

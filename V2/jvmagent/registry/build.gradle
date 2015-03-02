@@ -12,7 +12,7 @@ repositories {
 }
 
 configurations {
-  packageJars {
+  deployJars {
     transitive = false
   }
 }
@@ -21,34 +21,25 @@ dependencies {
   compile project(':registry')
   compile project(':jvmagent/bootstrap')
 
-  packageJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
-  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
-  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
-  packageJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
 
-  packageJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
-  packageJars group: 'com.neverwinterdp',    name: 'scribengin.registry', version: '1.0+'
-  //packageJars group: 'com.neverwinterdp',    name: 'jvmagent.bootstrap', version: '1.0+'
-  packageJars project(':jvmagent/bootstrap')
+  deployJars project(':registry')
+  deployJars project(':jvmagent/bootstrap')
+  deployJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
+  deployJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
 
-  packageJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
-  packageJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
-}
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
 
-jar {
-  manifest {
-    attributes(
-      "Agent-Class":   "com.neverwinterdp.jvmagent.registry.RegistryAgent",
-      "Premain-Class": "com.neverwinterdp.jvmagent.registry.RegistryAgent"
-    )
-  }
+  deployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  deployJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
 }
 
 task release (dependsOn: 'build') << {
   def releaseDir = "${buildDir}/release"
 
   println "Copy the dependency library"
-  configurations.packageJars.each { File file -> 
+  configurations.deployJars.each { File file -> 
     copy {
       from file
       into "${releaseDir}"
@@ -66,18 +57,18 @@ task release (dependsOn: 'build') << {
   }
 }
 
-task fullJar(type: Jar) {
+task allInOneJar(type: Jar) {
   from sourceSets.main.output
   classifier = 'full'
 
   manifest {
     attributes(
-      "Agent-Class":   "com.neverwinterdp.jvmagent.registry.RegistryAgent",
-      "Premain-Class": "com.neverwinterdp.jvmagent.registry.RegistryAgent"
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.PremainBootstrap",
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.AgentMainBootstrap"
     )
   }
 
-  from configurations.packageJars.collect { 
+  from configurations.deployJars.collect { 
     it.isDirectory() ? it : zipTree(it) 
   }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.neverwinterdp.util.JSONSerializer;
 
 import kafka.javaapi.producer.Producer;
+
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 

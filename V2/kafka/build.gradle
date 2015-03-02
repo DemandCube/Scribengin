@@ -1,0 +1,13 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'scribengin.kafka'
+
+eclipse {
+  project {
+    name = 'scribengin.kafka'
+  }
+}
+
+dependencies {
+  compile project(':server')
+}

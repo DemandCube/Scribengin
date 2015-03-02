@@ -6,6 +6,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.kafka.tool.KafkaTool;
+import com.neverwinterdp.kafka.tool.ZKTool;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
@@ -39,10 +41,10 @@ public class KafkaClientUnitTest {
     }
     writer.close();
     
-    KafkaClient client = new KafkaClient("test", "127.0.0.1:2181");
+    KafkaTool client = new KafkaTool("test", "127.0.0.1:2181");
     client.connect();
     ZooKeeper zkClient = client.getZookeeper();
-    ZookeeperUtil.dump(zkClient, "/brokers");
+    ZKTool.dump(zkClient, "/brokers");
     client.close();
   }
 }

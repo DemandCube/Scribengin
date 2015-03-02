@@ -20,6 +20,7 @@ public class Shell {
     this.vmClient = vmClient;
     add("registry", new RegistryCommand());
     add("vm", new VMCommand());
+    add("help", new HelpCommand());
   }
   
   public Console console() { return this.console ; }
@@ -29,6 +30,8 @@ public class Shell {
   public void add(String name, Command command) {
     commands.put(name, command);
   }
+  
+  public Map<String, Command> getCommands() { return this.commands ; }
   
   public Object attribute(String name) {
     return attributes.get(name);

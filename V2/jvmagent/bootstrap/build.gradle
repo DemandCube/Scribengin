@@ -14,8 +14,8 @@ repositories {
 jar {
   manifest {
     attributes(
-      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.BootstrapAgent",
-      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.BootstrapAgent"
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.PremainBootstrap",
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.AgentMainBootstrap"
     )
   }
 }

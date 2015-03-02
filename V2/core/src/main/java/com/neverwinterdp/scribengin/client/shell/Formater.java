@@ -24,8 +24,7 @@ public class Formater {
     }
 
     public String format(String title, String ident) {
-      TabularFormater formater = new TabularFormater("Name", "App Home", "Workers",
-          "Executor Per Worker");
+      TabularFormater formater = new TabularFormater("Name", "App Home", "Workers", "Executor Per Worker");
       formater.setIndent("  ");
       for (int i = 0; i < descriptors.size(); i++) {
         DataflowDescriptor descriptor = descriptors.get(i);
@@ -56,8 +55,8 @@ public class Formater {
     }
 
     public String format(String title, String ident) {
-      TabularFormater formater = new TabularFormater("name", "CPU Cores", "Memory", "Path",
-          "is Leader");
+      TabularFormater formater = 
+        new TabularFormater("name", "CPU Cores", "Memory", "Path", "is Leader");
       formater.setIndent("  ");
       for (VMDescriptor descriptor : descriptors) {
         formater.addRow(descriptor.getVmConfig().getName(),

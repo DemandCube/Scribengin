@@ -33,7 +33,7 @@ private ZookeeperServerLauncher zkServerLauncher ;
     Properties props    = new Properties() ;
     props.load(new FileInputStream("src/main/plugin/agent.properties"));
     RegistryAgent agent = new RegistryAgent() ;
-    agent.premain(props, null);
+    agent.run(props, null);
     Thread.sleep(3000);
     RegistryConfig config = RegistryConfig.getDefault();
     Registry registry = new RegistryImpl(config).connect();

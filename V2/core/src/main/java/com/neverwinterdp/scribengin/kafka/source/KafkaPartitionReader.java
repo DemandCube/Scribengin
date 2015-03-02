@@ -12,6 +12,7 @@ import com.neverwinterdp.util.JSONSerializer;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.cluster.Broker;
+import kafka.common.OffsetAndMetadata;
 import kafka.common.OffsetMetadataAndError;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.FetchResponse;
@@ -23,6 +24,7 @@ import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
+
 
 public class KafkaPartitionReader {
   private String name;
@@ -53,10 +55,10 @@ public class KafkaPartitionReader {
     short versionID = 0;
     int correlationId = 0;
     TopicAndPartition tp = new TopicAndPartition(topic, partitionMetadata.partitionId());
-    OffsetMetadataAndError offsetMetaAndErr = new OffsetMetadataAndError(offset, OffsetMetadataAndError.NoMetadata(), errorCode);
-    Map<TopicAndPartition, OffsetMetadataAndError> mapForCommitOffset = new HashMap<TopicAndPartition, OffsetMetadataAndError>();
-    mapForCommitOffset.put(tp, offsetMetaAndErr);
-    OffsetCommitRequest offsetCommitReq = new OffsetCommitRequest(name, mapForCommitOffset, versionID, correlationId, name);
+    OffsetAndMetadata offsetAndMeta = new OffsetAndMetadata(offset, OffsetAndMetadata.NoMetadata(), errorCode);
+    Map<TopicAndPartition, OffsetAndMetadata> mapForCommitOffset = new HashMap<TopicAndPartition, OffsetAndMetadata>();
+    mapForCommitOffset.put(tp, offsetAndMeta);
+    OffsetCommitRequest offsetCommitReq = new OffsetCommitRequest(name, mapForCommitOffset, correlationId, name, versionID);
     OffsetCommitResponse offsetCommitResp = consumer.commitOffsets(offsetCommitReq);
     return (Short) offsetCommitResp.errors().get(tp);
   }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class BootstrapAgent {
+public class PremainBootstrap {
   public static void premain(String pluginPath, Instrumentation inst) throws Exception {
     ClassLoader oldClassloader = Thread.currentThread().getContextClassLoader() ;
     try {
@@ -44,12 +44,9 @@ public class BootstrapAgent {
       props.remove("plugin.class");
       props.remove("plugin.classloader.isolate");
 
-      plugin.premain(props, inst);
+      plugin.run(props, inst);
     } finally {
       Thread.currentThread().setContextClassLoader(oldClassloader);
     }
-  }
-  
-  public static void agentmain(String pluginPath, Instrumentation inst) throws Exception {
   }
 }

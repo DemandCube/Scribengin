@@ -26,6 +26,7 @@ configurations.all {
 
 dependencies {
   compile project(':registry')
+  compile project(':kafka')
   compile project(':vm')
 
   compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
