@@ -175,8 +175,8 @@ This command will kill all the java processes on all the  machines
 Build the scribengin code
 
 ````
- cd path-to/Scribengin/V2
- gradle clean build install -x test
+ cd path-to/Scribengin/V2/docker/scribengin
+ ./scribengin.sh build
 ````
 
 To package the scribengin code
@@ -241,3 +241,9 @@ Submit the dataflow
 ````
 
 If the dataflow is submitted successfully, you should see the status and registry structure print out on the console
+
+*To redeploy Scribengin to the cluster*
+```
+ cd path-to/Scribengin/V2/docker/scribengin
+ ./scribengin.sh deploy --clean
+```
