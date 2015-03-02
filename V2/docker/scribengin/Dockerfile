@@ -77,5 +77,10 @@ RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/
 
 RUN /tmp/post-install/post-install.sh
 
+#Set up ssh for neverwinterdp user
+RUN su neverwinterdp -c "sudo cat        /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys"
+RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
+
+
 RUN rm -rf          /tmp/*.tgz
 RUN rm -rf          /tmp/post-install
