@@ -5,3 +5,6 @@ gradle clean build install -x test
 cd ../NeverwinterDP-Commons
 gradle clean build install -x test
 cd ../
+cd jvmagent/registry
+gradle clean build release
+cd ../../

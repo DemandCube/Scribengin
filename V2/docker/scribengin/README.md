@@ -75,6 +75,16 @@ git clone http://github.com/DemandCube/Scribengin
   ```
 
 #####To build the linux os image
+Before you run, if you have ssh keys set up on your system already, you may want to consider removing the password on them.  It will make your life easier while deploying.
+```
+ssh-keygen -p
+# Start the SSH key creation process
+# Enter file in which the key is (/Users/you/.ssh/id_rsa): [Hit enter]
+# Key has comment '/Users/you/.ssh/id_rsa'
+# Enter new passphrase (empty for no passphrase): [Type new passphrase]
+# Enter same passphrase again: [One more time for luck]
+# Your identification has been saved with the new passphrase.
+```
 
 ````
 cd path-to/Scribengin/V2/docker/scribengin
@@ -165,8 +175,8 @@ This command will kill all the java processes on all the  machines
 Build the scribengin code
 
 ````
- cd path-to/Scribengin/V2
- gradle clean build install -x test
+ cd path-to/Scribengin/V2/docker/scribengin
+ ./scribengin.sh build
 ````
 
 To package the scribengin code
@@ -231,3 +241,9 @@ Submit the dataflow
 ````
 
 If the dataflow is submitted successfully, you should see the status and registry structure print out on the console
+
+*To redeploy Scribengin to the cluster*
+```
+ cd path-to/Scribengin/V2/docker/scribengin
+ ./scribengin.sh deploy --clean
+```

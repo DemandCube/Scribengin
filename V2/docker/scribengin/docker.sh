@@ -27,12 +27,21 @@ function build_image() {
   h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
   mkdir ./tmp
+  
+  #Use existing key if it already exists
+  if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
+    cat ~/.ssh/id_rsa > ./tmp/id_rsa
+    cat ~/.ssh/id_rsa.pub > ./tmp/id_rsa.pub
+  #Otherwise generate a new one
+  else
+    ssh-keygen -t rsa  -P "" -f tmp/id_rsa
+  fi
   cat ~/.ssh/id_rsa.pub > ./tmp/authorized_keys
-  ssh-keygen -t rsa  -P "" -f tmp/id_rsa
 
   docker build -t ubuntu:scribengin $BIN_DIR
   echo "Clean the temporary configuration files"
   rm -rf ./tmp
+  
 }
 
 function clean_image() {

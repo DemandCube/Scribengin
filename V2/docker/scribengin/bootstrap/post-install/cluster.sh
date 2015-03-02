@@ -14,6 +14,7 @@ HADOOP_WORKER_SERVERS="";
 ZOOKEEPER_SERVERS="";
 KAFKA_SERVERS="";
 ALL_SERVERS="";
+JAVAAGENT="";
 
 function h1() {
   echo ""
@@ -147,6 +148,17 @@ function servers_exec() {
   done
 }
 
+function echo_javaagent_options(){
+  JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/jvmagent.jar=/opt/jvmagent"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=10001"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+  echo $JVM_AGENT_OPTS
+}
+
 function hadoop_clean() {
   h1 "Clean hadoop data and logs"
   inst "this step will remove the data directory(/opt/hadoop/data) and the log directory(/opt/hadoop/logs)"
@@ -233,22 +245,38 @@ function zookeeper_clean() {
 function zookeeper_start() {
   #Par the parameters
   clean=false
+  javaagent=false
   for i in "$@"; do
     case $i in
       -c|--clean)
-      clean=true 
+        clean=true 
       ;;
       #unknown option
+      -j|--with-javaagent)
+        javaagent=true        
+      ;;
     esac
   done
-
+  
+  
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
     zookeeper_clean
   fi
 
-  h1 "Start zookeeper"
-  servers_exec  "$ZOOKEEPER_SERVERS" "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR=/opt/zookeeper/logs  /opt/zookeeper/bin/zkServer.sh start"
+  if $javaagent ; then
+    JVM_AGENT_OPTS=$(echo_javaagent_options)
+  fi
+  
+  
+  if $javaagent ; then
+    h1 "Start zookeeper with javaagent enabled"
+    servers_exec   "$ZOOKEEPER_SERVERS" "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR=/opt/zookeeper/logs JVMFLAGS=\"$JVM_AGENT_OPTS\" /opt/zookeeper/bin/zkServer.sh start"
+  else
+    h1 "Start zookeeper"
+    servers_exec  "$ZOOKEEPER_SERVERS" "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR=/opt/zookeeper/logs  /opt/zookeeper/bin/zkServer.sh start"
+  fi
+  
 }
 
 function zookeeper_stop() {
@@ -278,10 +306,14 @@ function kafka_clean() {
 function kafka_start() {
   #Par the parameters
   clean=false
+  javaagent=false
   for i in "$@"; do
     case $i in
       -c|--clean)
       clean=true 
+      ;;
+      -j|--with-javaagent)
+        javaagent=true        
       ;;
       #unknown option
     esac
@@ -292,9 +324,19 @@ function kafka_start() {
     kafka_clean
   fi
 
-  h1 "Start kafka"
-  servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh"
-  servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
+  if $javaagent ; then
+    JVM_AGENT_OPTS=$(echo_javaagent_options)
+  fi
+  
+  if $javaagent ; then
+    h1 "Start kafka with javaagent enabled"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh"
+    servers_exec  "$KAFKA_SERVERS" "KAFKA_JMX_OPTS=\"$JVM_AGENT_OPTS\" /opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
+  else
+    h1 "Start kafka"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
+  fi
 }
 
 function kafka_stop() {
@@ -410,6 +452,10 @@ elif [ "$COMMAND" = "hadoop" ] ; then
   fi
 else
   echo "cluster command options: "
-  echo "  exec                  : To execute the shell command on all the servers or a group of servers"
-  echo "  sync                  : To copy this program to the fetcher members"
+  echo "  exec                             : To execute the shell command on all the servers or a group of servers"
+  echo "  sync                             : To copy this program to the fetcher members"
+  echo "  zookeeper [start|stop]           : Start/stop ZK on all ZK servers."
+  echo "  zookeeper start --with-javaagent : Start ZK on all ZK servers, launch JMX on port 10001."
+  echo "  kafka [start|stop]               : Start/stop Kafka on all Kafka servers."
+  echo "  kafka start --with-javaagent     : Start Kafka on all Kafka servers, launch JMX on port 10001."
 fi
