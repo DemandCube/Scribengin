@@ -50,6 +50,7 @@ dependencies {
 
   /*************************Scribengin runtime deploy jars***************************/
   scribenginDeployJars project(':server')
+  scribenginDeployJars project(':kafka')
   scribenginDeployJars project(':vm')
   scribenginDeployJars project(':registry')
   scribenginDeployJars project(':core')

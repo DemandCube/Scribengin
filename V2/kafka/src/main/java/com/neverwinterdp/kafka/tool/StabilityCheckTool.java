@@ -25,7 +25,6 @@ import com.neverwinterdp.util.text.TabularFormater;
  *    the number of message equals to the number of sent message in writer
  * 3. Exit the tool, when either the readers consume all the messages or the exit-wait-time expires. The exit-wait-time
  *    start when all the writers terminate.
- *
  * @author Tuan
  */
 public class StabilityCheckTool {
