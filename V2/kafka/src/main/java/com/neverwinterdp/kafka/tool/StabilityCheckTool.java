@@ -12,6 +12,7 @@ import kafka.javaapi.TopicMetadata;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.util.text.TabularFormater;
 
@@ -89,10 +90,14 @@ public class StabilityCheckTool {
       
       PartitionMessageReader reader = new PartitionMessageReader(sel);
       readers.put(sel.partitionId(), reader);
-      //readerService.submit(reader);
+      readerService.submit(reader);
     }
     writerService.shutdown();
+    readerService.shutdown();
+    
     writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
+    
+    readerService.awaitTermination(exitWaitTime, TimeUnit.MILLISECONDS);
     
     TabularFormater formater = new TabularFormater("Partition", "Write", "Read");
     formater.setIndent("  ");
@@ -152,7 +157,26 @@ public class StabilityCheckTool {
     }
     
     public void run() {
-      
+      KafkaPartitionReader partitionReader = new KafkaPartitionReader(NAME, topic, metadata);
+      try {
+        while(readCount < maxMessagePerPartition) {
+          List<byte[]> messages = partitionReader.fetch(3000, 100);
+          for(int i = 0; i < messages.size(); i++) {
+            byte[] message = messages.get(i) ;
+            readCount++;
+          }
+        }
+      } catch(InterruptedException ex) {
+      } catch(Exception ex) {
+        ex.printStackTrace();
+      } finally {
+        try {
+          partitionReader.commit();
+          partitionReader.close();
+        } catch(Exception ex) {
+          ex.printStackTrace();
+        }
+      }
     }
   }
   
