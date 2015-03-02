@@ -148,6 +148,17 @@ function servers_exec() {
   done
 }
 
+function echo_javaagent_options(){
+  JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/jvmagent.jar=/opt/jvmagent"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=10001"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+  echo $JVM_AGENT_OPTS
+}
+
 function hadoop_clean() {
   h1 "Clean hadoop data and logs"
   inst "this step will remove the data directory(/opt/hadoop/data) and the log directory(/opt/hadoop/logs)"
@@ -254,13 +265,7 @@ function zookeeper_start() {
   fi
 
   if $javaagent ; then
-    JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/jvmagent.jar=/opt/jvmagent"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=10001"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+    JVM_AGENT_OPTS=$(echo_javaagent_options)
   fi
   
   
@@ -320,13 +325,7 @@ function kafka_start() {
   fi
 
   if $javaagent ; then
-    JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/jvmagent.jar=/opt/jvmagent"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=10001"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
-    JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.ssl=false"
+    JVM_AGENT_OPTS=$(echo_javaagent_options)
   fi
   
   if $javaagent ; then
