@@ -121,6 +121,32 @@ def doReleaseScribengin(String releaseDir) {
   println "Build release VMMaster ${releaseDir}"
   println "*************************************************"
 
+  def dependencyJars = [ 
+    "commons.utils", "commons.api", "commons.buffer", "commons.yara",
+    "commons.hadoop-framework", "commons.zookeeper", 
+    
+    "scribengin.server", "scribengin.registry", "scribengin.vm", "scribengin.core", 
+
+    "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
+    //"jcommander", "reflections", "guava-16.0.1", "javassist",
+    "jcommander", "reflections", "guava-13.0", "mycila-guice-all", "javassist",
+    'guice', 'javax.inject', 'hazelcast', 'aopalliance',
+    "kafka", "scala-library",
+    'zookeeper', 'zkclient',
+    "netty-all", 'jzlib', 
+    'chronicle', "lang-6.4.6", "compiler-2.2.0",
+    
+    "hadoop-common", "hadoop-hdfs", "hadoop-auth", 
+    "hadoop-yarn-api", "hadoop-yarn-common", "hadoop-yarn-client",
+    "protobuf",
+
+    //codahale metric is required by kafka
+    "metrics-core-2.2.0",
+    "commons-collections", "commons-configuration","commons-lang3-3.1", "commons-lang-2.6", "commons-cli",
+    "log4j", "slf4j-api", "slf4j-log4j12", "commons-logging",
+    "junit-4.11"
+  ] ;
+
   println "Copy the dependency library"
   configurations.scribenginDeployJars.each { File file -> 
     copy {
@@ -128,6 +154,20 @@ def doReleaseScribengin(String releaseDir) {
       into "${releaseDir}/libs"
     }
   }
+
+  /**
+  configurations.compile.each { File file -> 
+    if(isIn(dependencyJars, file)) {
+      println "  Copy $file.name to NeverwinterDP/libs"
+      copy {
+        from file
+        into "${releaseDir}/libs"
+      }
+    } else {
+      //println "Ignore $file.name "
+    }
+  }
+  */
 
   copy {
     from "${buildDir}/libs"
