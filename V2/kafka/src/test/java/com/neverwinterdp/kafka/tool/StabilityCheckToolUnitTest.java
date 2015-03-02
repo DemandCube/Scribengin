@@ -33,7 +33,12 @@ public class StabilityCheckToolUnitTest {
       "--zk-connect", cluster.getZKConnect(),
       "--write-period", "10",
       "--message-size", "500",
+      "--num-partition", "3",
+      "--exit-wait-time", "5000",
+      "--max-message-per-partition", "1000",
+      "--max-duration", "10000"
     };
     StabilityCheckTool.main(args);
+    Thread.sleep(3000);
   }
 }

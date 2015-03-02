@@ -95,8 +95,11 @@ public class StabilityCheckTool {
     readerService.shutdown();
     
     writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
-    
-    readerService.awaitTermination(exitWaitTime, TimeUnit.MILLISECONDS);
+    Thread.sleep(exitWaitTime);
+    for(PartitionMessageReader reader : readers.values()) {
+      reader.setTimeout(true);
+    }
+    readerService.awaitTermination(5000, TimeUnit.MILLISECONDS);
     
     TabularFormater formater = new TabularFormater("Partition", "Write", "Read");
     formater.setIndent("  ");
@@ -127,7 +130,7 @@ public class StabilityCheckTool {
         boolean terminated = false ;
         while(!terminated) {
           String key = "p:" + metadata.partitionId() + ":" + writeCount ;
-          writer.send(topic, key, sampleData);
+          writer.send(topic,  metadata.partitionId(), key, sampleData);
           writeCount++;
           //Check max message per partition
           if(writeCount >= maxMessagePerPartition) {
@@ -137,6 +140,7 @@ public class StabilityCheckTool {
           }
         }
       } catch (InterruptedException e) {
+        e.printStackTrace();
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
@@ -150,16 +154,19 @@ public class StabilityCheckTool {
   public class PartitionMessageReader implements Runnable {
     private PartitionMetadata metadata;
     private int readCount = 0;
+    private boolean timeout = false;
     
     PartitionMessageReader(PartitionMetadata metadata) {
       this.metadata = metadata;
     }
     
+    public void setTimeout(boolean b) { this.timeout = b; }
+    
     public void run() {
       KafkaPartitionReader partitionReader = new KafkaPartitionReader(NAME, topic, metadata);
       try {
-        while(readCount < maxMessagePerPartition) {
-          List<byte[]> messages = partitionReader.fetch(3000, 100);
+        while(!timeout && readCount < maxMessagePerPartition) {
+          List<byte[]> messages = partitionReader.fetch(100000, 100);
           for(int i = 0; i < messages.size(); i++) {
             byte[] message = messages.get(i) ;
             readCount++;
