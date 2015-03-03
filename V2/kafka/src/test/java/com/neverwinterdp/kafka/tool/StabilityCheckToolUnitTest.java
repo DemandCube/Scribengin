@@ -17,7 +17,7 @@ public class StabilityCheckToolUnitTest {
   @Before
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/cluster", false);
-    cluster = new KafkaCluster("./build/cluster", 1, 1);
+    cluster = new KafkaCluster("./build/cluster", 1, 3);
     cluster.start();
     Thread.sleep(5000);
   }
@@ -35,8 +35,9 @@ public class StabilityCheckToolUnitTest {
       "--message-size", "500",
       "--num-partition", "3",
       "--exit-wait-time", "5000",
-      "--max-message-per-partition", "1000",
-      "--max-duration", "10000"
+      "--max-message-per-partition", "100",
+      "--max-duration", "60000",
+      "--replication", "3"
     };
     StabilityCheckTool.main(args);
     Thread.sleep(3000);
