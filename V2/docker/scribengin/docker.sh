@@ -16,6 +16,34 @@ elif [[ "$OS" == 'Darwin' ]]; then
    HOST_IP=$(boot2docker ip)
 fi
 
+function has_opt() {
+  OPT_NAME=$1
+  shift
+  #Par the parameters
+  for i in "$@"; do
+    if [[ $i == $OPT_NAME* ]] ; then
+      echo "true"
+      return
+    fi
+  done
+  echo "false"
+}
+
+function get_opt() {
+  OPT_NAME=$1
+  DEFAULT_VALUE=$2
+  shift
+  #Par the parameters
+  for i in "$@"; do
+    if [[ $i == $OPT_NAME* ]] ; then
+      value="${i#*=}"
+      echo "$value"
+      return
+    fi
+  done
+  echo $DEFAULT_VALUE
+}
+
 function h1() {
   echo ""
   echo "###########################################################################################################"
@@ -53,22 +81,51 @@ function launch_containers() {
   h1 "Launch hadoop containers"
   docker run -d -p 22 -p 50070:50070 -p 9000:9000 -p 8030:8030 -p 8032:8032 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
   
-  HADOOP_WORKERS="hadoop-worker-1 hadoop-worker-2 hadoop-worker-3"
-  for NAME in $HADOOP_WORKERS
+#  while [ "$1" != "" ]; do
+#    case $1 in
+#      --kafka-server)       shift
+#                            NUM_KAFKA_BROKER=$1
+#                            ;;
+#      --zk-server)          shift
+#                            NUM_ZOOKEEPER_SERVER=$1
+#                            ;;
+#      --hadoop-worker)      shift
+#                            NUM_HADOOP_WORKER=$1
+#                            ;;
+#    esac
+#    shift
+#  done
+
+  NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
+  NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
+  NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
+
+  
+  for (( i=1; i<="$NUM_HADOOP_WORKER"; i++ ))
   do
+    NAME="hadoop-worker-"$i
+    HADOOP_WORKERS+=$NAME' '
     docker run -d -p 22 --privileged -h "$NAME" --name "$NAME" ubuntu:scribengin
   done
+
   
   h1 "Launch zookeeper containers"
-  docker run -d -p 22 -p 2181 --privileged -h zookeeper --name zookeeper  ubuntu:scribengin
+  for (( i=1; i<="$NUM_ZOOKEEPER_SERVER"; i++ ))
+  do
+    NAME="zookeeper-"$i
+    ZOOKEEPER_SERVERS+=$NAME' '
+    docker run -d -p 22 -p 2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+  done  
+
 
   h1 "Remove hadoop-master entry in the $HOME/.ssh/known_hosts"
   ssh-keygen -f "$HOME/.ssh/known_hosts" -R hadoop-master
 
   h1 "Launch kafka containers"
-  KAFKA_SERVERS="kafka-1 kafka-2 kafka-3"
-  for NAME in $KAFKA_SERVERS
+  for (( i=1; i<="$NUM_KAFKA_BROKER"; i++ ))
   do
+    NAME="kafka-"$i
+    KAFKA_SERVERS+=$NAME' '
     docker run -d -p 22 -p 9092 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done
 
@@ -200,7 +257,7 @@ elif [ "$COMMAND" = "container" ] ; then
   if [ "$SUB_COMMAND" = "clean" ] ; then
     container_clean $@
   elif [ "$SUB_COMMAND" = "run" ] ; then
-    launch_containers
+    launch_containers $@
     container_update_hosts $@
   elif [ "$SUB_COMMAND" = "update-hosts" ] ; then
     container_update_hosts $@

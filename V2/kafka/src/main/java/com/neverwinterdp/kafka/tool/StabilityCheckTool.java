@@ -95,6 +95,9 @@ public class StabilityCheckTool {
     readerService.shutdown();
     
     writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
+    if(!writerService.isTerminated()) {
+      writerService.shutdownNow();
+    }
     Thread.sleep(exitWaitTime);
     for(PartitionMessageReader reader : readers.values()) {
       reader.setTimeout(true);
@@ -140,7 +143,6 @@ public class StabilityCheckTool {
           }
         }
       } catch (InterruptedException e) {
-        e.printStackTrace();
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
@@ -166,7 +168,7 @@ public class StabilityCheckTool {
       KafkaPartitionReader partitionReader = new KafkaPartitionReader(NAME, topic, metadata);
       try {
         while(!timeout && readCount < maxMessagePerPartition) {
-          List<byte[]> messages = partitionReader.fetch(100000, 100);
+          List<byte[]> messages = partitionReader.fetch(100000/*fetch size*/, 500/*max read*/, 500/*ms*/);
           for(int i = 0; i < messages.size(); i++) {
             byte[] message = messages.get(i) ;
             readCount++;

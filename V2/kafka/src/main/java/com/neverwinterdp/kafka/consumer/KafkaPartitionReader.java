@@ -92,12 +92,16 @@ public class KafkaPartitionReader {
   }
   
   public List<byte[]> fetch(int fetchSize, int maxRead) throws Exception {
+    return fetch(fetchSize, maxRead, 1000) ;
+  }
+  
+  public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
     FetchRequest req = 
         new FetchRequestBuilder().
         clientId(name).
         addFetch(topic, partitionMetadata.partitionId(), currentOffset, fetchSize).
         minBytes(1).
-        maxWait(1000).
+        maxWait(maxWait).
         build();
     
     FetchResponse fetchResponse = consumer.fetch(req);
