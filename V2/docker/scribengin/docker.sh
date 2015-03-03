@@ -62,6 +62,9 @@ function launch_containers() {
   h1 "Launch zookeeper containers"
   docker run -d -p 22 -p 2181 --privileged -h zookeeper --name zookeeper  ubuntu:scribengin
 
+  h1 "Remove hadoop-master entry in the $HOME/.ssh/known_hosts"
+  ssh-keygen -f "$HOME/.ssh/known_hosts" -R hadoop-master
+
   h1 "Launch kafka containers"
   KAFKA_SERVERS="kafka-1 kafka-2 kafka-3"
   for NAME in $KAFKA_SERVERS
