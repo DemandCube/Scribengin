@@ -413,7 +413,7 @@ elif [ "$COMMAND" = "zookeeper" ] ; then
     zookeeper_clean
   elif [ "$SUB_COMMAND" = "log-grep" ] ; then
     zookeeper_log_grep $@
-  elif [ "$SUB_COMMAND" = "--kill-node" ] ; then
+  elif [ "$SUB_COMMAND" = "kill-node" ] ; then
     zookeeper_kill_node $@
   fi
 elif [ "$COMMAND" = "kafka" ] ; then
@@ -427,7 +427,7 @@ elif [ "$COMMAND" = "kafka" ] ; then
     kafka_clean
   elif [ "$SUB_COMMAND" = "log-grep" ] ; then
     kafka_log_grep $@
-  elif [ "$SUB_COMMAND" = "--kill-node" ] ; then
+  elif [ "$SUB_COMMAND" = "kill-node" ] ; then
     kafka_kill_node $@
   fi
 elif [ "$COMMAND" = "hadoop" ] ; then
@@ -445,9 +445,9 @@ elif [ "$COMMAND" = "hadoop" ] ; then
     hadoop_std_grep $@
   elif [ "$SUB_COMMAND" = "console-tail" ] ; then
     hadoop_console_tail $@
-  elif [ "$SUB_COMMAND" = "--kill-data-node" ] ; then
+  elif [ "$SUB_COMMAND" = "kill-data-node" ] ; then
     hadoop_kill_data_node $@
-  elif [ "$SUB_COMMAND" = "--kill-yarn-node" ] ; then
+  elif [ "$SUB_COMMAND" = "kill-yarn-node" ] ; then
     hadoop_kill_yarn_node $@
   fi
 else
