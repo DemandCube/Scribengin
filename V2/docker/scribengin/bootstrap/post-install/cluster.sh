@@ -118,7 +118,7 @@ function parse_hosts_file() {
         HADOOP_SERVERS="$HADOOP_SERVERS $hostname"
         if [[ $hostname ==  $'hadoop-master'* ]]; then  
           HADOOP_MASTER_SERVERS="$HADOOP_MASTER_SERVERS $hostname"
-        elif [[ $hostname ==  $'zookeeper'* ]]; then
+        elif [[ $hostname ==  $'hadoop-worker'* ]]; then
           HADOOP_WORKER_SERVERS="$HADOOP_WORKER_SERVERS $hostname"
         fi
       elif [[ $hostname ==  $'zookeeper'* ]]
@@ -205,6 +205,9 @@ function hadoop_start() {
     hadoop_clean
   fi
 
+  servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/configure.sh"
+  servers_exec  "$HADOOP_WORKER_SERVERS" "/opt/hadoop/sbin/configure.sh"
+  
   h1 "Start hadoop dfs"
   servers_exec  "$HADOOP_MASTER_SERVERS" "/opt/hadoop/sbin/start-dfs.sh"
 
@@ -283,6 +286,7 @@ function zookeeper_start() {
     JVM_AGENT_OPTS=$(echo_javaagent_options)
   fi
   
+  servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/configure.sh"
   
   if $javaagent ; then
     h1 "Start zookeeper with javaagent enabled"
