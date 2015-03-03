@@ -99,7 +99,7 @@ function launch_containers() {
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
   NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
   NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
-
+  
   
   for (( i=1; i<="$NUM_HADOOP_WORKER"; i++ ))
   do

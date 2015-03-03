@@ -74,6 +74,12 @@ git clone http://github.com/DemandCube/Scribengin
   ./installDependencies.sh
   ```
 
+#####Build and release Scribengin
+```
+cd pathTo/Scribengin/V2/docker/scribengin/
+./scribengin.sh build
+```
+
 #####To build the linux os image
 Before you run, if you have ssh keys set up on your system already, you may want to consider removing the password on them.  It will make your life easier while deploying.
 ```
