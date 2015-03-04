@@ -61,9 +61,6 @@ RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4
 RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
 RUN mv /opt/hadoop-2.4.0 /opt/hadoop
 
-#Move jvmagent to VM
-RUN mkdir -p /opt/jvmagent/
-#ADD ~/.m2/repository/com/neverwinterdp/jvmagent.bootstrap/1.0-SNAPSHOT/jvmagent.bootstrap-1.0-SNAPSHOT.jar /opt/jvmagent/jvmagent.jar
 
 
 #Run Post installation
@@ -75,11 +72,16 @@ ADD tmp/id_rsa*     /tmp/post-install/ssh-config/
 RUN cat             /tmp/post-install/ssh-config/id_rsa.pub > /tmp/post-install/ssh-config/authorized_keys
 RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/ssh-config/authorized_keys
 
+#Move jvmagent to VM
+RUN mkdir -p /opt/jvmagent/
+RUN cp -r /tmp/post-install/release/jvmagent/* /opt/jvmagent/
+
+
 RUN /tmp/post-install/post-install.sh
 
 #Set up ssh for neverwinterdp user
-RUN su neverwinterdp -c "sudo cat        /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys"
-RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
+#RUN su neverwinterdp -c "sudo cat        /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys"
+#RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
 
 
 RUN rm -rf          /tmp/*.tgz

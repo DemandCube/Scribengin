@@ -25,5 +25,9 @@ cp -r /tmp/post-install/kafka/*   /opt/kafka/
 
 cp -r /tmp/post-install/hadoop/*  /opt/hadoop/
 
+h1 "Set up ssh for neverwinterdp user"
+sudo cat /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys
+chmod -R 700 /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys
+
 h1 "Change /opt ownership and permission to neverwinterdp user"
 chown -R neverwinterdp:neverwinterdp /opt

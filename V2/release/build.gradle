@@ -24,7 +24,7 @@ configurations {
     transitive = false
   }
 
-  jvmagenDeployJars {
+  jvmagentDeployJars {
     transitive = false
   }
 }
@@ -105,15 +105,66 @@ dependencies {
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
 
+
+  /*************************jvmagent runtime deploy jars***************************/
+  compile project(':registry')
+  compile project(':jvmagent/bootstrap')
+  jvmagentDeployJars project(':registry')
+  jvmagentDeployJars project(':jvmagent/bootstrap')
+  jvmagentDeployJars project(':jvmagent/registry')
+   
+  jvmagentDeployJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
+  jvmagentDeployJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
+
+  jvmagentDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  jvmagentDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  jvmagentDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
+  jvmagentDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  jvmagentDeployJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
 }
 
 task release (dependsOn: 'build') << {
   def releaseDir = "${buildDir}/release"
   doReleaseScribengin("${releaseDir}/scribengin");
+  doReleaseJvmagent("${releaseDir}/jvmagent");
 
   def hdfsDataflowLibs = [ "scribengin.dataflow.hdfs" ] ;
   def descriptor = "src/dataflows/hdfs/dataflow.json" ;
   doReleaseDataflow("hdfs", "${releaseDir}", hdfsDataflowLibs, descriptor);
+}
+
+def doReleaseJvmagent(String releaseDir){
+  println "\n\n"
+  println "*************************************************"
+  println "Build release jvmagent ${releaseDir}"
+  println "*************************************************"
+
+
+  println "Copy the dependency library"
+  configurations.jvmagentDeployJars.each { File file ->
+    copy {
+      from file
+      into "${releaseDir}/libs"
+    }
+  }
+  
+  copy {
+    from "../jvmagent/registry/build/release/agent.properties"
+    into "${releaseDir}/libs/"
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}/libs"
+  }
+
+  println "Copy and override app"
+  copy {
+    from "src/app"
+    into "${releaseDir}"
+  }
+
 }
 
 def doReleaseScribengin(String releaseDir) {

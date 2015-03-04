@@ -32,7 +32,7 @@ function get_opt() {
   OPT_NAME=$1
   DEFAULT_VALUE=$2
   shift
-  #Par the parameters
+  #Parse the parameters
   for i in "$@"; do
     if [[ $i == $OPT_NAME* ]] ; then
       value="${i#*=}"
@@ -176,9 +176,10 @@ function servers_exec() {
 }
 
 function echo_javaagent_options(){
-  JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/jvmagent.jar=/opt/jvmagent"
+  JMXPORT=$1
+  JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/libs/jvmagent.registry-1.0-SNAPSHOT.jar=/opt/jvmagent/libs/"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
-  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=10001"
+  JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=$JMXPORT"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
@@ -261,21 +262,10 @@ function zookeeper_clean() {
 }
 
 function zookeeper_start() {
-  #Par the parameters
-  clean=false
-  javaagent=false
-  for i in "$@"; do
-    case $i in
-      -c|--clean)
-        clean=true 
-      ;;
-      #unknown option
-      -j|--with-javaagent)
-        javaagent=true        
-      ;;
-    esac
-  done
-  
+  #Parse the parameters
+  clean=$(has_opt --clean $@)
+  javaagent=$(has_opt --with-javaagent $@)
+  JMXPORT=$(get_opt --jmxport 10001 $@)
   
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
@@ -283,7 +273,7 @@ function zookeeper_start() {
   fi
 
   if $javaagent ; then
-    JVM_AGENT_OPTS=$(echo_javaagent_options)
+    JVM_AGENT_OPTS=$(echo_javaagent_options $JMXPORT)
   fi
   
   servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/configure.sh"
@@ -323,20 +313,10 @@ function kafka_clean() {
 }
 
 function kafka_start() {
-  #Par the parameters
-  clean=false
-  javaagent=false
-  for i in "$@"; do
-    case $i in
-      -c|--clean)
-      clean=true 
-      ;;
-      -j|--with-javaagent)
-        javaagent=true        
-      ;;
-      #unknown option
-    esac
-  done
+  #Parse the parameters
+  clean=$(has_opt --clean $@)
+  javaagent=$(has_opt --with-javaagent $@)
+  
 
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
@@ -469,6 +449,8 @@ elif [ "$COMMAND" = "hadoop" ] ; then
   elif [ "$SUB_COMMAND" = "kill-yarn-node" ] ; then
     hadoop_kill_yarn_node $@
   fi
+elif [ "$COMMAND" = "test" ] ; then
+  echo_javaagent_options $@
 else
   echo "cluster command options: "
   echo "  exec                             : To execute the shell command on all the servers or a group of servers"
