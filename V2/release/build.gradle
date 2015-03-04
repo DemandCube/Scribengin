@@ -137,16 +137,21 @@ task release (dependsOn: 'build') << {
 def doReleaseJvmagent(String releaseDir){
   println "\n\n"
   println "*************************************************"
-  println "Build release VMMaster ${releaseDir}"
+  println "Build release jvmagent ${releaseDir}"
   println "*************************************************"
 
 
   println "Copy the dependency library"
-  configurations.jvmagentDeployJars.each { File file -> 
+  configurations.jvmagentDeployJars.each { File file ->
     copy {
       from file
       into "${releaseDir}/libs"
     }
+  }
+  
+  copy {
+    from "../jvmagent/registry/build/release/agent.properties"
+    into "${releaseDir}/libs/"
   }
 
   copy {

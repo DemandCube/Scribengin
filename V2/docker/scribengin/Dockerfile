@@ -72,15 +72,17 @@ ADD tmp/id_rsa*     /tmp/post-install/ssh-config/
 RUN cat             /tmp/post-install/ssh-config/id_rsa.pub > /tmp/post-install/ssh-config/authorized_keys
 RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/ssh-config/authorized_keys
 
-RUN /tmp/post-install/post-install.sh
-
-#Set up ssh for neverwinterdp user
-RUN su neverwinterdp -c "sudo cat        /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys"
-RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
-
 #Move jvmagent to VM
 RUN mkdir -p /opt/jvmagent/
 RUN cp -r /tmp/post-install/release/jvmagent/* /opt/jvmagent/
+
+
+RUN /tmp/post-install/post-install.sh
+
+#Set up ssh for neverwinterdp user
+#RUN su neverwinterdp -c "sudo cat        /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys"
+#RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
+
 
 RUN rm -rf          /tmp/*.tgz
 RUN rm -rf          /tmp/post-install

@@ -57,6 +57,22 @@ task release (dependsOn: 'build') << {
   }
 }
 
+jar {
+  from sourceSets.main.output
+  //classifier = 'full'
+  manifest {
+    attributes(
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.PremainBootstrap",
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.AgentMainBootstrap"
+    )
+  }
+  
+  
+  from configurations.deployJars.collect { 
+    it.isDirectory() ? it : zipTree(it) 
+  }
+}
+
 task allInOneJar(type: Jar) {
   from sourceSets.main.output
   classifier = 'full'

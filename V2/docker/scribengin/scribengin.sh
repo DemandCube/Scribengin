@@ -20,22 +20,30 @@ function build(){
   
   #Omit the the tests by default
   if [ "$OPTION" = "--with-test" ] ; then
-    command="../gradlew clean build install"
+    command="../gradlew clean build install release"
   else
-    command="../gradlew clean build install -x test"
+    command="../gradlew clean build install release -x test"
   fi
   
-  #Build it
+  #Build Scribengin
   pwd=`pwd`
   h1 "Building Scribengin/V2"
   cd ../../
   $command
   cd "$pwd"
   
+  #Build and release the javaagent
+  #cd ../../jvmagent/registry/
+  #../../../gradlew clean build release -x test
+  #cd "$pwd"
+  
   #Release the project
   cd ../../release
-  ../../gradlew release
+  ../../gradlew clean release
   cd "$pwd"
+  if [ -d ./bootstrap/post-install/release ] ; then
+    rm -rf ./bootstrap/post-install/release
+  fi
   #Move release/build/release here
   cp -R -f ../../release/build/release ./bootstrap/post-install/release
 }
