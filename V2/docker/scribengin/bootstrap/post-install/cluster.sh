@@ -316,8 +316,12 @@ function kafka_start() {
   #Parse the parameters
   clean=$(has_opt --clean $@)
   javaagent=$(has_opt --with-javaagent $@)
+  withzk=$(has_opt --with-zookeeper $@)
   
-
+  if $withzk ; then
+    zookeeper_start
+  fi
+  
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
     kafka_clean
@@ -452,6 +456,7 @@ elif [ "$COMMAND" = "hadoop" ] ; then
 elif [ "$COMMAND" = "test" ] ; then
   echo_javaagent_options $@
 else
+  echo "Usage: ./cluster.sh [command] [subcommand] [options]"
   echo "cluster command options: "
   echo "  exec                             : To execute the shell command on all the servers or a group of servers"
   echo "  sync                             : To copy this program to the fetcher members"
@@ -459,4 +464,5 @@ else
   echo "  zookeeper start --with-javaagent : Start ZK on all ZK servers, launch JMX on port 10001."
   echo "  kafka [start|stop]               : Start/stop Kafka on all Kafka servers."
   echo "  kafka start --with-javaagent     : Start Kafka on all Kafka servers, launch JMX on port 10001."
+  echo "  kafka start --with-zookeeper     : Start Kafka on all Kafka servers, launch ZooKeeper on all ZooKeeper servers."
 fi
