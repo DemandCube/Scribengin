@@ -27,7 +27,7 @@ public class ScribenginShell extends Shell {
     add("scribengin", new ScribenginCommand());
     add("dataflow", new DataflowCommand());
     add("dataflow-test", new DataflowTestCommand());
-    add("help", new HelpCommand());
+ 
 
   }
 

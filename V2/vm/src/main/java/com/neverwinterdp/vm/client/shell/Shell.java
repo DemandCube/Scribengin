@@ -20,6 +20,7 @@ public class Shell {
     this.vmClient = vmClient;
     add("registry", new RegistryCommand());
     add("vm", new VMCommand());
+    add("help", new HelpCommand());
 
   }
 

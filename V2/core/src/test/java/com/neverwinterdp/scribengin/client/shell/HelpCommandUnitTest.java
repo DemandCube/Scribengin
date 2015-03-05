@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
@@ -25,12 +26,11 @@ public class HelpCommandUnitTest {
   public void setup() throws Exception {
     vmCluster = new EmbededVMClusterBuilder();
     vmCluster.clean();
-
   }
 
   @After
   public void teardown() throws Exception {
-     vmCluster.clean();
+    vmCluster.clean();
   }
 
   @Test
@@ -42,12 +42,11 @@ public class HelpCommandUnitTest {
     shell.execute("help scribengin");
     shell.execute("help dummy");
     shell.execute("help");
-    
+
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
     EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
     return builder;
   }
-
 }
