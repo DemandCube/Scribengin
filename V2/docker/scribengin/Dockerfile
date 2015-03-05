@@ -72,9 +72,9 @@ ADD tmp/id_rsa*     /tmp/post-install/ssh-config/
 RUN cat             /tmp/post-install/ssh-config/id_rsa.pub > /tmp/post-install/ssh-config/authorized_keys
 RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/ssh-config/authorized_keys
 
-#Move jvmagent to VM
-RUN mkdir -p /opt/jvmagent/
-RUN cp -r /tmp/post-install/release/jvmagent/* /opt/jvmagent/
+#Move Scribengin release
+RUN mkdir -p  /opt/scribengin/
+ADD tmp/release /tmp/post-install/release/
 
 
 RUN /tmp/post-install/post-install.sh

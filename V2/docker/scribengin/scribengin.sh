@@ -41,11 +41,7 @@ function build(){
   cd ../../release
   ../../gradlew clean release
   cd "$pwd"
-  if [ -d ./bootstrap/post-install/release ] ; then
-    rm -rf ./bootstrap/post-install/release
-  fi
-  #Move release/build/release here
-  cp -R -f ../../release/build/release ./bootstrap/post-install/release
+  
 }
 
 

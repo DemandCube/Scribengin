@@ -175,9 +175,9 @@ function servers_exec() {
   done
 }
 
-function echo_javaagent_options(){
+function get_javaagent_options(){
   JMXPORT=$1
-  JVM_AGENT_OPTS="-javaagent:/opt/jvmagent/libs/jvmagent.registry-1.0-SNAPSHOT.jar=/opt/jvmagent/libs/"
+  JVM_AGENT_OPTS="-javaagent:/opt/scribengin/jvmagent/libs/jvmagent.registry-1.0-SNAPSHOT.jar=/opt/scribengin/jvmagent/libs"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.port=$JMXPORT"
   JVM_AGENT_OPTS="$JVM_AGENT_OPTS -Dcom.sun.management.jmxremote.local.only=false"
@@ -273,7 +273,7 @@ function zookeeper_start() {
   fi
 
   if $javaagent ; then
-    JVM_AGENT_OPTS=$(echo_javaagent_options $JMXPORT)
+    JVM_AGENT_OPTS=$(get_javaagent_options $JMXPORT)
   fi
   
   servers_exec  "$ZOOKEEPER_SERVERS" "/opt/zookeeper/bin/configure.sh"
@@ -328,7 +328,7 @@ function kafka_start() {
   fi
 
   if $javaagent ; then
-    JVM_AGENT_OPTS=$(echo_javaagent_options)
+    JVM_AGENT_OPTS=$(get_javaagent_options)
   fi
   
   if $javaagent ; then
@@ -454,7 +454,7 @@ elif [ "$COMMAND" = "hadoop" ] ; then
     hadoop_kill_yarn_node $@
   fi
 elif [ "$COMMAND" = "test" ] ; then
-  echo_javaagent_options $@
+  echo "test"
 else
   echo "Usage: ./cluster.sh [command] [subcommand] [options]"
   echo "cluster command options: "
