@@ -59,14 +59,10 @@ public class ScribenginCommandUnitTest {
     String formattedText = formater.format("Masters");
     assertTrue(formattedText.contains("vm-scribengin-master-1"));
     assertTrue(formattedText.contains("/vm/allocated/vm-scribengin-master-2"));
-
   }
-
-  
 
   @Test
   public void testMasterInvalidCommand() throws Exception {
-
     ScribenginClient scribenginClient = shell.getScribenginClient();
     assertEquals(2, scribenginClient.getScribenginMasters().size());
 

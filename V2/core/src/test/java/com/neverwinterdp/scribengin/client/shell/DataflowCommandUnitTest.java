@@ -46,6 +46,7 @@ public class DataflowCommandUnitTest {
 
   @Test
   public void testMasterListCommand() throws Exception {
+    //TODO: what is this test for
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
 
@@ -57,10 +58,10 @@ public class DataflowCommandUnitTest {
   @Test
   @Ignore
   public void testMasterShutdownCommand() throws Exception {
-
     ScribenginClient scribenginClient = shell.getScribenginClient();
     assertEquals(2, scribenginClient.getScribenginMasters().size());
-
+    //TODO: The dataflow shutdown command should look like:
+    // dataflow shutdown --dataflow-id=id
     // shell.execute("registry  dump");
     shell.execute("dataflow master  --shutdown");
     assertEquals(1, scribenginClient.getScribenginMasters().size());
