@@ -1,6 +1,5 @@
 package com.neverwinterdp.kafka.producer;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,7 @@ public class NizarKafkaProducerUnitTest {
   public void testKafkaProducer() throws Exception {
     Map<String, String> kafkaProps = new HashMap<String, String>();
     kafkaProps.put("message.send.max.retries", "5");
-    kafkaProps.put("retry.backoff.ms", "300");
+    kafkaProps.put("retry.backoff.ms", "1000");
     
     final KafkaTool kafkaTool = new KafkaTool("test", cluster.getZKConnect());
     kafkaTool.connect();
@@ -54,9 +53,8 @@ public class NizarKafkaProducerUnitTest {
       //after sending 10 messages we shutdown and continue sending
       //this will make the producer fails after sending about 30 messages
       if(i == 10){
-        new Thread(){
-          public void run(){
-
+        new Thread() {
+          public void run() {
             try {
               TopicMetadata topicMeta = kafkaTool.findTopicMetadata("test");
               PartitionMetadata partitionMeta = topicMeta.partitionsMetadata().get(0);
@@ -67,7 +65,6 @@ public class NizarKafkaProducerUnitTest {
             } catch (Exception e) {
               e.printStackTrace();
             }
-           
           }
         }.start();
       }
@@ -84,15 +81,17 @@ public class NizarKafkaProducerUnitTest {
     TopicMetadata topicMeta = kafkaTool.findTopicMetadata("test");
     PartitionMetadata partitionMeta = topicMeta.partitionsMetadata().get(0);
     KafkaPartitionReader partitionReader = new KafkaPartitionReader("test", "test", partitionMeta);
-    List<byte[]> messages = partitionReader.fetch(10000, 30);
-    for(int i = 0; i < messages.size(); i++) {
-      byte[] message = messages.get(i) ;
-      System.out.println((i + 1) + ". " + new String(message));
+    int count = 0;
+    while(count < 10000) {
+      List<byte[]> messages = partitionReader.fetch(10000, 100);
+      for(int i = 0; i < messages.size(); i++) {
+        byte[] message = messages.get(i) ;
+        count++;
+      }
+      System.out.println("count = " + count);
     }
     partitionReader.commit();
     partitionReader.close();
-
     kafkaTool.close();
   }
 }
-

@@ -27,13 +27,14 @@ import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.util.JSONSerializer;
 
 @Singleton
 public class RegistryImpl implements Registry {
-  public final Id ANYONE_ID = new Id("world", "anyone");
-  public final ArrayList<ACL> DEFAULT_ACL = new ArrayList<ACL>(Collections.singletonList(new ACL(Perms.ALL, ANYONE_ID)));
+  static public final Id ANYONE_ID = new Id("world", "anyone");
+  static public final ArrayList<ACL> DEFAULT_ACL = new ArrayList<ACL>(Collections.singletonList(new ACL(Perms.ALL, ANYONE_ID)));
   
   @Inject
   private RegistryConfig config;
@@ -399,6 +400,11 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
+  public Transaction getTransaction() {
+    return new TransactionImpl(this, zkClient.transaction());
+  }
+  
+  @Override
   public Registry newRegistry() throws RegistryException {
     return new RegistryImpl(config);
   }
@@ -428,7 +434,7 @@ public class RegistryImpl implements Registry {
     }
   }
   
-  private CreateMode toCreateMode(NodeCreateMode mode) {
+  static CreateMode toCreateMode(NodeCreateMode mode) {
     if(mode == NodeCreateMode.PERSISTENT) return CreateMode.PERSISTENT ;
     else if(mode == NodeCreateMode.PERSISTENT_SEQUENTIAL) return CreateMode.PERSISTENT_SEQUENTIAL ;
     else if(mode == NodeCreateMode.EPHEMERAL) return CreateMode.EPHEMERAL ;
@@ -436,7 +442,7 @@ public class RegistryImpl implements Registry {
     throw new RuntimeException("Mode " + mode + " is not supported") ;
   }
   
-  private String realPath(String path) { 
+  String realPath(String path) { 
     if(path.equals("/")) return config.getDbDomain() ;
     return config.getDbDomain() + path; 
   }

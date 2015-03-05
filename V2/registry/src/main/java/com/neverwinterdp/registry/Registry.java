@@ -49,6 +49,8 @@ public interface Registry {
   public void rdelete(String path) throws RegistryException ;
   
   public void rcopy(String path, String toPath) throws RegistryException ;
+  
+  public Transaction getTransaction() ;
   /**
    * Create a new Registry session base on the current configuration
    */
