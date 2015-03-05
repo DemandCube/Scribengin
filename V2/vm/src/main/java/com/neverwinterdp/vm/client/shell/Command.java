@@ -3,7 +3,7 @@ package com.neverwinterdp.vm.client.shell;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Command {
+public abstract class Command {
   private Map<String, Class<? extends SubCommand>> subcommands = new HashMap<>() ;
 
   public void add(String name, Class<? extends SubCommand> type) {
@@ -19,4 +19,11 @@ public class Command {
     cmdInput.mapRemainArgs(subcommand);
     subcommand.execute(shell, cmdInput);
   }
+
+  public Map<String, Class<? extends SubCommand>> getSubcommands() {
+    return subcommands;
+  }
+  
+  public abstract String getDescription();
+  
 }
