@@ -68,6 +68,11 @@ public class DataflowCommand extends Command {
         console.println(executorList.format("Executors", "    "));
       }
     }
+
+    @Override
+    public String getDescription() {
+      return "display more info about dataflows";
+    }
   }
   
   static public class Submit extends SubCommand {
@@ -97,6 +102,11 @@ public class DataflowCommand extends Command {
         shell.execute("registry dump --path /");
       }
     }
+
+    @Override
+    public String getDescription() {
+      return "submit a dataflow";
+    }
   }
   
   static public class Kafka extends SubCommand {
@@ -122,6 +132,11 @@ public class DataflowCommand extends Command {
         ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
         sribenginAssert.waitForEvents(60000);
       }
+    }
+
+    @Override
+    public String getDescription() {
+      return "submit a kafka dataflow";
     }
   }
   
@@ -154,5 +169,15 @@ public class DataflowCommand extends Command {
         sribenginAssert.waitForEvents(90000);
       }
     }
+
+    @Override
+    public String getDescription() {
+      return "submit a HDFS dataflow";
+    }
+  }
+
+  @Override
+  public String getDescription() {
+        return "commands for interacting with dataflows";
   }
 }

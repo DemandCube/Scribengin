@@ -23,9 +23,13 @@ public class ScribenginCommand extends Command {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
-      ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(
-          vmClient));
+      ScribenginClusterBuilder clusterBuilder = new ScribenginClusterBuilder(new VMClusterBuilder(vmClient));
       clusterBuilder.startScribenginMasters();
+    }
+
+    @Override
+    public String getDescription() {
+      return "start a scribenging cluster";
     }
   }
 
@@ -34,6 +38,11 @@ public class ScribenginCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
       client.shutdown();
+    }
+
+    @Override
+    public String getDescription() {
+      return "shutdown a scribengin cluster.";
     }
   }
 
@@ -49,8 +58,12 @@ public class ScribenginCommand extends Command {
           client.getHistoryDataflowDescriptor());
       shell.console().println(historyDflFormater.format("History Dataflows"));
     }
-  }
 
+    @Override
+    public String getDescription() {
+      return "get info about the scribengin cluster";
+    }
+  }
   static public class Master extends SubCommand {
 
     @Parameter(names = "--list", description = "List all running scribengin masters")
@@ -79,8 +92,17 @@ public class ScribenginCommand extends Command {
           }
         }
       } else {
-        System.out.println("Please provide either --shutdown or --list");
+        shell.console().println("Please provide either --shutdown or --list");
       }
     }
+
+    @Override
+    public String getDescription() {
+      return "commands for managing the Scribengin master.";
+    }
+  }
+  @Override
+  public String getDescription() {
+        return "commands for interacting with the scribengin cluster.";
   }
 }

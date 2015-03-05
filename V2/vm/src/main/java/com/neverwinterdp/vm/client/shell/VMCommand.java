@@ -17,6 +17,11 @@ public class VMCommand extends Command {
       VMClusterBuilder clusterBuilder = new VMClusterBuilder(vmClient) ;
       clusterBuilder.start();
     }
+
+    @Override
+    public String getDescription() {
+      return "start a vm";
+    }
   }
   
   static public class Shutdown extends SubCommand {
@@ -24,6 +29,11 @@ public class VMCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient() ;
       vmClient.shutdown();
+    }
+
+    @Override
+    public String getDescription() {
+      return "shutdown a vm";
     }
   }
   
@@ -35,5 +45,15 @@ public class VMCommand extends Command {
       shell.console().println(VMFormater.format("Running VM", vmClient.getRunningVMDescriptors()));
       shell.console().println(VMFormater.format("History VM", vmClient.getHistoryVMDescriptors()));
     }
+
+    @Override
+    public String getDescription() {
+      return "print out info about running and history vms";
+    }
+  }
+
+  @Override
+  public String getDescription() {
+    return "Commands related to VM instances.";
   }
 }

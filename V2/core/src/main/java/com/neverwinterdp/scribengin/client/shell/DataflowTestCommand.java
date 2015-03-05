@@ -27,5 +27,15 @@ public class DataflowTestCommand extends Command {
       cmdInput.mapRemainArgs(test);
       test.run(scribenginShell);
     }
+
+    @Override
+    public String getDescription() {
+      return "creates the sample dataflow";
+    }
+  }
+
+  @Override
+  public String getDescription() {
+    return "a sample dataflow";
   }
 }
