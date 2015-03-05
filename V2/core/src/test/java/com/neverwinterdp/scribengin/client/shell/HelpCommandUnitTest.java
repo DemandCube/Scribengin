@@ -41,6 +41,8 @@ public class HelpCommandUnitTest {
     shell.execute("help registry");
     shell.execute("help scribengin");
     shell.execute("help dummy");
+    shell.execute("help");
+    
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {

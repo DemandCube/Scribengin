@@ -1,10 +1,10 @@
 package com.neverwinterdp.vm.client.shell;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public abstract class Command {
-  private Map<String, Class<? extends SubCommand>> subcommands = new HashMap<>() ;
+  private Map<String, Class<? extends SubCommand>> subcommands = new TreeMap<>() ;
 
   public void add(String name, Class<? extends SubCommand> type) {
     subcommands.put(name, type) ;
