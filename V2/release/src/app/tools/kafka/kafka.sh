@@ -9,9 +9,11 @@ esac
 
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
+echo "bin 1 = $bin"
 
-APP_DIR=`cd $bin/..; pwd; cd $bin`
+APP_DIR=`cd $bin/../..; pwd; cd $bin`
 JAVACMD=$JAVA_HOME/bin/java
+echo "APP_DIR 2 = $APP_DIR"
 
 if [ "x$JAVA_HOME" == "x" ] ; then 
   echo "WARNING JAVA_HOME is not set"
