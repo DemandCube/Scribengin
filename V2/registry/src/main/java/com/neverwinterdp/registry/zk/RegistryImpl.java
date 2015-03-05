@@ -28,6 +28,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
+import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.util.JSONSerializer;
 
@@ -402,6 +403,22 @@ public class RegistryImpl implements Registry {
   @Override
   public Transaction getTransaction() {
     return new TransactionImpl(this, zkClient.transaction());
+  }
+  
+  public <T> T executeBatch(BatchOperations<T> ops, int retry, long timeoutThreshold) throws RegistryException {
+    for(int i = 0;i < retry; i++) {
+      try {
+        T result = ops.execute(this);
+        return result;
+      } catch (RegistryException e) {
+        if(e.getErrorCode() != ErrorCode.Timeout) {
+          throw e;
+        }
+      } catch (Exception e) {
+        throw new RegistryException(ErrorCode.Unknown, e);
+      }
+    }
+    throw new RegistryException(ErrorCode.Unknown, "Fail after " + retry + "tries");
   }
   
   @Override

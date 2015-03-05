@@ -17,7 +17,7 @@ import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 
-public class NizarKafkaProducerUnitTest {
+public class NizarKafkaProducerResearchTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }

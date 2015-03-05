@@ -115,6 +115,20 @@ public class Node {
     return registry.create(path + "/" + name, mode);
   }
   
+  public Node createChild(Transaction transaction, String name, NodeCreateMode mode)  {
+    return createChild(transaction, name, new byte[0], mode);
+  }
+  
+  public <T> Node createChild(Transaction transaction, String name, T data, NodeCreateMode mode)  {
+    return createChild(transaction, name, JSONSerializer.INSTANCE.toBytes(data), mode);
+  }
+  
+  public Node createChild(Transaction transaction, String name, byte[] data, NodeCreateMode mode)  {
+    String childPath = path + "/" + name;
+    transaction.create(childPath, data,  mode);
+    return new Node(registry, childPath);
+  }
+  
   public Node createChild(String name, byte[] data, NodeCreateMode mode) throws RegistryException {
     return registry.create(path + "/" + name, data, mode);
   }

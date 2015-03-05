@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
@@ -55,11 +56,11 @@ public class Lock {
     lockId = null ;
   }
   
-  public <T> T execute(LockOperation<T> op, int retry, long timeoutThreshold) throws RegistryException {
+  public <T> T execute(BatchOperations<T> op, int retry, long timeoutThreshold) throws RegistryException {
     for(int i = 0;i < retry; i++) {
       try {
         lock(timeoutThreshold * (i + 1)) ;
-        T result = op.execute();
+        T result = op.execute(registry);
         unlock();
         return result;
       } catch (RegistryException e) {

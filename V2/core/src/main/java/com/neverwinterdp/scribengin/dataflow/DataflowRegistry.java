@@ -6,13 +6,14 @@ import java.util.List;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.lock.Lock;
-import com.neverwinterdp.registry.lock.LockOperation;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
@@ -110,15 +111,19 @@ public class DataflowRegistry {
   
   public DataflowTaskDescriptor assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
     Lock lock = tasksLock.getLock("write") ;
-    LockOperation<DataflowTaskDescriptor> getAssignedtaskOp = new LockOperation<DataflowTaskDescriptor>() {
+    BatchOperations<DataflowTaskDescriptor> getAssignedtaskOp = new BatchOperations<DataflowTaskDescriptor>() {
       @Override
-      public DataflowTaskDescriptor execute() throws Exception {
+      public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
         byte[] data  = tasksAvailableQueue.poll();
         if(data == null) return null;
         String taskName = new String(data);
         Node childNode = tasksDescriptors.getChild(taskName);
-        Node assignedTaskNode = tasksAssigned.createChild(taskName, NodeCreateMode.PERSISTENT);
-        assignedTaskNode.createChild("heartbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
+        
+        Transaction transaction = registry.getTransaction();
+        Node assignedTaskNode = tasksAssigned.createChild(transaction, taskName, NodeCreateMode.PERSISTENT);
+        assignedTaskNode.createChild(transaction, "heartbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
+        transaction.commit();
+        
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
         return descriptor;
       }
@@ -141,9 +146,9 @@ public class DataflowRegistry {
 
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
     Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> suspendtOp = new LockOperation<Boolean>() {
+    BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
-      public Boolean execute() throws Exception {
+      public Boolean execute(Registry registry) throws RegistryException {
         descriptor.setStatus(Status.SUSPENDED);
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
@@ -158,9 +163,9 @@ public class DataflowRegistry {
 
   public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
     Lock lock = tasksLock.getLock("write") ;
-    LockOperation<Boolean> commitOp = new LockOperation<Boolean>() {
+    BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
-      public Boolean execute() throws Exception {
+      public Boolean execute(Registry registry) throws RegistryException {
         descriptor.setStatus(Status.TERMINATED);
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
