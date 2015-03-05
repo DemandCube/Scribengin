@@ -25,6 +25,19 @@ public class HelpCommand extends Command {
     shell.console().println("Available commands:");
     shell.console().println("==================");
 
+    /**
+     * TODO: 
+     * 1. You can have a method to print out the subcommand and then:
+     *
+     * if(commands.containsKey(subcommand)) {
+     *   print the sub command
+     * } else {
+     *   print All
+     * }
+     * Keep in mind that the goal is to make the code easier to read
+     * 
+     * 2. I remember that I put this HelpCommand sample in vm what is the reason for you to move to scribengin
+     */
     for (Map.Entry<String, Command> entry : commands.entrySet()) {
       if (cmdInput.getSubCommand() !=null && commands.keySet().contains(cmdInput.getSubCommand()))
         if (!entry.getKey().equals(cmdInput.getSubCommand())) {
