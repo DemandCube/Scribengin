@@ -53,9 +53,9 @@ RUN wget -q -O - http://mirrors.digipower.vn/apache/zookeeper/zookeeper-3.4.6/zo
 RUN mv /opt/zookeeper-3.4.6 /opt/zookeeper
 RUN cp /opt/zookeeper/conf/zoo_sample.cfg /opt/zookeeper/conf/zoo.cfg
 
-RUN wget -q http://apache.01link.hk/kafka/0.8.1.1/kafka_2.9.2-0.8.1.1.tgz -O /tmp/kafka_2.9.2-0.8.1.1.tgz
-RUN tar xfz /tmp/kafka_2.9.2-0.8.1.1.tgz -C /opt
-RUN mv /opt/kafka_2.9.2-0.8.1.1 /opt/kafka
+RUN wget -q http://apache.01link.hk/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz -O /tmp/kafka_2.10-0.8.2.0.tgz
+RUN tar xfz /tmp/kafka_2.10-0.8.2.0.tgz -C /opt
+RUN mv /opt/kafka_2.10-0.8.2.0 /opt/kafka
 
 RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
 RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
