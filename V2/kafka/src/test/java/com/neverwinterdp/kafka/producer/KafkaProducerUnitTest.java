@@ -1,5 +1,6 @@
 package com.neverwinterdp.kafka.producer;
 
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class KafkaProducerUnitTest {
     cluster.start();
     Thread.sleep(2000);
   }
-  
+
   @After
   public void tearDown() throws Exception {
     cluster.shutdown();
@@ -44,37 +45,44 @@ public class KafkaProducerUnitTest {
     Map<String, String> kafkaProps = new HashMap<String, String>();
     kafkaProps.put("message.send.max.retries", "5");
     kafkaProps.put("retry.backoff.ms", "300");
-    
+
     KafkaTool kafkaTool = new KafkaTool("test", cluster.getZKConnect());
     kafkaTool.connect();
     KafkaWriter writer = new KafkaWriter("test", kafkaProps, cluster.getKafkaConnect());
-    for(int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
       writer.send("test", "test-1-" + i);
     }
     System.out.println("Send before leader shutdown");
     TopicMetadata topicMeta = kafkaTool.findTopicMetadata("test");
     PartitionMetadata partitionMeta = topicMeta.partitionsMetadata().get(0);
-    Broker partitionLeader = partitionMeta.leader() ;
+    Broker partitionLeader = partitionMeta.leader();
     Server kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
     System.out.println("Shutdown kafka server " + kafkaServer.getPort());
     kafkaServer.shutdown();
-    for(int i = 0; i < 10; i++) {
+    topicMeta = kafkaTool.findTopicMetadata("test");
+    partitionMeta = topicMeta.partitionsMetadata().get(0);
+     partitionLeader = partitionMeta.leader();
+     kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
+    System.out.println("Shutdown kafka server " + kafkaServer.getPort());
+    kafkaServer.shutdown();
+    for (int i = 0; i < 10; i++) {
       writer.send("test", "test-2-" + i);
     }
     System.out.println("Send after leader shutdown");
     writer.close();
     kafkaTool.close();
     System.out.println("send done...");
-    
+
     kafkaTool.connect();
     topicMeta = kafkaTool.findTopicMetadata("test");
     partitionMeta = topicMeta.partitionsMetadata().get(0);
     KafkaPartitionReader partitionReader = new KafkaPartitionReader("test", "test", partitionMeta);
     List<byte[]> messages = partitionReader.fetch(10000, 30);
-    for(int i = 0; i < messages.size(); i++) {
-      byte[] message = messages.get(i) ;
+    for (int i = 0; i < messages.size(); i++) {
+      byte[] message = messages.get(i);
       System.out.println((i + 1) + ". " + new String(message));
     }
+    assertEquals(20, messages.size());
     partitionReader.commit();
     partitionReader.close();
 

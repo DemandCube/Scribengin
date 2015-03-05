@@ -10,54 +10,72 @@ import com.neverwinterdp.vm.client.VMClient;
 
 public class RegistryCommand extends Command {
   public RegistryCommand() {
-    add("dump", Dump.class) ;
+    add("dump", Dump.class);
   }
-  
+
   static public class Dump extends SubCommand {
-    @Parameter(names = "--path", description = "The path to dump, the default path is the root /")
+    @Parameter(names = "--path", description = "The path to dump, the default path is root /")
     private String path = "/";
-    
+
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
       Registry registry = vmClient.getRegistry();
       List<String> nodes = registry.getChildren(path);
       shell.console().println(path);
-      for(String node : nodes) {
+      for (String node : nodes) {
         dump(path, node, registry, shell.console(), "  ");
       }
+
     }
-    
-    private void dump(String parent, String node, Registry registry, Console console, String indentation) throws IOException, RegistryException {
-      //During the recursive traverse, a node can be added or removed by the other process
-      //So we can ignore all the No node exists exception
+
+    public String getPath() {
+      return path;
+    }
+
+    private void dump(String parent, String node, Registry registry, Console console,
+        String indentation) throws IOException, RegistryException {
+      // During the recursive traverse, a node can be added or removed by the
+      // other process
+      // So we can ignore all the No node exists exception
       String path = parent + "/" + node;
-      if("/".equals(parent)) path = "/" + node;
+      if ("/".equals(parent))
+        path = "/" + node;
       byte[] data = {};
       try {
         data = registry.getData(path);
-      } catch(RegistryException ex) {
+      } catch (RegistryException ex) {
       }
       String stringData = "";
-      if(data != null && data.length > 0) {
+      if (data != null && data.length > 0) {
         stringData = " - " + new String(data);
         stringData = stringData.replace("\r\n", " ");
         stringData = stringData.replace("\n", " ");
-        if(stringData.length() > 80) {
+        if (stringData.length() > 80) {
           stringData = stringData.substring(0, 80);
         }
       }
       console.println(indentation + node + stringData);
-      List<String > children = null ;
+      List<String> children = null;
       try {
         children = registry.getChildren(path);
-      } catch(RegistryException ex) {
+      } catch (RegistryException ex) {
       }
-      if(children != null) {
-        for(String child : children) {
+      if (children != null) {
+        for (String child : children) {
           dump(path, child, registry, console, indentation + "  ");
         }
       }
     }
+
+    @Override
+    public String getDescription() {
+      return "dump contents of the registry path";
+    }
+  }
+
+  @Override
+  public String getDescription() {
+    return "Commands for querying the registry";
   }
 }
