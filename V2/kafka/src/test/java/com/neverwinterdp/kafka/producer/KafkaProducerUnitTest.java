@@ -56,15 +56,20 @@ public class KafkaProducerUnitTest {
     TopicMetadata topicMeta = kafkaTool.findTopicMetadata("test");
     PartitionMetadata partitionMeta = topicMeta.partitionsMetadata().get(0);
     Broker partitionLeader = partitionMeta.leader();
+    System.err.println("port to shutdown = " + partitionLeader.port());
     Server kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
-    System.out.println("Shutdown kafka server " + kafkaServer.getPort());
+    System.err.println("Shutdown kafka server " + kafkaServer.getPort());
     kafkaServer.shutdown();
-    topicMeta = kafkaTool.findTopicMetadata("test");
-    partitionMeta = topicMeta.partitionsMetadata().get(0);
-     partitionLeader = partitionMeta.leader();
-     kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
-    System.out.println("Shutdown kafka server " + kafkaServer.getPort());
-    kafkaServer.shutdown();
+    
+    //kafkaTool = new KafkaTool("test", cluster.getZKConnect());
+    //kafkaTool.connect();
+    //topicMeta = kafkaTool.findTopicMetadata("test");
+    //partitionMeta = topicMeta.partitionsMetadata().get(0);
+    //partitionLeader = partitionMeta.leader();
+    //System.err.println("available kafka leader = " + partitionLeader.port());
+    //kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
+    //System.err.println("Available kafka server " + kafkaServer.getPort());
+    //kafkaServer.shutdown();
     for (int i = 0; i < 10; i++) {
       writer.send("test", "test-2-" + i);
     }

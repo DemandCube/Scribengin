@@ -86,6 +86,23 @@ public class KafkaTool implements Closeable {
     zkClient.close();
   }
   
+  public void deleteTopic(String topicName) throws Exception {
+    int sessionTimeoutMs = 1000;
+    int connectionTimeoutMs = 1000;
+    ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
+    AdminUtils.deleteTopic(zkClient, topicName);
+    zkClient.close();
+  }
+  
+  public boolean topicExits(String topicName) throws Exception {
+    int sessionTimeoutMs = 1000;
+    int connectionTimeoutMs = 1000;
+    ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
+    boolean exists = AdminUtils.topicExists(zkClient, topicName) ;
+    zkClient.close();
+    return exists;
+  }
+  
   public String getKafkaBrokerList() throws KeeperException, InterruptedException  {
     StringBuilder b = new StringBuilder();
     List<BrokerRegistration> registrations = getBrokerRegistration();

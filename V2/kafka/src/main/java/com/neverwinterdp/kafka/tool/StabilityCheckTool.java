@@ -62,7 +62,8 @@ public class StabilityCheckTool {
   private String sampleData ;
   
   public void run(String[] args) throws Exception {
-    new JCommander(this, args);
+    JCommander jcommander = new JCommander(this, args);
+    jcommander.usage();
     run();
   }
   
@@ -79,6 +80,9 @@ public class StabilityCheckTool {
     KafkaTool kafkaTool = new KafkaTool(NAME, zkConnect);
     kafkaTool.connect();
     String kafkaConnects = kafkaTool.getKafkaBrokerList();
+    if(kafkaTool.topicExits(topic)) {
+      kafkaTool.deleteTopic(topic);
+    }
     kafkaTool.createTopic(topic, replication, numberOfPartition);
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
