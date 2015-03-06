@@ -45,6 +45,14 @@ public class KafkaProducerBugsUnitTest {
     cluster.shutdown();
   }
 
+  /**
+   * This unit test show that the kafka producer loose the messages when while one process send the messages continuosly
+   * and another process shutdown the kafka partition leader
+   * 
+   * REF: http://qnalist.com/questions/5034216/lost-messages-during-leader-election
+   * REF: https://issues.apache.org/jira/browse/KAFKA-1211
+   * @throws Exception
+   */
   @Test
   public void kafkaProducerLooseMessageWhenThePartitionLeaderShutdown() throws Exception {
     Map<String, String> kafkaProps = new HashMap<String, String>();
@@ -63,11 +71,11 @@ public class KafkaProducerBugsUnitTest {
     //send 10 000 messages
     for(int i = 0; i < 10000; i++) {
       writer.send("test", 0, "key-" + i, "test-1-" + i);
-      //after sending 10 messages we shutdown and continue sending
-      //this will make the producer fails after sending about 30 messages
+      //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
         KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller("test", 0);
         new Thread(leaderKiller).start();
+        //IF we use the same writer thread to shutdown the leader and resume the sending. No message are lost
         //leaderKiller.run();
       }
     }
