@@ -55,6 +55,7 @@ run                   : To run the containers(hadoop, zookeeper, kafka...)
   Other commands:
   ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command
   scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container
+  update-hosts		: The update-hosts use to update /etc/hosts file of the host machine with docker containers details
 ````
 
 #To build the Docker cluster and run Scribengin#
@@ -117,18 +118,16 @@ You can run the command 'docker ps' to make sure that all those containers are l
 
 #####Editing your /etc/hosts file
 
-The ```./docker.sh container run``` command should print out the name and the information about the hostnames and ip of the containers. Copy the output from your console to /etc/hosts.  The following is an example of what you're looking for (Don't actually copy the following into your hosts file)
+The below command will update host machines /etc/hosts with the hostnames and ip of the containers.
+Note: Run this command as root or sudo user.
+
+For root user
 ````
-#Copy this print out to your /etc/hosts
-#DON'T ACTUALLY COPY THIS SNIPPET, GRAB THE OUTPUT FROM YOUR CONSOLE!!
-172.17.0.81 kafka-3
-172.17.0.80 kafka-2
-172.17.0.79 kafka-1
-172.17.0.78 zookeeper
-172.17.0.77 hadoop-worker-3
-172.17.0.76 hadoop-worker-2
-172.17.0.75 hadoop-worker-1
-172.17.0.74 hadoop-master
+$./docker.sh update-hosts
+````
+For sudo user
+````
+$sudo ./docker.sh update-hosts
 ````
 
 If you use the MAC OS, you need to route the ip
