@@ -1,9 +1,11 @@
 package com.neverwinterdp.scribengin.kafka.sink;
 
+import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
+//TODO: Allow the writer write to the assigned partition and configure the send time out
 public class KafkaSinkStreamWriter implements SinkStreamWriter {
   private SinkStreamDescriptor descriptor;
   private KafkaWriter kafkaWriter ;
@@ -17,7 +19,7 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   
   @Override
   public void append(Record record) throws Exception {
-    kafkaWriter.send(topic, record);
+    kafkaWriter.send(topic, record, 5000);
   }
 
 

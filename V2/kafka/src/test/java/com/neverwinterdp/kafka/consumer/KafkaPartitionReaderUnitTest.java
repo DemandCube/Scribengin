@@ -43,7 +43,7 @@ public class KafkaPartitionReaderUnitTest {
     KafkaWriter writer = new KafkaWriter(NAME, cluster.getKafkaConnect());
     for(int i = 0; i < 100; i++) {
       String hello = "Hello " + i;
-      writer.send("hello", 0, "key-" + i, hello);
+      writer.send("hello", 0, "key-" + i, hello, 5000);
     }
     writer.close();
     

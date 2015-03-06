@@ -8,6 +8,8 @@ import kafka.cluster.Broker;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,15 +64,18 @@ public class KafkaProducerBugsUnitTest {
     kafkaProps.put("queue.buffering.max.messages", "15000");
     //kafkaProps.put("request.required.acks", "-1");
     kafkaProps.put("topic.metadata.refresh.interval.ms", "-1"); //negative value will refresh on failure
-    kafkaProps.put("batch.num.messages", "200");
+    kafkaProps.put("batch.num.messages", "100");
     kafkaProps.put("producer.type", "sync");
     //new config:
     kafkaProps.put("acks", "all");
     
     KafkaWriter writer = new KafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
-    //send 10 000 messages
-    for(int i = 0; i < 10000; i++) {
-      writer.send("test", 0, "key-" + i, "test-1-" + i);
+    int NUM_OF_SENT_MESSAGES = 5000 ;
+    for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
+      
+      //Use this send to print out more detail about the message lost
+      //writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i) );
+      writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
         KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller("test", 0);
@@ -83,7 +88,7 @@ public class KafkaProducerBugsUnitTest {
     System.out.println("send done...");
     
     try {
-      MessageConsumerCheckTool checkTool = new MessageConsumerCheckTool("test", 10000);
+      MessageConsumerCheckTool checkTool = new MessageConsumerCheckTool("test", NUM_OF_SENT_MESSAGES);
       checkTool.check();
     } catch(AssertionError error) {
       //This error is expected as it is a kafka producer bug
@@ -124,10 +129,10 @@ public class KafkaProducerBugsUnitTest {
         }
         if(messageRead == 0) {
           cannotReadCount++;
-          System.out.println("Check Tool: Cannot read more message " + messageCount);
+          System.out.println("Check Tool: Cannot read more than " + messageCount + " messages");
         }
       }
-      System.out.println("Check Tool: number of consumed message " + messageCount);
+      System.out.println("Check Tool: number of the consumed messages " + messageCount);
       for(int k = 0; k < partitionReader.length; k++) {
         partitionReader[k].commit();
         partitionReader[k].close();
@@ -135,6 +140,20 @@ public class KafkaProducerBugsUnitTest {
       kafkaTool.close();
       if(messageCount != expectNumberOfMessage) {
         Assert.fail("Message check tool expect to consume " + expectNumberOfMessage + ", but can consume only " + messageCount);
+      }
+    }
+  }
+  
+  class MessageFailDebugCallback implements Callback {
+    private String description ;
+    MessageFailDebugCallback(String desc) {
+      this.description = desc;
+    }
+    
+    @Override
+    public void onCompletion(RecordMetadata metadata, Exception exception) {
+      if(exception != null) {
+        System.err.println(description + ". Message  failed due to " + exception.getMessage());
       }
     }
   }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import kafka.javaapi.PartitionMetadata;
 
+import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.source.CommitPoint;
 import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;

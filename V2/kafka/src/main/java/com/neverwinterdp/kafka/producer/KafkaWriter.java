@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -51,28 +52,33 @@ public class KafkaWriter {
     producer = new KafkaProducer<String, String>(kafkaProperties);
   }
 
-  public void send(String topic, String data) throws Exception {
+  public void send(String topic, String data, long timeout) throws Exception {
     String key = name + idTracker.getAndIncrement();
     ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, data);
     producer.send(record);
   }
   
-  public void send(String topic, String key, String data) throws Exception {
+  public void send(String topic, String key, String data, long timeout) throws Exception {
     ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, data);
     producer.send(record);
   }
   
-  public void send(String topic, int partition, String key, String data) throws Exception {
+  public void send(String topic, int partition, String key, String data, long timeout) throws Exception {
     ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, partition, key, data);
     producer.send(record);
   }
   
-  public <T> void send(String topic, T obj) throws Exception {
+  public void send(String topic, int partition, String key, String data, Callback callback, long timeout) throws Exception {
+    ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, partition, key, data);
+    producer.send(record, callback);
+  }
+  
+  public <T> void send(String topic, T obj, long timeout) throws Exception {
     String json = JSONSerializer.INSTANCE.toString(obj);
-    send(topic, json);
+    send(topic, json, timeout);
   }
 
-  public void send(String topic, List<String> dataHolder) throws Exception {
+  public void send(String topic, List<String> dataHolder, long timeout) throws Exception {
     for (int i = 0; i < dataHolder.size(); i++) {
       String key = name + idTracker.getAndIncrement();
       ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, dataHolder.get(i));

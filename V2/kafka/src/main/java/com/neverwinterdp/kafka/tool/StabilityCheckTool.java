@@ -57,6 +57,9 @@ public class StabilityCheckTool {
   @Parameter(names = "--exit-wait-time", description = "The message size in bytes")
   private long    exitWaitTime = 10000;
   
+  @Parameter(names = "--send-timeout", description = "Timeout when the writer cannot send due to error or the buffer is full")
+  private long    sendTimeout = 10000;
+  
   private Map<String, String> kafkaProducerProps = new HashMap<String, String>();
   
   private String sampleData ;
@@ -137,7 +140,7 @@ public class StabilityCheckTool {
         boolean terminated = false ;
         while(!terminated) {
           String key = "p:" + metadata.partitionId() + ":" + writeCount ;
-          writer.send(topic,  metadata.partitionId(), key, sampleData);
+          writer.send(topic,  metadata.partitionId(), key, sampleData, sendTimeout);
           writeCount++;
           //Check max message per partition
           if(writeCount >= maxMessagePerPartition) {
