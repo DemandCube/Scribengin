@@ -13,7 +13,7 @@ import kafka.javaapi.TopicMetadata;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
-import com.neverwinterdp.kafka.producer.KafkaWriter;
+import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.util.text.TabularFormater;
 
 /**
@@ -135,7 +135,7 @@ public class StabilityCheckTool {
     }
     
     public void run() {
-      KafkaWriter writer = new KafkaWriter(NAME, kafkaProducerProps, kafkaConnects);
+      DefaultKafkaWriter writer = new DefaultKafkaWriter(NAME, kafkaProducerProps, kafkaConnects);
       try {
         boolean terminated = false ;
         while(!terminated) {

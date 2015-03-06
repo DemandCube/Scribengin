@@ -10,7 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.kafka.producer.KafkaWriter;
+import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
@@ -40,7 +40,7 @@ public class KafkaPartitionReaderUnitTest {
   @Test
   public void testReader() throws Exception {
     String NAME = "test";
-    KafkaWriter writer = new KafkaWriter(NAME, cluster.getKafkaConnect());
+    DefaultKafkaWriter writer = new DefaultKafkaWriter(NAME, cluster.getKafkaConnect());
     for(int i = 0; i < 100; i++) {
       String hello = "Hello " + i;
       writer.send("hello", 0, "key-" + i, hello, 5000);

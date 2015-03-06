@@ -69,7 +69,7 @@ public class KafkaProducerBugsUnitTest {
     //new config:
     kafkaProps.put("acks", "all");
     
-    KafkaWriter writer = new KafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
+    DefaultKafkaWriter writer = new DefaultKafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
     int NUM_OF_SENT_MESSAGES = 5000 ;
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       
