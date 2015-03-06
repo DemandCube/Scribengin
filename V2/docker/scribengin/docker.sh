@@ -56,6 +56,15 @@ function build_image() {
   echo "Prepare the temporary configuration files"
   mkdir ./tmp
   
+  if [ ! -d ../../release/build/release ] ; then
+    ./scribengin.sh build
+  fi
+  
+  #Move release/build/release to ./tmp
+  cp -R -f ../../release/build/release ./tmp/release
+  
+  
+  
   #Use existing key if it already exists
   if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
     cat ~/.ssh/id_rsa > ./tmp/id_rsa
