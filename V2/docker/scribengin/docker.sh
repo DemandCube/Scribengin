@@ -90,21 +90,6 @@ function launch_containers() {
   h1 "Launch hadoop containers"
   docker run -d -p 22 -p 50070:50070 -p 9000:9000 -p 8030:8030 -p 8032:8032 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
   
-#  while [ "$1" != "" ]; do
-#    case $1 in
-#      --kafka-server)       shift
-#                            NUM_KAFKA_BROKER=$1
-#                            ;;
-#      --zk-server)          shift
-#                            NUM_ZOOKEEPER_SERVER=$1
-#                            ;;
-#      --hadoop-worker)      shift
-#                            NUM_HADOOP_WORKER=$1
-#                            ;;
-#    esac
-#    shift
-#  done
-
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
   NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
   NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
