@@ -86,6 +86,12 @@ public class KafkaTool implements Closeable {
     zkClient.close();
   }
   
+  /**
+   * This delete method doesn't work
+   * @param topicName
+   * @throws Exception
+   */
+  @Deprecated
   public void deleteTopic(String topicName) throws Exception {
     int sessionTimeoutMs = 1000;
     int connectionTimeoutMs = 1000;
