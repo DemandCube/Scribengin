@@ -205,6 +205,19 @@ function container_update_hosts() {
   done
 }
 
+function host_machine_update_hosts() {
+  #Updating /etc/hosts file on host machine
+  h1 "Updating /etc/hosts file of host machine"
+  for container_id in $(container_ids); do
+    hostname=$(docker inspect -f '{{ .Config.Hostname }}' $container_id)
+    if grep -w -q "$hostname" /etc/hosts; then 
+      cp /etc/hosts /etc/hosts.bak && sed -e '/'"$hostname"'/s=^[0-9\.]*='"$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $hostname)"'=' /etc/hosts.bak > /etc/hosts; 
+    else
+      echo "$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname"  >> /etc/hosts; 
+    fi
+  done
+}
+
 function container_clean() {
   for container_id in $(container_ids); do
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
@@ -266,6 +279,8 @@ elif [ "$COMMAND" = "scp" ] ; then
   do_scp $@
 elif [ "$COMMAND" = "ip-route" ] ; then
   sudo route -n add 172.17.0.0/16 `boot2docker ip`
+elif [ "$COMMAND" = "update-hosts" ] ; then
+  host_machine_update_hosts
 else
   h1 "Docker Images"
   docker images
