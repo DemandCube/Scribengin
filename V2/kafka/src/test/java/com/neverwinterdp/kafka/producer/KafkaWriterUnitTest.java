@@ -24,7 +24,7 @@ import com.neverwinterdp.server.kafka.KafkaCluster;
  * 
  * @author Tuan
  */
-public class KafkaProducerBugsUnitTest {
+public class KafkaWriterUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
@@ -74,8 +74,8 @@ public class KafkaProducerBugsUnitTest {
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       
       //Use this send to print out more detail about the message lost
-      writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i), 5000 );
-      //writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
+      //writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i) );
+      writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
         KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller("test", 0);
@@ -153,7 +153,7 @@ public class KafkaProducerBugsUnitTest {
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if(exception != null) {
-        System.err.println(description + ". Message  failed due to " + exception.getMessage() + ", thread = " + Thread.currentThread().getName());
+        System.err.println(description + ". Message  failed due to " + exception.getMessage());
       }
     }
   }

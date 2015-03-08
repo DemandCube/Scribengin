@@ -20,11 +20,9 @@ import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 /**
- * This unit test is used to isolate and show all the kafka producer bugs and limitation
- * 
  * @author Tuan
  */
-public class KafkaProducerBugsUnitTest {
+public class AckKafkaWriterUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
@@ -47,14 +45,6 @@ public class KafkaProducerBugsUnitTest {
     cluster.shutdown();
   }
 
-  /**
-   * This unit test show that the kafka producer loose the messages when while one process send the messages continuosly
-   * and another process shutdown the kafka partition leader
-   * 
-   * REF: http://qnalist.com/questions/5034216/lost-messages-during-leader-election
-   * REF: https://issues.apache.org/jira/browse/KAFKA-1211
-   * @throws Exception
-   */
   @Test
   public void kafkaProducerLooseMessageWhenThePartitionLeaderShutdown() throws Exception {
     Map<String, String> kafkaProps = new HashMap<String, String>();
@@ -69,13 +59,11 @@ public class KafkaProducerBugsUnitTest {
     //new config:
     kafkaProps.put("acks", "all");
     
-    DefaultKafkaWriter writer = new DefaultKafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
+    AckKafkaWriter writer = new AckKafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
     int NUM_OF_SENT_MESSAGES = 5000 ;
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
-      
       //Use this send to print out more detail about the message lost
-      writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i), 5000 );
-      //writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
+      writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i), 5000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
         KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller("test", 0);
@@ -84,7 +72,7 @@ public class KafkaProducerBugsUnitTest {
         //leaderKiller.run();
       }
     }
-    writer.close();
+    writer.waitAndClose(10000);;
     System.out.println("send done...");
     
     try {
@@ -117,7 +105,7 @@ public class KafkaProducerBugsUnitTest {
       }
       
       int messageCount = 0, cannotReadCount = 0;
-      while(messageCount < expectNumberOfMessage && cannotReadCount < 5) {
+      while(messageCount < expectNumberOfMessage && cannotReadCount < 25) {
         int messageRead = 0 ;
         for(int k = 0; k < partitionReader.length; k++) {
           List<byte[]> messages = partitionReader[k].fetch(100000/*fetch size*/, 100/*max read*/, 1000 /*max wait*/);
@@ -153,7 +141,7 @@ public class KafkaProducerBugsUnitTest {
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if(exception != null) {
-        System.err.println(description + ". Message  failed due to " + exception.getMessage() + ", thread = " + Thread.currentThread().getName());
+        System.err.println(description + ". Message  failed due to " + exception.getMessage());
       }
     }
   }

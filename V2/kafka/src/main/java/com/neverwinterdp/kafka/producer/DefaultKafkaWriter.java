@@ -16,7 +16,7 @@ import com.neverwinterdp.util.JSONSerializer;
  * @author Tuan Nguyen
  * @email tuan08@gmail.com
  */
-public class DefaultKafkaWriter {
+public class DefaultKafkaWriter implements KafkaWriter {
   private String name;
   private Properties kafkaProperties;
   private KafkaProducer<String, String> producer;
