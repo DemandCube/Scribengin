@@ -60,7 +60,7 @@ public class AckKafkaWriterUnitTest {
     //kafkaProps.put("acks", "all");
 
     String TOPIC = "test";
-    int    NUM_OF_SENT_MESSAGES = 10000;
+    int    NUM_OF_SENT_MESSAGES = 100000;
     int    MESSAGE_SIZE = 4092;
     
     KafkaTool kafkaTool = new KafkaTool(TOPIC, cluster.getZKConnect());
