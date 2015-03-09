@@ -41,6 +41,7 @@ public class KafkaPartitionReader {
     this.topic = topic;
     this.partitionMetadata = partitionMetadata;
     Broker broker = partitionMetadata.leader();
+    
     consumer = new SimpleConsumer(broker.host(), broker.port(), 100000, 64 * 1024, name);
     currentOffset = getLastCommitOffset();
   }
@@ -108,7 +109,12 @@ public class KafkaPartitionReader {
     
     FetchResponse fetchResponse = consumer.fetch(req);
     if(fetchResponse.hasError()) {
-      throw new Exception("TODO: handle the error, reset the consumer....");
+      short errorCode = fetchResponse.errorCode(topic, partitionMetadata.partitionId());
+      String msg = 
+          "Error code: " + errorCode + "\n" +
+          "Partition:  " + partitionMetadata.partitionId() + "\n" +
+          "TODO: handle the error, reset the consumer....";
+      throw new Exception(msg);
     }
     List<byte[]> holder = new ArrayList<byte[]>();
     ByteBufferMessageSet messageSet = fetchResponse.messageSet(topic, partitionMetadata.partitionId());

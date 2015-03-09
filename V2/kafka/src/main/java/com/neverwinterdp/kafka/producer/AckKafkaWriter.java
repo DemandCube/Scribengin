@@ -59,6 +59,15 @@ public class AckKafkaWriter {
     send(topic, partition, keyBytes, messageBytes, callback, timeout);
   }
   
+  public void send(String topic, byte[] key, byte[] message, Callback callback, long timeout) throws Exception {
+    ProducerRecord<byte[], byte[]> record = new ProducerRecord<byte[], byte[]>(topic, key, message);
+    long id = idTracker.incrementAndGet();
+    WaittingAckProducerRecord<byte[], byte[]> ackRecord = new WaittingAckProducerRecord<byte[], byte[]>(id, record, callback);
+    waittingAckBuffer.add(ackRecord, timeout);
+    AckCallback ackCallback = new AckCallback(id);
+    producer.send(record, ackCallback);
+  }
+  
   public void send(String topic, int partition, byte[] key, byte[] message, Callback callback, long timeout) throws Exception {
     ProducerRecord<byte[], byte[]> record = new ProducerRecord<byte[], byte[]>(topic, partition, key, message);
     long id = idTracker.incrementAndGet();
@@ -67,6 +76,8 @@ public class AckKafkaWriter {
     AckCallback ackCallback = new AckCallback(id);
     producer.send(record, ackCallback);
   }
+  
+  
   
   public void triggerResendThread() {
     if(resendThread == null || !resendThread.isAlive()) {

@@ -16,6 +16,7 @@ public class KafkaMessageCheckTool implements Runnable {
   private String zkConnect;
   private String topic;
   private int    expectNumberOfMessage;
+  private int    fetchSize = 100 * 1024;
   private MessageCounter messageCounter ;
   private boolean interrupt = false ;
   private Thread deamonThread ;
@@ -25,6 +26,8 @@ public class KafkaMessageCheckTool implements Runnable {
     this.topic = topic;
     this.expectNumberOfMessage = expect;
   }
+  
+  public void setFetchSize(int fetchSize) { this.fetchSize = fetchSize; }
   
   public MessageCounter getMessageCounter() { return messageCounter; }
   
@@ -71,7 +74,7 @@ public class KafkaMessageCheckTool implements Runnable {
     interrupt = false;
     while(messageCounter.getTotal() < expectNumberOfMessage && !interrupt) {
       for(int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages = partitionReader[k].fetch(100000/*fetch size*/, 100/*max read*/, 1000 /*max wait*/);
+        List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
       }
     }
