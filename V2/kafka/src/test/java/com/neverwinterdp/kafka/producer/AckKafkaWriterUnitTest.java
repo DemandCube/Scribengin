@@ -17,6 +17,7 @@ import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.util.FileUtil;
 /**
  * @author Tuan
  */
@@ -31,6 +32,7 @@ public class AckKafkaWriterUnitTest {
 
   @Before
   public void setUp() throws Exception {
+    FileUtil.removeIfExist("./build/kafka", false);
     cluster = new KafkaCluster("./build/kafka", 1, 2);
     cluster.setReplication(2);
     cluster.setNumOfPartition(1);
@@ -59,12 +61,12 @@ public class AckKafkaWriterUnitTest {
     
     AckKafkaWriter writer = new AckKafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
     int NUM_OF_SENT_MESSAGES = 10000 ;
-    int MESSAGE_SIZE = 750;
+    int MESSAGE_SIZE = 1000;
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       //Use this send to print out more detail about the message lost
       byte[] key = ("key-" + i).getBytes();
       byte[] message = new byte[MESSAGE_SIZE];
-      writer.send("test", 0, key, message, new MessageFailDebugCallback("message " + i), 30000);
+      writer.send("test", 0, key, message, new MessageFailDebugCallback("message " + i), 40000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
         KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller("test", 0);
@@ -73,7 +75,7 @@ public class AckKafkaWriterUnitTest {
         //leaderKiller.run();
       }
     }
-    writer.waitAndClose(30000);;
+    writer.waitAndClose(10000);;
     System.out.println("send done...");
     
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
