@@ -52,7 +52,7 @@ public class AckKafkaWriter {
     if (producer != null) producer.close();
     producer = new KafkaProducer<byte[], byte[]>(kafkaProperties);
   }
-
+  
   public void send(String topic, int partition, String key, String message, Callback callback, long timeout) throws Exception {
     byte[] keyBytes = key.getBytes();
     byte[] messageBytes = message.getBytes();

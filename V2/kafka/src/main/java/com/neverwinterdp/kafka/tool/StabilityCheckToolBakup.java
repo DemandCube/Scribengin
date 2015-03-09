@@ -12,8 +12,8 @@ import kafka.javaapi.TopicMetadata;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
-import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool.MessageCounter;
 import com.neverwinterdp.util.text.TabularFormater;
 
 /**
@@ -27,7 +27,7 @@ import com.neverwinterdp.util.text.TabularFormater;
  *    start when all the writers terminate.
  * @author Tuan
  */
-public class StabilityCheckTool {
+public class StabilityCheckToolBakup {
   final static public String NAME = "StabilityCheckTool";
   
   @Parameter(names = "--zk-connect", description = "The zk connect string")
@@ -79,6 +79,9 @@ public class StabilityCheckTool {
     
     KafkaMessageCheckTool messageCheckTool = new KafkaMessageCheckTool(zkConnect, topic, numberOfPartition * maxMessagePerPartition);
     
+    Map<Integer, PartitionMessageReader> readers = new HashMap<Integer, PartitionMessageReader>();
+    ExecutorService readerService = Executors.newFixedThreadPool(numberOfPartition);
+    
     KafkaTool kafkaTool = new KafkaTool(NAME, zkConnect);
     kafkaTool.connect();
     String kafkaConnects = kafkaTool.getKafkaBrokerList();
@@ -92,23 +95,31 @@ public class StabilityCheckTool {
       PartitionMessageWriter writer = new PartitionMessageWriter(sel, kafkaConnects);
       writers.put(sel.partitionId(), writer);
       writerService.submit(writer);
+      
+      PartitionMessageReader reader = new PartitionMessageReader(sel);
+      readers.put(sel.partitionId(), reader);
+      readerService.submit(reader);
     }
-    messageCheckTool.runAsDeamon();
     writerService.shutdown();
+    readerService.shutdown();
     
     writerService.awaitTermination(maxDuration, TimeUnit.MILLISECONDS);
     if(!writerService.isTerminated()) {
       writerService.shutdownNow();
     }
-    messageCheckTool.waitForTermination(exitWaitTime);
+    Thread.sleep(exitWaitTime);
+    for(PartitionMessageReader reader : readers.values()) {
+      reader.setTimeout(true);
+    }
+    readerService.awaitTermination(5000, TimeUnit.MILLISECONDS);
     
     TabularFormater formater = new TabularFormater("Partition", "Write", "Read");
-    MessageCounter messageCounter = messageCheckTool.getMessageCounter();
     formater.setIndent("  ");
     for (PartitionMetadata sel : partitionMetadataHolder) {
       int partitionId = sel.partitionId();
       PartitionMessageWriter writer = writers.get(partitionId);
-      formater.addRow(sel.partitionId(), writer.writeCount, messageCounter.getPartitionCount(partitionId));
+      PartitionMessageReader reader = readers.get(partitionId);
+      formater.addRow(sel.partitionId(), writer.writeCount, reader.readCount);
     }
     
     System.out.println(formater.getFormatText());
@@ -151,8 +162,43 @@ public class StabilityCheckTool {
     }
   }
   
+  public class PartitionMessageReader implements Runnable {
+    private PartitionMetadata metadata;
+    private int readCount = 0;
+    private boolean timeout = false;
+    
+    PartitionMessageReader(PartitionMetadata metadata) {
+      this.metadata = metadata;
+    }
+    
+    public void setTimeout(boolean b) { this.timeout = b; }
+    
+    public void run() {
+      KafkaPartitionReader partitionReader = new KafkaPartitionReader(NAME, topic, metadata);
+      try {
+        while(!timeout && readCount < maxMessagePerPartition) {
+          List<byte[]> messages = partitionReader.fetch(100000/*fetch size*/, 500/*max read*/, 500/*ms*/);
+          for(int i = 0; i < messages.size(); i++) {
+            byte[] message = messages.get(i) ;
+            readCount++;
+          }
+        }
+      } catch(InterruptedException ex) {
+      } catch(Exception ex) {
+        ex.printStackTrace();
+      } finally {
+        try {
+          partitionReader.commit();
+          partitionReader.close();
+        } catch(Exception ex) {
+          ex.printStackTrace();
+        }
+      }
+    }
+  }
+  
   static public void main(String[] args) throws Exception {
-    StabilityCheckTool tool = new StabilityCheckTool();
+    StabilityCheckToolBakup tool = new StabilityCheckToolBakup();
     tool.run(args);
   }
 }

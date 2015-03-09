@@ -1,7 +1,6 @@
 package com.neverwinterdp.kafka.producer;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import kafka.cluster.Broker;
@@ -11,11 +10,11 @@ import kafka.javaapi.TopicMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 
-import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
+import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
@@ -86,62 +85,10 @@ public class KafkaProducerBugsUnitTest {
     }
     writer.close();
     System.out.println("send done...");
-    
-    try {
-      MessageConsumerCheckTool checkTool = new MessageConsumerCheckTool("test", NUM_OF_SENT_MESSAGES);
-      checkTool.check();
-    } catch(AssertionError error) {
-      //This error is expected as it is a kafka producer bug
-      System.err.println(error.getMessage());
-    }
-  }
-  
-  class MessageConsumerCheckTool {
-    private String topic;
-    private int expectNumberOfMessage;
-    
-    MessageConsumerCheckTool(String topic, int expect) {
-      this.topic = topic;
-      this.expectNumberOfMessage = expect;
-    }
-    
-    public void check() throws Exception {
-      KafkaTool kafkaTool = new KafkaTool(NAME, cluster.getZKConnect());
-      kafkaTool.connect();
-      
-      TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topic);
-      List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
-      KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
-      for(int i = 0; i < partitionReader.length; i++) {
-        partitionReader[i] = new KafkaPartitionReader(NAME, "test", partitionMetas.get(i));
-      }
-      
-      int messageCount = 0, cannotReadCount = 0;
-      while(messageCount < expectNumberOfMessage && cannotReadCount < 5) {
-        int messageRead = 0 ;
-        for(int k = 0; k < partitionReader.length; k++) {
-          List<byte[]> messages = partitionReader[k].fetch(100000/*fetch size*/, 100/*max read*/, 1000 /*max wait*/);
-          for(int i = 0; i < messages.size(); i++) {
-            byte[] message = messages.get(i) ;
-            messageCount++;
-            messageRead++ ;
-          }
-        }
-        if(messageRead == 0) {
-          cannotReadCount++;
-          System.out.println("Check Tool: Cannot read more than " + messageCount + " messages");
-        }
-      }
-      System.out.println("Check Tool: number of the consumed messages " + messageCount);
-      for(int k = 0; k < partitionReader.length; k++) {
-        partitionReader[k].commit();
-        partitionReader[k].close();
-      }
-      kafkaTool.close();
-      if(messageCount != expectNumberOfMessage) {
-        Assert.fail("Message check tool expect to consume " + expectNumberOfMessage + ", but can consume only " + messageCount);
-      }
-    }
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
+    checkTool.runAsDeamon();
+    checkTool.waitForTermination(20000);
+    Assert.assertTrue( checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
   
   class MessageFailDebugCallback implements Callback {

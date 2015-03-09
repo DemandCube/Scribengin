@@ -22,9 +22,11 @@ public class WaittingAckProducerRecordHolder<K, V> {
   
   public void add(WaittingAckProducerRecord<K, V> record, long timeout) throws Exception {
     if(buffer.size() >= maxSize) {
+      long startTime = System.currentTimeMillis();
       waitForAvailableBuffer(timeout);
       if(buffer.size() >= maxSize) {
-        throw new Exception("Cannot buffer the message after " + timeout + "ms") ;
+        long realWaitTime = System.currentTimeMillis() - startTime;
+        throw new Exception("Cannot buffer the message after " + realWaitTime + "ms, message = " + record.getId()) ;
       }
     }
     synchronized(buffer) {

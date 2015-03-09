@@ -45,6 +45,8 @@ public class KafkaPartitionReader {
     currentOffset = getLastCommitOffset();
   }
   
+  public int getPartition() { return partitionMetadata.partitionId(); }
+  
   public void setFetchSize(int size) { this.fetchSize = size; }
   
   public void commit() throws Exception {
