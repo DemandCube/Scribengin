@@ -1,8 +1,6 @@
 package com.neverwinterdp.command.server;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
