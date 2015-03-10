@@ -49,15 +49,18 @@ EXPOSE 22 2181 9092 50070 8088 9000
 CMD ["/usr/sbin/sshd", "-D"]
 
 #Download java opensource projects
-RUN wget -q -O - http://mirrors.digipower.vn/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz | tar -xzf - -C /opt
+#RUN wget -q -O - http://mirrors.digipower.vn/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz | tar -xzf - -C /opt
+RUN wget -q -O - http://jenkinsdp.do.demandcube.com/zookeeper-3.4.6.tar.gz | tar -xzf - -C /opt
 RUN mv /opt/zookeeper-3.4.6 /opt/zookeeper
 RUN cp /opt/zookeeper/conf/zoo_sample.cfg /opt/zookeeper/conf/zoo.cfg
 
-RUN wget -q http://apache.01link.hk/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz -O /tmp/kafka_2.10-0.8.2.0.tgz
+#RUN wget -q http://apache.01link.hk/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz -O /tmp/kafka_2.10-0.8.2.0.tgz
+RUN wget -q http://jenkinsdp.do.demandcube.com/kafka_2.10-0.8.2.0.tgz -O /tmp/kafka_2.10-0.8.2.0.tgz
 RUN tar xfz /tmp/kafka_2.10-0.8.2.0.tgz -C /opt
 RUN mv /opt/kafka_2.10-0.8.2.0 /opt/kafka
 
-RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
+#RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
+RUN wget -q  http://jenkinsdp.do.demandcube.com/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
 RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
 RUN mv /opt/hadoop-2.4.0 /opt/hadoop
 
