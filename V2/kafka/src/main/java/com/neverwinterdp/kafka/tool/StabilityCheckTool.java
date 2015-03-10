@@ -1,5 +1,6 @@
 package com.neverwinterdp.kafka.tool;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,12 @@ import java.util.concurrent.TimeUnit;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
+
+import org.tap4j.model.TestResult;
+import org.tap4j.model.TestSet;
+import org.tap4j.producer.TapProducer;
+import org.tap4j.producer.TapProducerFactory;
+import org.tap4j.util.StatusValues;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -60,6 +67,13 @@ public class StabilityCheckTool {
   @Parameter(names = "--send-timeout", description = "Timeout when the writer cannot send due to error or the buffer is full")
   private long    sendTimeout = 10000;
   
+  @Parameter(names = "--tap-enable", description = "If set, outputs TAP")
+  private boolean    tapEnabled = false;
+  
+  @Parameter(names = "--tap-file", description = "If TAP is enabled, then output results to this file.")
+  private String tapFile = "stabilitychecktool.xml";
+  
+  
   private Map<String, String> kafkaProducerProps = new HashMap<String, String>();
   
   private String sampleData ;
@@ -71,6 +85,14 @@ public class StabilityCheckTool {
   }
   
   public void run() throws Exception {
+    TapProducer tapProducer = null;
+    TestSet testSet =null;
+    int testNum = 0;
+    if(tapEnabled){
+      tapProducer = TapProducerFactory.makeTapJunitProducer(tapFile);
+      testSet = new TestSet();
+    }
+    
     byte[] sampleDataBytes = new byte[messageSize];
     sampleData = new String(sampleDataBytes);
     
@@ -109,10 +131,29 @@ public class StabilityCheckTool {
       int partitionId = sel.partitionId();
       PartitionMessageWriter writer = writers.get(partitionId);
       formater.addRow(sel.partitionId(), writer.writeCount, messageCounter.getPartitionCount(partitionId));
+      
+      //Deal with TAP output
+      if(tapEnabled){
+        TestResult t = null;
+        if(writer.writeCount == messageCounter.getPartitionCount(partitionId)){
+          t = new TestResult( StatusValues.OK, ++testNum );
+        }
+        else{
+          t = new TestResult( StatusValues.NOT_OK, ++testNum );
+        }
+        
+        t.setDescription( "Test if messages written == messages count from partition "+Integer.toString(sel.partitionId()) );
+        testSet.addTestResult( t );
+      }
     }
     
     System.out.println(formater.getFormatText());
     kafkaTool.close();
+    
+    if(tapEnabled){
+      //System.err.println(tapProducer.dump(testSet));
+      tapProducer.dump(testSet, new File(tapFile));
+    }
   }
   
   public class PartitionMessageWriter implements Runnable {
