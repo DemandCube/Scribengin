@@ -23,10 +23,6 @@ public class WaittingAckProducerRecordHolder<K, V> {
   public void add(WaittingAckProducerRecord<K, V> record, long timeout) throws Exception {
     if(buffer.size() >= maxSize) {
       waitForAvailableBuffer(timeout);
-//      if(buffer.size() >= maxSize) {
-//        long realWaitTime = System.currentTimeMillis() - startTime;
-//        //throw new Exception("Cannot buffer the message after " + realWaitTime + "ms, message = " + record.getId()) ;
-//      }
     }
     synchronized(buffer) {
       buffer.put(record.getId(), record);
@@ -48,14 +44,11 @@ public class WaittingAckProducerRecordHolder<K, V> {
       record = buffer.get(recordId);
       record.setNeedToResend(true);
     }
-    System.err.println("  fail on record " + recordId + ", buffer size = " + buffer.size());
     return record;
   }
   
   synchronized void waitForAvailableBuffer(long waitTime) throws InterruptedException {
-    long start = System.currentTimeMillis();
     wait(waitTime);
-    //System.err.println("  wait for max = " + waitTime + " before buffer, wait time = " + (System.currentTimeMillis() - start) +", buffer size = " + buffer.size());
   }
   
   synchronized void notifyForAvailableBuffer() {

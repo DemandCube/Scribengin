@@ -74,7 +74,7 @@ public class KafkaWriterUnitTest {
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       
       //Use this send to print out more detail about the message lost
-      //writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i) );
+      //writer.send("test", 0, "key-" + i, "test-1-" + i, new FailedAckReportCallback("message " + i) );
       writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
