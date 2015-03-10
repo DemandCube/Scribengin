@@ -213,6 +213,7 @@ function host_machine_update_hosts() {
     if grep -w -q "$hostname" /etc/hosts; then 
       cp /etc/hosts /etc/hosts.bak && sed -e '/'"$hostname"'/s=^[0-9\.]*='"$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $hostname)"'=' /etc/hosts.bak > /etc/hosts; 
     else
+      echo "$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname" 
       echo "$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname"  >> /etc/hosts; 
     fi
   done

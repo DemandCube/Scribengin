@@ -60,7 +60,7 @@ RUN tar xfz /tmp/kafka_2.10-0.8.2.0.tgz -C /opt
 RUN mv /opt/kafka_2.10-0.8.2.0 /opt/kafka
 
 #RUN wget -q  https://archive.apache.org/dist/hadoop/core/hadoop-2.4.0/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
-RUN wget -q  https://jenkinsdp.do.demandcube.com/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
+RUN wget -q  http://jenkinsdp.do.demandcube.com/hadoop-2.4.0.tar.gz -O /tmp/hadoop-2.4.0.tar.gz
 RUN tar xfz /tmp/hadoop-2.4.0.tar.gz -C /opt
 RUN mv /opt/hadoop-2.4.0 /opt/hadoop
 
