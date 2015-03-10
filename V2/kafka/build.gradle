@@ -10,5 +10,5 @@ eclipse {
 
 dependencies {
   compile project(':server')
-  testCompile group: 'org.tap4j', name: 'tap4j', version: '4.1'
+  compile group: 'org.tap4j', name: 'tap4j', version: '4.1'
 }

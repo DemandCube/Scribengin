@@ -1,7 +1,6 @@
 package com.neverwinterdp.kafka.tool;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,17 +8,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.tap4j.model.Directive;
-import org.tap4j.model.Plan;
+import kafka.javaapi.PartitionMetadata;
+import kafka.javaapi.TopicMetadata;
+
 import org.tap4j.model.TestResult;
 import org.tap4j.model.TestSet;
 import org.tap4j.producer.TapProducer;
 import org.tap4j.producer.TapProducerFactory;
-import org.tap4j.util.DirectiveValues;
 import org.tap4j.util.StatusValues;
-
-import kafka.javaapi.PartitionMetadata;
-import kafka.javaapi.TopicMetadata;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -146,7 +142,7 @@ public class StabilityCheckTool {
           t = new TestResult( StatusValues.NOT_OK, ++testNum );
         }
         
-        t.setDescription( "Test if messages written == messages read from partition "+Integer.toString(sel.partitionId()) );
+        t.setDescription( "Test if messages written == messages count from partition "+Integer.toString(sel.partitionId()) );
         testSet.addTestResult( t );
       }
     }
