@@ -57,7 +57,8 @@ public class KafkaPartitionReaderUnitTest {
     kafkaTool.connect();
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata("hello");
     PartitionMetadata partitionMetadata = findPartition(topicMetadata.partitionsMetadata(), partition);
-    KafkaPartitionReader partitionReader = new KafkaPartitionReader(consumerName, "hello", partitionMetadata);
+    KafkaPartitionReader partitionReader = 
+        new KafkaPartitionReader(consumerName, cluster.getZKConnect(), "hello", partitionMetadata);
     List<byte[]> messages = partitionReader.fetch(10000, maxRead);
     for(int i = 0; i < messages.size(); i++) {
       byte[] message = messages.get(i) ;

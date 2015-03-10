@@ -67,7 +67,7 @@ public class KafkaMessageCheckTool implements Runnable {
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
     for(int i = 0; i < partitionReader.length; i++) {
-      partitionReader[i] = new KafkaPartitionReader(name, topic, partitionMetas.get(i));
+      partitionReader[i] = new KafkaPartitionReader(name, zkConnect, topic, partitionMetas.get(i));
     }
     
     messageCounter = new MessageCounter();
@@ -77,6 +77,11 @@ public class KafkaMessageCheckTool implements Runnable {
         List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
       }
+    }
+    //Run the last fetch to find the duplicated messages if there are some
+    for(int k = 0; k < partitionReader.length; k++) {
+      List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
+      messageCounter.count(partitionReader[k].getPartition(), messages.size());
     }
     
     for(int k = 0; k < partitionReader.length; k++) {

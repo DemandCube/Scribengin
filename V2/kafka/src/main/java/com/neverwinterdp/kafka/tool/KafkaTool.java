@@ -16,6 +16,7 @@ import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetRequest;
 import kafka.javaapi.OffsetResponse;
+import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.TopicMetadataResponse;
@@ -150,7 +151,15 @@ public class KafkaTool implements Closeable {
     };
     return findTopicOperation.execute();
   }
-
+  
+  public PartitionMetadata findPartitionMetadata(String topic, int partition) throws Exception {
+    TopicMetadata topicMetadata = findTopicMetadata(topic);
+    for(PartitionMetadata sel : topicMetadata.partitionsMetadata()) {
+      if(sel.partitionId() == partition) return sel;
+    }
+    return null;
+  }
+  
   private void nextLeader() throws Exception {
     List<BrokerRegistration> registrations = getBrokerRegistration();
     if(consumer != null) {

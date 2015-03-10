@@ -22,11 +22,7 @@ import com.neverwinterdp.util.FileUtil;
 /**
  * @author Tuan
  */
-public class AckKafkaWriterUnitTest {
-  static {
-    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties");
-  }
-
+public class AckKafkaWriterTestReport {
   static String NAME = "test" ;
   
   private KafkaCluster cluster;
@@ -75,19 +71,21 @@ public class AckKafkaWriterUnitTest {
     
     KafkaMessageSendTool sendTool = new KafkaMessageSendTool(TOPIC, NUM_OF_SENT_MESSAGES, MESSAGE_SIZE);
     new Thread(sendTool).start();
-    Thread.sleep(500);
+    Thread.sleep(100);
+    
     KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller(TOPIC, 0, 3000);
     new Thread(leaderKiller).start();
+    
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), TOPIC, NUM_OF_SENT_MESSAGES);
+    checkTool.setFetchSize(MESSAGE_SIZE * 125); 
+    checkTool.runAsDeamon();
     
     sendTool.waitTermination(300000); // send for max 5 mins
     leaderKiller.exit();
     //make sure that no server shutdown when run the check tool
     //The check tool is not designed to read from the broken server env
     leaderKiller.waitForTermination(30000); 
-    System.out.println("====================Leader Killer should stop here=====================");
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), TOPIC, sendTool.getNumOfSentMessages());
-    checkTool.setFetchSize(MESSAGE_SIZE * 125); 
-    checkTool.runAsDeamon();
+    System.out.println("Finish sending, waiting for check tool..............");
     checkTool.waitForTermination(300000);
     checkTool.getMessageCounter().print(System.out, "Topic: " + TOPIC);
     System.out.println("Num Of Sent Messages: " + sendTool.getNumOfSentMessages());
@@ -157,6 +155,7 @@ public class AckKafkaWriterUnitTest {
   
   class MessageFailDebugCallback implements Callback {
     private String description ;
+    
     MessageFailDebugCallback(String desc) {
       this.description = desc;
     }

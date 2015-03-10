@@ -113,7 +113,7 @@ public class KafkaWriterUnitTest {
       List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
       KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
       for(int i = 0; i < partitionReader.length; i++) {
-        partitionReader[i] = new KafkaPartitionReader(NAME, "test", partitionMetas.get(i));
+        partitionReader[i] = new KafkaPartitionReader(NAME, cluster.getZKConnect(), "test", partitionMetas.get(i));
       }
       
       int messageCount = 0, cannotReadCount = 0;

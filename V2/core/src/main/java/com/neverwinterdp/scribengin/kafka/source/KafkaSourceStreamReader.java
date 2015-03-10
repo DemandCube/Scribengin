@@ -19,7 +19,7 @@ public class KafkaSourceStreamReader implements SourceStreamReader {
   public KafkaSourceStreamReader(SourceStreamDescriptor descriptor, PartitionMetadata partitionMetadata) {
     this.descriptor = descriptor;
     this.partitionReader = 
-        new KafkaPartitionReader(descriptor.attribute("name"), descriptor.attribute("topic"), partitionMetadata);
+        new KafkaPartitionReader(descriptor.attribute("name"), descriptor.attribute("zk.connect"), descriptor.attribute("topic"), partitionMetadata);
   }
   
   @Override
