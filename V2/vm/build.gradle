@@ -1,0 +1,30 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'scribengin.vm'
+
+eclipse {
+  project {
+    name = 'scribengin.vm'
+  }
+}
+
+configurations.all {
+  exclude(group: 'ring', module: 'ring-core')
+  exclude(group: 'storm', module: 'storm')
+  
+  //This is because hadoop uses and older version of jetty,
+  //and the proxy server needs version 3
+  exclude(group: 'javax.servlet', module: 'servlet-api')
+  
+
+  resolutionStrategy {
+    force 'com.google.guava:guava:13.0'
+  }
+}
+
+dependencies {
+  compile project(':registry')
+  compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
+  compile group: 'com.mycila.guice.extensions', name: 'mycila-guice-jsr250', version: '3.6.ga'
+  compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+}

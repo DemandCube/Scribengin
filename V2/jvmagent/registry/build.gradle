@@ -1,0 +1,90 @@
+archivesBaseName = 'jvmagent.registry'
+
+eclipse {
+  project {
+    name = 'jvmagent.registry'
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations {
+  deployJars {
+    transitive = false
+  }
+}
+
+dependencies {
+  compile project(':registry')
+  compile project(':jvmagent/bootstrap')
+
+
+  deployJars project(':registry')
+  deployJars project(':jvmagent/bootstrap')
+  deployJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
+  deployJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
+
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
+  deployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  deployJars group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
+}
+
+task release (dependsOn: 'build') << {
+  def releaseDir = "${buildDir}/release"
+
+  println "Copy the dependency library"
+  configurations.deployJars.each { File file -> 
+    copy {
+      from file
+      into "${releaseDir}"
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}"
+  }
+
+  copy {
+    from "src/main/plugin"
+    into "${releaseDir}"
+  }
+}
+
+jar {
+  from sourceSets.main.output
+  //classifier = 'full'
+  manifest {
+    attributes(
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.PremainBootstrap",
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.AgentMainBootstrap"
+    )
+  }
+  
+  
+  from configurations.deployJars.collect { 
+    it.isDirectory() ? it : zipTree(it) 
+  }
+}
+
+task allInOneJar(type: Jar) {
+  from sourceSets.main.output
+  classifier = 'full'
+
+  manifest {
+    attributes(
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.PremainBootstrap",
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.AgentMainBootstrap"
+    )
+  }
+
+  from configurations.deployJars.collect { 
+    it.isDirectory() ? it : zipTree(it) 
+  }
+}

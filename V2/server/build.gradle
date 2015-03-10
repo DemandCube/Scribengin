@@ -1,0 +1,26 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'scribengin.server'
+
+eclipse {
+  project {
+    name = 'scribengin.server'
+  }
+}
+
+dependencies {
+  compile group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
+
+  compile group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
+  //compile group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
+  compile group: 'com.beust', name: 'jcommander', version: '1.35'
+  
+  compile group: 'com.google.inject', name: 'guice', version: '3.0'
+}
+
+
+
+test {
+  exclude '**'
+}
+

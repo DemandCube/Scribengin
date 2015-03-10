@@ -1,0 +1,21 @@
+archivesBaseName = 'jvmagent.bootstrap'
+
+eclipse {
+  project {
+    name = 'jvmagent.bootstrap'
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+jar {
+  manifest {
+    attributes(
+      "Agent-Class":   "com.neverwinterdp.jvmagent.bootstrap.BootstrapAgent",
+      "Premain-Class": "com.neverwinterdp.jvmagent.bootstrap.BootstrapAgent"
+    )
+  }
+}
