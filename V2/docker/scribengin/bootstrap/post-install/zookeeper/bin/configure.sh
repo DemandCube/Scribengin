@@ -72,6 +72,10 @@ ZOOKEEPER_CONNECT=""
 for server in $ZOOKEEPER_SERVERS
 do
   current_host_id="${server/zookeeper-/}"
-  echo "server.$current_host_id=$server:2888:3888" >> $bin/../conf/zoo.cfg
+  if grep -w -q "server.$current_host_id=*" $bin/../conf/zoo.cfg; then
+    sed -i -e "s/server\.$current_host_id=.*/server\.$current_host_id=$server:2888:3888/g" $bin/../conf/zoo.cfg
+  else
+    echo "server.$current_host_id=$server:2888:3888" >> $bin/../conf/zoo.cfg
+  fi
 done
 
