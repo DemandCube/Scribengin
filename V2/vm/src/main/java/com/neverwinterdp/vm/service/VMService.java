@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.event.NodeEvent;
@@ -16,6 +17,7 @@ import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.event.VMHeartbeatNodeWatcher;
 
 @Singleton
+@JmxBean("role=vm-manager, type=VMService, name=VMService")
 public class VMService {
   final static public String ALLOCATED_PATH = "/vm/allocated";
   final static public String HISTORY_PATH   = "/vm/history";

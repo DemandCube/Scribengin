@@ -42,6 +42,7 @@ public class VMManagerAppUnitTest  {
     try {
       VMWaitingEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
       vmCluster.createVMMaster("vm-master-2");
+      Thread.sleep(2000);
       vmClient = vmCluster.getVMClient();
       shell = new Shell(vmClient) ;
       shell.execute("registry dump");
@@ -80,6 +81,7 @@ public class VMManagerAppUnitTest  {
       Thread.sleep(3000);
       shell.execute("registry dump");
       shell.execute("help");
+      Thread.sleep(1000000);
     }
   }
 
