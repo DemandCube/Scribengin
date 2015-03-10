@@ -100,6 +100,7 @@ dependencies {
   scribenginDeployJars group: 'com.google.protobuf', name: 'protobuf-java', version: '2.6.0'
   scribenginDeployJars group: 'org.reflections', name: 'reflections', version: '0.9.9-RC1'
   scribenginDeployJars group: 'org.scala-lang', name: 'scala-library', version: '2.10.4'
+  scribenginDeployJars group: 'org.tap4j', name: 'tap4j', version: '4.1'
 
 
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
