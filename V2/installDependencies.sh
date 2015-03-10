@@ -1,10 +1,14 @@
 git clone https://github.com/DemandCube/Queuengin/
 git clone https://github.com/DemandCube/NeverwinterDP-Commons
 cd Queuengin
-gradle clean build install -x test
+git pull
+../../gradlew clean build install -x test
 cd ../NeverwinterDP-Commons
-gradle clean build install -x test
+git pull
+../../gradlew clean build install -x test
 cd ../
 cd jvmagent/registry
-gradle clean build release
+git pull
+../../../gradlew clean build release
 cd ../../
+../gradlew eclipse
