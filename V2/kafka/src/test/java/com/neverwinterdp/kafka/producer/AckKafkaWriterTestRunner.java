@@ -27,14 +27,20 @@ public class AckKafkaWriterTestRunner {
   private KafkaCluster cluster;
   private Report       report ;
   
+  private AckKafkaWriterTestRunnerConfig config ;
+  
+  public AckKafkaWriterTestRunner(AckKafkaWriterTestRunnerConfig config) {
+    this.config = config;
+  }
+  
   public Report getReport() { return this.report ; }
   
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/kafka", false);
     report = new Report() ;
-    cluster = new KafkaCluster("./build/kafka", 1, 3);
-    cluster.setReplication(2);
-    cluster.setNumOfPartition(1);
+    cluster = new KafkaCluster("./build/kafka", 1, config.getNumOfReplications() + 1);
+    cluster.setReplication(config.getNumOfReplications());
+    cluster.setNumOfPartition(config.getNumOfPartitions());
     cluster.start();
     Thread.sleep(2000);
   }
@@ -60,24 +66,21 @@ public class AckKafkaWriterTestRunner {
     //new config:
     //kafkaProps.put("acks", "all");
 
-    String TOPIC = "test";
-    int    NUM_OF_SENT_MESSAGES = 20000;
-    int    MESSAGE_SIZE = 4092;
     
-    KafkaTool kafkaTool = new KafkaTool(TOPIC, cluster.getZKConnect());
+    KafkaTool kafkaTool = new KafkaTool(config.getTopic(), cluster.getZKConnect());
     kafkaTool.connect();
-    kafkaTool.createTopic(TOPIC, 3, 5);
+    kafkaTool.createTopic(config.getTopic(), 3, 5);
     kafkaTool.close();
     
-    KafkaMessageSendTool sendTool = new KafkaMessageSendTool(TOPIC, NUM_OF_SENT_MESSAGES, MESSAGE_SIZE);
+    KafkaMessageSendTool sendTool = new KafkaMessageSendTool(config.getTopic(), config.getMaxNumOfMessages(), config.getMessageSize());
     new Thread(sendTool).start();
     Thread.sleep(100);
     
-    KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller(TOPIC, 0, 3000);
+    KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller(config.getTopic(), 0, 3000);
     new Thread(leaderKiller).start();
     
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), TOPIC, NUM_OF_SENT_MESSAGES);
-    checkTool.setFetchSize(MESSAGE_SIZE * 125); 
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), config.getTopic(), config.getMaxNumOfMessages());
+    checkTool.setFetchSize(config.getMessageSize() * 125); 
     checkTool.runAsDeamon();
     
     sendTool.waitTermination(300000); // send for max 5 mins
@@ -91,7 +94,7 @@ public class AckKafkaWriterTestRunner {
     report.setFailedAck(sendTool.getNumOfFailedAck());
     report.setConsumed(checkTool.getMessageCounter().getTotal());
     report.setKafkaBrokerRestartCount(leaderKiller.getFaillureCount());
-    checkTool.getMessageCounter().print(System.out, "Topic: " + TOPIC);
+    checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
     
   }
   

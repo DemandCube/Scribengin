@@ -11,7 +11,11 @@ public class AckKafkaWriterUnitTest {
 
   @Test
   public void testRunner() throws Exception {
-    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner() ;
+    String[] args = {
+     "--topic", "hello", "--message-size", "1024", "--max-num-message", "30000"
+    };
+    AckKafkaWriterTestRunnerConfig config = new AckKafkaWriterTestRunnerConfig(args);
+    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(config) ;
     runner.setUp();
     runner.run();
     runner.tearDown();
