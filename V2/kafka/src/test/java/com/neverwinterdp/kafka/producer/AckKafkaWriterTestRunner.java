@@ -12,43 +12,47 @@ import kafka.javaapi.TopicMetadata;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
+import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.util.text.TabularFormater;
+
 /**
  * @author Tuan
  */
 public class AckKafkaWriterTestRunner {
-  static String NAME = "test" ;
-  
+  static String NAME = "test";
+
   private KafkaCluster cluster;
-  private Report       report ;
-  
-  private AckKafkaWriterTestRunnerConfig config ;
-  
+  private Report report;
+
+  private AckKafkaWriterTestRunnerConfig config;
+
   public AckKafkaWriterTestRunner(AckKafkaWriterTestRunnerConfig config) {
     this.config = config;
   }
-  
-  public Report getReport() { return this.report ; }
-  
+
+  public Report getReport() {
+    return this.report;
+  }
+
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/kafka", false);
-    report = new Report() ;
+    report = new Report();
     cluster = new KafkaCluster("./build/kafka", 1, config.getNumOfReplications() + 1);
     cluster.setReplication(config.getNumOfReplications());
     cluster.setNumOfPartition(config.getNumOfPartitions());
     cluster.start();
     Thread.sleep(2000);
   }
-  
+
   public void tearDown() throws Exception {
     cluster.shutdown();
     Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-    for(Thread sel : threadSet) {
+    for (Thread sel : threadSet) {
       System.err.println("Thread: " + sel.getName());
     }
   }
@@ -66,68 +70,75 @@ public class AckKafkaWriterTestRunner {
     //new config:
     //kafkaProps.put("acks", "all");
 
-    
     KafkaTool kafkaTool = new KafkaTool(config.getTopic(), cluster.getZKConnect());
     kafkaTool.connect();
     kafkaTool.createTopic(config.getTopic(), 3, 5);
     kafkaTool.close();
-    
-    KafkaMessageSendTool sendTool = new KafkaMessageSendTool(config.getTopic(), config.getMaxNumOfMessages(), config.getMessageSize());
+
+    KafkaMessageSendTool sendTool = new KafkaMessageSendTool(config.getTopic(), config.getMaxNumOfMessages(),
+        config.getMessageSize());
     new Thread(sendTool).start();
     Thread.sleep(100);
-    
+
     KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller(config.getTopic(), 0, 3000);
     new Thread(leaderKiller).start();
-    
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), config.getTopic(), config.getMaxNumOfMessages());
-    checkTool.setFetchSize(config.getMessageSize() * 125); 
+
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), config.getTopic(),
+        config.getMaxNumOfMessages());
+    checkTool.setFetchSize(config.getMessageSize() * 125);
     checkTool.runAsDeamon();
-    
+
     sendTool.waitTermination(300000); // send for max 5 mins
     leaderKiller.exit();
     //make sure that no server shutdown when run the check tool
     //The check tool is not designed to read from the broken server env
-    leaderKiller.waitForTermination(30000); 
-    System.out.println("Finish sending, waiting for check tool..............");
+    leaderKiller.waitForTermination(30000);
+    System.out.println("Finished sending, waiting for check tool..............");
     checkTool.waitForTermination(300000);
     report.setSent(sendTool.getNumOfSentMessages());
     report.setFailedAck(sendTool.getNumOfFailedAck());
     report.setConsumed(checkTool.getMessageCounter().getTotal());
     report.setKafkaBrokerRestartCount(leaderKiller.getFaillureCount());
+    report.setMessageSize(sendTool.messageSize);
+    report.setStopwatch(sendTool.stopwatch);
     checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
-    
   }
-  
+
   class KafkaMessageSendTool implements Runnable {
-    private String  topic ;
-    private int     maxNumOfMessages = 10000 ;
-    private int     messageSize   = 1024  ;
-    private long    waitBeforeClose = 10000;
-    private int     numOfSentMessages = 0;
-    private int     numOfFailedAck = 0;
+    private String topic;
+    private int maxNumOfMessages = 10000;
+    private int messageSize = 1024;
+    private long waitBeforeClose = 10000;
+    private int numOfSentMessages = 0;
+    private int numOfFailedAck = 0;
     private boolean exit = false;
-    
-    
+    private Stopwatch stopwatch = Stopwatch.createUnstarted();
+
     public KafkaMessageSendTool(String topic, int maxNumOfMessages, int messageSize) {
       this.topic = topic;
       this.maxNumOfMessages = maxNumOfMessages;
       this.messageSize = messageSize;
     }
-    
-    public int getNumOfSentMessages() { return this.numOfSentMessages; }
-    
-    public int getNumOfFailedAck() { return this.numOfFailedAck ; }
-    
+
+    public int getNumOfSentMessages() {
+      return this.numOfSentMessages;
+    }
+
+    public int getNumOfFailedAck() {
+      return this.numOfFailedAck;
+    }
+
     @Override
     public void run() {
+      stopwatch.start();
       try {
         runSend();
       } catch (Exception e) {
         e.printStackTrace();
       }
-      notifyTermination(); 
+      notifyTermination();
     }
-    
+
     void runSend() throws Exception {
       Map<String, String> kafkaProps = new HashMap<String, String>();
       kafkaProps.put("message.send.max.retries", "5");
@@ -140,66 +151,74 @@ public class AckKafkaWriterTestRunner {
       kafkaProps.put("producer.type", "sync");
       //new config:
       kafkaProps.put("acks", "all");
-      
+
       AckKafkaWriter writer = new AckKafkaWriter("KafkaMessageSendTool", kafkaProps, cluster.getKafkaConnect());
       FailedAckReportCallback failedAckReportCallback = new FailedAckReportCallback();
-      while(!exit && numOfSentMessages < maxNumOfMessages) {
+      while (!exit && numOfSentMessages < maxNumOfMessages) {
         //Use this send to print out more detail about the message lost
         byte[] key = ("key-" + numOfSentMessages).getBytes();
         byte[] message = new byte[messageSize];
         writer.send(topic, key, message, failedAckReportCallback, 10000);
-        numOfSentMessages++ ;
+        numOfSentMessages++;
       }
       writer.waitAndClose(waitBeforeClose);
       numOfFailedAck = failedAckReportCallback.getCount();
+      stopwatch.stop();
     }
-    
+
     synchronized public void notifyTermination() {
       notify();
     }
-    
+
     synchronized public void waitTermination(long timeout) throws InterruptedException {
       wait(timeout);
       exit = true;
     }
   }
-  
+
   class FailedAckReportCallback implements Callback {
     private int count;
-    
-    public int getCount() { return count; }
-    
+
+    public int getCount() {
+      return count;
+    }
+
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
-      if(exception != null) count++ ;
+      if (exception != null)
+        count++;
     }
   }
-  
+
   class KafkapartitionLeaderKiller implements Runnable {
-    private String  topic;
-    private int     partition;
-    private long    sleepBeforeRestart = 500;
-    private int     failureCount;
+    private String topic;
+    private int partition;
+    private long sleepBeforeRestart = 500;
+    private int failureCount;
     private boolean exit = false;
 
     KafkapartitionLeaderKiller(String topic, int partition, long sleepBeforeRestart) {
       this.topic = topic;
-      this.partition = partition ;
+      this.partition = partition;
       this.sleepBeforeRestart = sleepBeforeRestart;
     }
-    
-    public int getFaillureCount() { return this.failureCount; }
-    
-    public void exit() { exit = true; }
-    
+
+    public int getFaillureCount() {
+      return this.failureCount;
+    }
+
+    public void exit() {
+      exit = true;
+    }
+
     public void run() {
       try {
-        while(!exit) {
+        while (!exit) {
           KafkaTool kafkaTool = new KafkaTool(topic, cluster.getZKConnect());
           kafkaTool.connect();
           TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topic);
           PartitionMetadata partitionMeta = findPartition(topicMeta, partition);
-          Broker partitionLeader = partitionMeta.leader() ;
+          Broker partitionLeader = partitionMeta.leader();
           Server kafkaServer = cluster.findKafkaServerByPort(partitionLeader.port());
           System.out.println("Shutdown kafka server " + kafkaServer.getPort());
           kafkaServer.shutdown();
@@ -211,54 +230,99 @@ public class AckKafkaWriterTestRunner {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      synchronized(this) {
-        notify() ;
+      synchronized (this) {
+        notify();
       }
     }
-    
+
     PartitionMetadata findPartition(TopicMetadata topicMetadata, int partion) {
-      for(PartitionMetadata sel :topicMetadata.partitionsMetadata()) {
-        if(sel.partitionId() == partition) return sel;
+      for (PartitionMetadata sel : topicMetadata.partitionsMetadata()) {
+        if (sel.partitionId() == partition)
+          return sel;
       }
       throw new RuntimeException("Cannot find the partition " + partition);
     }
-    
+
     synchronized public void waitForTermination(long timeout) throws InterruptedException {
       wait(timeout);
     }
   }
-  
+
   static public class Report {
-    private int sent ;
-    private int consumed ;
-    private int failedAck ;
-    private int kafkaBrokerRestartCount ;
-    
-    public int getSent() { return sent; }
-    public void setSent(int sent) { this.sent = sent; }
-    
-    public int getConsumed() { return consumed; }
-    public void setConsumed(int consumed) { this.consumed = consumed; }
-    
-    public int getFailedAck() { return failedAck; }
-    public void setFailedAck(int failedAck) { this.failedAck = failedAck; }
-    
-    public int getKafkaBrokerRestartCount() { return kafkaBrokerRestartCount; }
-    public void setKafkaBrokerRestartCount(int kafkaBrokerRestartCount) { this.kafkaBrokerRestartCount = kafkaBrokerRestartCount; }
-    
-    
+    private int sent;
+    private int consumed;
+    private int failedAck;
+    private int kafkaBrokerRestartCount;
+    private int messageSize;
+    private Stopwatch stopwatch;
+
+    public int getSent() {
+      return sent;
+    }
+
+    public void setSent(int sent) {
+      this.sent = sent;
+    }
+
+    public int getConsumed() {
+      return consumed;
+    }
+
+    public void setConsumed(int consumed) {
+      this.consumed = consumed;
+    }
+
+    public int getFailedAck() {
+      return failedAck;
+    }
+
+    public void setFailedAck(int failedAck) {
+      this.failedAck = failedAck;
+    }
+
+    public int getKafkaBrokerRestartCount() {
+      return kafkaBrokerRestartCount;
+    }
+
+    public void setKafkaBrokerRestartCount(int kafkaBrokerRestartCount) {
+      this.kafkaBrokerRestartCount = kafkaBrokerRestartCount;
+    }
+
+    public int getMessageSize() {
+      return messageSize;
+    }
+
+    public void setMessageSize(int messageSize) {
+      this.messageSize = messageSize;
+    }
+
+    public Stopwatch getStopwatch() {
+      return stopwatch;
+    }
+
+    public void setStopwatch(Stopwatch stopwatch) {
+      this.stopwatch = stopwatch;
+    }
+
     public void print(Appendable out, String title) {
-      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Restart Kafka");
-      formater.setTitle(title);
-      
+      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Broker restarts",
+          "message size(bytes)", "run Duration");
+      if (title != null && title.isEmpty())
+        formater.setTitle(title);
+
       formater.setIndent("  ");
-      formater.addRow(sent, failedAck, consumed, kafkaBrokerRestartCount);
-      
+      formater.addRow(sent, failedAck, consumed, kafkaBrokerRestartCount, messageSize, stopwatch);
+
       try {
         out.append(formater.getFormatText()).append("\n");
       } catch (IOException e) {
         e.printStackTrace();
       }
+    }
+
+    public Object[] getData() {
+      Object[] data = { sent, failedAck, consumed, kafkaBrokerRestartCount, messageSize, stopwatch };
+      return data;
     }
   }
 }
