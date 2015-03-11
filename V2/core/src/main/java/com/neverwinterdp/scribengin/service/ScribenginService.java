@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
@@ -21,6 +22,7 @@ import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
+@JmxBean("role=scribengin-master, type=ScribenginService, name=ScribenginService")
 public class ScribenginService {
   final static public String SCRIBENGIN_PATH         = "/scribengin";
   final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
