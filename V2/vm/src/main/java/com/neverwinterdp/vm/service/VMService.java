@@ -37,12 +37,12 @@ public class VMService {
   
   @Inject
   public void onInit() throws Exception {
-    registry.createIfNotExist(MASTER_PATH) ;
+    registry.createIfNotExist(MASTER_PATH + "/status") ;
     registry.createIfNotExist(LEADER_PATH) ;
     registry.createIfNotExist(EVENTS_PATH) ;
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
-    registry.create(MASTER_PATH + "/status", Status.INIT, NodeCreateMode.EPHEMERAL);
+    registry.setData(MASTER_PATH + "/status", Status.INIT);
     
   }
   
