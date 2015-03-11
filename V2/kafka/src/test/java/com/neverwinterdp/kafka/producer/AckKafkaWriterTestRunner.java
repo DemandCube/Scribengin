@@ -72,7 +72,7 @@ public class AckKafkaWriterTestRunner {
 
     KafkaTool kafkaTool = new KafkaTool(config.getTopic(), cluster.getZKConnect());
     kafkaTool.connect();
-    kafkaTool.createTopic(config.getTopic(), 3, 5);
+    kafkaTool.createTopic(config.getTopic(), config.getNumOfReplications(), config.getNumOfPartitions());
     kafkaTool.close();
 
     KafkaMessageSendTool sendTool = new KafkaMessageSendTool(config.getTopic(), config.getMaxNumOfMessages(),
@@ -100,7 +100,10 @@ public class AckKafkaWriterTestRunner {
     report.setConsumed(checkTool.getMessageCounter().getTotal());
     report.setKafkaBrokerRestartCount(leaderKiller.getFaillureCount());
     report.setMessageSize(sendTool.messageSize);
-    report.setStopwatch(sendTool.stopwatch);
+    report.setPartitions(config.getNumOfPartitions());
+    report.setReplicationFactor(config.getNumOfReplications());
+    report.setWriteDuration(sendTool.stopwatch);
+    report.setReadDuration(checkTool.getReadDuration());
     checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
   }
 
@@ -252,9 +255,12 @@ public class AckKafkaWriterTestRunner {
     private int sent;
     private int consumed;
     private int failedAck;
-    private int kafkaBrokerRestartCount;
+    private int restartCount;
     private int messageSize;
-    private Stopwatch stopwatch;
+    private int partitions;
+    private int replicationFactor;
+    private Stopwatch writeDuration;
+    private Stopwatch readDuration;
 
     public int getSent() {
       return sent;
@@ -281,11 +287,11 @@ public class AckKafkaWriterTestRunner {
     }
 
     public int getKafkaBrokerRestartCount() {
-      return kafkaBrokerRestartCount;
+      return restartCount;
     }
 
     public void setKafkaBrokerRestartCount(int kafkaBrokerRestartCount) {
-      this.kafkaBrokerRestartCount = kafkaBrokerRestartCount;
+      this.restartCount = kafkaBrokerRestartCount;
     }
 
     public int getMessageSize() {
@@ -296,12 +302,36 @@ public class AckKafkaWriterTestRunner {
       this.messageSize = messageSize;
     }
 
-    public Stopwatch getStopwatch() {
-      return stopwatch;
+    public int getPartitions() {
+      return partitions;
     }
 
-    public void setStopwatch(Stopwatch stopwatch) {
-      this.stopwatch = stopwatch;
+    public void setPartitions(int partitions) {
+      this.partitions = partitions;
+    }
+
+    public int getReplicationFactor() {
+      return replicationFactor;
+    }
+
+    public void setReplicationFactor(int replicationFactor) {
+      this.replicationFactor = replicationFactor;
+    }
+
+    public Stopwatch getWriteDuration() {
+      return writeDuration;
+    }
+
+    public void setWriteDuration(Stopwatch writeDuration) {
+      this.writeDuration = writeDuration;
+    }
+
+    public Stopwatch getReadDuration() {
+      return readDuration;
+    }
+
+    public void setReadDuration(Stopwatch readDuration) {
+      this.readDuration = readDuration;
     }
 
     public void print(Appendable out, String title) {
@@ -311,18 +341,13 @@ public class AckKafkaWriterTestRunner {
         formater.setTitle(title);
 
       formater.setIndent("  ");
-      formater.addRow(sent, failedAck, consumed, kafkaBrokerRestartCount, messageSize, stopwatch);
+      formater.addRow(sent, failedAck, consumed, restartCount, messageSize, writeDuration);
 
       try {
         out.append(formater.getFormatText()).append("\n");
       } catch (IOException e) {
         e.printStackTrace();
       }
-    }
-
-    public Object[] getData() {
-      Object[] data = { sent, failedAck, consumed, kafkaBrokerRestartCount, messageSize, stopwatch };
-      return data;
     }
   }
 }

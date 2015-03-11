@@ -8,6 +8,7 @@ import java.util.Map;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
+import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.util.text.TabularFormater;
 
@@ -20,6 +21,7 @@ public class KafkaMessageCheckTool implements Runnable {
   private MessageCounter messageCounter ;
   private boolean interrupt = false ;
   private Thread deamonThread ;
+  private Stopwatch readDuration = Stopwatch.createUnstarted();
   
   public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
     this.zkConnect = zkConnect;
@@ -31,6 +33,10 @@ public class KafkaMessageCheckTool implements Runnable {
   
   public MessageCounter getMessageCounter() { return messageCounter; }
   
+  public Stopwatch getReadDuration() {
+    return readDuration;
+  }
+
   public void setInterrupt(boolean b) { this.interrupt = b ; }
   
   synchronized public void waitForTermination(long maxWaitTime) throws InterruptedException {
@@ -59,6 +65,7 @@ public class KafkaMessageCheckTool implements Runnable {
   }
   
   public void check() throws Exception {
+    readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(name, zkConnect);
     kafkaTool.connect();
     TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topic);
@@ -88,6 +95,7 @@ public class KafkaMessageCheckTool implements Runnable {
       partitionReader[k].commit();
       partitionReader[k].close();
     }
+    readDuration.stop();
   }
   
   static public class MessageCounter {
