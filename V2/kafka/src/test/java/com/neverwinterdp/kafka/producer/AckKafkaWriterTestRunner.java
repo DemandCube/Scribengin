@@ -130,7 +130,6 @@ public class AckKafkaWriterTestRunner {
 
     @Override
     public void run() {
-      stopwatch.start();
       try {
         runSend();
       } catch (Exception e) {
@@ -140,6 +139,7 @@ public class AckKafkaWriterTestRunner {
     }
 
     void runSend() throws Exception {
+      stopwatch.start();
       Map<String, String> kafkaProps = new HashMap<String, String>();
       kafkaProps.put("message.send.max.retries", "5");
       kafkaProps.put("retry.backoff.ms", "100");
