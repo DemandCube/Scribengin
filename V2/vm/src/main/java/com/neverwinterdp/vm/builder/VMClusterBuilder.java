@@ -7,6 +7,7 @@ import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.event.VMWaitingEventListener;
+import com.neverwinterdp.vm.service.VMService;
 
 public class VMClusterBuilder {
   protected VMClient vmClient ;
@@ -31,8 +32,8 @@ public class VMClusterBuilder {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    VMWaitingEventListener vmAssert = createVMMaster("vm-master-1");
-    vmAssert.waitForEvents(60000);
+    VMWaitingEventListener waitingListener = createVMMaster("vm-master-1");
+    waitingListener.waitForEvents(60000);
   }
   
   public void shutdown() throws Exception {
@@ -46,12 +47,13 @@ public class VMClusterBuilder {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    VMWaitingEventListener vmAssert = new VMWaitingEventListener(vmClient.getRegistry());
-    vmAssert.waitVMStatus(format("Expect %s with running status", name), name, VMStatus.RUNNING);
-    vmAssert.waitHeartbeat(format("Expect %s has connected heartbeat", name), name, true);
+    VMWaitingEventListener waitingListener = new VMWaitingEventListener(vmClient.getRegistry());
+    waitingListener.waitVMStatus(format("Expect %s with running status", name), name, VMStatus.RUNNING);
+    waitingListener.waitHeartbeat(format("Expect %s has connected heartbeat", name), name, true);
+    waitingListener.waitVMServiceStatus("Wait for the master status running", VMService.Status.RUNNING);
     h1(format("Create VM master %s", name));
     vmClient.createVMMaster(name);
-    return vmAssert;
+    return waitingListener;
   }
   
   static public void h1(String title) {

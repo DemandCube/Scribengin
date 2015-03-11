@@ -10,12 +10,16 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorManager;
 import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.source.SourceFactory;
 import com.neverwinterdp.vm.VMDescriptor;
 
+@Singleton
+@JmxBean("role=dataflow, type=DataflowContainer, name=DataflowContainer")
 public class DataflowContainer {
   private Logger logger = LoggerFactory.getLogger(DataflowContainer.class);
   
@@ -24,6 +28,7 @@ public class DataflowContainer {
 
   public DataflowContainer() {}
   
+  @Deprecated
   public DataflowContainer(Map<String, String> props) {
     AppModule module = new AppModule(props) {
       @Override

@@ -9,6 +9,11 @@ import static java.math.RoundingMode.UP;
  */
 public class OffsetPartitioner implements SinkPartitioner {
 
+  /** The topic. */
+  private String topic;
+
+  /** The kafka partition. */
+  private int kafkaPartition;
 
   /** The offset per partition. */
   private int offsetPerPartition;
@@ -24,9 +29,10 @@ public class OffsetPartitioner implements SinkPartitioner {
    * @param topic the topic
    * @param kafkaPartition the kafka partition
    */
-  public OffsetPartitioner(int offsetPerPartition) {
+  public OffsetPartitioner(int offsetPerPartition, String topic, int kafkaPartition) {
     this.offsetPerPartition = offsetPerPartition;
-
+    this.topic = topic;
+    this.kafkaPartition = kafkaPartition;
   }
 
   /**
@@ -36,7 +42,14 @@ public class OffsetPartitioner implements SinkPartitioner {
    * @return the log file path
    */
   private String getLogFilePath() {
+    String separator = System.getProperty("file.separator");
     builder.setLength(0);
+    builder.append(topic);
+
+    builder.append(separator);
+    builder.append(kafkaPartition);
+    builder.append(separator);
+
     return builder.toString();
   }
 
