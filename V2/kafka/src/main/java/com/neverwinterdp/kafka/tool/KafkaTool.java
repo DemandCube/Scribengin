@@ -77,8 +77,8 @@ public class KafkaTool implements Closeable {
   
   public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
     // Create a ZooKeeper client
-    int sessionTimeoutMs = 1000;
-    int connectionTimeoutMs = 1000;
+    int sessionTimeoutMs = 10000;
+    int connectionTimeoutMs = 10000;
     ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
     // Create a topic named "myTopic" with 8 partitions and a replication factor of 3
     Properties topicConfig = new Properties();
