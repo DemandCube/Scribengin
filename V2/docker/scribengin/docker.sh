@@ -227,6 +227,20 @@ function container_clean() {
   done
 }
 
+function host_sync() {
+  ./scribengin.sh build
+  
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir /opt/scribengin"
+  
+  scp -r ../../release/build/release/*       neverwinterdp@hadoop-master:/opt/scribengin/
+  scp -r ./bootstrap/post-install/hadoop     neverwinterdp@hadoop-master:/opt/
+  scp -r ./bootstrap/post-install/kafka      neverwinterdp@hadoop-master:/opt/
+  scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
+  scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
+  
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt && yes | ./cluster.sh sync"
+}
+
 function printUsage() {
   echo "Cluster command options: "
   echo "  Command image consists of the sub commands: "
@@ -282,6 +296,8 @@ elif [ "$COMMAND" = "ip-route" ] ; then
   sudo route -n add 172.17.0.0/16 `boot2docker ip`
 elif [ "$COMMAND" = "update-hosts" ] ; then
   host_machine_update_hosts
+elif [ "$COMMAND" = "host-sync" ] ; then
+  host_sync
 else
   h1 "Docker Images"
   docker images

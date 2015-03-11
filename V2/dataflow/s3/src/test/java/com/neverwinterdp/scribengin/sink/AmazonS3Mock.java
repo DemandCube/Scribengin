@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.sink;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.model.VersionListing;
+import com.amazonaws.util.Md5Utils;
 
 /**
  * The Class AmazonS3Mock.
@@ -232,6 +234,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public Bucket createBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
     throwException(createBucketException);
+    files.put(bucketName, new ArrayList<String>());
     return new Bucket(bucketName);
   }
 
@@ -252,6 +255,8 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteObject(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
     throwException(deleteObjectException);
+    List<String> keys = files.get(bucketName);
+    keys.remove(key);
   }
 
   /* (non-Javadoc)
@@ -261,13 +266,21 @@ public class AmazonS3Mock implements AmazonS3 {
   public PutObjectResult putObject(String bucketName, String key, File file) throws AmazonClientException,
       AmazonServiceException {
     throwException(putObjectException);
+    
     List<String> keys = files.get(bucketName);
     if (keys == null) {
-      keys = new ArrayList<String>();
+      throw new AmazonClientException("Bucket do not exist");
     }
     keys.add(key);
     files.put(bucketName, keys);
-    return new PutObjectResult();
+    PutObjectResult result = new PutObjectResult();
+    try {
+      result.setContentMd5(new String(Md5Utils.md5AsBase64(file)));
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return result;
   }
 
   /* (non-Javadoc)
@@ -277,9 +290,10 @@ public class AmazonS3Mock implements AmazonS3 {
   public ObjectListing listObjects(String bucketName, String prefix) throws AmazonClientException,
       AmazonServiceException {
     ObjectListing objectListing = new ObjectListing();
-    List<String> keys = files.get(bucketName + "/" + prefix);
+    List<String> keys = files.get(bucketName);
     for (String key : keys) {
-      objectListing.getObjectSummaries().add(null);
+      if(key.startsWith(prefix))
+        objectListing.getObjectSummaries().add(null);
     }
 
     return objectListing;
@@ -371,7 +385,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectListing listObjects(String bucketName) throws AmazonClientException, AmazonServiceException {
     // TODO Auto-generated method stub
-    return null;
+    return listObjects(bucketName,"");
   }
 
   /* (non-Javadoc)

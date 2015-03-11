@@ -6,21 +6,20 @@ import org.junit.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.neverwinterdp.scribengin.s3.sink.S3Sink;
+import com.neverwinterdp.scribengin.s3.sink.S3SinkStream;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
-public class S3SinkUnitTest {
+public class S3SinkStreamUnitTest {
 
   @Test
   public void test() throws Exception {
+    
     SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
-    descriptor.setLocation("test");
+    descriptor.setLocation("");
     Injector injector  = Guice.createInjector(new S3TestModule(descriptor));
-    S3Sink S3SinkStream = new S3Sink(injector, descriptor);
-    SinkStream stream = S3SinkStream.newStream();
-    SinkStreamWriter writer = stream.getWriter();
+    S3SinkStream S3SinkStream = new S3SinkStream(injector, descriptor);
+    SinkStreamWriter writer = S3SinkStream.getWriter();
     assertNotNull(writer);
-  
   }
-  
+
 }
