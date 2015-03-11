@@ -26,7 +26,6 @@ abstract public class ScribenginUnitTest {
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder()) ;
     clusterBuilder.clean(); 
     clusterBuilder.startVMMasters();
-    Thread.sleep(vmLaunchTime);
     clusterBuilder.startScribenginMasters();
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }

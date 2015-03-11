@@ -1,6 +1,8 @@
 package com.neverwinterdp.scribengin.dataflow.service;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -11,7 +13,8 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
-
+@Singleton
+@JmxBean("role=dataflow-master, type=DataflowService, name=DataflowService")
 public class DataflowService {
   @Inject
   private VMConfig vmConfig;

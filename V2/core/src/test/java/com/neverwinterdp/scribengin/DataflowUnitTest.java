@@ -77,6 +77,7 @@ public class DataflowUnitTest {
       throw err;
     } finally {
       if(submitter.isAlive()) submitter.interrupt();
+      //Thread.sleep(100000000);
     }
   }
   

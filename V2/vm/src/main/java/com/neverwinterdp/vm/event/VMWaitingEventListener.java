@@ -4,6 +4,7 @@ import static com.neverwinterdp.vm.event.VMEvent.VM_HEARTBEAT;
 import static com.neverwinterdp.vm.event.VMEvent.VM_MASTER_ELECTION;
 import static com.neverwinterdp.vm.event.VMEvent.VM_STATUS;
 
+import com.neverwinterdp.registry.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.election.LeaderElectionNodeWatcher;
@@ -13,6 +14,7 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.event.VMEvent.VMAttr;
 import com.neverwinterdp.vm.service.VMService;
+import com.neverwinterdp.vm.service.VMService.Status;
 
 public class VMWaitingEventListener extends WaitingEventListener {
   
@@ -20,6 +22,12 @@ public class VMWaitingEventListener extends WaitingEventListener {
     super("Assert sequence of event for VM", registry);
     registryListener.watch(VMService.LEADER_PATH, new VMLeaderElectedNodeWatcher(registry), true);
   }
+
+  public void waitVMServiceStatus(String desc, VMService.Status status) throws Exception {
+    String path = VMService.MASTER_PATH + "/status";
+    add(desc, path, true, VMService.Status.class, status);
+  }
+  
   
   public void waitVMStatus(String desc, String vmName, VMStatus vmStatus) throws Exception {
     String path = VMService.getVMStatusPath(vmName);
