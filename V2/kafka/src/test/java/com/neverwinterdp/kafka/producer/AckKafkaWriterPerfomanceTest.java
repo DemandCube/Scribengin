@@ -16,10 +16,18 @@ public class AckKafkaWriterPerfomanceTest {
   @Test
   public void testRunner() throws Exception {
     String[][] args = {
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "30000" },
-        { "--topic", "hello", "--message-size", "4096", "--max-num-message", "30000" },
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "30000", "--num-partition", "10" },
-        { "--topic", "hello", "--message-size", "2048", "--max-num-message", "50000", "--num-partition", "2","--num-replication", "1" }
+       { 
+         "--topic", "hello", "--message-size", "1024", "--max-num-message", "30000", "--num-partition", "1",
+         "--num-replication", "2"
+       },
+       { 
+         "--topic", "hello", "--message-size", "2048", "--max-num-message", "30000", "--num-partition", "5",
+         "--num-replication", "2"
+       },
+       { 
+         "--topic", "hello", "--message-size", "4092", "--max-num-message", "30000", "--num-partition", "10",
+         "--num-replication", "2"
+       }
     };
 
     AckKafkaWriterTestRunner.Report[] reports = new AckKafkaWriterTestRunner.Report[args.length];
@@ -36,13 +44,19 @@ public class AckKafkaWriterPerfomanceTest {
   }
 
   void formatReports(String title, Report[] reports) {
-    TabularFormater formater = new TabularFormater("Sent", "failed", "consumed", "partitions","replication", "restarts", "bytes",
-        "writeDuration", "readDuration");
+    String[] header = {
+      "Sent", "failed", "consumed", "partitions","replication", "restarts", "bytes",
+      "writeDuration", "readDuration"
+    } ;
+    TabularFormater formater = new TabularFormater(header);
     formater.setTitle(title);
     for (Report report : reports) {
-      formater.addRow(report.getSent(), report.getFailedAck(), report.getConsumed(), report.getPartitions(),report.getReplicationFactor(),
-          report.getKafkaBrokerRestartCount(), report.getMessageSize(), report.getWriteDuration(),
-          report.getReadDuration());
+      Object[] cells = {
+          report.getSent(), report.getFailedAck(), report.getConsumed(), report.getPartitions(),
+          report.getReplicationFactor(), report.getKafkaBrokerRestartCount(), report.getMessageSize(), 
+          report.getWriteDuration(), report.getReadDuration()
+      };
+      formater.addRow(cells);
     }
     System.out.println(formater.getFormatText());
   }

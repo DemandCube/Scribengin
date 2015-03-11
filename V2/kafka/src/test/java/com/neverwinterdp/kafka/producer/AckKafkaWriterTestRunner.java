@@ -95,6 +95,7 @@ public class AckKafkaWriterTestRunner {
     leaderKiller.waitForTermination(30000);
     System.out.println("Finished sending, waiting for check tool..............");
     checkTool.waitForTermination(300000);
+    
     report.setSent(sendTool.getNumOfSentMessages());
     report.setFailedAck(sendTool.getNumOfFailedAck());
     report.setConsumed(checkTool.getMessageCounter().getTotal());
