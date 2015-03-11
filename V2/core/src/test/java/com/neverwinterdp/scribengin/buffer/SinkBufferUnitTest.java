@@ -17,6 +17,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
+import com.neverwinterdp.scribengin.s3.sink.S3SinkBuffer;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
@@ -25,7 +26,7 @@ import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 public class SinkBufferUnitTest {
 
-  private SinkBuffer buffer;
+  private S3SinkBuffer buffer;
   S3SinkConfig config;
   SinkPartitioner partitioner;
   private String pathname;
@@ -40,7 +41,7 @@ public class SinkBufferUnitTest {
     int offsetPerPartition = 10;
     partitioner = new OffsetPartitioner(offsetPerPartition);
     
-    buffer = new SinkBuffer(partitioner, config);
+    buffer = new S3SinkBuffer(partitioner, config);
   }
 
   @Test

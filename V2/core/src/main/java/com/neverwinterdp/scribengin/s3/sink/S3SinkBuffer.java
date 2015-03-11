@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.buffer;
+package com.neverwinterdp.scribengin.s3.sink;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,14 +12,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.Record;
 
 /**
  * The Class SinkBuffer.
  */
-public final class SinkBuffer {
+public final class S3SinkBuffer {
 
 	private final long FIVE_GB = 5368709120l;
 
@@ -50,7 +49,7 @@ public final class SinkBuffer {
 	private boolean memoryBufferingEnabled;
 
 	/** The logger. */
-	private static Logger logger = LogManager.getLogger(SinkBuffer.class);
+	private static Logger logger = LogManager.getLogger(S3SinkBuffer.class);
 	/** The buffer. */
 	private LinkedList<Record> tuples = new LinkedList<Record>();
 
@@ -69,7 +68,7 @@ public final class SinkBuffer {
 	 * @param config
 	 *            the configuration
 	 */
-	public SinkBuffer(SinkPartitioner partitioner, S3SinkConfig config) {
+	public S3SinkBuffer(SinkPartitioner partitioner, S3SinkConfig config) {
 		this.localTmpDir = config.getLocalTmpDir();
 		this.maxRecordsSizeInMemory = config.getMemoryMaxBufferSize();
 		this.maxBufferingTimeInMemory = config.getMemoryMaxBufferingTime();

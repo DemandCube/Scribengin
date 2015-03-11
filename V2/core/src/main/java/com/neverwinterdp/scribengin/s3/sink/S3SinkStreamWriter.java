@@ -1,6 +1,7 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.s3.sink;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,30 +23,24 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.buffer.SinkBuffer;
+import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 
-/**
- * The Class S3SinkStream.
- * 
- * The default config is to allow versioning. But for space constraints we
- * delete older versions in the postcommit method. This setting can be easily
- * changed via the .....
- */
-
-public class S3SinkStream implements SinkStreamWriter {
+public class S3SinkStreamWriter implements SinkStreamWriter {
 
   /** The s3. */
   private AmazonS3 s3Client;
 
   /** The bucket name. */
   private String bucketName;
+  
+  private String prefix;
 
   /** The partitioner. */
   private SinkPartitioner partitioner;
 
   /** The memory buffer. */
-  private SinkBuffer buffer;
+  private S3SinkBuffer buffer;
 
   /** The local tmp dir. */
   private String localTmpDir;
@@ -62,7 +57,6 @@ public class S3SinkStream implements SinkStreamWriter {
   /** A map holding file-path name and it corresponding MD5 hash */
   private Map<String, String> uploadedFilesPath = new HashMap<>();
 
-  private String bucketVersionConfig;
 
   /**
    * The Constructor.
@@ -75,26 +69,17 @@ public class S3SinkStream implements SinkStreamWriter {
    *          the configuration
    */
   @Inject
-  public S3SinkStream(AmazonS3 s3Client, SinkPartitioner partitioner, S3SinkConfig config) {
+  public S3SinkStreamWriter(AmazonS3 s3Client, SinkPartitioner partitioner, S3SinkConfig config) {
     logger = LogManager.getLogger(S3SinkStream.class);
     this.partitioner = partitioner;
     this.bucketName = config.getBucketName();
+    this.prefix = config.getPrefix();
     this.localTmpDir = config.getLocalTmpDir();
-    this.bucketVersionConfig = config.getBucketVersioningConfig();
-    this.buffer = new SinkBuffer(this.partitioner, config);
+    this.buffer = new S3SinkBuffer(this.partitioner, config);
     this.s3Client = s3Client;
     this.regionName = Regions.fromName(config.getRegionName());
     Region region = Region.getRegion(regionName);
     this.s3Client.setRegion(region);
-  }
-
-  /**
-   * Checks if it is time to commit.
-   * 
-   * @return true, if checks if is time to commit
-   */
-  public boolean isSaturated() {
-    return buffer.isSaturated();
   }
 
   /*
@@ -157,21 +142,23 @@ public class S3SinkStream implements SinkStreamWriter {
       // the file path on local is similar to its path on s3, just change
       // tmp folder by bucket name
       file = buffer.pollFromDisk();
+      if(!file.exists())
+        throw new FileNotFoundException();
       System.out.println("getFilesCount " + buffer.getFilesCount() + " ");
 
       path = file.getPath();
       logger.info("file path " + path);
-      String key2 = path.substring(path.indexOf(localTmpDir) + 5, path.length());
+      String key = (prefix.equals("") ? "" :prefix + "/" ) + path.substring(path.indexOf(localTmpDir) + localTmpDir.length() +1 , path.length());
       System.out.println("path exists " + path);
-      System.out.println("key2 " + key2);
+      System.out.println("key " + key);
 
       logger.info("Uploading a new object to S3 from a file\n");
       try {
         // upload to S3
-        PutObjectResult result = s3Client.putObject(bucketName, key2, file);
+        PutObjectResult result = s3Client.putObject(bucketName, key, file);
 
         System.out.println("result " + result.getContentMd5());
-        uploadedFilesPath.put(key2, result.getContentMd5());
+        uploadedFilesPath.put(key, result.getContentMd5());
       } catch (AmazonServiceException ase) {
         logger.error("Caught an AmazonServiceException. " + ase.getMessage());
         if (ase.getCause() instanceof IOException) {
@@ -250,7 +237,7 @@ public class S3SinkStream implements SinkStreamWriter {
 
   }
 
-  public SinkBuffer getBuffer() {
+  public S3SinkBuffer getBuffer() {
     return buffer;
   }
 
@@ -269,7 +256,5 @@ public class S3SinkStream implements SinkStreamWriter {
   public void setBucketName(String bucketName) {
     this.bucketName = bucketName;
   }
-
-
 
 }
