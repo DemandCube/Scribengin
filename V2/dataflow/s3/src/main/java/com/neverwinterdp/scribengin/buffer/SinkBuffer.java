@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.sink.S3SinkConfig;
+import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.Record;
 
@@ -32,21 +32,10 @@ public final class SinkBuffer {
 	/** The max buffering time. */
 	private long maxBufferingTimeInMemory;
 
-	/** The max tuples. */
-	private long maxRecordsOnDisk;
-
-	/** The max buffer size. */
-	private long maxBufferSizeOnDisk;
-
-	/** The max buffering time. */
-	private long maxBufferingTimeOnDisk;
-
 	/** The start time. */
 	// TODO reset this after purge to memory
 	private long startBufferingTimeInMemory;
 
-	/** The start time. */
-	private long startBufferingTimeOnDisk;
 
 	/** The files. */
 	private LinkedList<String> files = new LinkedList<String>();
@@ -81,12 +70,9 @@ public final class SinkBuffer {
 	 *            the configuration
 	 */
 	public SinkBuffer(SinkPartitioner partitioner, S3SinkConfig config) {
-		this.localTmpDir = System.getProperty("java.io.tmpdir");
+		this.localTmpDir = config.getLocalTmpDir();
 		this.maxRecordsSizeInMemory = config.getMemoryMaxBufferSize();
 		this.maxBufferingTimeInMemory = config.getMemoryMaxBufferingTime();
-		this.maxRecordsOnDisk = config.getMemoryMaxRecords();
-		this.maxBufferSizeOnDisk = config.getDiskMaxBufferSize();
-		this.maxBufferingTimeOnDisk = config.getDiskMaxBufferingTime();
 		this.maxRecordsInMemory = config.getMemoryMaxRecords();
 		// this.mappedByteBufferSize = config.getMappedByteBufferSize();
 		this.partitioner = partitioner;
@@ -127,7 +113,6 @@ public final class SinkBuffer {
 			tuples.add(tuple);
 		} else {
 			addToDisk(tuple);
-			updateDiskState();
 		}
 		return true;
 	}
@@ -227,7 +212,6 @@ public final class SinkBuffer {
 			addToDisk(tuples.poll());
 			toRemove--;
 		}
-		updateDiskState();
 		setProcessLoopActive(false);
 	}
 
@@ -260,29 +244,6 @@ public final class SinkBuffer {
 		return size;
 	}
 
-	/**
-	 * Update disk state.
-	 */
-	private void updateDiskState() {
-
-		if (startBufferingTimeOnDisk == 0) {
-			startBufferingTimeOnDisk = System.currentTimeMillis();
-		}
-		/*
-		 * if (files.size() > maxRecordsOnDisk || getRecordsSizeOnDisk() >
-		 * maxBufferSizeOnDisk || (System.currentTimeMillis() -
-		 * startBufferingTimeOnDisk) > maxBufferingTimeOnDisk) { saturated =
-		 * true; }
-		 */
-	}
-
-	private long getRecordsSizeOnDisk() {
-		long size = 0;
-		for (String file : files) {
-			size = new File(file).length();
-		}
-		return size;
-	}
 
 	/**
 	 * Clear tuples in memory and on disk.
@@ -302,7 +263,6 @@ public final class SinkBuffer {
 		tuples.clear();
 		files.clear();
 		startBufferingTimeInMemory = 0;
-		startBufferingTimeOnDisk = 0;
 	}
 
 	/**
@@ -322,26 +282,6 @@ public final class SinkBuffer {
 	// TODO name suggests that we actually read from disk?
 	public File pollFromDisk() {
 		return new File(files.poll());
-	}
-
-	/**
-	 * Checks if is saturated.
-	 * 
-	 * @return true, if checks if is saturated
-	 */
-	public boolean isSaturated() {
-
-		return getIsSaturated();
-	}
-
-	/**
-	 * @return
-	 */
-	private boolean getIsSaturated() {
-		return files.size() > maxRecordsOnDisk
-				|| getRecordsSizeOnDisk() > maxBufferSizeOnDisk
-				|| (startBufferingTimeOnDisk != 0 && (System
-						.currentTimeMillis() - startBufferingTimeOnDisk) > maxBufferingTimeOnDisk);
 	}
 
 	/*
