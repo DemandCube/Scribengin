@@ -16,7 +16,7 @@ public class S3SinkStreamUnitTest {
     
     SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.setLocation("");
-    Injector injector  = Guice.createInjector(new S3TestModule(descriptor));
+    Injector injector  = Guice.createInjector(new S3TestModule(descriptor,true));
     S3SinkStream S3SinkStream = new S3SinkStream(injector, descriptor);
     SinkStreamWriter writer = S3SinkStream.getWriter();
     assertNotNull(writer);

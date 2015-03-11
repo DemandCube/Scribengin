@@ -32,7 +32,7 @@ public class SinkBufferUnitTest {
   private String pathname;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     SinkStreamDescriptor descriptor = null;
     descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.setLocation("");
@@ -42,6 +42,9 @@ public class SinkBufferUnitTest {
     partitioner = new OffsetPartitioner(offsetPerPartition);
     
     buffer = new S3SinkBuffer(partitioner, config);
+    // delete files from tmp dir
+    File file = new File(pathname);
+    FileUtils.deleteDirectory(file);
   }
 
   @Test

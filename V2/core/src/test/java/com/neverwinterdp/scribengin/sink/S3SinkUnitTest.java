@@ -15,7 +15,7 @@ public class S3SinkUnitTest {
   public void test() throws Exception {
     SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.setLocation("test");
-    Injector injector  = Guice.createInjector(new S3TestModule(descriptor));
+    Injector injector  = Guice.createInjector(new S3TestModule(descriptor,true));
     S3Sink S3SinkStream = new S3Sink(injector, descriptor);
     SinkStream stream = S3SinkStream.newStream();
     SinkStreamWriter writer = stream.getWriter();
