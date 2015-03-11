@@ -4,6 +4,7 @@ import static com.neverwinterdp.vm.builder.VMClusterBuilder.h1;
 
 import java.util.List;
 
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
@@ -20,6 +21,7 @@ import com.neverwinterdp.vm.event.VMShutdownEventListener;
 import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 
+@JmxBean("role=vm-client, type=VMClient, name=VMClient")
 public class VMClient {
   private Registry registry;
 

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -17,6 +18,7 @@ import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.service.VMServicePlugin;
 
 @Singleton
+@JmxBean("role=vm-manager, type=VMServicePlugin, name=YarnVMServicePlugin")
 public class YarnVMServicePlugin implements VMServicePlugin {
   private Logger logger = LoggerFactory.getLogger(YarnVMServicePlugin.class);
   

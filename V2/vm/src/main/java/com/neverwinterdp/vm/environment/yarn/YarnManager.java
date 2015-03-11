@@ -36,9 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.vm.VMConfig;
 
 @Singleton
+@JmxBean("role=vm-manager, type=YarnManager, name=YarnManager")
 public class YarnManager {
   private Logger logger = LoggerFactory.getLogger(YarnManager.class.getName());
 
