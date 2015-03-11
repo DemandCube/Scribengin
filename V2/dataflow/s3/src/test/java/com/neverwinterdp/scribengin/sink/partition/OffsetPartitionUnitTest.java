@@ -13,12 +13,14 @@ import com.neverwinterdp.scribengin.util.Label;
 
 public class OffsetPartitionUnitTest {
 
+  private final String topic = "topic";
+  private final int kafkaPartition = 0;
   private final int offsetPerPartition = 5;
   private OffsetPartitioner offsetPartitioner;
 
   @Before
   public void setUp() {
-    offsetPartitioner = new OffsetPartitioner(offsetPerPartition );
+    offsetPartitioner = new OffsetPartitioner(offsetPerPartition, topic, kafkaPartition);
   }
 
   // get partition for startOffset=0 and endOffset=100
@@ -29,7 +31,9 @@ public class OffsetPartitionUnitTest {
     long endOffset = 999;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
     
-    String expected =folder +
+    String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
 
@@ -44,7 +48,9 @@ public class OffsetPartitionUnitTest {
     long startOffset = 5;
     long endOffset = 9;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-      String expected = folder +
+      String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));
@@ -56,10 +62,20 @@ public class OffsetPartitionUnitTest {
     long startOffset = 0;
     long endOffset = 5;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-     String expected = folder +
+     String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));
+  }
+
+
+  @Test
+  @Label("S3_15")
+  public void testGetPartition() {
+    String expected = topic + "/" + kafkaPartition + "/";
+    assertEquals(expected, offsetPartitioner.getPartition());
   }
 
   @Test
@@ -68,7 +84,9 @@ public class OffsetPartitionUnitTest {
     long startOffset = 100;
     long endOffset = 104;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-     String expected = folder +
+     String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));
@@ -80,7 +98,9 @@ public class OffsetPartitionUnitTest {
     long startOffset = 1000;
     long endOffset = 1004;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-      String expected = folder +
+      String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));
@@ -92,7 +112,9 @@ public class OffsetPartitionUnitTest {
     long startOffset = 0;
     long endOffset = 3;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-     String expected = folder +
+     String expected = topic +
+        "/" + kafkaPartition +
+        "/" + folder +
         "/" + startOffset + "_" + endOffset;
 
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));

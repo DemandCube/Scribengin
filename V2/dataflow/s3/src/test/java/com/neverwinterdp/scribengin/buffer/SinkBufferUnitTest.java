@@ -1,6 +1,7 @@
   package com.neverwinterdp.scribengin.buffer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -15,31 +16,28 @@ import org.junit.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.util.Label;
-import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 public class SinkBufferUnitTest {
 
   private SinkBuffer buffer;
   S3SinkConfig config;
   SinkPartitioner partitioner;
+
+  private String topic = "testTopic2";
   private String pathname;
 
   @Before
   public void setUp() {
-    SinkStreamDescriptor descriptor = null;
-    descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
-    descriptor.setLocation("");
-    config = new S3SinkConfig(descriptor);
-    pathname = config.getLocalTmpDir();
+    pathname = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") + topic;
     int offsetPerPartition = 10;
-    partitioner = new OffsetPartitioner(offsetPerPartition);
-    
+    int kafkaPartition = 0;
+    partitioner = new OffsetPartitioner(offsetPerPartition, topic, kafkaPartition);
+    config = new S3SinkConfig("s3.default.properties");
     buffer = new SinkBuffer(partitioner, config);
   }
 
@@ -122,6 +120,7 @@ public class SinkBufferUnitTest {
     assertEquals(0, buffer.size());
     assertEquals(0, buffer.getFilesCount());
     assertTrue(buffer.isEmpty());
+    assertFalse(buffer.isSaturated());
   }
 
   @Test
@@ -167,6 +166,7 @@ public class SinkBufferUnitTest {
       buffer.add(tuple);
     }
     assertEquals(tuples, buffer.size());
+    assertTrue(buffer.isSaturated());
   }
 
   @Test

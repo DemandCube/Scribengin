@@ -11,8 +11,6 @@ import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-
 public class PropertyUtils {
 
     private static final Logger logger = LogManager.getLogger(PropertyUtils.class);
@@ -78,14 +76,4 @@ public class PropertyUtils {
 	public Properties getProperties() {
 		return properties;
 	}
-
-  public SinkStreamDescriptor getDescriptor() {
-    SinkStreamDescriptor descriptor = new SinkStreamDescriptor();
-    for (Object key : properties.keySet()){
-      descriptor.put((String)key, (String) properties.get(key));
-    }
-    return descriptor;
-  }
-	
-
 }
