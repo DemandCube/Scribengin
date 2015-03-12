@@ -40,9 +40,10 @@ public class KafkaMessageCheckTool implements Runnable {
 
   public void setInterrupt(boolean b) { this.interrupt = b ; }
   
-  synchronized public void waitForTermination(long maxWaitTime) throws InterruptedException {
-    if(!running) return;
+  synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
+    if(!running) return !running;
     wait(maxWaitTime);
+    return !running;
   }
   
   synchronized void notifyTermination() {

@@ -34,7 +34,8 @@ dependencies {
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
-
+  compile 'com.amazonaws:aws-java-sdk:1.9.6'
+  
   //TODO: move to use jackson
   compile 'org.json:json:20090211'
   compile group: 'com.google.guava', name: 'guava', version: '13.0'

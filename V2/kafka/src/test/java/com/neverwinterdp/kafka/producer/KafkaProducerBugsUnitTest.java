@@ -70,10 +70,11 @@ public class KafkaProducerBugsUnitTest {
     
     DefaultKafkaWriter writer = new DefaultKafkaWriter(NAME, kafkaProps, cluster.getKafkaConnect());
     int NUM_OF_SENT_MESSAGES = 5000 ;
+    MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
     for(int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       
       //Use this send to print out more detail about the message lost
-      writer.send("test", 0, "key-" + i, "test-1-" + i, new MessageFailDebugCallback("message " + i), 5000 );
+      writer.send("test", 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000 );
       //writer.send("test", 0, "key-" + i, "test-1-" + i, 5000);
       //After sending 10 messages we shutdown and continue sending
       if(i == 10) {
@@ -84,24 +85,22 @@ public class KafkaProducerBugsUnitTest {
       }
     }
     writer.close();
-    System.out.println("send done...");
+    System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
     checkTool.runAsDeamon();
-    checkTool.waitForTermination(20000);
-    Assert.assertTrue( checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
+    if(checkTool.waitForTermination(10000)) {
+      checkTool.setInterrupt(true);
+      Thread.sleep(3000);
+    }
+    Assert.assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
   
   class MessageFailDebugCallback implements Callback {
-    private String description ;
-    MessageFailDebugCallback(String desc) {
-      this.description = desc;
-    }
+    private int failedCount ;
     
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
-      if(exception != null) {
-        System.err.println(description + ". Message  failed due to " + exception.getMessage() + ", thread = " + Thread.currentThread().getName());
-      }
+      if(exception != null) failedCount++ ;
     }
   }
   
