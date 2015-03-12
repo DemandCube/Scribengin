@@ -47,10 +47,11 @@ public class AckKafkaWriterTestRunner {
     cluster.setNumOfPartition(config.getNumOfPartitions());
     cluster.start();
     Thread.sleep(2000);
+
   }
 
   public void tearDown() throws Exception {
-    cluster.shutdown();
+     cluster.shutdown();
     Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
     for (Thread sel : threadSet) {
       System.err.println("Thread: " + sel.getName());
@@ -95,7 +96,7 @@ public class AckKafkaWriterTestRunner {
     leaderKiller.waitForTermination(30000);
     System.out.println("Finished sending, waiting for check tool..............");
     checkTool.waitForTermination(300000);
-
+  
     report.setSent(sendTool.getNumOfSentMessages());
     report.setFailedAck(sendTool.getNumOfFailedAck());
     report.setConsumed(checkTool.getMessageCounter().getTotal());
@@ -107,6 +108,7 @@ public class AckKafkaWriterTestRunner {
     report.setWriteDuration(sendTool.stopwatch);
     report.setReadDuration(checkTool.getReadDuration());
     checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
+    
   }
 
   class KafkaMessageSendTool implements Runnable {
@@ -264,6 +266,7 @@ public class AckKafkaWriterTestRunner {
     private int brokerCount;
     private Stopwatch writeDuration;
     private Stopwatch readDuration;
+    private Stopwatch runDuration;
 
     public int getSent() {
       return sent;
@@ -345,8 +348,17 @@ public class AckKafkaWriterTestRunner {
       this.readDuration = readDuration;
     }
 
+    public Stopwatch getRunDuration() {
+      return runDuration;
+    }
+
+    public void setRunDuration(Stopwatch runDuration) {
+      this.runDuration = runDuration;
+    }
+
     public void print(Appendable out, String title) {
-      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Broker restarts","message size(bytes)", "run Duration");
+      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Broker restarts",
+          "message size(bytes)", "run Duration");
       if (title != null && title.isEmpty())
         formater.setTitle(title);
 
@@ -359,5 +371,6 @@ public class AckKafkaWriterTestRunner {
         e.printStackTrace();
       }
     }
+
   }
 }
