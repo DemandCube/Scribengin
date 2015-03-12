@@ -13,6 +13,21 @@ ZOOKEEPER_SERVERS="";
 KAFKA_SERVERS="";
 ALL_SERVERS="";
 
+function get_opt() {
+  OPT_NAME=$1
+  DEFAULT_VALUE=$2
+  shift
+  #Parse the parameters
+  for i in "$@"; do
+    if [[ $i == $OPT_NAME* ]] ; then
+      value="${i#*=}"
+      echo "$value"
+      return
+    fi
+  done
+  echo $DEFAULT_VALUE
+}
+
 #Parse /etc/hosts file to get the cluster hostname
 function parse_hosts_file() {
   FILENAME="/etc/hosts"
@@ -79,5 +94,5 @@ do
   KAFKA_CONNECT+="$server:9092"
 done
 
-sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g"  $bin/../config/server.properties
-sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g"  $bin/../config/server.properties
+sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g" $@
+sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g" $@
