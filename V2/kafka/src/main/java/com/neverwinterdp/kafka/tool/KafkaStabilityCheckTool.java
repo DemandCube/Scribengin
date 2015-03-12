@@ -27,6 +27,7 @@ public class KafkaStabilityCheckTool implements Runnable {
   
   private KafkaMessageSendTool sendTool ;
   private KafkaMessageCheckTool checkTool ;
+  private KafkaReport report;
   
   public KafkaStabilityCheckTool(String[] args) throws Exception {
     JCommander jcommander = new JCommander(this, args);
@@ -50,19 +51,24 @@ public class KafkaStabilityCheckTool implements Runnable {
     sendTool.waitForTermination();
     checkTool.waitForTermination(10000);
     System.out.println("Check Tool: " + checkTool.getMessageCounter().getTotal());
-    KafkaReport report = new KafkaReport() ;
+    
+    report = new KafkaReport() ;
+    //TODO: Update and poulate the report data
     sendTool.report(report);
     checkTool.report(report);
-    //TODO: print out the report
   }
   
   //TODO: create report object at the end of doRun
-  public KafkaReport getKafkaReport() {
-    return null;
+  public KafkaReport getKafkaReport() { return report; }
+  
+  public void report(Appendable out) {
+    
   }
   
   static public void main(String[] args) throws Exception {
     KafkaStabilityCheckTool tool = new KafkaStabilityCheckTool(args);
     tool.run();
+    //TODO: this method should print out the report in the table format
+    tool.report(System.out);
   }
 }
