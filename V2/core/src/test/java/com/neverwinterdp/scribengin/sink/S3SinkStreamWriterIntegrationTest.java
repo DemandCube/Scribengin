@@ -112,4 +112,30 @@ public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTes
       System.out.println("buckets " + System.getenv("AWS_CREDENTIAL_PROFILES_FILE"));
     }
   }
+  @Test(expected = AmazonClientException.class)
+  public void testUploadToNonExistentBucket() throws Exception {
+    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
+    descriptor.put("bucketName", "xxxxx");
+    descriptor.setLocation("");
+    Injector injector = Guice.createInjector(new S3TestModule(descriptor, false));
+    sink = injector.getInstance(S3SinkStreamWriter.class);
+    int tuples = 8;
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
+    }
+    sink.commit();
+  }
+  @Test(expected = AmazonClientException.class)
+  public void testUploadToReadOnlyBucket() throws Exception {
+    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
+    descriptor.put("bucketName", "nellouzereadonly");
+    descriptor.setLocation("");
+    Injector injector = Guice.createInjector(new S3TestModule(descriptor, false));
+    sink = injector.getInstance(S3SinkStreamWriter.class);
+    int tuples = 8;
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
+    }
+    sink.commit();
+  }
 }
