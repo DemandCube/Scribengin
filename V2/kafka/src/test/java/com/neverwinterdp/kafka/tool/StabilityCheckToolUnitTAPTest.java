@@ -30,17 +30,15 @@ public class StabilityCheckToolUnitTAPTest {
   @Test
   public void testStabilityTool() throws Exception {
     String[] args = {
-      "--zk-connect", cluster.getZKConnect(),
-      "--write-period", "10",
-      "--message-size", "500",
-      "--num-partition", "3",
-      "--exit-wait-time", "5000",
-      "--max-message-per-partition", "100",
-      "--max-duration", "60000",
-      "--replication", "3",
-      "--tap-enable",
+        "--zk-connect", cluster.getZKConnect(),
+        "--write-period", "10",
+        "--message-size", "500",
+        "--num-partition", "3",
+        "--max-message-per-partition", "100",
+        "--max-duration", "60000",
+        "--replication", "3",
+        "--tap-enable",
     };
     StabilityCheckTool.main(args);
-    Thread.sleep(3000);
   }
 }

@@ -139,7 +139,9 @@ public class StabilityCheckTool {
           t = new TestResult( StatusValues.NOT_OK, ++testNum );
         }
         
-        t.setDescription( "Test if messages written == messages count from partition "+Integer.toString(sel.partitionId()) );
+        t.setDescription( "Partition: "+Integer.toString(sel.partitionId()) +
+                          " Messages Written: "+writer.writeCount +
+                          " Messages Read: "+ messageCounter.getPartitionCount(partitionId));
         testSet.addTestResult( t );
       }
     }
