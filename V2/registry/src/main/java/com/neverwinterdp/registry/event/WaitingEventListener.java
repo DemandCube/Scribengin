@@ -37,6 +37,7 @@ public class WaitingEventListener extends EventListener {
       public boolean process(Event event) {
         if(!"waiting-for-data".equals(event.getName())) return false;
         T data = event.attr(type);
+        if(data == null) return expectData == null ;
         return data.equals(expectData);
       }
     };

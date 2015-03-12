@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.util.JSONSerializer;
@@ -39,6 +40,10 @@ public class DistributedQueue {
    */
   public void offer(byte[] data) throws RegistryException {
     registry.create(path + "/", data, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+  }
+  
+  public void offer(Transaction transaction, byte[] data) throws RegistryException {
+    transaction.create(path + "/", data, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
   
   public <T> void offerAs(T object) throws RegistryException {
