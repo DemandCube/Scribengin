@@ -317,7 +317,7 @@ function kafka_start() {
   clean=$(has_opt --clean $@)
   javaagent=$(has_opt --with-javaagent $@)
   withzk=$(has_opt --with-zookeeper $@)
-  config_name=$(get_opt --config-name default $@)
+  config_path=$(get_opt --config-path '/opt/kafka/config/default.properties' $@)
  
   if $withzk ; then
     zookeeper_start
@@ -334,12 +334,12 @@ function kafka_start() {
   
   if $javaagent ; then
     h1 "Start kafka with javaagent enabled"
-    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh --config-name=$config_name"
-    servers_exec  "$KAFKA_SERVERS" "KAFKA_JMX_OPTS=\"$JVM_AGENT_OPTS\" /opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/\"$config_name\".properties"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh $config_path"
+    servers_exec  "$KAFKA_SERVERS" "KAFKA_JMX_OPTS=\"$JVM_AGENT_OPTS\" /opt/kafka/bin/kafka-server-start.sh -daemon $config_path"
   else
     h1 "Start kafka"
-    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh --config-name=$config_name"
-    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/"$config_name".properties"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/configure.sh $config_path"
+    servers_exec  "$KAFKA_SERVERS" "/opt/kafka/bin/kafka-server-start.sh -daemon $config_path"
   fi
 }
 

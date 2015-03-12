@@ -94,7 +94,5 @@ do
   KAFKA_CONNECT+="$server:9092"
 done
 
-CONFIG_NAME=$(get_opt --config-name default $@)
-
-sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g"  $bin/../config/$CONFIG_NAME\.properties
-sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g"  $bin/../config/$CONFIG_NAME\.properties
+sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g" $@
+sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g" $@
