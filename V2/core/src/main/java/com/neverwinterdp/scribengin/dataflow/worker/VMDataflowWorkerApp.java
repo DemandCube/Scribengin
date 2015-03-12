@@ -10,11 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Stage;
 import com.mycila.guice.ext.closeable.CloseableInjector;
 import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.module.MycilaJmxModuleExt;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
@@ -57,8 +59,12 @@ public class VMDataflowWorkerApp extends VMApp {
         }
       };
     };
-    Injector injector = 
-        Guice.createInjector(Stage.PRODUCTION, new CloseableModule(), new Jsr250Module(), module);
+    Module[] modules = {
+      new CloseableModule(),new Jsr250Module(), 
+      new MycilaJmxModuleExt(getVM().getDescriptor().getVmConfig().getName()), 
+      module
+    };
+    Injector injector = Guice.createInjector(Stage.PRODUCTION, modules);
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
     try {

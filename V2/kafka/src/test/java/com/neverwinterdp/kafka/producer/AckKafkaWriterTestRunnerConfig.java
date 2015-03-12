@@ -17,6 +17,9 @@ public class AckKafkaWriterTestRunnerConfig {
   @Parameter(names = "--max-num-message", description = "The maximum number of the messages")
   private int maxNumOfMessages = 20000;
   
+  @Parameter(names = "--num-kafka-brokers", description = "Number of kafka brokers.")
+  private int numKafkaBrokers = 2;
+  
   public AckKafkaWriterTestRunnerConfig(String[] args) {
     new JCommander(this, args);
   }
@@ -30,5 +33,6 @@ public class AckKafkaWriterTestRunnerConfig {
   public int getNumOfReplications() { return numOfReplications; }
  
   public int getMaxNumOfMessages() { return maxNumOfMessages; }
- 
+  
+  public int getNumKafkaBrokers() { return numKafkaBrokers; } 
 }

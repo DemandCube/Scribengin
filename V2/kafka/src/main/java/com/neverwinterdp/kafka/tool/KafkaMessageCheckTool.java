@@ -22,6 +22,7 @@ public class KafkaMessageCheckTool implements Runnable {
   private boolean interrupt = false ;
   private Thread deamonThread ;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
+  private boolean running = false;
   
   public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
     this.zkConnect = zkConnect;
@@ -40,6 +41,7 @@ public class KafkaMessageCheckTool implements Runnable {
   public void setInterrupt(boolean b) { this.interrupt = b ; }
   
   synchronized public void waitForTermination(long maxWaitTime) throws InterruptedException {
+    if(!running) return;
     wait(maxWaitTime);
   }
   
@@ -48,11 +50,13 @@ public class KafkaMessageCheckTool implements Runnable {
   }
   
   public void run() {
+    running = true;
     try {
       check() ;
     } catch (Exception e) {
       e.printStackTrace();
     }
+    running = false;
     notifyTermination();
   }
   
@@ -79,11 +83,19 @@ public class KafkaMessageCheckTool implements Runnable {
     
     messageCounter = new MessageCounter();
     interrupt = false;
+    int lastCount = 0, cannotReadCount = 0 ;
     while(messageCounter.getTotal() < expectNumberOfMessage && !interrupt) {
       for(int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
       }
+      if(lastCount == messageCounter.getTotal()) {
+        cannotReadCount++ ;
+      } else {
+        cannotReadCount = 0 ;
+      }
+      if(cannotReadCount >= 10) interrupt = true;
+      lastCount = messageCounter.getTotal();
     }
     //Run the last fetch to find the duplicated messages if there are some
     for(int k = 0; k < partitionReader.length; k++) {

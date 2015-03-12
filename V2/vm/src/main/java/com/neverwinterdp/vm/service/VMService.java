@@ -21,8 +21,11 @@ import com.neverwinterdp.vm.event.VMHeartbeatNodeWatcher;
 public class VMService {
   final static public String ALLOCATED_PATH = "/vm/allocated";
   final static public String HISTORY_PATH   = "/vm/history";
-  final static public String LEADER_PATH    = "/vm/master/leader";
+  final static public String MASTER_PATH    = "/vm/master";
+  final static public String LEADER_PATH    = MASTER_PATH + "/leader";
   final static public String EVENTS_PATH    = "/vm/events";
+  
+  static public enum Status { INIT, RUNNING, TERMINATED }
   
   @Inject
   private Registry registry;
@@ -34,10 +37,12 @@ public class VMService {
   
   @Inject
   public void onInit() throws Exception {
+    registry.createIfNotExist(MASTER_PATH + "/status") ;
     registry.createIfNotExist(LEADER_PATH) ;
     registry.createIfNotExist(EVENTS_PATH) ;
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
+    registry.setData(MASTER_PATH + "/status", Status.INIT);
     
   }
   
@@ -48,6 +53,10 @@ public class VMService {
   public boolean isClosed() { return registry == null ; }
   
   public Registry getRegistry() { return this.registry; }
+  
+  public void setStatus(Status status) throws Exception {
+    registry.setData(MASTER_PATH + "/status", status);
+  }
   
   public VMDescriptor[] getAllocatedVMDescriptors() throws RegistryException {
     List<String> names = registry.getChildren(ALLOCATED_PATH) ;

@@ -7,10 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 
+@Singleton
+@JmxBean("role=dataflow-worker, type=DataflowTaskExecutorManager, name=DataflowTaskExecutorManager")
 public class DataflowTaskExecutorManager {
   private Logger logger = LoggerFactory.getLogger(DataflowTaskExecutorManager.class);
 

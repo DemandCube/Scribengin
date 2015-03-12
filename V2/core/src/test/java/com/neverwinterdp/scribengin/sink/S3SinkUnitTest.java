@@ -9,8 +9,11 @@ import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.s3.sink.S3Sink;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
-public class S3SinkUnitTest {
+/**
+ * The Class S3SinkTest.
+ */
 
+public class S3SinkUnitTest {
   @Test
   public void test() throws Exception {
     SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
@@ -21,6 +24,4 @@ public class S3SinkUnitTest {
     SinkStreamWriter writer = stream.getWriter();
     assertNotNull(writer);
   
-  }
-  
-}
+  }}

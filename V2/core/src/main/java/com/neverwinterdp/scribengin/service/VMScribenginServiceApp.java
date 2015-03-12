@@ -4,7 +4,12 @@ import java.util.Map;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Stage;
+import com.mycila.guice.ext.closeable.CloseableModule;
+import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.module.MycilaJmxModuleExt;
 import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -63,7 +68,12 @@ public class VMScribenginServiceApp extends VMApp {
             }
           };
         };
-        appContainer = Guice.createInjector(module);
+        Module[] modules = {
+          new CloseableModule(),new Jsr250Module(), 
+          new MycilaJmxModuleExt(getVM().getDescriptor().getVmConfig().getName()), 
+          module
+        };
+        appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
         scribenginService = appContainer.getInstance(ScribenginService.class);
         RefNode refNode = new RefNode() ;
         refNode.setPath(getVM().getDescriptor().getStoredPath());

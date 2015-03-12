@@ -32,7 +32,6 @@ public class ScribenginClusterBuilder {
   
   public void start() throws Exception {
     startVMMasters() ;
-    Thread.sleep(10000);
     startScribenginMasters();
   }
   

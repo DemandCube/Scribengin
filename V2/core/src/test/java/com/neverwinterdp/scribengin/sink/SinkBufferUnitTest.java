@@ -1,4 +1,4 @@
-  package com.neverwinterdp.scribengin.buffer;
+  package com.neverwinterdp.scribengin.sink;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

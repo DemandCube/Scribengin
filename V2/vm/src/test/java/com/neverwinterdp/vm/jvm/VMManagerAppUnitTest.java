@@ -41,6 +41,7 @@ public class VMManagerAppUnitTest  {
   public void testMaster() throws Exception {
     try {
       VMWaitingEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
+      master1waitingListener.waitForEvents(5000);
       vmCluster.createVMMaster("vm-master-2");
       Thread.sleep(2000);
       vmClient = vmCluster.getVMClient();

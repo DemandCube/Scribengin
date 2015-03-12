@@ -1,5 +1,4 @@
 package com.neverwinterdp.scribengin.util;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -16,68 +15,68 @@ import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 public class PropertyUtils {
 
     private static final Logger logger = LogManager.getLogger(PropertyUtils.class);
-	private final String filename;
-	private Properties properties;
+    private final String filename;
+    private Properties properties;
 
-	public PropertyUtils(String filename) {
-		this.filename = filename;
-		properties = getPropertyFile(filename);
-	}
+    public PropertyUtils(String filename) {
+        this.filename = filename;
+        properties = getPropertyFile(filename);
+    }
 
-	public Properties getPropertyFile(String filename) {
+    public Properties getPropertyFile(String filename) {
 
-		Properties prop = new Properties();
-		InputStream inputStream = null;
+        Properties prop = new Properties();
+        InputStream inputStream = null;
 
-		String path;
-		try {
-			path = System.getProperty("user.dir")
-					+ System.getProperty("file.separator") + filename;
-			logger.debug("Path " + path);
-			inputStream = new FileInputStream(path);
-		} catch (FileNotFoundException e) {
-			try {
-				URL urlpath = Thread.currentThread().getContextClassLoader()
-						.getResource(filename);
-				inputStream = new FileInputStream(urlpath.getPath());
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			}
-		}
-		try {
-			if (inputStream != null) {
-				prop.load(inputStream);
-				inputStream.close();
-			}
-		} catch (IOException IOE) {
-			IOE.printStackTrace();
-		}
-		return prop;
-	}
+        String path;
+        try {
+            path = System.getProperty("user.dir")
+                    + System.getProperty("file.separator") + filename;
+            logger.debug("Path " + path);
+            inputStream = new FileInputStream(path);
+        } catch (FileNotFoundException e) {
+            try {
+                URL urlpath = Thread.currentThread().getContextClassLoader()
+                        .getResource(filename);
+                inputStream = new FileInputStream(urlpath.getPath());
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            }
+        }
+        try {
+            if (inputStream != null) {
+                prop.load(inputStream);
+                inputStream.close();
+            }
+        } catch (IOException IOE) {
+            IOE.printStackTrace();
+        }
+        return prop;
+    }
 
-	boolean saveProperty(String key, String value) {
+    boolean saveProperty(String key, String value) {
 
-		properties.setProperty(key, value);
-		String path = System.getProperty("user.dir")
-				+ System.getProperty("file.separator") + filename;
-		try {
-			properties.store(new FileOutputStream(path), null);
-		} catch (FileNotFoundException e) {
-			logger.error(e, e);
-		} catch (IOException e) {
-			logger.error(e, e);
-		}
-		return false;
-	}
+        properties.setProperty(key, value);
+        String path = System.getProperty("user.dir")
+                + System.getProperty("file.separator") + filename;
+        try {
+            properties.store(new FileOutputStream(path), null);
+        } catch (FileNotFoundException e) {
+            logger.error(e, e);
+        } catch (IOException e) {
+            logger.error(e, e);
+        }
+        return false;
+    }
 
-	/**
-	 * Gets the properties.
-	 * 
-	 * @return the properties
-	 */
-	public Properties getProperties() {
-		return properties;
-	}
+    /**
+     * Gets the properties.
+     * 
+     * @return the properties
+     */
+    public Properties getProperties() {
+        return properties;
+    }
 
   public SinkStreamDescriptor getDescriptor() {
     SinkStreamDescriptor descriptor = new SinkStreamDescriptor();
@@ -86,6 +85,6 @@ public class PropertyUtils {
     }
     return descriptor;
   }
-	
+    
 
 }

@@ -42,7 +42,7 @@ public class AckKafkaWriterTestRunner {
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/kafka", false);
     report = new Report();
-    cluster = new KafkaCluster("./build/kafka", 1, config.getNumOfReplications() + 1);
+    cluster = new KafkaCluster("./build/kafka", 1, config.getNumKafkaBrokers());
     cluster.setReplication(config.getNumOfReplications());
     cluster.setNumOfPartition(config.getNumOfPartitions());
     cluster.start();
@@ -95,6 +95,7 @@ public class AckKafkaWriterTestRunner {
     leaderKiller.waitForTermination(30000);
     System.out.println("Finished sending, waiting for check tool..............");
     checkTool.waitForTermination(300000);
+
     report.setSent(sendTool.getNumOfSentMessages());
     report.setFailedAck(sendTool.getNumOfFailedAck());
     report.setConsumed(checkTool.getMessageCounter().getTotal());
@@ -102,6 +103,7 @@ public class AckKafkaWriterTestRunner {
     report.setMessageSize(sendTool.messageSize);
     report.setPartitions(config.getNumOfPartitions());
     report.setReplicationFactor(config.getNumOfReplications());
+    report.setBrokerCount(config.getNumKafkaBrokers());
     report.setWriteDuration(sendTool.stopwatch);
     report.setReadDuration(checkTool.getReadDuration());
     checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
@@ -259,6 +261,7 @@ public class AckKafkaWriterTestRunner {
     private int messageSize;
     private int partitions;
     private int replicationFactor;
+    private int brokerCount;
     private Stopwatch writeDuration;
     private Stopwatch readDuration;
 
@@ -326,6 +329,14 @@ public class AckKafkaWriterTestRunner {
       this.writeDuration = writeDuration;
     }
 
+    public int getBrokerCount() {
+      return brokerCount;
+    }
+
+    public void setBrokerCount(int brokerCount) {
+      this.brokerCount = brokerCount;
+    }
+
     public Stopwatch getReadDuration() {
       return readDuration;
     }
@@ -335,8 +346,7 @@ public class AckKafkaWriterTestRunner {
     }
 
     public void print(Appendable out, String title) {
-      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Broker restarts",
-          "message size(bytes)", "run Duration");
+      TabularFormater formater = new TabularFormater("Sent", "Failed Ack", "Consumed", "Broker restarts","message size(bytes)", "run Duration");
       if (title != null && title.isEmpty())
         formater.setTitle(title);
 

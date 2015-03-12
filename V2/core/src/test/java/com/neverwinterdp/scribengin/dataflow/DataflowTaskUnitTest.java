@@ -23,6 +23,7 @@ import com.neverwinterdp.scribengin.source.SourceStream;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
+@Deprecated
 public class DataflowTaskUnitTest {
   static String      SOURCE_DIRECTORY       = "./build/hdfs/source";
   static String      SINK_DIRECTORY         = "./build/hdfs/sink";
