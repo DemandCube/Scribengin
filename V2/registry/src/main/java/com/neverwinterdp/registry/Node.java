@@ -66,6 +66,10 @@ public class Node {
   public void rdelete() throws RegistryException {
     registry.rdelete(path);
   }
+  
+  public void rdelete(Transaction transaction) throws RegistryException {
+    transaction.rdelete(path);
+  }
 
   public Lock getLock(String name) { return new Lock(registry, path, name) ; }
 
@@ -114,15 +118,16 @@ public class Node {
   public Node createChild(String name, NodeCreateMode mode) throws RegistryException {
     return registry.create(path + "/" + name, mode);
   }
-  
+
+  @Deprecated
   public Node createChild(Transaction transaction, String name, NodeCreateMode mode)  {
     return createChild(transaction, name, new byte[0], mode);
   }
-  
+
   public <T> Node createChild(Transaction transaction, String name, T data, NodeCreateMode mode)  {
     return createChild(transaction, name, JSONSerializer.INSTANCE.toBytes(data), mode);
   }
-  
+
   public Node createChild(Transaction transaction, String name, byte[] data, NodeCreateMode mode)  {
     String childPath = path + "/" + name;
     transaction.create(childPath, data,  mode);
