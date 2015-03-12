@@ -30,9 +30,11 @@ public class AckKafkaWriterTestRunner {
   private Report report;
 
   private AckKafkaWriterTestRunnerConfig config;
+  private Stopwatch runDuration;
 
   public AckKafkaWriterTestRunner(AckKafkaWriterTestRunnerConfig config) {
     this.config = config;
+    runDuration= Stopwatch.createUnstarted();
   }
 
   public Report getReport() {
@@ -59,6 +61,7 @@ public class AckKafkaWriterTestRunner {
   }
 
   public void run() throws Exception {
+    runDuration.start();
     Map<String, String> kafkaProps = new HashMap<String, String>();
     kafkaProps.put("message.send.max.retries", "5");
     kafkaProps.put("retry.backoff.ms", "100");
@@ -108,6 +111,9 @@ public class AckKafkaWriterTestRunner {
     report.setWriteDuration(sendTool.stopwatch);
     report.setReadDuration(checkTool.getReadDuration());
     checkTool.getMessageCounter().print(System.out, "Topic: " + config.getTopic());
+    
+    runDuration.stop();
+    report.setRunDuration(runDuration);
     
   }
 
