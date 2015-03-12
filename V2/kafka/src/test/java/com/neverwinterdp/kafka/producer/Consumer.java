@@ -46,7 +46,7 @@ public class Consumer implements AutoCloseable, Callable<List<String>> {
   public List<String> read() {
     long currentOffset = getOffset(kafka.api.OffsetRequest.EarliestTime());
     do {
-      FetchRequest req = new FetchRequestBuilder().clientId("test Consumer")
+      FetchRequest req = new FetchRequestBuilder().clientId("test ConsumerReport")
           .addFetch(topic, partition, currentOffset, BUFFER_SIZE).build();
 
       FetchResponse resp = consumer.fetch(req);

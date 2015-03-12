@@ -61,9 +61,6 @@ public class StabilityCheckTool {
   @Parameter(names = "--replication", description = "The number of the replication")
   private int    replication = 1;
   
-  @Parameter(names = "--exit-wait-time", description = "The message size in bytes")
-  private long    exitWaitTime = 10000;
-  
   @Parameter(names = "--send-timeout", description = "Timeout when the writer cannot send due to error or the buffer is full")
   private long    sendTimeout = 10000;
   
@@ -122,7 +119,7 @@ public class StabilityCheckTool {
     if(!writerService.isTerminated()) {
       writerService.shutdownNow();
     }
-    messageCheckTool.waitForTermination(exitWaitTime);
+    messageCheckTool.waitForTermination(maxDuration);
     
     TabularFormater formater = new TabularFormater("Partition", "Write", "Read");
     MessageCounter messageCounter = messageCheckTool.getMessageCounter();

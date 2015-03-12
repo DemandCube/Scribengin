@@ -8,14 +8,20 @@ import java.util.Map;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
+import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class KafkaMessageCheckTool implements Runnable {
-  private String name = "KafkaMessageCheckTool";
-  private String zkConnect;
-  private String topic;
+  static private String NAME = "KafkaMessageCheckTool";
+  
+  @ParametersDelegate
+  private KafkaConfig.Topic    topicConfig = new KafkaConfig.Topic();
+  
+  @ParametersDelegate
+  private KafkaConfig.Consumer consumerConfig = new KafkaConfig.Consumer();
+  
   private int    expectNumberOfMessage;
   private int    fetchSize = 100 * 1024;
   private MessageCounter messageCounter ;
@@ -24,21 +30,31 @@ public class KafkaMessageCheckTool implements Runnable {
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
   
+  public KafkaMessageCheckTool() {
+  }
+  
   public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
-    this.zkConnect = zkConnect;
-    this.topic = topic;
-    this.expectNumberOfMessage = expect;
+    topicConfig.zkConnect = zkConnect;
+    topicConfig.topic = topic;
+    expectNumberOfMessage = expect;
+  }
+  
+  public KafkaMessageCheckTool(KafkaConfig.Topic topicConfig, KafkaConfig.Consumer consumerConfig) {
+    this.topicConfig = topicConfig;
+    this.consumerConfig = consumerConfig;
+    expectNumberOfMessage = 1000000000;
   }
   
   public void setFetchSize(int fetchSize) { this.fetchSize = fetchSize; }
   
+  //TODO: replace by the KafkaReport.ConsumerReport
   public MessageCounter getMessageCounter() { return messageCounter; }
   
-  public Stopwatch getReadDuration() {
-    return readDuration;
-  }
+  public Stopwatch getReadDuration() { return readDuration; }
 
   public void setInterrupt(boolean b) { this.interrupt = b ; }
+  
+  public void setExpectNumberOfMessage(int num) { expectNumberOfMessage = num; }
   
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
     if(!running) return !running;
@@ -46,8 +62,22 @@ public class KafkaMessageCheckTool implements Runnable {
     return !running;
   }
   
+  synchronized public boolean waitForTermination() throws InterruptedException {
+    if(!running) return !running;
+    wait(consumerConfig.maxDuration);
+    return !running;
+  }
+  
   synchronized void notifyTermination() {
     notifyAll() ;
+  }
+ 
+  public void runAsDeamon() {
+    if(deamonThread != null && deamonThread.isAlive()) {
+      throw new RuntimeException("Deamon thread is already started") ;
+    }
+    deamonThread = new Thread(this);
+    deamonThread.start();
   }
   
   public void run() {
@@ -61,25 +91,17 @@ public class KafkaMessageCheckTool implements Runnable {
     notifyTermination();
   }
   
-  public void runAsDeamon() {
-    if(deamonThread != null && deamonThread.isAlive()) {
-      throw new RuntimeException("Deamon thread is already started") ;
-    }
-    deamonThread = new Thread(this);
-    deamonThread.start();
-  }
-  
   public void check() throws Exception {
     readDuration.start();
-    KafkaTool kafkaTool = new KafkaTool(name, zkConnect);
+    KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
-    TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topic);
+    TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
     List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
     kafkaTool.close();
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
     for(int i = 0; i < partitionReader.length; i++) {
-      partitionReader[i] = new KafkaPartitionReader(name, zkConnect, topic, partitionMetas.get(i));
+      partitionReader[i] = new KafkaPartitionReader(NAME, topicConfig.zkConnect, topicConfig.topic, partitionMetas.get(i));
     }
     
     messageCounter = new MessageCounter();
@@ -109,6 +131,10 @@ public class KafkaMessageCheckTool implements Runnable {
       partitionReader[k].close();
     }
     readDuration.stop();
+  }
+  
+  public void report(KafkaReport report) {
+    //TODO: populate the report.consumer variable
   }
   
   static public class MessageCounter {

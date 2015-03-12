@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
 
-public class StabilityCheckToolUnitTest {
+public class KafkaStabilityCheckToolUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
@@ -17,7 +17,7 @@ public class StabilityCheckToolUnitTest {
   @Before
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/cluster", false);
-    cluster = new KafkaCluster("./build/cluster", 1, 3);
+    cluster = new KafkaCluster("./build/cluster", 1, 2);
     cluster.start();
     Thread.sleep(5000);
   }
@@ -31,13 +31,13 @@ public class StabilityCheckToolUnitTest {
   public void testStabilityTool() throws Exception {
     String[] args = {
       "--zk-connect", cluster.getZKConnect(),
-      "--write-period", "10",
-      "--message-size", "500",
       "--num-partition", "3",
-      "--max-message-per-partition", "100",
-      "--max-duration", "60000",
-      "--replication", "3"
+      "--replication", "1",
+      "--send-period", "10",
+      "--send-message-size", "500",
+      "--send-max-per-partition", "100",
+      "--send-max-duration", "60000"
     };
-    StabilityCheckTool.main(args);
+    KafkaStabilityCheckTool.main(args);
   }
 }
