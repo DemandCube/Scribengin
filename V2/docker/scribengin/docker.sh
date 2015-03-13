@@ -208,29 +208,15 @@ function container_update_hosts() {
 function host_machine_update_hosts() {
   #Updating /etc/hosts file on host machine
   h1 "Updating /etc/hosts file of host machine"
-  
-  startString="##SCRIBENGIN CLUSTER START##"
-  endString="##SCRIBENGIN CLUSTER END##"
-  
-  #Build entry to add to /etc/hosts by reading info from Docker
-  hostString="$hostString\n$startString\n"
   for container_id in $(container_ids); do
     hostname=$(docker inspect -f '{{ .Config.Hostname }}' $container_id)
-    hostString="$hostString$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname\n"
+    if grep -w -q "$hostname" /etc/hosts; then 
+      cp /etc/hosts /etc/hosts.bak && sed -e '/'"$hostname"'/s=^[0-9\.]*='"$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' $hostname)"'=' /etc/hosts.bak > /etc/hosts; 
+    else
+      echo "$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname" 
+      echo "$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $hostname)    $hostname"  >> /etc/hosts; 
+    fi
   done
-  hostString="$hostString$endString\n"
-  
-  if [ ! -f /etc/hosts ] ; then
-    echo -e "\nERROR!!!\nYou don't have write permissions for /etc/hosts!!!\nManually add this to your /etc/hosts file:"
-    echo -e "$hostString"
-    return
-  fi
-  
-  #Strip out old entry
-  out=`sed "/$startString/,/$endString/d" /etc/hosts`
-  #write new hosts file
-  echo -e "$out\n$hostString" > /etc/hosts
-  echo -e "$hostString"
 }
 
 function container_clean() {
@@ -269,7 +255,6 @@ function printUsage() {
   echo "    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command"
   echo "    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
   echo "    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
-  echo "    host-sync             : Run this to run \"./scribengin.sh build\" and then sync the release folder and post-install with your cluster."
 }
 
 # get command

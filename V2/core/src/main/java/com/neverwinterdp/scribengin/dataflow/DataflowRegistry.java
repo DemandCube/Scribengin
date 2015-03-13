@@ -20,7 +20,6 @@ import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescript
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
-//TODO: Nizar
 @Singleton
 public class DataflowRegistry {
   final static public String TASKS_PATH = "tasks";
@@ -81,6 +80,7 @@ public class DataflowRegistry {
   @Inject
   public void onInit() throws Exception {
     status         = registry.createIfNotExist(dataflowPath + "/status");
+    
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     tasksAvailableQueue = new DistributedQueue(registry, dataflowPath   + "/" + TASKS_AVAILABLE_PATH) ;
     tasksAssigned  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_ASSIGNED_PATH);
@@ -120,8 +120,8 @@ public class DataflowRegistry {
         Node childNode = tasksDescriptors.getChild(taskName);
         
         Transaction transaction = registry.getTransaction();
-        transaction.createChild(tasksAssigned, taskName, NodeCreateMode.PERSISTENT);
-        transaction.createDescendant(tasksAssigned, taskName + "/hearbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
+        Node assignedTaskNode = tasksAssigned.createChild(transaction, taskName, NodeCreateMode.PERSISTENT);
+        assignedTaskNode.createChild(transaction, "heartbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
         transaction.commit();
         
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
@@ -149,7 +149,6 @@ public class DataflowRegistry {
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
-        //TODO: use the transaction
         descriptor.setStatus(Status.SUSPENDED);
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
@@ -167,18 +166,12 @@ public class DataflowRegistry {
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
+        descriptor.setStatus(Status.TERMINATED);
+        dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
-        descriptor.setStatus(Status.TERMINATED);
-        //TODO Transaction: convert to use the transaction
-        Transaction transaction = registry.getTransaction();
-        //update the task descriptor
-        transaction.setData(descriptor.getStoredPath(), descriptor);
-        tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
-        tasksAssigned.getChild(name).rdelete(transaction);
-        //tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
-        //tasksAssigned.getChild(name).rdelete();
-        transaction.commit();
+        tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
+        tasksAssigned.getChild(name).rdelete();
         return true;
       }
     };

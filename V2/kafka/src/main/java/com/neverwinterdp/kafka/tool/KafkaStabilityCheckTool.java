@@ -25,9 +25,9 @@ public class KafkaStabilityCheckTool implements Runnable {
   private KafkaConfig.Consumer consumerConfig = new KafkaConfig.Consumer();
   
   
-  private KafkaMessageSendTool  sendTool ;
+  private KafkaMessageSendTool sendTool ;
   private KafkaMessageCheckTool checkTool ;
-  private KafkaReport           report;
+  private KafkaReport report;
   
   public KafkaStabilityCheckTool(String[] args) throws Exception {
     JCommander jcommander = new JCommander(this, args);
@@ -62,6 +62,7 @@ public class KafkaStabilityCheckTool implements Runnable {
   public KafkaReport getKafkaReport() { return report; }
   
   public void report(Appendable out) {
+    
   }
   
   static public void main(String[] args) throws Exception {

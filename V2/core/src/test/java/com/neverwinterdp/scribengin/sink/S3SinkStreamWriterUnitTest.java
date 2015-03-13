@@ -1,8 +1,6 @@
 package com.neverwinterdp.scribengin.sink;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -22,10 +20,7 @@ import org.junit.Test;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AccessControlList;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.Md5Utils;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -52,6 +47,8 @@ public class S3SinkStreamWriterUnitTest {
   protected static S3SinkStreamWriter sink;
 
   protected String bucketName;
+  
+
 
   /**
    * Initialize the s3 module.
@@ -62,132 +59,133 @@ public class S3SinkStreamWriterUnitTest {
   protected void init(String propFilePath) {
     SinkStreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
     descriptor.setLocation("");
-    Injector injector = Guice.createInjector(new S3TestModule(descriptor, true));
+    Injector injector = Guice.createInjector(new S3TestModule(descriptor, true ));
     sink = injector.getInstance(S3SinkStreamWriter.class);
     s3 = injector.getInstance(AmazonS3.class);
     s3SinkConfig = injector.getInstance(S3SinkConfig.class);
     bucketName = s3SinkConfig.getBucketName();
   }
 
+
   @Test(expected = FileNotFoundException.class)
   public void testUploadNonExistentFile() throws Exception {
-    init("s3.default.properties");
-    for (int i = 0; i < 2; i++) {
+    init("s3.tuplesCountLimited.properties");
+    int tuples = 8;
+    for (int i = 0; i < tuples; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
-    File file = new File(s3SinkConfig.getLocalTmpDir() + "/10/0_1");
-    file.delete();
-    sink.prepareCommit();
+    // delete files from
+    for (String file : sink.getBuffer().getFiles()) {
+      System.out.println("file " + file);
+      System.out.println("deleted " + new File(file).delete());
+    }
+    sink.commit();
+  }
+
+  @Test(expected = AmazonClientException.class)
+  public void testUploadToNonExistentBucket() throws Exception {
+    init("s3.default.properties");
+    sink.setBucketName("xxxxxxxx");
+    int tuples = 8;
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
+    }
+    sink.commit();
+
+  }
+
+  @Test(expected = AmazonClientException.class)
+  public void testUploadToNonWritableBucket() throws Exception {
+    init("s3.default.properties");
+    sink.setBucketName("xxxxxxxx");
+    int tuples = 8;
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
+    }
     sink.commit();
   }
 
   @Test
   public void testUploadSmallFile() throws Exception {
-    init("s3.default.properties");
+    init("s3.tuplesCountLimited.properties");
     int tuples = s3SinkConfig.getChunkSize();// ensure its 1 file
     for (int i = 0; i < tuples; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
-    sink.prepareCommit();
+    List<String> fileHashes = new ArrayList<>();
+
+    for (String fileName : sink.getBuffer().getFiles()) {
+      fileHashes.add(new String(Md5Utils.md5AsBase64(new File(fileName))));
+    }
     sink.commit();
-    sink.completeCommit();
-    ObjectListing list = s3.listObjects(s3SinkConfig.getBucketName(), "10");
-    assertTrue(list.getObjectSummaries().size() == 1);
-    S3Object s3object = s3.getObject(bucketName, "10/0_1");
-    assertNotNull(s3object);
+    Collection<String> commitHashes = sink.getUploadedFilePaths().values();
+
+    assertTrue(fileHashes.containsAll(commitHashes));
+    assertTrue(commitHashes.containsAll(fileHashes));
 
   }
 
   // upload 10 small to a bucket
   @Test
-  public void testUploadManyFilesToManyBuckets() throws Exception {
-    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
-    descriptor.setLocation("");
-    Injector injector = Guice.createInjector(new S3TestModule(descriptor, true));
-    SinkStreamWriter sink1 = injector.getInstance(S3SinkStreamWriter.class);
-    s3SinkConfig = injector.getInstance(S3SinkConfig.class);
-    s3 = injector.getInstance(AmazonS3.class);
-    for (int i = 0; i < 8; i++) {
-      sink1.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
-    }
-    sink1.prepareCommit();
-    sink1.commit();
-    ObjectListing list = s3.listObjects(s3SinkConfig.getBucketName(), "10");
-    assertTrue(list.getObjectSummaries().size() == 4);
-    for (int i = 0; i < 8; i += 2) {
-      S3Object s3object = s3.getObject(s3SinkConfig.getBucketName(), "10/" + i + "_" + (i + 1));
-      assertNotNull(s3object);
-    }
-
-    descriptor.put("bucketName", "nellouze2");
-    injector = Guice.createInjector(new S3TestModule(descriptor, true));
-    SinkStreamWriter sink2 = injector.getInstance(S3SinkStreamWriter.class);
-    for (int i = 0; i < 8; i++) {
-      sink2.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
-    }
-    sink2.prepareCommit();
-    sink2.commit();
-    list = s3.listObjects(s3SinkConfig.getBucketName(), "10");
-    assertTrue(list.getObjectSummaries().size() == 4);
-    for (int i = 0; i < 8; i += 2) {
-      S3Object s3object = s3.getObject(s3SinkConfig.getBucketName(), "10/" + i + "_" + (i + 1));
-      assertNotNull(s3object);
-    }
-  }
-
-  @Test
   public void testUploadManyFiles() throws Exception {
-    init("s3.default.properties");
-
-    for (int i = 0; i < 8; i++) {
+    init("s3.tuplesCountLimited.properties");
+    int filesCount = 10;
+    int tuples = s3SinkConfig.getChunkSize() * filesCount;
+    for (int i = 0; i < tuples; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
     List<String> md5s = new ArrayList<>();
     for (String file : sink.getBuffer().getFiles()) {
       md5s.add(new String(Md5Utils.md5AsBase64(new File(file))));
     }
-    sink.prepareCommit();
     sink.commit();
-    ObjectListing list = s3.listObjects(s3SinkConfig.getBucketName(), "10");
-    assertTrue(list.getObjectSummaries().size() == 4);
-    for (int i = 0; i < 8; i += 2) {
-      S3Object s3object = s3.getObject(s3SinkConfig.getBucketName(), "10/" + i + "_" + (i + 1));
-      assertNotNull(s3object);
+    Collection<String> committed = sink.getUploadedFilePaths().values();
+
+    assertTrue(md5s.containsAll(committed));
+    assertTrue(committed.containsAll(md5s));
+    assertEquals(filesCount, committed.size());
+  }
+
+  // TODO convert to test versioning config
+  @Test
+  public void testUploadFileTwice() throws Exception {
+    init("s3.tuplesCountLimited.properties");
+    int tuples = s3SinkConfig.getChunkSize();// ensure its 1 file
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
+    sink.commit();
+    sink.completeCommit();
+
+    for (int i = 0; i < tuples; i++) {
+      sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
+    }
+
+    sink.commit();
+    System.out.println("NOOOOOOOOOOOOOOOOOOOOO");
+
   }
 
   @Test
   public void testSimpleRollBack() throws Exception {
-    init("s3.default.properties");
-
-    for (int i = 0; i < 8; i++) {
+    init("s3.tuplesCountLimited.properties");
+    int tuples = s3SinkConfig.getChunkSize() * 2;
+    for (int i = 0; i < tuples; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
-    sink.prepareCommit();
     sink.commit();
-    sink.completeCommit();
-    ObjectListing list = s3.listObjects(s3SinkConfig.getBucketName(), "10");
-    assertTrue(list.getObjectSummaries().size() == 4);
-    for (int i = 0; i < 8; i += 2) {
-      S3Object s3object = s3.getObject(s3SinkConfig.getBucketName(), "10/" + i + "_" + (i + 1));
-      assertNotNull(s3object);
-    }
     sink.rollback();
-    S3Object s3object = null;
-    try {
-      s3object = s3.getObject(s3SinkConfig.getBucketName(), "10");
-    } catch (AmazonS3Exception e) {
 
-    }
-    assertNull(s3object);
-
+    System.out.println("we have " + sink.getUploadedFilePaths().keySet());
+    System.out.println(s3.listObjects(bucketName).getObjectSummaries().size());
+    assertTrue(s3.listObjects(bucketName).getObjectSummaries().size() == 0);
   }
 
   @Test
   public void testInteruptCommit() throws Exception {
     // commit in thread, wait a minute, interupt, logback, files in bucket
     // should be ==0;
-    init("s3.default.properties");
+    init("s3.tuplesCountLimited.properties");
     int tuples = s3SinkConfig.getChunkSize() * 10;
     for (int i = 0; i < tuples; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
@@ -215,6 +213,8 @@ public class S3SinkStreamWriterUnitTest {
       e.printStackTrace();
     }
     sink.rollback();
+
+    System.out.println("we have " + sink.getUploadedFilePaths().keySet());
     assertTrue(s3.listObjects(bucketName).getObjectSummaries().size() == 0);
   }
 
@@ -228,7 +228,8 @@ public class S3SinkStreamWriterUnitTest {
   public void tuplesCountLimited() throws Exception {
 
     init("s3.tuplesCountLimited.properties");
-    for (int i = 0; i < 8; i++) {
+    int i = 0;
+    for (i = 0; i < 8; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
     }
     sink.prepareCommit();
@@ -288,7 +289,7 @@ public class S3SinkStreamWriterUnitTest {
   @Test
   public void testRollback() throws Exception {
 
-    init("s3.default.properties");
+    init("s3.tuplesCountLimited.properties");
     int i = 0;
     for (i = 0; i < 8; i++) {
       sink.append(new Record(Integer.toString(i), Integer.toString(i).getBytes()));
@@ -307,11 +308,8 @@ public class S3SinkStreamWriterUnitTest {
 
   public void checkFilesExist() {
     ObjectListing list = s3.listObjects(s3SinkConfig.getBucketName(), "20");
+    System.out.println("ngapi " + list.getObjectSummaries().size());
     assertTrue(list.getObjectSummaries().size() == 4);
-    for (int i = 0; i < 8; i += 2) {
-      S3Object s3object = s3.getObject(s3SinkConfig.getBucketName(), "20/" + i + "_" + (i + 1));
-      assertNotNull(s3object);
-    }
 
   }
 

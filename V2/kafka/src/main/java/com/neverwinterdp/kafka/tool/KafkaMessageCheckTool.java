@@ -23,7 +23,7 @@ public class KafkaMessageCheckTool implements Runnable {
   private KafkaConfig.Consumer consumerConfig = new KafkaConfig.Consumer();
   
   private int    expectNumberOfMessage;
-  private int    fetchSize = 500 * 1024;
+  private int    fetchSize = 100 * 1024;
   private MessageCounter messageCounter ;
   private boolean interrupt = false ;
   private Thread deamonThread ;
