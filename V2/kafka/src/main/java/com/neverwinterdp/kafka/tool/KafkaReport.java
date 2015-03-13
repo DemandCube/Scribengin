@@ -18,18 +18,32 @@ public class KafkaReport {
   //
   //TODO for producer report print out reason for stopping
   //i.e. did writers stop because of reaching maxduration or max send per partitition.
+  //TODO aggregate both reports in one matrix
   public void report(Appendable out) throws IOException {
-    String[] header = { "runDur(ms)", "sent", "writes/sec", "messageSize(bytes)", "maxSend/partition", "partitions", "replication" };
-    TabularFormater formater = new TabularFormater(header);
-    formater.setTitle("Producer Report");
+    String[] producerHeader = { "Topic", "runDur(ms)", "sent", "writes/sec", "messageSize(bytes)", "partitions", "replication" };
+    TabularFormater producerFormater = new TabularFormater(producerHeader);
+    producerFormater.setTitle("Producer Report");
     DecimalFormat df = new DecimalFormat("0");
     double writePerSec = producerReport.messageSent / (producerReport.runDuration / 1000d);
-    Object[] cells = {
-        producerReport.runDuration, producerReport.messageSent, df.format(writePerSec), producerReport.messageSize,
-        producerReport.maxMessagePerPartition, producerReport.partitions, producerReport.replication };
-    formater.addRow(cells);
-    
-    out.append(formater.getFormatText());
+    Object[] producer = {
+        producerReport.topic, producerReport.runDuration, producerReport.messageSent, df.format(writePerSec),
+        producerReport.messageSize, producerReport.partitions, producerReport.replication };
+    producerFormater.addRow(producer);
+
+    out.append(producerFormater.getFormatText());
+
+    String[] consumerHeader = { "topic", "runDur(ms)", "consumed", "consumed/sec", "partitions" };
+    TabularFormater consumerFormater = new TabularFormater(consumerHeader);
+    consumerFormater.setTitle("Consumer Report");
+    double readPerSec = consumerReport.messagesRead / (consumerReport.runDuration / 1000d);
+    Object[] consumer = {
+        consumerReport.topic, consumerReport.runDuration, consumerReport.messagesRead, df.format(readPerSec),
+        consumerReport.partition,
+    };
+    consumerFormater.addRow(consumer);
+    out.append("\n");
+    out.append(consumerFormater.getFormatText());
+
   }
 
   public ProducerReport getProducerReport() {
@@ -197,6 +211,7 @@ public class KafkaReport {
     private long runDuration;
     private int messagesRead;
     private int partition;
+    private int fetchSize;
 
     public String getTopic() {
       return topic;
@@ -228,6 +243,30 @@ public class KafkaReport {
 
     public void setPartition(int partition) {
       this.partition = partition;
+    }
+
+    public int getFetchSize() {
+      return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+      this.fetchSize = fetchSize;
+
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append("ConsumerReport [topic=");
+      builder.append(topic);
+      builder.append(", runDuration=");
+      builder.append(runDuration);
+      builder.append(", messagesRead=");
+      builder.append(messagesRead);
+      builder.append(", partition=");
+      builder.append(partition);
+      builder.append("]");
+      return builder.toString();
     }
   }
 }

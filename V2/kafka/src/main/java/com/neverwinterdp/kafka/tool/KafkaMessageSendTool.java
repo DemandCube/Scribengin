@@ -120,6 +120,7 @@ public class KafkaMessageSendTool implements Runnable {
   public class PartitionMessageWriter implements Runnable {
     private PartitionMetadata metadata;
     private String kafkaConnects;
+    //TODO atomic integer for thread safety
     private int writeCount = 0;
 
     PartitionMessageWriter(PartitionMetadata metadata, String kafkaConnects) {

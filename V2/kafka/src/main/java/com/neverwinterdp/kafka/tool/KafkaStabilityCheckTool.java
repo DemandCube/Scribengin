@@ -30,7 +30,7 @@ public class KafkaStabilityCheckTool implements Runnable {
 
   public KafkaStabilityCheckTool(String[] args) throws Exception {
     JCommander jcommander = new JCommander(this, args);
-    jcommander.usage();
+  //  jcommander.usage();
     sendTool = new KafkaMessageSendTool(topicConfig, senderConfig);
     checkTool = new KafkaMessageCheckTool(topicConfig, consumerConfig);
   }
@@ -46,15 +46,12 @@ public class KafkaStabilityCheckTool implements Runnable {
   private void doRun() throws Exception {
     sendTool.runAsDeamon();
     Thread.sleep(2000);// wait to make sure send tool run
-  //  checkTool.runAsDeamon();
+    checkTool.runAsDeamon();
     sendTool.waitForTermination();
-  //  checkTool.waitForTermination(10000);
-//    System.out.println("Check Tool: " + checkTool.getMessageCounter().getTotal());
-
-    //TODO: checktool report
+    checkTool.waitForTermination(10000);
     report = new KafkaReport();
     sendTool.report(report);
-//    checkTool.report(report);
+    checkTool.report(report);
   }
 
   public KafkaReport getKafkaReport() {
