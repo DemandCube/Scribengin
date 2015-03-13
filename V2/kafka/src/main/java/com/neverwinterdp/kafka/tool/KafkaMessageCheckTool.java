@@ -11,6 +11,7 @@ import kafka.javaapi.TopicMetadata;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
+import com.neverwinterdp.kafka.tool.KafkaReport.ConsumerReport;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class KafkaMessageCheckTool implements Runnable {
@@ -134,7 +135,12 @@ public class KafkaMessageCheckTool implements Runnable {
   }
   
   public void report(KafkaReport report) {
-    //TODO: populate the report.consumer variable
+    ConsumerReport consumerReport = report.getConsumerReport();
+    consumerReport.setMessagesRead(messageCounter.totalMessages);
+    consumerReport.setTopic(topicConfig.topic);
+    
+    
+    //TODO: populate the consumer.report variable
   }
   
   static public class MessageCounter {

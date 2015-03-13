@@ -16,58 +16,56 @@ import com.beust.jcommander.ParametersDelegate;
  */
 public class KafkaStabilityCheckTool implements Runnable {
   @ParametersDelegate
-  private KafkaConfig.Topic    topicConfig = new KafkaConfig.Topic();
-  
+  private KafkaConfig.Topic topicConfig = new KafkaConfig.Topic();
+
   @ParametersDelegate
   private KafkaConfig.Producer senderConfig = new KafkaConfig.Producer();
-  
+
   @ParametersDelegate
   private KafkaConfig.Consumer consumerConfig = new KafkaConfig.Consumer();
-  
-  
-  private KafkaMessageSendTool  sendTool ;
-  private KafkaMessageCheckTool checkTool ;
-  private KafkaReport           report;
-  
+
+  private KafkaMessageSendTool sendTool;
+  private KafkaMessageCheckTool checkTool;
+  private KafkaReport report;
+
   public KafkaStabilityCheckTool(String[] args) throws Exception {
     JCommander jcommander = new JCommander(this, args);
     jcommander.usage();
     sendTool = new KafkaMessageSendTool(topicConfig, senderConfig);
     checkTool = new KafkaMessageCheckTool(topicConfig, consumerConfig);
   }
-  
+
   public void run() {
     try {
-      doRun() ;
+      doRun();
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
-  
+
   private void doRun() throws Exception {
     sendTool.runAsDeamon();
     Thread.sleep(2000);// wait to make sure send tool run
-    checkTool.runAsDeamon();
+  //  checkTool.runAsDeamon();
     sendTool.waitForTermination();
-    checkTool.waitForTermination(10000);
-    System.out.println("Check Tool: " + checkTool.getMessageCounter().getTotal());
-    
-    report = new KafkaReport() ;
-    //TODO: Update and poulate the report data
+  //  checkTool.waitForTermination(10000);
+//    System.out.println("Check Tool: " + checkTool.getMessageCounter().getTotal());
+
+    //TODO: checktool report
+    report = new KafkaReport();
     sendTool.report(report);
-    checkTool.report(report);
+//    checkTool.report(report);
   }
-  
-  //TODO: create report object at the end of doRun
-  public KafkaReport getKafkaReport() { return report; }
-  
-  public void report(Appendable out) {
+
+  public KafkaReport getKafkaReport() {
+    return report;
   }
-  
+
+
   static public void main(String[] args) throws Exception {
     KafkaStabilityCheckTool tool = new KafkaStabilityCheckTool(args);
     tool.run();
-    //TODO: this method should print out the report in the table format
-    tool.report(System.out);
+
+   tool.getKafkaReport().report(System.out);
   }
 }
