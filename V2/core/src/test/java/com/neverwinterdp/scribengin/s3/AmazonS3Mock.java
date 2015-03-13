@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.s3;
 
 import java.io.File;
 import java.io.IOException;

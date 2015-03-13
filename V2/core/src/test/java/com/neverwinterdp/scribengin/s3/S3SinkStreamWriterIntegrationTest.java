@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.s3;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,6 +20,7 @@ import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkStreamWriter;
+import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 /**
@@ -27,8 +28,6 @@ import com.neverwinterdp.scribengin.util.PropertyUtils;
  */
 
 public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTest {
-
- 
   protected void init(String propFilePath) {
     SinkStreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
     descriptor.setLocation("");
