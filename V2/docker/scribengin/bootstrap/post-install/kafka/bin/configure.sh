@@ -79,5 +79,7 @@ do
   KAFKA_CONNECT+="$server:9092"
 done
 
-sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g"  $bin/../config/server.properties
-sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g"  $bin/../config/server.properties
+CONFIG_TEMPLATE_PATH=$1
+sed -i -e "s/broker\.id=.*/broker\.id=$HOST_ID/g" $CONFIG_TEMPLATE_PATH
+sed -i -e "s/zookeeper\.connect=.*/zookeeper\.connect=$ZOOKEEPER_CONNECT/g" $CONFIG_TEMPLATE_PATH
+cp $CONFIG_TEMPLATE_PATH /opt/kafka/config/server.properties
