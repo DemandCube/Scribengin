@@ -12,17 +12,14 @@ import kafka.javaapi.TopicMetadata;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
-import com.neverwinterdp.kafka.tool.KafkaReport.ConsumerReport;
+import com.neverwinterdp.kafka.tool.KafkaTopicReport.ConsumerReport;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class KafkaMessageCheckTool implements Runnable {
   static private String NAME = "KafkaMessageCheckTool";
 
   @ParametersDelegate
-  private KafkaConfig.Topic topicConfig = new KafkaConfig.Topic();
-
-  @ParametersDelegate
-  private KafkaConfig.Consumer consumerConfig = new KafkaConfig.Consumer();
+  private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
 
   private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
@@ -41,9 +38,8 @@ public class KafkaMessageCheckTool implements Runnable {
     expectNumberOfMessage = expect;
   }
 
-  public KafkaMessageCheckTool(KafkaConfig.Topic topicConfig, KafkaConfig.Consumer consumerConfig) {
+  public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    this.consumerConfig = consumerConfig;
     expectNumberOfMessage = 1000000000;
   }
 
@@ -51,7 +47,7 @@ public class KafkaMessageCheckTool implements Runnable {
     this.fetchSize = fetchSize;
   }
 
-  //TODO: replace by the KafkaReport.ConsumerReport
+  //TODO: replace by the KafkaTopicReport.ConsumerReport
   public MessageCounter getMessageCounter() {
     return messageCounter;
   }
@@ -69,16 +65,14 @@ public class KafkaMessageCheckTool implements Runnable {
   }
 
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
-    if (!running)
-      return !running;
+    if (!running) return !running;
     wait(maxWaitTime);
     return !running;
   }
 
   synchronized public boolean waitForTermination() throws InterruptedException {
-    if (!running)
-      return !running;
-    wait(consumerConfig.maxDuration);
+    if (!running) return !running;
+    wait(topicConfig.consumerConfig.maxDuration);
     return !running;
   }
 
@@ -107,6 +101,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   //TODO each partition reader on a separate thread. same as SendTool
   public void check() throws Exception {
+    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool");
     readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
@@ -147,13 +142,10 @@ public class KafkaMessageCheckTool implements Runnable {
     readDuration.stop();
   }
 
-  public void report(KafkaReport report) {
+  public void report(KafkaTopicReport report) {
     ConsumerReport consumerReport = report.getConsumerReport();
     consumerReport.setMessagesRead(messageCounter.totalMessages);
     consumerReport.setRunDuration(readDuration.elapsed(TimeUnit.MILLISECONDS));
-    consumerReport.setTopic(topicConfig.topic);
-    consumerReport.setFetchSize(fetchSize);
-    consumerReport.setPartition(messageCounter.counters.size());
   }
 
   static public class MessageCounter {

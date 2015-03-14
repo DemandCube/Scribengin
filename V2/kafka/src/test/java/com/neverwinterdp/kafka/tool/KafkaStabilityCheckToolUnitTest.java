@@ -38,6 +38,6 @@ public class KafkaStabilityCheckToolUnitTest {
       "--send-max-per-partition", "100",
       "--send-max-duration", "60000"
     };
-    KafkaStabilityCheckTool.main(args);
+    KafkaTopicCheckTool.main(args);
   }
 }

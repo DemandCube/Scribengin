@@ -13,18 +13,18 @@ import kafka.javaapi.TopicMetadata;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
+import com.neverwinterdp.kafka.producer.AckKafkaWriter;
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
-import com.neverwinterdp.kafka.tool.KafkaReport.ProducerReport;
+import com.neverwinterdp.kafka.producer.KafkaWriter;
+import com.neverwinterdp.kafka.tool.KafkaTopicReport.ProducerReport;
 
 public class KafkaMessageSendTool implements Runnable {
   @ParametersDelegate
-  private KafkaConfig.Topic topicConfig = new KafkaConfig.Topic();
-
-  @ParametersDelegate
-  private KafkaConfig.Producer senderConfig = new KafkaConfig.Producer();
+  private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
 
   private Thread deamonThread;
   private boolean running = false;
+  private boolean sending = false ;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -32,23 +32,15 @@ public class KafkaMessageSendTool implements Runnable {
   public KafkaMessageSendTool() {
   }
 
-  public KafkaMessageSendTool(KafkaConfig.Topic topicConfig, KafkaConfig.Producer senderConfig) {
+  public KafkaMessageSendTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    this.senderConfig = senderConfig;
   }
 
-  public void report(KafkaReport report) {
+  public boolean isSending() { return sending ; }
+  
+  public void report(KafkaTopicReport report) {
     ProducerReport producerReport = report.getProducerReport();
-    producerReport.setTopic(topicConfig.topic);
-    producerReport.setNumPartitions(topicConfig.numberOfPartition);
-    producerReport.setReplication(topicConfig.replication);
-
-    producerReport.setMaxDuration(senderConfig.maxDuration);
-    producerReport.setMaxMessagePerPartition(senderConfig.maxMessagePerPartition);
-    producerReport.setMessageSize(senderConfig.messageSize);
-    producerReport.setPeriod(senderConfig.sendPeriod);
-    producerReport.setTimeout(senderConfig.sendTimeout);
-
+    producerReport.setMessageSize(topicConfig.producerConfig.messageSize);
     producerReport.setRunDuration(runDuration.elapsed(TimeUnit.MILLISECONDS));
     int messageSent = 0;// get all message senders, get writeCount from all
     for (PartitionMessageWriter writer : writers.values()) {
@@ -56,13 +48,12 @@ public class KafkaMessageSendTool implements Runnable {
     }
     producerReport.setMessageSent(messageSent);
     //TODO add failed
-
   }
 
+  
   synchronized public boolean waitForTermination() throws InterruptedException {
-    if (!running)
-      return !running;
-    wait(senderConfig.maxDuration);
+    if (!running) return !running;
+    wait(topicConfig.producerConfig.maxDuration);
     return !running;
   }
 
@@ -80,6 +71,7 @@ public class KafkaMessageSendTool implements Runnable {
 
   public void run() {
     running = true;
+    sending = false;
     try {
       doSend();
     } catch (Exception e) {
@@ -90,6 +82,7 @@ public class KafkaMessageSendTool implements Runnable {
   }
 
   public void doSend() throws Exception {
+    System.out.println("KafkaMessageSendTool: Start sending the message to kafka");
     runDuration.start();
     ExecutorService writerService = Executors.newFixedThreadPool(topicConfig.numberOfPartition);
     KafkaTool kafkaTool = new KafkaTool("KafkaTool", topicConfig.zkConnect);
@@ -99,9 +92,9 @@ public class KafkaMessageSendTool implements Runnable {
       kafkaTool.deleteTopic(topicConfig.topic);
     }
     kafkaTool.createTopic(topicConfig.topic, topicConfig.replication, topicConfig.numberOfPartition);
-
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topicConfig.topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
+    sending = true;
     for (PartitionMetadata sel : partitionMetadataHolder) {
       PartitionMessageWriter writer = new PartitionMessageWriter(sel, kafkaConnects);
       writers.put(sel.partitionId(), writer);
@@ -109,10 +102,11 @@ public class KafkaMessageSendTool implements Runnable {
     }
 
     writerService.shutdown();
-    writerService.awaitTermination(senderConfig.maxDuration, TimeUnit.MILLISECONDS);
+    writerService.awaitTermination(topicConfig.producerConfig.maxDuration, TimeUnit.MILLISECONDS);
     if (!writerService.isTerminated()) {
       writerService.shutdownNow();
     }
+    sending = false;
     kafkaTool.close();
     runDuration.stop();
   }
@@ -130,20 +124,19 @@ public class KafkaMessageSendTool implements Runnable {
 
     @Override
     public void run() {
-      DefaultKafkaWriter writer = new DefaultKafkaWriter("KafkaMessageSendTool", senderConfig.producerProperties,
-          kafkaConnects);
+      KafkaWriter writer = createKafkaWriter();
       try {
-        byte[] message = new byte[senderConfig.messageSize];
+        byte[] message = new byte[topicConfig.producerConfig.messageSize];
         boolean terminated = false;
         while (!terminated) {
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
-          writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, senderConfig.sendTimeout);
+          writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);
           writeCount++;
           //Check max message per partition
-          if (writeCount >= senderConfig.maxMessagePerPartition) {
+          if (writeCount >= topicConfig.producerConfig.maxMessagePerPartition) {
             terminated = true;
-          } else if (senderConfig.sendPeriod > 0) {
-            Thread.sleep(senderConfig.sendPeriod);
+          } else if (topicConfig.producerConfig.sendPeriod > 0) {
+            Thread.sleep(topicConfig.producerConfig.sendPeriod);
           }
         }
       } catch (InterruptedException e) {
@@ -151,8 +144,20 @@ public class KafkaMessageSendTool implements Runnable {
         e.printStackTrace();
       } finally {
         if (writer != null) {
-          writer.close();
+          try {
+            writer.close();
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
         }
+      }
+    }
+    
+    private KafkaWriter createKafkaWriter() {
+      if("ack".equalsIgnoreCase(topicConfig.producerConfig.writerType)) {
+        return new AckKafkaWriter("KafkaMessageSendTool", topicConfig.producerConfig.producerProperties, kafkaConnects);
+      } else {
+        return new DefaultKafkaWriter("KafkaMessageSendTool", topicConfig.producerConfig.producerProperties, kafkaConnects);
       }
     }
   }

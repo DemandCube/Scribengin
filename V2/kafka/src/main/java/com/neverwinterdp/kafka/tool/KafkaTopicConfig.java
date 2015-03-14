@@ -4,12 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.beust.jcommander.DynamicParameter;
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
-public class KafkaConfig {
-  @ParametersDelegate
-  public Topic topicConfig = new Topic();
+public class KafkaTopicConfig {
+  @Parameter(names = "--zk-connect", description = "The zk connect string")
+  public String zkConnect = "127.0.0.1:2181";
+  
+  @Parameter(names = "--topic", description = "The kafka topic to work in")
+  public String topic = "hello";
+  
+  @Parameter(names = "--num-partition", description = "Number of the partition to create for the topic")
+  public int    numberOfPartition = 5;
+
+  @Parameter(names = "--replication", description = "The number of the replication for the topic")
+  public int    replication = 1;
   
   @ParametersDelegate
   public Producer producerConfig = new Producer();
@@ -17,22 +27,16 @@ public class KafkaConfig {
   @ParametersDelegate
   public Consumer consumerConfig = new Consumer();
   
-  static public class Topic {
-    @Parameter(names = "--zk-connect", description = "The zk connect string")
-    public String zkConnect = "127.0.0.1:2181";
-    
-    @Parameter(names = "--topic", description = "The kafka topic to work in")
-    public String topic = "hello";
-    
-    @Parameter(names = "--num-partition", description = "Number of the partition to create for the topic")
-    public int    numberOfPartition = 5;
-
-    @Parameter(names = "--replication", description = "The number of the replication for the topic")
-    public int    replication = 1;
-
+  public KafkaTopicConfig() {} 
+  
+  public KafkaTopicConfig(String[] args) {
+    new JCommander(this, args);
   }
   
   static public class Producer {
+    @Parameter(names = "--writer-type", description = "The default producer writer or reliable producer writer(ack)")
+    public String writerType = "default";
+    
     @Parameter(names = "--send-period", description = "Write period in ms per partition")
     public long   sendPeriod = 100;
     
@@ -53,7 +57,7 @@ public class KafkaConfig {
   }
   
   static public class Consumer {
-    @Parameter(names = "--consume-duration", description = "The max consume duration in ms")
+    @Parameter(names = "--consume-max-duration", description = "The max consume duration in ms")
     public long   maxDuration = 10000;
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
