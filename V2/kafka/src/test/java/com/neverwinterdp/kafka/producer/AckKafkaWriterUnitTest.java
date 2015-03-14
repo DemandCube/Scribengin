@@ -16,7 +16,7 @@ public class AckKafkaWriterUnitTest {
       "--num-partition",  "3",
       "--replication",  "2",
       
-      "--writer-type", "ack",
+      "--send-writer-type", "ack",
       "--send-period", "0",
       "--send-message-size",  "1024",
       "--send-max-per-partition", "25000",

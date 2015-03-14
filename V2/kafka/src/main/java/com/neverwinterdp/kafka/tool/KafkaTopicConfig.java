@@ -34,7 +34,7 @@ public class KafkaTopicConfig {
   }
   
   static public class Producer {
-    @Parameter(names = "--writer-type", description = "The default producer writer or reliable producer writer(ack)")
+    @Parameter(names = "--send-writer-type", description = "The default producer writer or reliable producer writer(ack)")
     public String writerType = "default";
     
     @Parameter(names = "--send-period", description = "Write period in ms per partition")
