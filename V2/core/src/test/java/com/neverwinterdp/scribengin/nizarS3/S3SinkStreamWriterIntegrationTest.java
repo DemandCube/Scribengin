@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import static org.junit.Assert.assertTrue;
 
@@ -69,10 +69,8 @@ public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTes
   @Test(expected = AmazonClientException.class)
   public void testUploadTenBigFilesToTenBuckets() throws Exception {
     init("s3.4GBFiles.properties");
-
     long chunks = s3SinkConfig.getChunkSize() * 4;
     Record tuple = null;
-
     System.out.println("file size " + readableFileSize(chunks * 394L));
     for (int i = 0; i < chunks; i++) {
       tuple = new Record(Integer.toString(i), Integer.toString(i).getBytes());

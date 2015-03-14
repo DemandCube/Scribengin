@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3;
+package com.neverwinterdp.scribengin.nizarS3;
 
 
 import static org.junit.Assert.assertTrue;
@@ -13,7 +13,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import com.neverwinterdp.scribengin.s3.AmazonS3Mock.ExceptionType;
+import com.neverwinterdp.scribengin.nizarS3.AmazonS3Mock.ExceptionType;
 
 public class AmazonS3MockUnitTest {
 

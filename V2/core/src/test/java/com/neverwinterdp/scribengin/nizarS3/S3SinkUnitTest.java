@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -6,22 +6,25 @@ import org.junit.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.neverwinterdp.scribengin.s3.sink.S3SinkStream;
+import com.neverwinterdp.scribengin.s3.sink.S3Sink;
+import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
-public class S3SinkStreamUnitTest {
+/**
+ * The Class S3SinkTest.
+ */
 
+public class S3SinkUnitTest {
   @Test
   public void test() throws Exception {
-    
     SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
-    descriptor.setLocation("");
+    descriptor.setLocation("test");
     Injector injector  = Guice.createInjector(new S3TestModule(descriptor,true));
-    S3SinkStream S3SinkStream = new S3SinkStream(injector, descriptor);
-    SinkStreamWriter writer = S3SinkStream.getWriter();
+    S3Sink S3SinkStream = new S3Sink(injector, descriptor);
+    SinkStream stream = S3SinkStream.newStream();
+    SinkStreamWriter writer = stream.getWriter();
     assertNotNull(writer);
-  }
-
-}
+  
+  }}

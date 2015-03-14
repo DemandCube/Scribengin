@@ -19,9 +19,9 @@ configurations.all {
   //and the proxy server needs version 3
   //exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
   
-  resolutionStrategy {
-    force 'com.google.guava:guava:13.0'
-  }
+  //resolutionStrategy {
+  //  force 'com.google.guava:guava:13.0'
+  //}
 }
 
 dependencies {
@@ -37,8 +37,8 @@ dependencies {
   compile 'com.amazonaws:aws-java-sdk:1.9.6'
   
   //TODO: move to use jackson
-  compile 'org.json:json:20090211'
-  compile group: 'com.google.guava', name: 'guava', version: '13.0'
+  //compile 'org.json:json:20090211'
+  //compile group: 'com.google.guava', name: 'guava', version: '13.0'
   compile group: 'junit', name: 'junit', version: '4.11'
 }
 

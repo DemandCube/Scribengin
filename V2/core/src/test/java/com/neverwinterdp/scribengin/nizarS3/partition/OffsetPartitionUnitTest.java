@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3.partition;
+package com.neverwinterdp.scribengin.nizarS3.partition;
 
 import static com.google.common.math.LongMath.divide;
 import static java.math.RoundingMode.UP;
