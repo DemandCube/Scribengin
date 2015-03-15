@@ -3,6 +3,9 @@ package com.neverwinterdp.scribengin.dataflow;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.ZooKeeper;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -15,6 +18,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
+import com.neverwinterdp.registry.zk.RegistryWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
@@ -53,10 +57,12 @@ public class DataflowRegistry {
   private Node               tasksDescriptors;
   //private Node               tasksAvailable;
   private DistributedQueue   tasksAvailableQueue;
+  private Node               tasksAvailable;
   private Node               tasksAssigned;
   private Node               tasksFinished;
   private Node               tasksLock;
   private Node               workers;
+
 
   public DataflowRegistry() { }
   
@@ -84,6 +90,7 @@ public class DataflowRegistry {
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     tasksAvailableQueue = new DistributedQueue(registry, dataflowPath   + "/" + TASKS_AVAILABLE_PATH) ;
     tasksAssigned  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_ASSIGNED_PATH);
+    tasksAvailable  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_AVAILABLE_PATH);
     tasksFinished  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_FINISHED_PATH);
     tasksLock      = registry.createIfNotExist(dataflowPath   + "/" + TASKS_LOCK_PATH);
     registry.createIfNotExist(dataflowPath + "/" + MASTER_LEADER_PATH);
@@ -98,8 +105,11 @@ public class DataflowRegistry {
     report.setStartTime(System.currentTimeMillis());
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
-    tasksAvailableQueue.offer(nodeName.getBytes());
-  }
+    //tasksAvailableQueue.offer(nodeName.getBytes());
+    Transaction transaction = registry.getTransaction();
+    transaction.createChild(tasksAvailable, nodeName, NodeCreateMode.PERSISTENT);
+    transaction.commit();
+   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     workers.createChildRef(vmDescriptor.getId(), vmDescriptor.getStoredPath(), NodeCreateMode.PERSISTENT);
@@ -115,10 +125,10 @@ public class DataflowRegistry {
       @Override
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
         byte[] data  = tasksAvailableQueue.poll();
+        // How to poll using transaction
         if(data == null) return null;
         String taskName = new String(data);
-        Node childNode = tasksDescriptors.getChild(taskName);
-        
+        Node childNode = tasksDescriptors.getChild(taskName);      
         Transaction transaction = registry.getTransaction();
         transaction.createChild(tasksAssigned, taskName, NodeCreateMode.PERSISTENT);
         transaction.createDescendant(tasksAssigned, taskName + "/hearbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
@@ -150,12 +160,17 @@ public class DataflowRegistry {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         //TODO: use the transaction
-        descriptor.setStatus(Status.SUSPENDED);
+        
+        descriptor.setStatus(Status.SUSPENDED);    
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
-        tasksAvailableQueue.offer(name.getBytes());
-        tasksAssigned.getChild(name).rdelete();
+        //tasksAvailableQueue.offer(name.getBytes());
+        //tasksAssigned.getChild(name).rdelete();
+        Transaction transaction = registry.getTransaction();
+        transaction.createChild(tasksAvailable, name, NodeCreateMode.PERSISTENT);
+        transaction.rdelete(tasksAssigned + "/" + name);
+        transaction.commit();
         return true;
       }
     };
@@ -174,10 +189,10 @@ public class DataflowRegistry {
         Transaction transaction = registry.getTransaction();
         //update the task descriptor
         transaction.setData(descriptor.getStoredPath(), descriptor);
-        tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
-        tasksAssigned.getChild(name).rdelete(transaction);
-        //tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
-        //tasksAssigned.getChild(name).rdelete();
+        transaction.createChild(tasksFinished, name, NodeCreateMode.PERSISTENT);
+        transaction.rdelete(tasksAssigned + "/" + name);
+        //tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
+        //tasksAssigned.getChild(name).rdelete(transaction);
         transaction.commit();
         return true;
       }
