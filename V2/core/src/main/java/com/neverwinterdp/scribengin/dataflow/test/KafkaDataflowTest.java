@@ -12,6 +12,7 @@ import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.scribengin.sink.SinkDescriptor;
 import com.neverwinterdp.scribengin.source.SourceDescriptor;
 
+//TODO: replace by the kafka message send tool and kafka message check tool
 public class KafkaDataflowTest extends DataflowTest {
   final static public String SOURCE_TOPIC       = "hello.source" ;
   final static public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
@@ -34,6 +35,7 @@ public class KafkaDataflowTest extends DataflowTest {
     RegistryConfig registryConfig = scribenginClient.getRegistry().getRegistryConfig();
     String zkConnect = registryConfig.getConnect();
 
+    //TODO: need to use the KafkaMessageSendTool instead of the kafka generator, run the send tool in its own thread
     KafkaSourceGenerator generator = new KafkaSourceGenerator("hello", zkConnect);
     generator.setNumOfPartitions(numPartitions);
     generator.setDuration(duration);
@@ -75,11 +77,13 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    //TODO: launch the KafkaMessageCheckTool here in its own thread
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     waitingEventListener.waitForEvents(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
+    //TODO: wait for the message check tool to consume all the messages, print out the report
   }
 }
