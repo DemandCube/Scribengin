@@ -33,10 +33,14 @@ function get_opt() {
   OPT_NAME=$1
   DEFAULT_VALUE=$2
   shift
+  
+  index=0
   #Par the parameters
   for i in "$@"; do
+    index=$(($index+1))
     if [[ $i == $OPT_NAME* ]] ; then
-      value="${i#*=}"
+      #value="${i#*=}"
+      value="${index}"
       echo "$value"
       return
     fi
@@ -89,6 +93,7 @@ function clean_image() {
 function launch_containers() {
   h1 "Launch hadoop containers"
   docker run -d -p 22 -p 50070:50070 -p 9000:9000 -p 8030:8030 -p 8032:8032 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
+  
   
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
   NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
