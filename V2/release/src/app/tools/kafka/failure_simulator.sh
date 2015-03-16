@@ -45,10 +45,14 @@ function get_opt() {
   OPT_NAME=$1
   DEFAULT_VALUE=$2
   shift
+  
+  index=0
   #Par the parameters
   for i in "$@"; do
+    index=$(($index+1))
     if [[ $i == $OPT_NAME* ]] ; then
-      value="${i#*=}"
+      #value="${i#*=}"
+      value="${index}"
       echo "$value"
       return
     fi
