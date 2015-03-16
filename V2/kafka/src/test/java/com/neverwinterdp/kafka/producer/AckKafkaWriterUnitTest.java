@@ -11,14 +11,32 @@ public class AckKafkaWriterUnitTest {
 
   @Test
   public void testRunner() throws Exception {
-    String[] args = {
-     "--topic", "hello", "--message-size", "1024", "--max-num-message", "30000"
+    String[] topicConfigArgs = {
+      "--topic", "hello",
+      "--num-partition",  "3",
+      "--replication",  "2",
+      
+      "--send-writer-type", "ack",
+      "--send-period", "0",
+      "--send-message-size",  "1024",
+      "--send-max-per-partition", "25000",
+      "--send-max-duration", "120000",
+      
+      "--producer:message.send.max.retries=5",
+      "--producer:retry.backoff.ms=100",
+      
+      "--producer:queue.buffering.max.ms=1000",
+      "--producer:queue.buffering.max.messages=15000",
+      
+      "--producer:topic.metadata.refresh.interval.ms=-1",
+      "--producer:batch.num.messages=100",
+      "--producer:acks=all",
+      
+      "--consume-max-duration", "150000"
     };
-    AckKafkaWriterTestRunnerConfig config = new AckKafkaWriterTestRunnerConfig(args);
-    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(config) ;
+    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(topicConfigArgs) ;
     runner.setUp();
     runner.run();
     runner.tearDown();
-    runner.getReport().print(System.out, "Test AckKafkaWriter");
   }
 }

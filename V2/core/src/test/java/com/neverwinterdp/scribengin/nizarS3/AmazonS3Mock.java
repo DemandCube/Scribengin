@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import java.io.File;
 import java.io.IOException;
@@ -1213,7 +1213,6 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void disableRequesterPays(String bucketName) throws AmazonServiceException, AmazonClientException {
     // TODO Auto-generated method stub
-
   }
 
   /* (non-Javadoc)

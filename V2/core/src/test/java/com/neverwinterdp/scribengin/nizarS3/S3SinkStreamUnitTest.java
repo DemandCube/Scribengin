@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -7,6 +7,8 @@ import org.junit.Test;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkStream;
+import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 public class S3SinkStreamUnitTest {

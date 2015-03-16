@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.AbstractModule;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
+import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 
@@ -17,35 +18,38 @@ import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 public class S3TestModule extends AbstractModule {
 
   /** The s3 sink config. */
-  private S3SinkConfig s3SinkConfig;
+  private S3SinkConfig         s3SinkConfig;
 
   /** The mock. */
-  private boolean mock = true;
+  private boolean              mock = true;
 
   private SinkStreamDescriptor descriptor;
+
   /**
    * The Constructor.
    * 
    * @param propFilePath
-   *        the prop file path
+   *          the prop file path
    * @param topic
-   *        the topic
+   *          the topic
    * @param kafkaPartition
-   *        the kafka partition
+   *          the kafka partition
    */
   public S3TestModule(SinkStreamDescriptor descriptor) {
     s3SinkConfig = new S3SinkConfig(descriptor);
     this.mock = false;
   }
+
   public S3TestModule(SinkStreamDescriptor descriptor, boolean mock) {
     this.descriptor = descriptor;
     s3SinkConfig = new S3SinkConfig(descriptor);
-    
+
     this.mock = mock;
   }
 
   /*
    * (non-Javadoc)
+   * 
    * @see com.google.inject.AbstractModule#configure()
    */
   @Override
@@ -66,7 +70,7 @@ public class S3TestModule extends AbstractModule {
       }
       bind(AmazonS3.class).toInstance(new AmazonS3Client(credentials));
     }
-    
+
     System.out.println("region " + s3SinkConfig.getRegionName());
     SinkPartitioner sp =
         new OffsetPartitioner(s3SinkConfig.getOffsetPerPartition());

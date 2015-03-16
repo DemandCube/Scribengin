@@ -121,11 +121,9 @@ public final class S3SinkBuffer {
   /**
    * Adds the to disk.
    * 
-   * @param tuple
-   *          the tuple
+   * @param tuple the tuple
    * @return true, if adds the to disk
    */
-
   private boolean addToDisk(Record tuple) {
     boolean success = false;
     RandomAccessFile randomAccessFile = null;

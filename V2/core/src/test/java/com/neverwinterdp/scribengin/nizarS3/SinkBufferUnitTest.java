@@ -1,4 +1,4 @@
-  package com.neverwinterdp.scribengin.sink;
+  package com.neverwinterdp.scribengin.nizarS3;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

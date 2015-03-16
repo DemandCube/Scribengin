@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.nizarS3;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +32,8 @@ import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.s3.sink.S3SinkStreamWriter;
+import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 /**
@@ -95,7 +97,6 @@ public class S3SinkStreamWriterUnitTest {
     assertTrue(list.getObjectSummaries().size() == 1);
     S3Object s3object = s3.getObject(bucketName, "10/0_1");
     assertNotNull(s3object);
-
   }
 
   // upload 10 small to a bucket
@@ -316,8 +317,7 @@ public class S3SinkStreamWriterUnitTest {
   }
 
   protected String readableFileSize(long size) {
-    if (size <= 0)
-      return "0";
+    if (size <= 0) return "0";
     final String[] units = new String[] { "B", "kB", "MB", "GB", "TB" };
     int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
     return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];

@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink.partition;
+package com.neverwinterdp.scribengin.nizarS3.partition;
 
 import static com.google.common.math.LongMath.divide;
 import static java.math.RoundingMode.UP;
@@ -56,9 +56,7 @@ public class OffsetPartitionUnitTest {
     long startOffset = 0;
     long endOffset = 5;
     long folder = offsetPerPartition * divide(endOffset, offsetPerPartition, UP);
-     String expected = folder +
-        "/" + startOffset + "_" + endOffset;
-
+    String expected = folder + "/" + startOffset + "_" + endOffset;
     assertEquals(expected, offsetPartitioner.getPartition(startOffset, endOffset));
   }
 

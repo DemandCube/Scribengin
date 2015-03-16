@@ -17,26 +17,21 @@ import org.slf4j.LoggerFactory;
  * @author Tuan Nguyen
  * @email tuan08@gmail.com
  */
-public class AckKafkaWriter {
+public class AckKafkaWriter extends AbstractKafkaWriter {
   static private Logger LOGGER = LoggerFactory.getLogger(AckKafkaWriter.class);
   
-  private String name;
   private Properties kafkaProperties;
   private KafkaProducer<byte[], byte[]> producer;
   private AtomicLong idTracker = new AtomicLong();
   private WaittingAckProducerRecordHolder<byte[], byte[]> waittingAckBuffer = new WaittingAckProducerRecordHolder<byte[], byte[]>();
   private ResendThread resendThread ;
   
-  public String getName() { return name; }
-
-  public void setName(String name) { this.name = name; }
-
   public AckKafkaWriter(String name, String kafkaBrokerUrls) {
     this(name, null, kafkaBrokerUrls);
   }
 
   public AckKafkaWriter(String name, Map<String, String> props, String kafkaBrokerUrls) {
-    this.name = name;
+    super(name);
     Properties kafkaProps = new Properties();
     kafkaProps.put("bootstrap.servers", kafkaBrokerUrls);
     kafkaProps.put("value.serializer", ByteArraySerializer.class.getName());
@@ -52,6 +47,7 @@ public class AckKafkaWriter {
     if (producer != null) producer.close();
     producer = new KafkaProducer<byte[], byte[]>(kafkaProperties);
   }
+  
   
   public void send(String topic, int partition, String key, String message, Callback callback, long timeout) throws Exception {
     byte[] keyBytes = key.getBytes();
@@ -77,9 +73,7 @@ public class AckKafkaWriter {
     producer.send(record, ackCallback);
   }
   
-  
-  
-  public void triggerResendThread() {
+  void triggerResendThread() {
     if(resendThread == null || !resendThread.isAlive()) {
       resendThread = new ResendThread();
       resendThread.start();

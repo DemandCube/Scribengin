@@ -57,8 +57,7 @@ public class PropertyUtils {
     boolean saveProperty(String key, String value) {
 
         properties.setProperty(key, value);
-        String path = System.getProperty("user.dir")
-                + System.getProperty("file.separator") + filename;
+        String path = System.getProperty("user.dir") + System.getProperty("file.separator") + filename;
         try {
             properties.store(new FileOutputStream(path), null);
         } catch (FileNotFoundException e) {
