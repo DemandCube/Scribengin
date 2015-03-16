@@ -34,13 +34,11 @@ function get_opt() {
   DEFAULT_VALUE=$2
   shift
   
-  index=0
   #Par the parameters
   for i in "$@"; do
     index=$(($index+1))
     if [[ $i == $OPT_NAME* ]] ; then
-      #value="${i#*=}"
-      value="${index}"
+      value="${i#*=}"
       echo "$value"
       return
     fi
@@ -98,7 +96,6 @@ function launch_containers() {
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
   NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
   NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
-  
   
   for (( i=1; i<="$NUM_HADOOP_WORKER"; i++ ))
   do
