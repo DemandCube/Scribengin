@@ -57,6 +57,7 @@ public class KafkaPartitionReader {
     consumer = new SimpleConsumer(broker.host(), broker.port(), 100000, 64 * 1024, name);
   }
   
+  //TODO: need to refresh the broker if the given borker is down or changed
   public void commit() throws Exception {
     saveOffsetInKafka(this.currentOffset, (short)0) ;
   }

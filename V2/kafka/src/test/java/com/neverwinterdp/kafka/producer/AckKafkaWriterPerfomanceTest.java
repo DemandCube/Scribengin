@@ -2,11 +2,6 @@ package com.neverwinterdp.kafka.producer;
 
 import org.junit.Test;
 
-
-
-//TODO success rate 2 dp
-//TODO add total time for each run
-//TODO add 
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 
@@ -19,8 +14,9 @@ public class AckKafkaWriterPerfomanceTest {
   @Test
   public void testRunner() throws Exception {
     Parameters[] parameters = {
-      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 25000/*max send*/, 120000/*maxDuration*/),
-      new Parameters("ack"    /*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 25000/*max send*/, 120000/*maxDuration*/)
+      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 10000/*max send*/, 180000/*maxDuration*/),
+      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 100000/*max send*/, 180000/*maxDuration*/),
+      new Parameters("ack"    /*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 100000/*max send*/, 180000/*maxDuration*/)
     };
     KafkaTopicReport[] topicReport =new KafkaTopicReport[parameters.length];
     totalRunDuration.start();

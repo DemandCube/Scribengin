@@ -1,7 +1,6 @@
 package com.neverwinterdp.kafka.tool;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 import com.neverwinterdp.util.text.TabularFormater;
 
@@ -63,39 +62,6 @@ public class KafkaTopicReport {
       out.append(reportFormater.getFormatText());
   }
   
-  //success = consumer.read/producer.send*100
-  //
-  //TODO for producer report print out reason for stopping
-  //i.e. did writers stop because of reaching maxduration or max send per partitition.
-  //TODO aggregate both reports in one matrix
-  public void oldReport(Appendable out) throws IOException {
-    String[] producerHeader = { 
-      "Topic", "runDur(ms)", "sent", "writes/sec", "messageSize(bytes)", "partitions", "replication" 
-    };
-    
-    TabularFormater producerFormater = new TabularFormater(producerHeader);
-    producerFormater.setTitle("Producer Report");
-    DecimalFormat df = new DecimalFormat("0");
-    double writePerSec = producerReport.messageSent / (producerReport.runDuration / 1000d);
-    Object[] producer = {
-        topic, producerReport.runDuration, producerReport.messageSent, df.format(writePerSec),
-        producerReport.messageSize, numOfPartitions, numOfReplications };
-    producerFormater.addRow(producer);
-
-    out.append(producerFormater.getFormatText());
-
-    String[] consumerHeader = { "topic", "runDur(ms)", "consumed", "consumed/sec", "partitions" };
-    TabularFormater consumerFormater = new TabularFormater(consumerHeader);
-    consumerFormater.setTitle("Consumer Report");
-    double readPerSec = consumerReport.messagesRead / (consumerReport.runDuration / 1000d);
-    Object[] consumer = {
-      topic, consumerReport.runDuration, consumerReport.messagesRead, df.format(readPerSec), numOfPartitions,
-    };
-    consumerFormater.addRow(consumer);
-    out.append("\n");
-    out.append(consumerFormater.getFormatText());
-  }
-
   static public class ProducerReport {
     private String writer;
     private long   runDuration;
