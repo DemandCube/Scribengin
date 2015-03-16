@@ -3,9 +3,6 @@ package com.neverwinterdp.scribengin.dataflow;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.ZooKeeper;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -18,7 +15,6 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
-import com.neverwinterdp.registry.zk.RegistryWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.util.JSONSerializer;

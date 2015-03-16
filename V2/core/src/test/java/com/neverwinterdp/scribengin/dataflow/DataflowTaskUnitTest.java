@@ -86,8 +86,6 @@ public class DataflowTaskUnitTest {
       try {
         DataflowTask task = new DataflowTask(dataflowContainer, descriptor);
         task.run();
-        Thread.sleep(3000);
-        task.suspend();
       } catch(Exception ex) {
         ex.printStackTrace();
       }

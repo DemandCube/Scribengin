@@ -71,7 +71,7 @@ public class DataflowUnitTest {
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-kafka-dataflow-0");
+      //shell.execute("dataflow   info --history hello-kafka-dataflow-0");
       shell.execute("registry   dump");
     } catch(Throwable err) {
       throw err;
@@ -86,7 +86,7 @@ public class DataflowUnitTest {
       try {
         String command = 
           "dataflow-test kafka " + 
-          "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
+          "  --worker 3 --executor-per-worker 1 --duration 200000 --task-max-execute-time 1000" +
           "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
         shell.execute(command);
       } catch(Exception ex) {
