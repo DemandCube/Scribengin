@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3.sink;
+package com.neverwinterdp.scribengin.nizarS3.sink;
 
 import java.util.Properties;
 

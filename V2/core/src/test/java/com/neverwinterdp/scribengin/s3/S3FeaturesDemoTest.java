@@ -41,10 +41,14 @@ import com.amazonaws.services.s3.model.UploadPartRequest;
  * account, and be signed up to use Amazon S3. For more information on Amazon
  * S3, see http://aws.amazon.com/s3.
  * 
- * Important: Be sure to fill in your AWS access credentials in
- * ~/.aws/credentials (C:\Users\USER_NAME\.aws\credentials for Windows users)
- * before you try to run this sample.
- * 
+ * Important: Before you try to run this sample, be sure to fill in your AWS access credentials in
+ * ~/.aws/credentials (C:\Users\USER_NAME\.aws\credentials for Windows users) with the aws keys"
+ *
+ *The content of the ~/.aws/credentials should look like:
+ *
+ *[default] 
+ *aws_access_key_id=YOUR_ACCESS_KEY_ID 
+ *aws_secret_access_key=YOUR_SECRET_ACCESS_KEY
  */
 public class S3FeaturesDemoTest {
   private AmazonS3 s3Client;
@@ -83,9 +87,11 @@ public class S3FeaturesDemoTest {
       System.out.println("Error Type:       " + ase.getErrorType());
       System.out.println("Request ID:       " + ase.getRequestId());
     } catch (AmazonClientException ace) {
-      System.out.println("Caught an AmazonClientException, which means the client encountered "
-          + "a serious internal problem while trying to communicate with S3, "
-          + "such as not being able to access the network.");
+      String mesg = 
+        "Caught an AmazonClientException, which means the client encountered " + 
+        "a serious internal problem while trying to communicate with S3, " + 
+        "such as not being able to access the network.";
+      System.out.println(mesg);
       System.out.println("Error Message: " + ace.getMessage());
     }
   }
@@ -96,8 +102,9 @@ public class S3FeaturesDemoTest {
      * (C:\Users\USER_NAME\.aws\credentials for Windows users) and save the
      * following lines after replacing the underlined values with your own.
      * 
-     * [default] aws_access_key_id = YOUR_ACCESS_KEY_ID aws_secret_access_key =
-     * YOUR_SECRET_ACCESS_KEY
+     * [default] 
+     * aws_access_key_id=YOUR_ACCESS_KEY_ID 
+     * aws_secret_access_key=YOUR_SECRET_ACCESS_KEY
      */
     s3Client = new AmazonS3Client();
     Region region = Region.getRegion(Regions.US_WEST_2);
@@ -120,7 +127,8 @@ public class S3FeaturesDemoTest {
 
   public void listBuckets() throws AmazonServiceException {
     System.out.println("Listing buckets: ");
-    for (Bucket bucket : s3Client.listBuckets()) {
+    List<Bucket> buckets = s3Client.listBuckets();
+    for (Bucket bucket : buckets) {
       System.out.println(" - " + bucket.getName());
     }
   }

@@ -18,8 +18,8 @@ import com.google.common.io.Files;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
-import com.neverwinterdp.scribengin.s3.sink.S3SinkStreamWriter;
+import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
+import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkStreamWriter;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 

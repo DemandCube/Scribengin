@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.s3.sink;
+package com.neverwinterdp.scribengin.nizarS3.sink;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.s3.sink.S3SinkConfig;
+import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.Record;
 

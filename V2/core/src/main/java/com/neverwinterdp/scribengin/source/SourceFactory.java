@@ -5,7 +5,6 @@ import org.apache.hadoop.fs.FileSystem;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.scribengin.hdfs.source.HDFSSource;
-import com.neverwinterdp.scribengin.inMemory.source.TestSource;
 import com.neverwinterdp.scribengin.kafka.source.KafkaSource;
 
 @Singleton
@@ -27,9 +26,6 @@ public class SourceFactory {
       return new HDFSSource(fs, descriptor);
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSource(descriptor);
-    }
-    else if("test".equalsIgnoreCase(descriptor.getType())){
-      return new TestSource(descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }

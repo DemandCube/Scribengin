@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.neverwinterdp.scribengin.s3.sink.S3Sink;
+import com.neverwinterdp.scribengin.nizarS3.sink.S3Sink;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;

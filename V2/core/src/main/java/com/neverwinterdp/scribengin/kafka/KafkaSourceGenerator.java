@@ -21,6 +21,7 @@ import com.neverwinterdp.scribengin.sink.SinkFactory;
 import com.neverwinterdp.scribengin.sink.SinkStream;
 import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
 
+//TODO: remove and use the check tool
 public class KafkaSourceGenerator {
   private String                        name;
   private String                        zkConnect               = "127.0.0.1:2181";

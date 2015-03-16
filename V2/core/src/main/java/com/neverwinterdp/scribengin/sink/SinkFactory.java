@@ -5,7 +5,6 @@ import org.apache.hadoop.fs.FileSystem;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
-import com.neverwinterdp.scribengin.inMemory.sink.TestSink;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 
 @Singleton
@@ -34,9 +33,6 @@ public class SinkFactory {
       return new HDFSSink(fs, descriptor);
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
-    }
-    else if("test".equalsIgnoreCase(descriptor.getType())){
-      return new TestSink(descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }
