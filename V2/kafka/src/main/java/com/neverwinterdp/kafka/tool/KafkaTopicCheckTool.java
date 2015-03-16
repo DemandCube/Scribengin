@@ -47,7 +47,7 @@ public class KafkaTopicCheckTool implements Runnable {
   synchronized public boolean waitForTermination() throws InterruptedException {
     if (!running) return !running;
     checkTool.waitForTermination();
-    Thread.sleep(1000);
+    Thread.sleep(500);
     return !running;
   }
 
@@ -75,10 +75,13 @@ public class KafkaTopicCheckTool implements Runnable {
 
   private void doRun() throws Exception {
     sendTool.runAsDeamon();
+    
     //Make sure that messgages are sending before start the failure simulator
     while(!sendTool.isSending()) {
       Thread.sleep(100);
     }
+    Thread.sleep(500);
+    
     checkTool.runAsDeamon();
     sendTool.waitForTermination();
     checkTool.waitForTermination();

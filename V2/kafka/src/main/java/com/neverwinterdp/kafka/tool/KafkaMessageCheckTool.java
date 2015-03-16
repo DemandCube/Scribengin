@@ -40,7 +40,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    expectNumberOfMessage = 1000000000;
+    expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
   }
 
   public void setFetchSize(int fetchSize) {
@@ -71,7 +71,7 @@ public class KafkaMessageCheckTool implements Runnable {
   }
 
   synchronized public boolean waitForTermination() throws InterruptedException {
-    if (!running) return !running;
+    if(!running) return !running;
     wait(topicConfig.consumerConfig.maxDuration);
     return !running;
   }
@@ -110,8 +110,8 @@ public class KafkaMessageCheckTool implements Runnable {
     kafkaTool.close();
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
     for (int i = 0; i < partitionReader.length; i++) {
-      partitionReader[i] = new KafkaPartitionReader(NAME, topicConfig.zkConnect, topicConfig.topic,
-          partitionMetas.get(i));
+      partitionReader[i] = 
+        new KafkaPartitionReader(NAME, topicConfig.zkConnect, topicConfig.topic, partitionMetas.get(i));
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
@@ -125,8 +125,7 @@ public class KafkaMessageCheckTool implements Runnable {
       } else {
         cannotReadCount = 0;
       }
-      if (cannotReadCount >= 10)
-        interrupt = true;
+      if(cannotReadCount >= 5) interrupt = true;
       lastCount = messageCounter.getTotal();
     }
     //Run the last fetch to find the duplicated messages if there are some
@@ -139,6 +138,7 @@ public class KafkaMessageCheckTool implements Runnable {
       partitionReader[k].commit();
       partitionReader[k].close();
     }
+    System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
     readDuration.stop();
   }
 

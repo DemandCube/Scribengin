@@ -1,10 +1,14 @@
 package com.neverwinterdp.kafka.producer;
 
 import org.junit.Test;
+
+
+
 //TODO success rate 2 dp
 //TODO add total time for each run
 //TODO add 
 import com.google.common.base.Stopwatch;
+import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 
 public class AckKafkaWriterPerfomanceTest {
   static {
@@ -14,30 +18,66 @@ public class AckKafkaWriterPerfomanceTest {
   private Stopwatch totalRunDuration = Stopwatch.createUnstarted();
   @Test
   public void testRunner() throws Exception {
-    String[][] args = {
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "1","--num-replication", "2","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "1","--num-replication", "2","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "10","--num-replication", "2","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "20","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "40","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "50","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "75","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "100000", "--num-partition", "1", "--num-replication", "3", "--num-kafka-brokers", "3" },
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "100000", "--num-partition", "2","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "1024", "--max-num-message", "10000", "--num-partition", "3","--num-replication", "3","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "2048", "--max-num-message", "10000", "--num-partition", "2", "--num-replication", "2","--num-kafka-brokers", "3"},
-        { "--topic", "hello", "--message-size", "2048", "--max-num-message", "50000", "--num-partition", "5", "--num-replication", "2","--num-kafka-brokers", "2"},
-        { "--topic", "hello", "--message-size", "4096", "--max-num-message", "10000", "--num-partition", "10","--num-replication", "2","--num-kafka-brokers", "3" },
-        { "--topic", "hello", "--message-size", "4096", "--max-num-message", "100000", "--num-partition", "10","--num-replication", "3","--num-kafka-brokers", "3" },
-        { "--topic", "hello", "--message-size", "512000", "--max-num-message", "10000", "--num-partition", "2","--num-replication", "3","--num-kafka-brokers", "3" }       
+    Parameters[] parameters = {
+      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 25000/*max send*/, 120000/*maxDuration*/),
+      new Parameters("ack"    /*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 25000/*max send*/, 120000/*maxDuration*/)
     };
+    KafkaTopicReport[] topicReport =new KafkaTopicReport[parameters.length];
     totalRunDuration.start();
-    for (int i = 0; i < args.length; i++) {
-      AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(args[i]);
+    for (int i = 0; i < parameters.length; i++) {
+      AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(parameters[i].getParameters());
       runner.setUp();
       runner.run();
       runner.tearDown();
+      topicReport[i] = runner.getKafkaTopicReport();
     }
     totalRunDuration.stop();
+    KafkaTopicReport.report(System.out, topicReport);
+  }
+  
+  static public class Parameters {
+    private String writerType = "ack";
+    private int    messageSize = 1024;
+    private int    partitions = 3 ;
+    private int    replications = 2;
+    private int    maxDuration     = 120000;
+    private int    maxSend      = 10000;
+    
+    
+    Parameters(String writerType, int messageSize, int partitions, int replications, int maxSend, int maxDuration) {
+      this.writerType = writerType;
+      this.messageSize = messageSize;
+      this.partitions = partitions;
+      this.replications = replications;
+      this.maxSend = maxSend;
+      this.maxDuration = maxDuration;
+    }
+    
+    public String[] getParameters() {
+      String[] args = {
+          "--topic", "hello",
+          "--num-partition",  Integer.toString(partitions),
+          "--replication", Integer.toString(replications),
+          
+          "--send-writer-type", writerType,
+          "--send-period", "0",
+          "--send-message-size",  Integer.toString(messageSize),
+          "--send-max-per-partition", Integer.toString(maxSend),
+          "--send-max-duration", Integer.toString(maxDuration),
+          
+          "--producer:message.send.max.retries=5",
+          "--producer:retry.backoff.ms=100",
+          
+          "--producer:queue.buffering.max.ms=1000",
+          "--producer:queue.buffering.max.messages=15000",
+          
+          "--producer:topic.metadata.refresh.interval.ms=-1",
+          "--producer:batch.num.messages=100",
+          "--producer:acks=all",
+          
+          "--consume-max-duration", Integer.toString(maxDuration)
+        };
+      return args ;
+    }
   }
 }

@@ -38,21 +38,29 @@ public class KafkaTopicReport {
   public void setConsumerReport(ConsumerReport consumerReport) { this.consumerReport = consumerReport; }
 
   public void report(Appendable out) throws IOException {
+    report(out, this);
+  }
+  
+  static public void report(Appendable out, KafkaTopicReport ... report) throws IOException {
     String[] header = { 
-      "Topic", "Replication", "Partitions", "F Sim", 
-      "W Duration", "W Rate", "W Total", "R Duration", "R Rate", "R Total"
-    };
-    
-    TabularFormater reportFormater = new TabularFormater(header);
-    reportFormater.setTitle("Report for the topic " + topic);
-    Object[] cells = {
-      topic, numOfReplications, numOfPartitions, failureSimulation,
-      producerReport.runDuration, producerReport.messageSent/(producerReport.runDuration/1000), producerReport.messageSent,
-      consumerReport.runDuration, consumerReport.messagesRead/(consumerReport.runDuration/1000), consumerReport.messagesRead,
-    };
-    reportFormater.addRow(cells);
-    out.append("\n");
-    out.append(reportFormater.getFormatText());
+        "Topic", "Replication", "Partitions", "F Sim", 
+        "Writer","W Duration", "W Rate", "W Total", "R Duration", "R Rate", "R Total"
+      };
+      
+      TabularFormater reportFormater = new TabularFormater(header);
+      reportFormater.setTitle("Topic Report ");
+      for(KafkaTopicReport  sel : report) {
+        long messageSentRate = sel.producerReport.messageSent/(sel.producerReport.runDuration/1000);
+        long messageReadRate = sel.consumerReport.messagesRead/(sel.consumerReport.runDuration/1000);
+        Object[] cells = {
+          sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
+          sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,
+          sel.consumerReport.runDuration, messageReadRate, sel.consumerReport.messagesRead,
+        };
+        reportFormater.addRow(cells);
+      }
+      out.append("\n");
+      out.append(reportFormater.getFormatText());
   }
   
   //success = consumer.read/producer.send*100
@@ -89,40 +97,26 @@ public class KafkaTopicReport {
   }
 
   static public class ProducerReport {
-    private long runDuration;
-    private int messageSent;
-    private int messageSize; //bytes
-    private int failed; // gotten from writer
+    private String writer;
+    private long   runDuration;
+    private int    messageSent;
+    private int    messageSize; //bytes
+    private int    failed; // gotten from writer
 
+    public String getWriter() { return writer; }
+    public void setWriter(String writer) { this.writer = writer; }
+    
     public long getRunDuration() {  return runDuration; }
+    public void setRunDuration(long runDuration) { this.runDuration = runDuration; }
 
-    public void setRunDuration(long runDuration) {
-      this.runDuration = runDuration;
-    }
+    public int getMessageSent() { return messageSent; }
+    public void setMessageSent(int messageSent) { this.messageSent = messageSent; }
 
-    public int getMessageSent() {
-      return messageSent;
-    }
+    public int getMessageSize() { return messageSize; }
+    public void setMessageSize(int messageSize) { this.messageSize = messageSize; }
 
-    public void setMessageSent(int messageSent) {
-      this.messageSent = messageSent;
-    }
-
-    public int getMessageSize() {
-      return messageSize;
-    }
-
-    public void setMessageSize(int messageSize) {
-      this.messageSize = messageSize;
-    }
-
-    public int getFailed() {
-      return failed;
-    }
-
-    public void setFailed(int failed) {
-      this.failed = failed;
-    }
+    public int getFailed() { return failed; }
+    public void setFailed(int failed) { this.failed = failed; }
 
     @Override
     public String toString() {

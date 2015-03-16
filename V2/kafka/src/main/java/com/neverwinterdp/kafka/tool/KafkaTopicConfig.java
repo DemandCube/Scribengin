@@ -31,6 +31,7 @@ public class KafkaTopicConfig {
   
   public KafkaTopicConfig(String[] args) {
     new JCommander(this, args);
+    consumerConfig.consumeMax = producerConfig.maxMessagePerPartition * numberOfPartition;
   }
   
   static public class Producer {
@@ -59,6 +60,9 @@ public class KafkaTopicConfig {
   static public class Consumer {
     @Parameter(names = "--consume-max-duration", description = "The max consume duration in ms")
     public long   maxDuration = 10000;
+    
+    @Parameter(names = "--consume-max", description = "The max consume duration in ms")
+    public int   consumeMax = 100000000;
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
     public Map<String, String> consumerProperties = new HashMap<String, String>();

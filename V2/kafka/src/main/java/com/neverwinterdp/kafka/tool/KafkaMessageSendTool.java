@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
@@ -24,7 +25,7 @@ public class KafkaMessageSendTool implements Runnable {
 
   private Thread deamonThread;
   private boolean running = false;
-  private boolean sending = false ;
+  private AtomicLong   sendCounter = new AtomicLong() ;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -36,10 +37,11 @@ public class KafkaMessageSendTool implements Runnable {
     this.topicConfig = topicConfig;
   }
 
-  public boolean isSending() { return sending ; }
+  public boolean isSending() { return sendCounter.get() > 0 ; }
   
   public void report(KafkaTopicReport report) {
     ProducerReport producerReport = report.getProducerReport();
+    producerReport.setWriter(topicConfig.producerConfig.writerType);
     producerReport.setMessageSize(topicConfig.producerConfig.messageSize);
     producerReport.setRunDuration(runDuration.elapsed(TimeUnit.MILLISECONDS));
     int messageSent = 0;// get all message senders, get writeCount from all
@@ -71,7 +73,6 @@ public class KafkaMessageSendTool implements Runnable {
 
   public void run() {
     running = true;
-    sending = false;
     try {
       doSend();
     } catch (Exception e) {
@@ -94,7 +95,6 @@ public class KafkaMessageSendTool implements Runnable {
     kafkaTool.createTopic(topicConfig.topic, topicConfig.replication, topicConfig.numberOfPartition);
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topicConfig.topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
-    sending = true;
     for (PartitionMetadata sel : partitionMetadataHolder) {
       PartitionMessageWriter writer = new PartitionMessageWriter(sel, kafkaConnects);
       writers.put(sel.partitionId(), writer);
@@ -106,7 +106,6 @@ public class KafkaMessageSendTool implements Runnable {
     if (!writerService.isTerminated()) {
       writerService.shutdownNow();
     }
-    sending = false;
     kafkaTool.close();
     runDuration.stop();
   }
@@ -122,6 +121,8 @@ public class KafkaMessageSendTool implements Runnable {
       this.kafkaConnects = kafkaConnects;
     }
 
+    public int getWriteCount() { return this.writeCount ; }
+    
     @Override
     public void run() {
       KafkaWriter writer = createKafkaWriter();
@@ -132,6 +133,7 @@ public class KafkaMessageSendTool implements Runnable {
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
           writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);
           writeCount++;
+          sendCounter.incrementAndGet();
           //Check max message per partition
           if (writeCount >= topicConfig.producerConfig.maxMessagePerPartition) {
             terminated = true;

@@ -22,10 +22,13 @@ public class AckKafkaWriterTestRunner {
 
   private KafkaCluster cluster;
   private KafkaTopicConfig config;
+  private KafkaTopicReport topicReport;
   
   public AckKafkaWriterTestRunner(String[] topicToolArgs) {
     config = new KafkaTopicConfig(topicToolArgs);
   }
+  
+  public KafkaTopicReport getKafkaTopicReport() { return this.topicReport; }
 
   public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/kafka", false);
@@ -53,12 +56,17 @@ public class AckKafkaWriterTestRunner {
     while(!topicCheckTool.getKafkaMessageSendTool().isSending()) {
       Thread.sleep(100);
     }
+    Thread.sleep(1000);
+    
     KafkapartitionLeaderKiller leaderKiller = new KafkapartitionLeaderKiller(config.topic, 0, 3000);
     new Thread(leaderKiller).start();
+   
     topicCheckTool.waitForTermination();
+    
     leaderKiller.exit();
     leaderKiller.waitForTermination(10000);
-    KafkaTopicReport topicReport = topicCheckTool.getKafkaTopicReport();
+    
+    topicReport = topicCheckTool.getKafkaTopicReport();
     topicReport.setFailureSimulation(leaderKiller.failureCount);
     topicReport.report(System.out);
   }
