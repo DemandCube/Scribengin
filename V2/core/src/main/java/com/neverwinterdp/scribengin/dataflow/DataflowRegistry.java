@@ -58,6 +58,7 @@ public class DataflowRegistry {
   private Node               tasksLock;
   private Node               workers;
 
+
   public DataflowRegistry() { }
   
   public DataflowRegistry(Registry registry, String dataflowPath) throws Exception { 
@@ -99,7 +100,8 @@ public class DataflowRegistry {
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
     tasksAvailableQueue.offer(nodeName.getBytes());
-  }
+
+   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     workers.createChildRef(vmDescriptor.getId(), vmDescriptor.getStoredPath(), NodeCreateMode.PERSISTENT);
@@ -117,8 +119,7 @@ public class DataflowRegistry {
         byte[] data  = tasksAvailableQueue.poll();
         if(data == null) return null;
         String taskName = new String(data);
-        Node childNode = tasksDescriptors.getChild(taskName);
-        
+        Node childNode = tasksDescriptors.getChild(taskName);      
         Transaction transaction = registry.getTransaction();
         transaction.createChild(tasksAssigned, taskName, NodeCreateMode.PERSISTENT);
         transaction.createDescendant(tasksAssigned, taskName + "/hearbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
@@ -150,12 +151,16 @@ public class DataflowRegistry {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         //TODO: use the transaction
-        descriptor.setStatus(Status.SUSPENDED);
+        
+        descriptor.setStatus(Status.SUSPENDED);    
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
         tasksAvailableQueue.offer(name.getBytes());
-        tasksAssigned.getChild(name).rdelete();
+        //tasksAssigned.getChild(name).rdelete();
+        Transaction transaction = registry.getTransaction();
+        transaction.rdelete(tasksAssigned + "/" + name);
+        transaction.commit();
         return true;
       }
     };
@@ -174,10 +179,10 @@ public class DataflowRegistry {
         Transaction transaction = registry.getTransaction();
         //update the task descriptor
         transaction.setData(descriptor.getStoredPath(), descriptor);
-        tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
-        tasksAssigned.getChild(name).rdelete(transaction);
-        //tasksFinished.createChild(name, NodeCreateMode.PERSISTENT);
-        //tasksAssigned.getChild(name).rdelete();
+        transaction.createChild(tasksFinished, name, NodeCreateMode.PERSISTENT);
+        transaction.rdelete(tasksAssigned + "/" + name);
+        //tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
+        //tasksAssigned.getChild(name).rdelete(transaction);
         transaction.commit();
         return true;
       }
