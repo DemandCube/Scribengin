@@ -57,7 +57,6 @@ public class DataflowRegistry {
   private Node               tasksDescriptors;
   //private Node               tasksAvailable;
   private DistributedQueue   tasksAvailableQueue;
-  private Node               tasksAvailable;
   private Node               tasksAssigned;
   private Node               tasksFinished;
   private Node               tasksLock;
@@ -90,7 +89,6 @@ public class DataflowRegistry {
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     tasksAvailableQueue = new DistributedQueue(registry, dataflowPath   + "/" + TASKS_AVAILABLE_PATH) ;
     tasksAssigned  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_ASSIGNED_PATH);
-    tasksAvailable  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_AVAILABLE_PATH);
     tasksFinished  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_FINISHED_PATH);
     tasksLock      = registry.createIfNotExist(dataflowPath   + "/" + TASKS_LOCK_PATH);
     registry.createIfNotExist(dataflowPath + "/" + MASTER_LEADER_PATH);
@@ -105,10 +103,8 @@ public class DataflowRegistry {
     report.setStartTime(System.currentTimeMillis());
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
-    //tasksAvailableQueue.offer(nodeName.getBytes());
-    Transaction transaction = registry.getTransaction();
-    transaction.createChild(tasksAvailable, nodeName, NodeCreateMode.PERSISTENT);
-    transaction.commit();
+    tasksAvailableQueue.offer(nodeName.getBytes());
+
    }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
@@ -125,7 +121,6 @@ public class DataflowRegistry {
       @Override
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
         byte[] data  = tasksAvailableQueue.poll();
-        // How to poll using transaction
         if(data == null) return null;
         String taskName = new String(data);
         Node childNode = tasksDescriptors.getChild(taskName);      
@@ -165,10 +160,9 @@ public class DataflowRegistry {
         dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
-        //tasksAvailableQueue.offer(name.getBytes());
+        tasksAvailableQueue.offer(name.getBytes());
         //tasksAssigned.getChild(name).rdelete();
         Transaction transaction = registry.getTransaction();
-        transaction.createChild(tasksAvailable, name, NodeCreateMode.PERSISTENT);
         transaction.rdelete(tasksAssigned + "/" + name);
         transaction.commit();
         return true;
