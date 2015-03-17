@@ -20,7 +20,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
-
+  
   private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();

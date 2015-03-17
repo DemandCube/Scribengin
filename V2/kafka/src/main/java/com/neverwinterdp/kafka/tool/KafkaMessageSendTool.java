@@ -26,6 +26,7 @@ public class KafkaMessageSendTool implements Runnable {
   private Thread deamonThread;
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
+  private KafkaMessageGenerator messageGenerator = new KafkaMessageGenerator();
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -35,6 +36,10 @@ public class KafkaMessageSendTool implements Runnable {
 
   public KafkaMessageSendTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
+  }
+  
+  public void setMessageGenerator(KafkaMessageGenerator generator) {
+    messageGenerator = generator;
   }
 
   public boolean isSending() { return sendCounter.get() > 0 ; }
@@ -127,10 +132,10 @@ public class KafkaMessageSendTool implements Runnable {
     public void run() {
       KafkaWriter writer = createKafkaWriter();
       try {
-        byte[] message = new byte[topicConfig.producerConfig.messageSize];
         boolean terminated = false;
         while (!terminated) {
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
+          byte[] message = messageGenerator.nextMessage(metadata.partitionId(), topicConfig.producerConfig.messageSize) ;
           writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);
           writeCount++;
           sendCounter.incrementAndGet();
