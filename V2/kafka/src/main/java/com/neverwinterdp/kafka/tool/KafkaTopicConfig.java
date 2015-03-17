@@ -61,7 +61,7 @@ public class KafkaTopicConfig {
     @Parameter(names = "--consume-max-duration", description = "The max consume duration in ms")
     public long   maxDuration = 10000;
     
-    @Parameter(names = "--consume-max", description = "The max consume duration in ms")
+    @Parameter(names = "--consume-max", description = "The max number of messages to consume")
     public int   consumeMax = 100000000;
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")

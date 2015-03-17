@@ -1,10 +1,11 @@
 package com.neverwinterdp.scribengin.s3;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -14,18 +15,18 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3Folder {
-  private AmazonS3       s3Client ;
+  private S3Client       s3Client ;
   private String         bucketName;
   private String         folderPath;
   
-  public S3Folder(AmazonS3 s3Client, String bucketName, String folderPath) {
+  public S3Folder(S3Client s3Client, String bucketName, String folderPath) {
     this.s3Client   = s3Client;
     this.bucketName = bucketName;
     if("/".equals(folderPath)) folderPath = "";
     this.folderPath = folderPath;
   }
   
-  public AmazonS3 getS3Client() { return s3Client; }
+  public S3Client getS3Client() { return s3Client; }
 
   public String getBucketName() { return bucketName; }
 
@@ -43,23 +44,61 @@ public class S3Folder {
   }
   
   public void create(String name, InputStream is, ObjectMetadata metadata) {
-    s3Client.putObject(new PutObjectRequest(bucketName, toKey(name), is, metadata));
+    s3Client.getAmazonS3Client().putObject(new PutObjectRequest(bucketName, toKey(name), is, metadata));
+  }
+  
+  public S3Folder createFolder(String name) {
+    return s3Client.createS3Folder(bucketName, name) ;
+  }
+  
+  public List<String> getChildrenNames() {
+    List<String> holder = new ArrayList<String>() ;
+    for(S3ObjectSummary sel : getChildren()) {
+      String name = sel.getKey().substring(folderPath.length() + 1);
+      holder.add(name);
+    }
+    return holder;
+  }
+  
+  public List<S3ObjectSummary> getChildren() {
+    ListObjectsRequest request = 
+      new ListObjectsRequest().withBucketName(bucketName).withPrefix(folderPath + "/").withDelimiter("/");
+    ObjectListing objectListing = s3Client.getAmazonS3Client().listObjects(request);
+    return objectListing.getObjectSummaries() ;
   }
   
   public List<S3ObjectSummary> getDescendants() {
-    ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withPrefix(folderPath);
-    ObjectListing objectListing = s3Client.listObjects(request);
+    ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withPrefix(folderPath + "/");
+    ObjectListing objectListing = s3Client.getAmazonS3Client().listObjects(request);
     return objectListing.getObjectSummaries();
   }
   
   public S3Folder getS3Folder(String name) {
     return new S3Folder(s3Client, bucketName, toKey(name));
   }
+
+  public void createObject(String name, byte[] data, ObjectMetadata metadata) throws IOException {
+    s3Client.createObject(bucketName, toKey(name), data, metadata);
+  }
+  
+  public void createObject(String name, InputStream is, ObjectMetadata metadata) throws IOException {
+    s3Client.createObject(bucketName, toKey(name), is, metadata);
+  }
+  
+  public void updateObjectMetadata(String name, ObjectMetadata metadata) throws IOException {
+    s3Client.updateObjectMetadata(bucketName, toKey(name), metadata);
+  }
+  
+  public S3ObjectWriter createObjectWriter(String name, ObjectMetadata metadata) throws IOException {
+    S3ObjectWriter writer = new S3ObjectWriter(s3Client, bucketName, toKey(name), metadata);
+    return writer;
+  }
   
   public S3Object getS3Object(String name) {
-    S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, toKey(name)));
+    S3Object object = s3Client.getAmazonS3Client().getObject(new GetObjectRequest(bucketName, toKey(name)));
     return object;
   }
+  
   
   String toKey(String name) { return folderPath + "/" + name; }
   
