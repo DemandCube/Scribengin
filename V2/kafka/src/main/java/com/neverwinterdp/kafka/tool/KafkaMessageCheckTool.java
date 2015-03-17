@@ -20,7 +20,8 @@ public class KafkaMessageCheckTool implements Runnable {
 
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
-
+  
+  private int maxPartitionCountRetries = 20;
   private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
@@ -101,13 +102,28 @@ public class KafkaMessageCheckTool implements Runnable {
 
   //TODO each partition reader on a separate thread. same as SendTool
   public void check() throws Exception {
-    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool");
+    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.  Expecting "+Integer.toString(this.expectNumberOfMessage)+ " messages.");
     readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
-    TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
-    List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
+    
+    System.out.println("topic: "+topicConfig.topic);
+    TopicMetadata topicMeta;
+    List<PartitionMetadata> partitionMetas;
+    int tries = 0;
+    
+    do{
+      topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
+      partitionMetas = topicMeta.partitionsMetadata();
+      tries++;
+      if(partitionMetas.size() < 1){
+        Thread.sleep(100*tries);
+      }
+    }while(partitionMetas.size() < 1 && tries < maxPartitionCountRetries);
     kafkaTool.close();
+    
+    System.out.println("partitions: "+Integer.toString(partitionMetas.size()));
+    
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
     for (int i = 0; i < partitionReader.length; i++) {
       partitionReader[i] = 
@@ -115,10 +131,46 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
+    /**
+     * 
+     * ------------------------------------------------------------------------
+Submit the dataflow hello-kafka-dataflow
+------------------------------------------------------------------------
+Wait time to finish: 60000msKafkaMessageCheckTool: Start running kafka message check tool.  Expecting 100 messages.
+
+partitions: 0
+INTERRUPT: false
+Expecting 100 messages.
+TOTAL: 0
+Partition length: 0
+last count: 0
+Partition length: 0
+last count: 0
+Partition length: 0
+last count: 0
+Partition length: 0
+last count: 0
+Partition length: 0
+last count: 0
+Read count: 0(Stop)
+     */
+    System.out.print("INTERRUPT: ");
+    System.out.println(interrupt);
+    System.out.println("Expecting "+Integer.toString(this.expectNumberOfMessage)+ " messages.");
+    System.out.println("TOTAL: "+Integer.toString(messageCounter.getTotal()));
+    System.out.println("Partition length: "+Integer.toString(partitionReader.length));
+    
     while (messageCounter.getTotal() < expectNumberOfMessage && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
+        List<byte[]> messages;
+        try{
+          messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
+        } catch(Exception e){
+          messageCounter.count(partitionReader[k].getPartition(), 0);
+          continue;
+        }
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
+        System.out.println("Just read: "+Integer.toString(messageCounter.getTotal()));
       }
       if (lastCount == messageCounter.getTotal()) {
         cannotReadCount++;
@@ -127,6 +179,10 @@ public class KafkaMessageCheckTool implements Runnable {
       }
       if(cannotReadCount >= 5) interrupt = true;
       lastCount = messageCounter.getTotal();
+      System.out.println("last count: "+Integer.toString(lastCount));
+      System.out.println("Cannot read count: "+Integer.toString(cannotReadCount));
+      System.out.print("interrupt: ");
+      System.out.println(interrupt);
     }
     //Run the last fetch to find the duplicated messages if there are some
     for (int k = 0; k < partitionReader.length; k++) {
