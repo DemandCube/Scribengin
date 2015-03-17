@@ -28,7 +28,6 @@ public class KafkaMessageCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
-  private int maxRetries = 20;
   private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
@@ -36,8 +35,6 @@ public class KafkaMessageCheckTool implements Runnable {
   private Thread deamonThread;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
-  private boolean tapEnabled = false;
-  private String tapFile = "KafkaMessageCheckTool.xml";
   
   public KafkaMessageCheckTool() {
   }
@@ -51,9 +48,6 @@ public class KafkaMessageCheckTool implements Runnable {
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
     expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
-    maxRetries = topicConfig.consumerConfig.connectRetries;
-    tapEnabled = topicConfig.consumerConfig.tapEnabled;
-    tapFile = topicConfig.consumerConfig.tapFile;
   }
 
   public void setFetchSize(int fetchSize) {
@@ -63,14 +57,6 @@ public class KafkaMessageCheckTool implements Runnable {
   //TODO: replace by the KafkaTopicReport.ConsumerReport
   public MessageCounter getMessageCounter() {
     return messageCounter;
-  }
-  
-  public void enableTAP(){
-    tapEnabled = true;
-  }
-  
-  public void setTAPOutputFile(String filename){
-    tapFile = filename;
   }
 
   public Stopwatch getReadDuration() {
@@ -140,7 +126,7 @@ public class KafkaMessageCheckTool implements Runnable {
       if(partitionMetas.size() < 1){
         Thread.sleep(100*tries);
       }
-    }while(partitionMetas.size() < 1 && tries < maxRetries);
+    }while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
     kafkaTool.close();
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
@@ -186,8 +172,8 @@ public class KafkaMessageCheckTool implements Runnable {
     
     TapProducer tapProducer = null;
     TestSet testSet =null;
-    if(tapEnabled){
-      tapProducer = TapProducerFactory.makeTapJunitProducer(tapFile);
+    if(topicConfig.consumerConfig.tapEnabled){
+      tapProducer = TapProducerFactory.makeTapJunitProducer(topicConfig.consumerConfig.tapFile);
       testSet = new TestSet();
       int testNum=0;
       //Create test result per partition
@@ -218,7 +204,7 @@ public class KafkaMessageCheckTool implements Runnable {
           " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
       testSet.addTestResult( t );
       
-      tapProducer.dump(testSet, new File(tapFile));
+      tapProducer.dump(testSet, new File(topicConfig.consumerConfig.tapFile));
       System.out.println(tapProducer.dump(testSet));
     }
   }
