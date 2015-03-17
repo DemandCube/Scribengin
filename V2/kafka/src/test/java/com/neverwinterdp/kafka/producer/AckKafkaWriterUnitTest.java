@@ -1,6 +1,10 @@
 package com.neverwinterdp.kafka.producer;
 
 import org.junit.Test;
+
+import com.neverwinterdp.kafka.tool.KafkaTopicCheckTool;
+import com.neverwinterdp.kafka.tool.KafkaTopicConfig;
+
 /**
  * @author Tuan
  */
@@ -9,34 +13,49 @@ public class AckKafkaWriterUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties");
   }
 
-  @Test
-  public void testRunner() throws Exception {
-    String[] topicConfigArgs = {
+  String[] topicConfigArgs = {
       "--topic", "hello",
-      "--num-partition",  "3",
-      "--replication",  "2",
-      
+      "--num-partition", "3",
+      "--replication", "2",
+
       "--send-writer-type", "ack",
       "--send-period", "0",
-      "--send-message-size",  "1024",
+      "--send-message-size", "1024",
       "--send-max-per-partition", "25000",
       "--send-max-duration", "120000",
-      
+
       "--producer:message.send.max.retries=5",
       "--producer:retry.backoff.ms=100",
-      
+
       "--producer:queue.buffering.max.ms=1000",
       "--producer:queue.buffering.max.messages=15000",
-      
+
       "--producer:topic.metadata.refresh.interval.ms=-1",
       "--producer:batch.num.messages=100",
       "--producer:acks=all",
-      
+
       "--consume-max-duration", "150000"
-    };
-    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(topicConfigArgs) ;
+  };
+
+  @Test
+  public void testRunner() throws Exception {
+
+    AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(topicConfigArgs);
     runner.setUp();
     runner.run();
     runner.tearDown();
+  }
+
+  @Test
+  public void testKillTwoLeaders() {
+    
+    //Start cluster
+    //start writer thread, tell it what to write
+    //Start killer thread
+    //start reader thread
+    //assert results
+    KafkaTopicConfig config = new KafkaTopicConfig(topicConfigArgs);
+    KafkaTopicCheckTool topicCheckTool = new KafkaTopicCheckTool(config);
+    topicCheckTool.runAsDeamon();
   }
 }
