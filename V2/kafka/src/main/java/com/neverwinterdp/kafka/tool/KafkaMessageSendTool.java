@@ -44,7 +44,7 @@ public class KafkaMessageSendTool implements Runnable {
     producerReport.setWriter(topicConfig.producerConfig.writerType);
     producerReport.setMessageSize(topicConfig.producerConfig.messageSize);
     producerReport.setRunDuration(runDuration.elapsed(TimeUnit.MILLISECONDS));
-    int messageSent = 0;// get all message senders, get writeCount from all
+    int messageSent = 0;
     for (PartitionMessageWriter writer : writers.values()) {
       messageSent += writer.writeCount;
     }
@@ -127,6 +127,7 @@ public class KafkaMessageSendTool implements Runnable {
     public void run() {
       KafkaWriter writer = createKafkaWriter();
       try {
+        //TODO add ability to write specific message
         byte[] message = new byte[topicConfig.producerConfig.messageSize];
         boolean terminated = false;
         while (!terminated) {
