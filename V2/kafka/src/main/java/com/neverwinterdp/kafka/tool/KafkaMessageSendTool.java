@@ -26,6 +26,7 @@ public class KafkaMessageSendTool implements Runnable {
   private Thread deamonThread;
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
+  private KafkaMessageGenerator messageGenerator = null;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -36,6 +37,10 @@ public class KafkaMessageSendTool implements Runnable {
   public KafkaMessageSendTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
   }
+  
+  public void setMessageGenerator(KafkaMessageGenerator generator) {
+    messageGenerator = generator;
+  }
 
   public boolean isSending() { return sendCounter.get() > 0 ; }
   
@@ -44,7 +49,7 @@ public class KafkaMessageSendTool implements Runnable {
     producerReport.setWriter(topicConfig.producerConfig.writerType);
     producerReport.setMessageSize(topicConfig.producerConfig.messageSize);
     producerReport.setRunDuration(runDuration.elapsed(TimeUnit.MILLISECONDS));
-    int messageSent = 0;// get all message senders, get writeCount from all
+    int messageSent = 0;
     for (PartitionMessageWriter writer : writers.values()) {
       messageSent += writer.writeCount;
     }
@@ -85,6 +90,9 @@ public class KafkaMessageSendTool implements Runnable {
   public void doSend() throws Exception {
     System.out.println("KafkaMessageSendTool: Start sending the message to kafka");
     runDuration.start();
+    if(messageGenerator == null){
+      messageGenerator = new KafkaMessageGeneratorSimple();
+    }
     ExecutorService writerService = Executors.newFixedThreadPool(topicConfig.numberOfPartition);
     KafkaTool kafkaTool = new KafkaTool("KafkaTool", topicConfig.zkConnect);
     kafkaTool.connect();
@@ -127,10 +135,10 @@ public class KafkaMessageSendTool implements Runnable {
     public void run() {
       KafkaWriter writer = createKafkaWriter();
       try {
-        byte[] message = new byte[topicConfig.producerConfig.messageSize];
         boolean terminated = false;
         while (!terminated) {
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
+          byte[] message = messageGenerator.nextMessage(metadata.partitionId(), topicConfig.producerConfig.messageSize) ;
           writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);
           writeCount++;
           sendCounter.incrementAndGet();

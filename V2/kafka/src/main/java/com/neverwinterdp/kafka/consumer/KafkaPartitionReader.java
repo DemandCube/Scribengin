@@ -174,11 +174,6 @@ public class KafkaPartitionReader {
   
   class FetchOperation {
     public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
-      System.out.println("ClientID: "+name);
-      System.out.println("Topic: "+topic);
-      System.out.println("Partition ID: "+Integer.toString(partitionMetadata.partitionId()));
-      System.out.println("Curr Offset: "+Long.toString(currentOffset));
-      System.out.println("Fetch Size: "+Integer.toString(fetchSize));
       FetchRequest req = 
           new FetchRequestBuilder().
           clientId(name).

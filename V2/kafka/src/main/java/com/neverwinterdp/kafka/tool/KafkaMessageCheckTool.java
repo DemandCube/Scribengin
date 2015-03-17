@@ -1,10 +1,17 @@
 package com.neverwinterdp.kafka.tool;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.tap4j.model.TestResult;
+import org.tap4j.model.TestSet;
+import org.tap4j.producer.TapProducer;
+import org.tap4j.producer.TapProducerFactory;
+import org.tap4j.util.StatusValues;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
@@ -21,7 +28,7 @@ public class KafkaMessageCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
-  private int maxPartitionCountRetries = 20;
+  private int maxRetries = 20;
   private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
@@ -29,7 +36,9 @@ public class KafkaMessageCheckTool implements Runnable {
   private Thread deamonThread;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
-
+  private boolean tapEnabled = false;
+  private String tapFile = "KafkaMessageCheckTool.xml";
+  
   public KafkaMessageCheckTool() {
   }
 
@@ -42,6 +51,9 @@ public class KafkaMessageCheckTool implements Runnable {
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
     expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
+    maxRetries = topicConfig.consumerConfig.connectRetries;
+    tapEnabled = topicConfig.consumerConfig.tapEnabled;
+    tapFile = topicConfig.consumerConfig.tapFile;
   }
 
   public void setFetchSize(int fetchSize) {
@@ -51,6 +63,14 @@ public class KafkaMessageCheckTool implements Runnable {
   //TODO: replace by the KafkaTopicReport.ConsumerReport
   public MessageCounter getMessageCounter() {
     return messageCounter;
+  }
+  
+  public void enableTAP(){
+    tapEnabled = true;
+  }
+  
+  public void setTAPOutputFile(String filename){
+    tapFile = filename;
   }
 
   public Stopwatch getReadDuration() {
@@ -102,16 +122,17 @@ public class KafkaMessageCheckTool implements Runnable {
 
   //TODO each partition reader on a separate thread. same as SendTool
   public void check() throws Exception {
-    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.  Expecting "+Integer.toString(this.expectNumberOfMessage)+ " messages.");
+    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.");
     readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
     
-    System.out.println("topic: "+topicConfig.topic);
     TopicMetadata topicMeta;
     List<PartitionMetadata> partitionMetas;
-    int tries = 0;
     
+    //Added so that the checktool doesn't fail immediately if its started before 
+    //topic is created/written to
+    int tries = 0;
     do{
       topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
       partitionMetas = topicMeta.partitionsMetadata();
@@ -119,10 +140,8 @@ public class KafkaMessageCheckTool implements Runnable {
       if(partitionMetas.size() < 1){
         Thread.sleep(100*tries);
       }
-    }while(partitionMetas.size() < 1 && tries < maxPartitionCountRetries);
+    }while(partitionMetas.size() < 1 && tries < maxRetries);
     kafkaTool.close();
-    
-    System.out.println("partitions: "+Integer.toString(partitionMetas.size()));
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
     for (int i = 0; i < partitionReader.length; i++) {
@@ -131,36 +150,8 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
-    /**
-     * 
-     * ------------------------------------------------------------------------
-Submit the dataflow hello-kafka-dataflow
-------------------------------------------------------------------------
-Wait time to finish: 60000msKafkaMessageCheckTool: Start running kafka message check tool.  Expecting 100 messages.
-
-partitions: 0
-INTERRUPT: false
-Expecting 100 messages.
-TOTAL: 0
-Partition length: 0
-last count: 0
-Partition length: 0
-last count: 0
-Partition length: 0
-last count: 0
-Partition length: 0
-last count: 0
-Partition length: 0
-last count: 0
-Read count: 0(Stop)
-     */
-    System.out.print("INTERRUPT: ");
-    System.out.println(interrupt);
-    System.out.println("Expecting "+Integer.toString(this.expectNumberOfMessage)+ " messages.");
-    System.out.println("TOTAL: "+Integer.toString(messageCounter.getTotal()));
-    System.out.println("Partition length: "+Integer.toString(partitionReader.length));
     
-    while (messageCounter.getTotal() < expectNumberOfMessage && !interrupt) {
+    while (messageCounter.getTotal() < expectNumberOfMessage*partitionReader.length && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages;
         try{
@@ -170,7 +161,6 @@ Read count: 0(Stop)
           continue;
         }
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
-        System.out.println("Just read: "+Integer.toString(messageCounter.getTotal()));
       }
       if (lastCount == messageCounter.getTotal()) {
         cannotReadCount++;
@@ -179,10 +169,6 @@ Read count: 0(Stop)
       }
       if(cannotReadCount >= 5) interrupt = true;
       lastCount = messageCounter.getTotal();
-      System.out.println("last count: "+Integer.toString(lastCount));
-      System.out.println("Cannot read count: "+Integer.toString(cannotReadCount));
-      System.out.print("interrupt: ");
-      System.out.println(interrupt);
     }
     //Run the last fetch to find the duplicated messages if there are some
     for (int k = 0; k < partitionReader.length; k++) {
@@ -194,8 +180,47 @@ Read count: 0(Stop)
       partitionReader[k].commit();
       partitionReader[k].close();
     }
+    
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
     readDuration.stop();
+    
+    TapProducer tapProducer = null;
+    TestSet testSet =null;
+    if(tapEnabled){
+      tapProducer = TapProducerFactory.makeTapJunitProducer(tapFile);
+      testSet = new TestSet();
+      int testNum=0;
+      //Create test result per partition
+      for(Integer i: messageCounter.getCounter().keySet()){
+        TestResult t = null;
+        if( messageCounter.getPartitionCount(i) == expectNumberOfMessage){
+          t = new TestResult( StatusValues.OK, ++testNum );
+        }
+        else{
+          t = new TestResult( StatusValues.NOT_OK, ++testNum );
+        }
+        
+        t.setDescription( "Partition: "+Integer.toString(i) +
+                          " Expected Messages: "+ Integer.toString(expectNumberOfMessage)+
+                          " Messages Read: "+ messageCounter.getPartitionCount(i));
+        testSet.addTestResult( t );
+      }
+      
+      //Create test result for total messages
+      TestResult t = null;
+      if(messageCounter.getTotal() == partitionReader.length * expectNumberOfMessage){
+        t = new TestResult( StatusValues.OK, ++testNum );
+      }
+      else{
+        t = new TestResult( StatusValues.NOT_OK, ++testNum );
+      }
+      t.setDescription(" Total Expected Messages: "+ Integer.toString(partitionReader.length * expectNumberOfMessage)+
+          " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
+      testSet.addTestResult( t );
+      
+      tapProducer.dump(testSet, new File(tapFile));
+      System.out.println(tapProducer.dump(testSet));
+    }
   }
 
   public void report(KafkaTopicReport report) {
@@ -211,6 +236,10 @@ Read count: 0(Stop)
 
     public int getTotal() {
       return totalMessages;
+    }
+    
+    public Map<Integer, Integer> getCounter(){
+      return counters;
     }
 
     public int getPartitionCount(int partition) {
@@ -243,5 +272,4 @@ Read count: 0(Stop)
       }
     }
   }
-
 }

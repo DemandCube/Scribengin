@@ -12,6 +12,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.TopicCommand;
+import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetRequest;
@@ -201,5 +203,13 @@ public class KafkaTool implements Closeable {
   
   static interface Operation<T> {
     public T execute() throws Exception;
+  }
+
+  public void createTopic(String[] args) {    
+    TopicCommandOptions options = new TopicCommandOptions(args);
+    ZkClient client = new ZkClient(zkConnects, 10000, 10000, ZKStringSerializer$.MODULE$);
+    TopicCommand.createTopic(client, options);
+
+    client.close();
   }
 }
