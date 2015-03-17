@@ -24,8 +24,9 @@ function print_usage() {
   echo "  wait-before-start		:Time to wait before start kafka or zookeeper, Measured in seconds ( Example: wait-before-start=10 )"  
   echo "  zk-server			:Zokeeper servers, Multiple values can be given in comma seperated value ( Example: zk-server=zookeeper-1,zookeeper-2 )"
   echo "  kafka-broker                  :Kafka brokers, Multiple values can be given in comma seperated value ( Example: kafka-broker=kafka-1,kafka-2 )"
+  echo "  min-zk			:The minimum number of ZK nodes that must always stay up. (This is optional, by default it will keep 1 Zk node always alive)"
+  echo "  min-kafka			:The minimum number of kafka brokers that must always stay up. (This is optional, by default it will keep 1 kafka broker always alive)"
   echo " "
-
 }
 
 function has_opt() {
@@ -106,6 +107,43 @@ function h2() {
   echo $@ | sed -e 's/./\./g'
 }
 
+#Parse /etc/hosts file to get the cluster hostname
+function parse_hosts_file() {
+  FILENAME="/etc/hosts"
+  while read LINE
+  do
+    if [[ $LINE == \#* ]]  #Ignore the comment line
+    then
+      continue 
+    elif [[ $LINE == "" ]]  #Ignore the empty line
+    then
+      continue 
+    fi
+    
+      arrLine=(${LINE// / }) #split line that contains '$IP $HOSTNAME' format
+      hostname=${arrLine[1]}
+
+      if [[ $hostname ==  $'hadoop'* ]]
+      then  
+        HADOOP_SERVERS="$HADOOP_SERVERS $hostname"
+        if [[ $hostname ==  $'hadoop-master'* ]]; then  
+          HADOOP_MASTER_SERVERS="$HADOOP_MASTER_SERVERS $hostname"
+        elif [[ $hostname ==  $'hadoop-worker'* ]]; then
+          HADOOP_WORKER_SERVERS="$HADOOP_WORKER_SERVERS $hostname"
+        fi
+      elif [[ $hostname ==  $'zookeeper'* ]]
+      then
+        ZOOKEEPER_SERVERS="$ZOOKEEPER_SERVERS $hostname"
+      elif [[ $hostname ==  $'kafka'* ]]
+      then
+        KAFKA_SERVERS="$KAFKA_SERVERS $hostname"
+      fi
+  done < $FILENAME
+  
+  ALL_SERVERS="$HADOOP_SERVERS $ZOOKEEPER_SERVERS $KAFKA_SERVERS"
+
+}
+
 function servers_exec() {
   servers=$1
   servers=`echo "$servers" | tr ',' ' '`
@@ -171,7 +209,7 @@ function zookeeper_stop() {
 }
 
 function zookeeper_restart() {
-  zk_server=$(get_opt --broker 'zookeeper-1' $@)
+  zk_server=$(get_opt --zk-server 'zookeeper-1' $@)
   wait_before_start=$(get_opt --wait-before-start 10 $@)
   clean=$(has_opt --clean $@)
   
@@ -189,11 +227,12 @@ function zookeeper_restart() {
 
 function select_random_servers() {
   count=0
-  SERVERS=($@)
-  num_server_to_die=$(shuf -i 1-${#SERVERS[@]} -n 1)
+  IFS=',' read -ra SERVERS <<< "$1"
+  random_num_of_server_to_die=$(shuf -i 1-${#SERVERS[@]} -n 1)
+  actual_max_num_of_server_to_die=$2
   
   SELECTED_SERVERS=""
-  for (( c=1; c<=$num_server_to_die; c++ ))
+  for (( c=1; c<=$random_num_of_server_to_die; c++ ))
   do
    i=$(shuf -i 1-${#SERVERS[@]} -n 1)
    i=`expr $i - 1`
@@ -201,6 +240,9 @@ function select_random_servers() {
    SELECTED_SERVERS="$SELECTED_SERVERS,$s"
    unset SERVERS[$i]
    SERVERS=("${SERVERS[@]}")
+   if [ "$actual_max_num_of_server_to_die" -eq "$c" ] ; then
+     break
+   fi
   done
 
   echo "$SELECTED_SERVERS"
@@ -208,65 +250,69 @@ function select_random_servers() {
 
 function kafka_failure_simulator() {
   temp_kafka_time=0
-  KAFKA_SERVERS=`echo "$1" | tr ',' ' '`
-  kafka_failure_time=$2
-  wait_before_start=$3
-  
-  h1 "Kafka fail in $kafka_failure_time"
+  kafka_failure_time=$(get_opt kafka-failure 60 $@)
+  wait_before_start=$(get_opt wait-before-start 10 $@)
+  brokers_to_kill=$(get_opt kafka-broker '' $@)
+  min_kafka=$(get_opt min-kafka 1 $@)
+  KAFKA_SERVERS_ARRAY=($KAFKA_SERVERS)
+  actual_max_num_of_server_to_die=`expr ${#KAFKA_SERVERS_ARRAY[@]} - $min_kafka`
 
-  while true;
-  do
-    sleep 1
-    (( temp_kafka_time++ ))
+  if [ "$actual_max_num_of_server_to_die" -gt 0 ] ; then
+    h1 "Kafka fail in $kafka_failure_time"
 
-    if [ "$kafka_failure_time" -eq "$temp_kafka_time" ] ; then
-      servers=$(select_random_servers "$KAFKA_SERVERS")
-      kafka_restart "--broker=$servers --wait-before-start=$wait_before_start"
-      temp_kafka_time=0
-    fi
-  done
-
+    while true;
+    do
+      sleep 1
+      (( temp_kafka_time++ ))
+      if [ "$kafka_failure_time" -eq "$temp_kafka_time" ] ; then
+        servers=$(select_random_servers "$brokers_to_kill" "$actual_max_num_of_server_to_die")
+        kafka_restart "--broker=$servers --wait-before-start=$wait_before_start"
+        temp_kafka_time=0
+      fi
+    done
+  fi
 }
 
 function zk_failure_simulator() {
   temp_zk_time=0
-  ZK_SERVERS=`echo "$1" | tr ',' ' '`
-  zk_failure_time=$2
-  wait_before_start=$3
+  zk_failure_time=$(get_opt zk-failure 180 $@)
+  wait_before_start=$(get_opt wait-before-start 10 $@)
+  zk_to_kill=$(get_opt zk-server '' $@)
+  min_zk=$(get_opt min-zk 1 $@)
+  ZOOKEEPER_SERVERS_ARRAY=($ZOOKEEPER_SERVERS)
+  actual_max_num_of_server_to_die=`expr ${#ZOOKEEPER_SERVERS_ARRAY[@]} - $min_zk`
 
-  h1 "Zookeeper fail in $zk_failure_time"
+  if [ "$actual_max_num_of_server_to_die" -gt 0 ] ; then
+    h1 "Zookeeper fail in $zk_failure_time"
 
-  while true;
-  do
-    sleep 1
-    (( temp_zk_time++ ))
-    
-    if [ "$zk_failure_time" -eq "$temp_zk_time" ] ; then
-      servers=$(select_random_servers "$ZK_SERVERS")
-      zookeeper_restart "--zk-server=$servers --wait-before-start=$wait_before_start"
-      temp_zk_time=0
-    fi
-  done
+    while true;
+    do
+      sleep 1
+      (( temp_zk_time++ ))
+      if [ "$zk_failure_time" -eq "$temp_zk_time" ] ; then
+        servers=$(select_random_servers "$zk_to_kill" "$actual_max_num_of_server_to_die")
+        zookeeper_restart "--zk-server=$servers --wait-before-start=$wait_before_start"
+        temp_zk_time=0
+      fi
+    done
+  fi
 
 }
 
 function start_simulator() {
-  zk_failure_time=$(get_opt zk-failure 180 $@)
-  kafka_failure_time=$(get_opt kafka-failure 60 $@)
-  wait_before_start=$(get_opt wait-before-start 10 $@)
   zk_server=$(get_opt zk-server '' $@)
   kafka_broker=$(get_opt kafka-broker '' $@) 
 
   if [ ! -z "$kafka_broker" ]; then
-    kafka_failure_simulator "$kafka_broker" "$kafka_failure_time" "$wait_before_start" &
+    kafka_failure_simulator $@ &
   fi
   if [ ! -z "$zk_server" ]; then
-    zk_failure_simulator "$zk_server" "$zk_failure_time" "$wait_before_start" &
+    zk_failure_simulator $@ &
   fi
-  
   wait
 }
 
+parse_hosts_file
 # get sub command
 COMMAND=$1
 shift
@@ -294,3 +340,5 @@ elif [ "$COMMAND" = "help" ] ; then
 else
   print_usage
 fi
+
+
