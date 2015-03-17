@@ -1,24 +1,18 @@
 package com.neverwinterdp.kafka.producer;
 
-import static scala.collection.JavaConversions.asScalaBuffer;
-import static scala.collection.JavaConversions.asScalaMap;
-import static scala.collection.JavaConversions.asScalaSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kafka.admin.PreferredReplicaLeaderElectionCommand;
-import kafka.admin.ReassignPartitionsCommand;
 import kafka.cluster.Broker;
-import kafka.common.TopicAndPartition;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
-import kafka.utils.ZKStringSerializer$;
 
-import org.I0Itec.zkclient.ZkClient;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
@@ -26,10 +20,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import scala.collection.Seq;
-import scala.collection.mutable.Buffer;
-import scala.collection.mutable.Set;
 
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
@@ -43,10 +33,7 @@ import com.neverwinterdp.server.kafka.KafkaCluster;
  * 
  * @author Tuan
  */
-//TODO Test simple topic rebalance. i.e add a node to ISR and make new node leader
-//TODO test on the fly leader change
-//TODO Test total topic rebalance.
-//TODO test add partition
+
 public class KafkaProducerBugsUnitTest {
 
   static {
@@ -113,7 +100,7 @@ public class KafkaProducerBugsUnitTest {
       checkTool.setInterrupt(true);
       Thread.sleep(3000);
     }
-    Assert.assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
+    assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
 
   /**
@@ -135,10 +122,12 @@ public class KafkaProducerBugsUnitTest {
     // while writing, rebalance topic to have isr {1,2,3} and have 1 as leader
     DefaultKafkaWriter writer = createKafkaWriter();
     MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
+    int leaderId1=0;
+    int leaderId2=0;
     for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
       writer.send("test", 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
-
       if (i == 5) {
+        leaderId1 = tool.findPartitionMetadata(NAME, 0).leader().id();
         KafkaLeaderElector leaderElector = new KafkaLeaderElector("test", 0, tool);
         new Thread(leaderElector).start();
       }
@@ -152,35 +141,45 @@ public class KafkaProducerBugsUnitTest {
       };
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
     new JCommander(checkTool, checkArgs);
-    //KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
+
     checkTool.runAsDeamon();
     if (checkTool.waitForTermination(10000)) {
       checkTool.setInterrupt(true);
       Thread.sleep(3000);
     }
+    leaderId2= tool.findPartitionMetadata(NAME, 0).leader().id();
+
+    
+    System.out.println("initial leader "+ leaderId1);
+    System.out.println("new leader "+ leaderId2);
+    //ensure that leader election worked
+    assertNotEquals(leaderId1, leaderId2);
+    assertEquals(1, leaderId2);
+
     tool.close();
 
     System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
     System.out.println("read messages = " + checkTool.getMessageCounter().getTotal());
-    Assert.assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
+    assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
 
   /**
    * This unit test show that the kafka producer loses messages when topic is rebalanced to new brokers.
    * It doesn't have the capability to 'know' the new leader as the new leader was not among the initial list.
-   * and another process shutdown the kafka partition leader
    * 
    * While writing to kafka we move the topic/partition to new brokers
    */
   @Test
   public void testTotalTopicRebalance() throws Exception {
     DefaultKafkaWriter writer = createKafkaWriter();
+    KafkaTool tool = new KafkaTool(NAME, cluster.getZKConnect());
+    tool.connect();
     MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
     for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
 
       writer.send("test", 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
       if (i == 5) {
-        KafkaTopicRebalancer leaderKiller = new KafkaTopicRebalancer("test", 0);
+        KafkaTopicRebalancer leaderKiller = new KafkaTopicRebalancer("test", 0, tool);
         new Thread(leaderKiller).start();
       }
     }
@@ -198,6 +197,7 @@ public class KafkaProducerBugsUnitTest {
       checkTool.setInterrupt(true);
       Thread.sleep(3000);
     }
+    tool.close();
     System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
     System.out.println("read messages = " + checkTool.getMessageCounter().getTotal());
     Assert.assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
@@ -268,38 +268,23 @@ public class KafkaProducerBugsUnitTest {
 
     private int partition;
     private String topic;
-    private String zkConnectString;
     List<Object> remainingBrokers;
+    private KafkaTool tool;
 
-    public KafkaTopicRebalancer(String topic, int partition) {
+    public KafkaTopicRebalancer(String topic, int partition, KafkaTool tool) {
       super();
       this.topic = topic;
       this.partition = partition;
-      this.zkConnectString = cluster.getZKConnect();
+      this.tool= tool;
       remainingBrokers = getRemainingBrokers();
       logger.info("hahahahah");
     }
 
     @Override
-    //TODO move this magic to KafkaTool
     public void run() {
-      logger.info("starting our magic");
-
-      System.out.println("remaining brokers " + remainingBrokers);
-      ZkClient client = new ZkClient(zkConnectString, 10000, 10000, ZKStringSerializer$.MODULE$);
       try {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
-
-        Buffer<Object> seqs = asScalaBuffer(remainingBrokers);
-        Map<TopicAndPartition, Seq<Object>> map = new HashMap<>();
-        map.put(topicAndPartition, seqs);
-        scala.collection.mutable.Map<TopicAndPartition, Seq<Object>> x = asScalaMap(map);
-        ReassignPartitionsCommand command = new ReassignPartitionsCommand(client, x);
-
-        System.out.println("reasign " + command.reassignPartitions());
+        System.out.println("reasign " + tool.reassignPartition(topic, partition, remainingBrokers));
         Thread.sleep(500);
-
-        client.close();
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -330,40 +315,25 @@ public class KafkaProducerBugsUnitTest {
     private int partition;
     private String topic;
     private KafkaTool tool;
-    private String zkConnectString;
-    
 
     public KafkaLeaderElector(String topic, int partition, KafkaTool tool) {
       super();
       this.topic = topic;
       this.partition = partition;
       this.tool=tool;
-      this.zkConnectString = cluster.getZKConnect();
-    }
+     }
 
     @Override
-    //TODO move this to KafkaTool
     public void run() {
-      logger.info("starting our magic");
-
-      ZkClient client = new ZkClient(zkConnectString, 10000, 10000, ZKStringSerializer$.MODULE$);
       try {
-        KafkaTopicRebalancer topicRebalancer = new KafkaTopicRebalancer(topic, partition);
+        KafkaTopicRebalancer topicRebalancer = new KafkaTopicRebalancer(topic, partition, tool);
         topicRebalancer.setNewBrokers(1, 2, 3);
         topicRebalancer.run();
 
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
-        //move leader to broker 1
-        Set<TopicAndPartition> topicsAndPartitions = asScalaSet(Collections.singleton(topicAndPartition));
-        PreferredReplicaLeaderElectionCommand commands = new PreferredReplicaLeaderElectionCommand(client,
-            topicsAndPartitions);
-
-        commands.moveLeaderToPreferredReplica();
-        client.close();
+        tool.moveLeaderToPreferredReplica(topic, partition);
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
-
   }
 }

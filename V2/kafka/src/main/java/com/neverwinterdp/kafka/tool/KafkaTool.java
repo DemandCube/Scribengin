@@ -1,5 +1,9 @@
 package com.neverwinterdp.kafka.tool;
 
+import static scala.collection.JavaConversions.asScalaBuffer;
+import static scala.collection.JavaConversions.asScalaMap;
+import static scala.collection.JavaConversions.asScalaSet;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +16,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.PreferredReplicaLeaderElectionCommand;
+import kafka.admin.ReassignPartitionsCommand;
 import kafka.admin.TopicCommand;
 import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.PartitionOffsetRequestInfo;
@@ -30,6 +36,10 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+
+import scala.collection.Seq;
+import scala.collection.mutable.Buffer;
+import scala.collection.mutable.Set;
 
 import com.neverwinterdp.kafka.BrokerRegistration;
 
@@ -213,4 +223,33 @@ public class KafkaTool implements Closeable {
 
     client.close();
   }
+
+  public void moveLeaderToPreferredReplica(String topic, int partition) {
+    ZkClient client = new ZkClient(zkConnects, 10000, 10000, ZKStringSerializer$.MODULE$);
+    
+    TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
+    //move leader to broker 1
+    Set<TopicAndPartition> topicsAndPartitions = asScalaSet(Collections.singleton(topicAndPartition));
+    PreferredReplicaLeaderElectionCommand commands = new PreferredReplicaLeaderElectionCommand(client,
+        topicsAndPartitions);
+
+    commands.moveLeaderToPreferredReplica();
+    
+    client.close();
+    
+  }
+
+  public boolean reassignPartition(String topic, int partition, List<Object> remainingBrokers) {
+    ZkClient client = new ZkClient(zkConnects, 10000, 10000, ZKStringSerializer$.MODULE$);
+    
+    TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
+
+    Buffer<Object> seqs = asScalaBuffer(remainingBrokers);
+    Map<TopicAndPartition, Seq<Object>> map = new HashMap<>();
+    map.put(topicAndPartition, seqs);
+    scala.collection.mutable.Map<TopicAndPartition, Seq<Object>> x = asScalaMap(map);
+    ReassignPartitionsCommand command = new ReassignPartitionsCommand(client, x);
+    
+    return command.reassignPartitions();
+   }
 }
