@@ -326,6 +326,9 @@ function kafka_start() {
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
     kafka_clean
+    if $withzk ; then
+      zookeeper_clean
+    fi
   fi
 
   if $javaagent ; then
