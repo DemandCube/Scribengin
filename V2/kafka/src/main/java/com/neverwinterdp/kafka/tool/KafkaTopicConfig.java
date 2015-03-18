@@ -21,6 +21,7 @@ public class KafkaTopicConfig {
   @Parameter(names = "--replication", description = "The number of the replication for the topic")
   public int    replication = 1;
   
+  
   @ParametersDelegate
   public Producer producerConfig = new Producer();
   
@@ -35,6 +36,7 @@ public class KafkaTopicConfig {
   }
   
   static public class Producer {
+    
     @Parameter(names = "--send-writer-type", description = "The default producer writer or reliable producer writer(ack)")
     public String writerType = "default";
     
@@ -63,6 +65,15 @@ public class KafkaTopicConfig {
     
     @Parameter(names = "--consume-max", description = "The max number of messages to consume")
     public int   consumeMax = 100000000;
+    
+    @Parameter(names = "--consume-connect-retries", description = "The max number of times to try connecting while number of partitions is < 1")
+    public int   connectRetries = 20;
+    
+    @Parameter(names = "--tap-enable", description = "If set, outputs TAP")
+    public boolean    tapEnabled = false;
+    
+    @Parameter(names = "--tap-file", description = "If TAP is enabled, then output results to this file.")
+    public String tapFile = "KafkaMessageCheckTool.xml";
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
     public Map<String, String> consumerProperties = new HashMap<String, String>();

@@ -12,7 +12,13 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+<<<<<<< HEAD
+import com.neverwinterdp.scribengin.sink.SinkDescriptor;
+import com.neverwinterdp.scribengin.source.SourceDescriptor;
+=======
+import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+>>>>>>> 7bf2e0bf9bd519e1a8ff071187990fcd3d173ccf
 
 
 public class KafkaDataflowTest extends DataflowTest {

@@ -77,7 +77,7 @@ public class KafkaTool implements Closeable {
     }
   }
   
-  public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
+  public void createTopic(String topicName, int numOfReplication, int numPartitions)  {
     // Create a ZooKeeper client
     int sessionTimeoutMs = 10000;
     int connectionTimeoutMs = 10000;
@@ -85,7 +85,11 @@ public class KafkaTool implements Closeable {
     // Create a topic named "myTopic" with 8 partitions and a replication factor of 3
     Properties topicConfig = new Properties();
     AdminUtils.createTopic(zkClient, topicName, numPartitions, numOfReplication, topicConfig);
-    Thread.sleep(3000);
+    try {
+      Thread.sleep(3000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     zkClient.close();
   }
   
@@ -148,6 +152,7 @@ public class KafkaTool implements Closeable {
         if(topicMetadatas.size() != 1) {
           throw new Exception("Expect to find 1 topic " + topic + ", but found " + topicMetadatas.size());
         }
+        
         return topicMetadatas.get(0);
       }
     };

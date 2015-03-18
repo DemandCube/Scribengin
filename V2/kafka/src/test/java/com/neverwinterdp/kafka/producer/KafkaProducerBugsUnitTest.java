@@ -31,6 +31,7 @@ import scala.collection.Seq;
 import scala.collection.mutable.Buffer;
 import scala.collection.mutable.Set;
 
+import com.beust.jcommander.JCommander;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.server.Server;
@@ -100,7 +101,13 @@ public class KafkaProducerBugsUnitTest {
     }
     writer.close();
     System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
+    String[] checkArgs = {"--topic", "test",
+        "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
+        "--zk-connect", cluster.getZKConnect(),
+      };
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    new JCommander(checkTool, checkArgs);
+    //KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
     checkTool.runAsDeamon();
     if (checkTool.waitForTermination(10000)) {
       checkTool.setInterrupt(true);
@@ -139,7 +146,13 @@ public class KafkaProducerBugsUnitTest {
     writer.close();
 
     // Thread.sleep(5000);
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
+    String[] checkArgs = {"--topic", "test",
+        "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
+        "--zk-connect", cluster.getZKConnect(),
+      };
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    new JCommander(checkTool, checkArgs);
+    //KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
     checkTool.runAsDeamon();
     if (checkTool.waitForTermination(10000)) {
       checkTool.setInterrupt(true);
@@ -173,7 +186,13 @@ public class KafkaProducerBugsUnitTest {
     }
     writer.close();
 
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
+    String[] checkArgs = {"--topic", "test",
+        "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
+        "--zk-connect", cluster.getZKConnect(),
+      };
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    new JCommander(checkTool, checkArgs);
+    //KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
     checkTool.runAsDeamon();
     if (checkTool.waitForTermination(10000)) {
       checkTool.setInterrupt(true);
