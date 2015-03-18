@@ -182,7 +182,7 @@ public class KafkaMessageCheckTool implements Runnable {
       
       //Create test result for total messages read
       TestResult t = null;
-      if(messageCounter.getTotal() == topicConfig.consumerConfig.consumeMax){
+      if(messageCounter.getTotal() >= topicConfig.consumerConfig.consumeMax){
         t = new TestResult( StatusValues.OK, ++testNum );
       }
       else{
