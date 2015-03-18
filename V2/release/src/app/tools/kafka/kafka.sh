@@ -38,7 +38,7 @@ if $cygwin; then
 fi
 
 function kafka_stability_check() {
-  MAIN_CLASS="com.neverwinterdp.kafka.tool.StabilityCheckTool"
+  MAIN_CLASS="com.neverwinterdp.kafka.tool.KafkaTopicCheckTool"
   $JAVACMD -Djava.ext.dirs=$APP_DIR/libs $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
 }
 
