@@ -9,8 +9,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class HelloKafkaDataflowBuilder {
   private String     name  = "hello";
@@ -46,21 +45,21 @@ public class HelloKafkaDataflowBuilder {
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
     
-    SourceDescriptor sourceDescriptor = new SourceDescriptor("KAFKA") ;
-    sourceDescriptor.attribute("name", name);
-    sourceDescriptor.attribute("topic", topic + ".source");
-    sourceDescriptor.attribute("zk.connect", zkConnect);
-    sourceDescriptor.attribute("broker.list", brokerList);
-    dflDescriptor.setSourceDescriptor(sourceDescriptor);
+    StorageDescriptor storageDescriptor = new StorageDescriptor("KAFKA") ;
+    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("topic", topic + ".source");
+    storageDescriptor.attribute("zk.connect", zkConnect);
+    storageDescriptor.attribute("broker.list", brokerList);
+    dflDescriptor.setSourceDescriptor(storageDescriptor);
     
-    SinkDescriptor defaultSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor defaultSink = new StorageDescriptor("KAFKA");
     defaultSink.attribute("name", name);
     defaultSink.attribute("topic", topic + ".sink.default");
     defaultSink.attribute("zk.connect", zkConnect);
     defaultSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("default", defaultSink);
     
-    SinkDescriptor invalidSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor invalidSink = new StorageDescriptor("KAFKA");
     invalidSink.attribute("name", name);
     invalidSink.attribute("topic", topic + ".sink.invalid");
     invalidSink.attribute("zk.connect", zkConnect);

@@ -3,8 +3,7 @@ package com.neverwinterdp.command.server;
 import java.util.Map;
 
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class DescriptorBuilder {
 
@@ -99,7 +98,7 @@ public class DescriptorBuilder {
    * @param request
    * @return
    */
-  public static SourceDescriptor createKafkaSourceDescriptor(Map<String,String>  request){
+  public static StorageDescriptor createKafkaSourceDescriptor(Map<String,String>  request){
     String type = request.get("source-Type");
     String name = request.get("source-Name");
     String topic = request.get("source-Topic");
@@ -122,7 +121,7 @@ public class DescriptorBuilder {
       brokerList = DescriptorBuilderDefaults._kafkaBrokerList;
     }
     
-    SourceDescriptor sourceDescriptor = new SourceDescriptor(type) ;
+    StorageDescriptor sourceDescriptor = new StorageDescriptor(type) ;
     sourceDescriptor.attribute("name", name);
     sourceDescriptor.attribute("topic", topic);
     sourceDescriptor.attribute("zk.connect", zkConnect);
@@ -138,7 +137,7 @@ public class DescriptorBuilder {
    * @param prefix
    * @return
    */
-  public static SinkDescriptor createKafkaSinkDescriptor(Map<String,String>  request, String prefix){
+  public static StorageDescriptor createKafkaSinkDescriptor(Map<String,String>  request, String prefix){
     String type = request.get(prefix+"-Type");
     String name = request.get(prefix+"-Name");
     String topic = request.get(prefix+"-Topic");
@@ -161,7 +160,7 @@ public class DescriptorBuilder {
       brokerList = DescriptorBuilderDefaults._kafkaBrokerList;
     }
     
-    SinkDescriptor sink = new SinkDescriptor(type) ;
+    StorageDescriptor sink = new StorageDescriptor(type) ;
     sink.attribute("name", name);
     sink.attribute("topic", topic);
     sink.attribute("zk.connect", zkConnect);

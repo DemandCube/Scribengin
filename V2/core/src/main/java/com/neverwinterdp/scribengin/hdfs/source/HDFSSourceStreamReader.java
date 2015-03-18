@@ -11,9 +11,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.source.CommitPoint;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.source.CommitPoint;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 import com.neverwinterdp.util.JSONSerializer;
 
 /**
@@ -22,7 +22,7 @@ import com.neverwinterdp.util.JSONSerializer;
 public class HDFSSourceStreamReader implements SourceStreamReader {
   private String name ;
   private FileSystem fs;
-  private SourceStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
   private List<Path> dataPaths = new ArrayList<Path>();
   private int currentDataPathPos = -1 ;
   private FSDataInputStream currentDataPathInputStream;
@@ -31,7 +31,7 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
   private int currPosition ;
   private CommitPoint lastCommitInfo;
   
-  public HDFSSourceStreamReader(String name, FileSystem fs, SourceStreamDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSourceStreamReader(String name, FileSystem fs, StreamDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this.name = name ;
     this.fs = fs;
     this.descriptor = descriptor;

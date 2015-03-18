@@ -9,8 +9,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 
 public class HelloHDFSDataflowBuilder {
@@ -38,11 +37,11 @@ public class HelloHDFSDataflowBuilder {
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
-    SourceDescriptor sourceDescriptor = new SourceDescriptor("HDFS", dataDir + "/source") ;
-    dflDescriptor.setSourceDescriptor(sourceDescriptor);
-    SinkDescriptor defaultSink = new SinkDescriptor("HDFS", dataDir + "/sink");
+    StorageDescriptor storageDescriptor = new StorageDescriptor("HDFS", dataDir + "/source") ;
+    dflDescriptor.setSourceDescriptor(storageDescriptor);
+    StorageDescriptor defaultSink = new StorageDescriptor("HDFS", dataDir + "/sink");
     dflDescriptor.addSinkDescriptor("default", defaultSink);
-    SinkDescriptor invalidSink = new SinkDescriptor("HDFS", dataDir + "/invalid-sink");
+    StorageDescriptor invalidSink = new StorageDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
     return scribenginClient.submit(dflDescriptor) ;

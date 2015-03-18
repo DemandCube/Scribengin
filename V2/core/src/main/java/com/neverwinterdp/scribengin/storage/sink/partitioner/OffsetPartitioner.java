@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink.partitioner;
+package com.neverwinterdp.scribengin.storage.sink.partitioner;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.math.LongMath.divide;

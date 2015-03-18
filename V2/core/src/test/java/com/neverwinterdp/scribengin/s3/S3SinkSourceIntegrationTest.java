@@ -7,9 +7,9 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.s3.sink.S3Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class S3SinkSourceIntegrationTest {
   static public String BUCKET_NAME = "sink-source-test";
@@ -37,7 +37,7 @@ public class S3SinkSourceIntegrationTest {
   
   @Test
   public void testSink() throws Exception {
-    SinkDescriptor sinkDescriptor = new SinkDescriptor() ;
+    StorageDescriptor sinkDescriptor = new StorageDescriptor() ;
     sinkDescriptor.attribute("s3.bucket.name",  BUCKET_NAME);
     sinkDescriptor.attribute("s3.storage.path", STORAGE_PATH);
     S3Sink sink = new S3Sink(s3Client, sinkDescriptor);

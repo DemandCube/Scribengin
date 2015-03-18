@@ -2,16 +2,16 @@ package com.neverwinterdp.scribengin.kafka.sink;
 
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 //TODO: Allow the writer write to the assigned partition and configure the send time out
 public class KafkaSinkStreamWriter implements SinkStreamWriter {
-  private SinkStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
   private DefaultKafkaWriter defaultKafkaWriter ;
   private String topic;
   
-  public KafkaSinkStreamWriter(SinkStreamDescriptor descriptor) {
+  public KafkaSinkStreamWriter(StreamDescriptor descriptor) {
     this.descriptor = descriptor;
     this.defaultKafkaWriter = new DefaultKafkaWriter(descriptor.attribute("name"), descriptor.attribute("broker.list")) ;
     this.topic = descriptor.attribute("topic");

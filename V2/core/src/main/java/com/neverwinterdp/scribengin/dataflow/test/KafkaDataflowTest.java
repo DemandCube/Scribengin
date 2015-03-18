@@ -9,8 +9,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 //TODO: replace by the kafka message send tool and kafka message check tool
 public class KafkaDataflowTest extends DataflowTest {
@@ -55,21 +54,21 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
 
-    SourceDescriptor sourceDescriptor = new SourceDescriptor("KAFKA") ;
-    sourceDescriptor.attribute("name", name);
-    sourceDescriptor.attribute("topic", SOURCE_TOPIC);
-    sourceDescriptor.attribute("zk.connect", zkConnect);
-    sourceDescriptor.attribute("broker.list", brokerList);
-    dflDescriptor.setSourceDescriptor(sourceDescriptor);
+    StorageDescriptor storageDescriptor = new StorageDescriptor("KAFKA") ;
+    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("topic", SOURCE_TOPIC);
+    storageDescriptor.attribute("zk.connect", zkConnect);
+    storageDescriptor.attribute("broker.list", brokerList);
+    dflDescriptor.setSourceDescriptor(storageDescriptor);
 
-    SinkDescriptor defaultSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor defaultSink = new StorageDescriptor("KAFKA");
     defaultSink.attribute("name", name);
     defaultSink.attribute("topic", DEFAULT_SINK_TOPIC);
     defaultSink.attribute("zk.connect", zkConnect);
     defaultSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("default", defaultSink);
 
-    SinkDescriptor invalidSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor invalidSink = new StorageDescriptor("KAFKA");
     invalidSink.attribute("name", name);
     invalidSink.attribute("topic", INVALID_SINK_TOPIC);
     invalidSink.attribute("zk.connect", zkConnect);

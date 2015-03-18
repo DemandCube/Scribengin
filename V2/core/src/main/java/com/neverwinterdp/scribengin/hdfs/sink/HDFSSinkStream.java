@@ -5,23 +5,23 @@ import java.io.IOException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
 public class HDFSSinkStream implements SinkStream {
   private FileSystem fs ;
-  private SinkStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
   
   
   public HDFSSinkStream(FileSystem fs, Path path) throws IOException {
     this.fs = fs ;
-    descriptor = new SinkStreamDescriptor("HDFS", HDFSUtil.getStreamId(path), path.toString());
+    descriptor = new StreamDescriptor("HDFS", HDFSUtil.getStreamId(path), path.toString());
     init();
   }
   
-  public HDFSSinkStream(FileSystem fs, SinkStreamDescriptor descriptor) throws IOException {
+  public HDFSSinkStream(FileSystem fs, StreamDescriptor descriptor) throws IOException {
     this.fs = fs;
     this.descriptor = descriptor;
     init() ;
@@ -32,7 +32,7 @@ public class HDFSSinkStream implements SinkStream {
     if(!fs.exists(path)) fs.mkdirs(path);
   }
   
-  public SinkStreamDescriptor getDescriptor() { return this.descriptor ; }
+  public StreamDescriptor getDescriptor() { return this.descriptor ; }
   
   synchronized public void delete() throws Exception {
   }

@@ -3,11 +3,11 @@ package com.neverwinterdp.scribengin.hdfs;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkFactory;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class HDFSSourceGenerator {
   private int numOfStream = 5;
@@ -16,7 +16,7 @@ public class HDFSSourceGenerator {
   
   public void generateSource(FileSystem fs, String sourceDir) throws Exception {
     SinkFactory sinkFactory = new SinkFactory(fs);
-    SinkDescriptor sinkDescriptor = new SinkDescriptor("hdfs", sourceDir);
+    StorageDescriptor sinkDescriptor = new StorageDescriptor("hdfs", sourceDir);
     Sink sink = sinkFactory.create(sinkDescriptor);;
     for(int i = 0; i < numOfStream; i++) {
       generateStream(sink);

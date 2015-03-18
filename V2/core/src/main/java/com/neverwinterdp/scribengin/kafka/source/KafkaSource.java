@@ -8,28 +8,28 @@ import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
 import com.neverwinterdp.kafka.tool.KafkaTool;
-import com.neverwinterdp.scribengin.source.Source;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStream;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.source.Source;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
 
 public class KafkaSource implements Source {
-  private SourceDescriptor descriptor;
+  private StorageDescriptor descriptor;
   private Map<Integer, KafkaSourceStream> sourceStreams = new HashMap<Integer, KafkaSourceStream>();
   
   public KafkaSource(String name, String zkConnect, String topic) throws Exception {
-    SourceDescriptor descriptor = new SourceDescriptor("kafka");
+    StorageDescriptor descriptor = new StorageDescriptor("kafka");
     descriptor.attribute("name", name);
     descriptor.attribute("topic", topic);
     descriptor.attribute("zk.connect", zkConnect);
     init(descriptor);
   }
   
-  public KafkaSource(SourceDescriptor descriptor) throws Exception {
+  public KafkaSource(StorageDescriptor descriptor) throws Exception {
     init(descriptor);
   }
 
-  void init(SourceDescriptor descriptor) throws Exception {
+  void init(StorageDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
     KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("name"), descriptor.attribute("zk.connect"));
     kafkaTool.connect();
@@ -44,7 +44,7 @@ public class KafkaSource implements Source {
   }
   
   @Override
-  public SourceDescriptor getDescriptor() { return descriptor; }
+  public StorageDescriptor getDescriptor() { return descriptor; }
 
   /**
    * The stream id is equivalent to the partition id of the kafka
@@ -53,7 +53,7 @@ public class KafkaSource implements Source {
   public SourceStream getStream(int id) {  return sourceStreams.get(id); }
 
   @Override
-  public SourceStream getStream(SourceStreamDescriptor descriptor) {
+  public SourceStream getStream(StreamDescriptor descriptor) {
     return sourceStreams.get(descriptor.getId());
   }
 

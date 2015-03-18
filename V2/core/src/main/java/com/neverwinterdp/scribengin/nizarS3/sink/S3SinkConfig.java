@@ -2,7 +2,7 @@ package com.neverwinterdp.scribengin.nizarS3.sink;
 
 import java.util.Properties;
 
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 
 public class S3SinkConfig {
 
@@ -12,7 +12,7 @@ public class S3SinkConfig {
     this.props = props;
   }
 
-  public S3SinkConfig(SinkStreamDescriptor sinkStreamDescriptor) {
+  public S3SinkConfig(StreamDescriptor sinkStreamDescriptor) {
     props = new Properties();
     props.putAll(sinkStreamDescriptor);
     props.put("prefix" , sinkStreamDescriptor.getLocation());

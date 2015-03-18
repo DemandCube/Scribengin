@@ -15,11 +15,11 @@ import org.I0Itec.zkclient.ZkClient;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.RecordChecksum;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkFactory;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 //TODO: remove and use the check tool
 public class KafkaSourceGenerator {
@@ -68,15 +68,15 @@ public class KafkaSourceGenerator {
   public ExecutorService generate(String topic) throws Exception {
     createTopic(topic, numOfReplication, numPartitions);
     SinkFactory  sinkFactory = new SinkFactory(null);
-    SinkDescriptor sinkDescriptor = new SinkDescriptor("kafka");
-    sinkDescriptor.attribute("name", name);
-    sinkDescriptor.attribute("topic", topic);
-    sinkDescriptor.attribute("zk.connect", zkConnect);
+    StorageDescriptor storageDescriptor = new StorageDescriptor("kafka");
+    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("topic", topic);
+    storageDescriptor.attribute("zk.connect", zkConnect);
     KafkaTool client = new KafkaTool(name, zkConnect) ;
     client.connect();
-    sinkDescriptor.attribute("broker.list", client.getKafkaBrokerList());
+    storageDescriptor.attribute("broker.list", client.getKafkaBrokerList());
     client.close();
-    Sink sink = sinkFactory.create(sinkDescriptor);
+    Sink sink = sinkFactory.create(storageDescriptor);
     ExecutorService executorService = Executors.newFixedThreadPool(numPartitions);
     for(int k = 0; k < numPartitions; k++) {
       SinkStream stream = sink.newStream();

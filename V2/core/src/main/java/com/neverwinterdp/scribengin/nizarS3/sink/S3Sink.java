@@ -5,28 +5,28 @@ import java.util.LinkedHashMap;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 
 public class S3Sink implements Sink {
-  private SinkDescriptor descriptor;
+  private StorageDescriptor descriptor;
 
   private int idTracker = 0;
   private LinkedHashMap<Integer, S3SinkStream> streams = new LinkedHashMap<Integer, S3SinkStream>() ;
   private Injector injector;
   
   @Inject
-  public S3Sink(Injector injector,  SinkDescriptor descriptor) {
+  public S3Sink(Injector injector,  StorageDescriptor descriptor) {
     this.injector = injector;
     this.descriptor = descriptor;
     
   }
   
-  public SinkDescriptor getDescriptor() { return this.descriptor; }
+  public StorageDescriptor getDescriptor() { return this.descriptor; }
   
-  public SinkStream  getStream(SinkStreamDescriptor descriptor) throws Exception {
+  public SinkStream  getStream(StreamDescriptor descriptor) throws Exception {
     SinkStream stream = streams.get(descriptor.getId());
     if(stream == null) {
       throw new Exception("Cannot find the stream " + descriptor.getId()) ;
@@ -52,7 +52,7 @@ public class S3Sink implements Sink {
   synchronized public SinkStream newStream() throws IOException {
     int id = idTracker++;
     String location = descriptor.getLocation() + "/stream-" + id;
-    SinkStreamDescriptor streamDescriptor = new SinkStreamDescriptor("S3", id, location) ;
+    StreamDescriptor streamDescriptor = new StreamDescriptor("S3", id, location) ;
     streamDescriptor.putAll(descriptor);
     S3SinkStream stream = new S3SinkStream(injector, streamDescriptor);
     streams.put(streamDescriptor.getId(), stream) ;
@@ -62,6 +62,4 @@ public class S3Sink implements Sink {
   @Override
   public void close() throws Exception  { 
   }
-  
-
 }

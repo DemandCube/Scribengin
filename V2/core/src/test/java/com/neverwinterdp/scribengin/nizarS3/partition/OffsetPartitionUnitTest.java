@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.OffsetPartitioner;
 import com.neverwinterdp.scribengin.util.Label;
 
 public class OffsetPartitionUnitTest {
