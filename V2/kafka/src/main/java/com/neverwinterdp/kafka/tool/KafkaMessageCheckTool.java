@@ -28,26 +28,29 @@ public class KafkaMessageCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
-  private int expectNumberOfMessage;
   private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
   private boolean interrupt = false;
   private Thread deamonThread;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
+  //private int expectNumberOfMessage;
   
   public KafkaMessageCheckTool() {
   }
 
-  public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
-    topicConfig.zkConnect = zkConnect;
-    topicConfig.topic = topic;
-    expectNumberOfMessage = expect;
-  }
+  //Removed this constructor because otherwire if you used command line style parameters
+  //and parsed with JCommander, you'd have to manually set expectNumberOfMessage
+  //Removed for consistency
+//  public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
+//    topicConfig.zkConnect = zkConnect;
+//    topicConfig.topic = topic;
+//    expectNumberOfMessage = expect;
+//  }
 
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
+    //expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
   }
 
   public void setFetchSize(int fetchSize) {
@@ -67,9 +70,9 @@ public class KafkaMessageCheckTool implements Runnable {
     this.interrupt = b;
   }
 
-  public void setExpectNumberOfMessage(int num) {
-    expectNumberOfMessage = num;
-  }
+  //public void setExpectNumberOfMessage(int num) {
+  //  expectNumberOfMessage = num;
+  //}
 
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
     if (!running) return !running;
@@ -108,7 +111,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   //TODO each partition reader on a separate thread. same as SendTool
   public void check() throws Exception {
-    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.");
+    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.  Expecting "+Integer.toString(topicConfig.consumerConfig.consumeMax)+" messages");
     readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
@@ -124,7 +127,7 @@ public class KafkaMessageCheckTool implements Runnable {
       partitionMetas = topicMeta.partitionsMetadata();
       tries++;
       if(partitionMetas.size() < 1){
-        Thread.sleep(100*tries);
+        Thread.sleep(500*tries);
       }
     }while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
     kafkaTool.close();
@@ -137,7 +140,7 @@ public class KafkaMessageCheckTool implements Runnable {
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
     
-    while (messageCounter.getTotal() < expectNumberOfMessage*partitionReader.length && !interrupt) {
+    while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages;
         try{
@@ -176,31 +179,16 @@ public class KafkaMessageCheckTool implements Runnable {
       tapProducer = TapProducerFactory.makeTapJunitProducer(topicConfig.consumerConfig.tapFile);
       testSet = new TestSet();
       int testNum=0;
-      //Create test result per partition
-      for(Integer i: messageCounter.getCounter().keySet()){
-        TestResult t = null;
-        if( messageCounter.getPartitionCount(i) == expectNumberOfMessage){
-          t = new TestResult( StatusValues.OK, ++testNum );
-        }
-        else{
-          t = new TestResult( StatusValues.NOT_OK, ++testNum );
-        }
-        
-        t.setDescription( "Partition: "+Integer.toString(i) +
-                          " Expected Messages: "+ Integer.toString(expectNumberOfMessage)+
-                          " Messages Read: "+ messageCounter.getPartitionCount(i));
-        testSet.addTestResult( t );
-      }
       
-      //Create test result for total messages
+      //Create test result for total messages read
       TestResult t = null;
-      if(messageCounter.getTotal() == partitionReader.length * expectNumberOfMessage){
+      if(messageCounter.getTotal() == topicConfig.consumerConfig.consumeMax){
         t = new TestResult( StatusValues.OK, ++testNum );
       }
       else{
         t = new TestResult( StatusValues.NOT_OK, ++testNum );
       }
-      t.setDescription(" Total Expected Messages: "+ Integer.toString(partitionReader.length * expectNumberOfMessage)+
+      t.setDescription(" Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
           " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
       testSet.addTestResult( t );
       

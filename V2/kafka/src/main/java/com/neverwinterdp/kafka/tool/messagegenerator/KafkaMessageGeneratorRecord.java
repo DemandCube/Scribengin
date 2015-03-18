@@ -1,4 +1,4 @@
-package com.neverwinterdp.kafka.tool;
+package com.neverwinterdp.kafka.tool.messagegenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
 

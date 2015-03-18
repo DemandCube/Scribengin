@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
+import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGeneratorRecord;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -53,6 +54,7 @@ public class KafkaDataflowTest extends DataflowTest {
                      "--zk-connect", zkConnect};
     KafkaMessageSendTool sendTool = new KafkaMessageSendTool();
     new JCommander(sendTool, sendArgs);
+    sendTool.setMessageGenerator(new KafkaMessageGeneratorRecord());
     sendTool.runAsDeamon();
 
     KafkaTool client = new KafkaTool(name, zkConnect) ;
@@ -90,17 +92,17 @@ public class KafkaDataflowTest extends DataflowTest {
     
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
-    
-    Thread.sleep(1000);
+    //Thread.sleep(5000);
     
     String[] checkArgs = {"--topic", DEFAULT_SINK_TOPIC,
-        "--num-partition", Integer.toString(numPartitions),
-        "--consume-max-duration", Integer.toString(writePeriod),
-        "--consume-max", Integer.toString(maxMessagePerPartition),
-        "--zk-connect", zkConnect};
+        //"--num-partition", Integer.toString(numPartitions),
+        "--consume-max-duration", Long.toString(duration*10),
+        "--consume-max", Integer.toString(maxMessagePerPartition*numPartitions),
+        "--zk-connect", zkConnect,
+        "--tap-enable"};
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
-    new JCommander(checkTool, checkArgs); 
-    checkTool.setExpectNumberOfMessage(maxMessagePerPartition);
+    new JCommander(checkTool, checkArgs);
+    //checkTool.setExpectNumberOfMessage(maxMessagePerPartition);
     checkTool.runAsDeamon();
     
     
@@ -120,8 +122,8 @@ public class KafkaDataflowTest extends DataflowTest {
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     waitingEventListener.waitForEvents(duration);
+    checkTool.waitForTermination(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
-    //TODO: wait for the message check tool to consume all the messages, print out the report
   }
 }

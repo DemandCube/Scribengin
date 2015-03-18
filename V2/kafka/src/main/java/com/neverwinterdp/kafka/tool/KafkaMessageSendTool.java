@@ -18,6 +18,8 @@ import com.neverwinterdp.kafka.producer.AckKafkaWriter;
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport.ProducerReport;
+import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGenerator;
+import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGeneratorSimple;
 
 public class KafkaMessageSendTool implements Runnable {
   @ParametersDelegate
@@ -137,6 +139,7 @@ public class KafkaMessageSendTool implements Runnable {
       try {
         boolean terminated = false;
         while (!terminated) {
+          //System.err.println("Partition id: "+Integer.toString(metadata.partitionId())+" - Write count: "+Integer.toString(writeCount));
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
           byte[] message = messageGenerator.nextMessage(metadata.partitionId(), topicConfig.producerConfig.messageSize) ;
           writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);

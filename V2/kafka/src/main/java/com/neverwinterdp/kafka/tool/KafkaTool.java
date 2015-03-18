@@ -152,6 +152,7 @@ public class KafkaTool implements Closeable {
         if(topicMetadatas.size() != 1) {
           throw new Exception("Expect to find 1 topic " + topic + ", but found " + topicMetadatas.size());
         }
+        
         return topicMetadatas.get(0);
       }
     };

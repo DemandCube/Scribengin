@@ -96,7 +96,13 @@ public class StabilityCheckTool {
     Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
     ExecutorService writerService = Executors.newFixedThreadPool(numberOfPartition);
     
-    KafkaMessageCheckTool messageCheckTool = new KafkaMessageCheckTool(zkConnect, topic, numberOfPartition * maxMessagePerPartition);
+    String[] checkArgs = {"--topic", topic,
+        "--consume-max", Integer.toString(numberOfPartition * maxMessagePerPartition),
+        "--zk-connect", zkConnect,
+      };
+    KafkaMessageCheckTool messageCheckTool = new KafkaMessageCheckTool();
+    new JCommander(messageCheckTool, checkArgs);
+    //KafkaMessageCheckTool messageCheckTool = new KafkaMessageCheckTool(zkConnect, topic, numberOfPartition * maxMessagePerPartition);
     
     KafkaTool kafkaTool = new KafkaTool(NAME, zkConnect);
     kafkaTool.connect();
