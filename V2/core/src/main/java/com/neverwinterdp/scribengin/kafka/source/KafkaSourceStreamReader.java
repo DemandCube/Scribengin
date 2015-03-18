@@ -7,16 +7,16 @@ import kafka.javaapi.PartitionMetadata;
 
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.source.CommitPoint;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.source.CommitPoint;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class KafkaSourceStreamReader implements SourceStreamReader {
-  private SourceStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
   private KafkaPartitionReader partitionReader ;
   private CommitPoint lastCommitInfo ;
   
-  public KafkaSourceStreamReader(SourceStreamDescriptor descriptor, PartitionMetadata partitionMetadata) {
+  public KafkaSourceStreamReader(StreamDescriptor descriptor, PartitionMetadata partitionMetadata) {
     this.descriptor = descriptor;
     this.partitionReader = 
         new KafkaPartitionReader(descriptor.attribute("name"), descriptor.attribute("zk.connect"), descriptor.attribute("topic"), partitionMetadata);

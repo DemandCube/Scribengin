@@ -11,10 +11,11 @@ public class AckKafkaWriterPerfomanceTest {
   }
 
   private Stopwatch totalRunDuration = Stopwatch.createUnstarted();
+  
   @Test
   public void testRunner() throws Exception {
     Parameters[] parameters = {
-      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 10000/*max send*/, 180000/*maxDuration*/),
+      new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 10000/*max send*/,  180000/*maxDuration*/),
       new Parameters("default"/*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 100000/*max send*/, 180000/*maxDuration*/),
       new Parameters("ack"    /*writer*/, 1024/*messageSize*/, 3 /*partitions*/, 2/*replications*/, 100000/*max send*/, 180000/*maxDuration*/)
     };

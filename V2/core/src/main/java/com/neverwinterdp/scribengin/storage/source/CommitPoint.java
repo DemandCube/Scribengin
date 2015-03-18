@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.source;
+package com.neverwinterdp.scribengin.storage.source;
 
 public class CommitPoint {
   private String readerName ;

@@ -12,6 +12,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.TopicCommand;
+import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetRequest;
@@ -75,7 +77,7 @@ public class KafkaTool implements Closeable {
     }
   }
   
-  public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
+  public void createTopic(String topicName, int numOfReplication, int numPartitions)  {
     // Create a ZooKeeper client
     int sessionTimeoutMs = 10000;
     int connectionTimeoutMs = 10000;
@@ -83,7 +85,11 @@ public class KafkaTool implements Closeable {
     // Create a topic named "myTopic" with 8 partitions and a replication factor of 3
     Properties topicConfig = new Properties();
     AdminUtils.createTopic(zkClient, topicName, numPartitions, numOfReplication, topicConfig);
-    Thread.sleep(3000);
+    try {
+      Thread.sleep(3000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     zkClient.close();
   }
   
@@ -146,6 +152,7 @@ public class KafkaTool implements Closeable {
         if(topicMetadatas.size() != 1) {
           throw new Exception("Expect to find 1 topic " + topic + ", but found " + topicMetadatas.size());
         }
+        
         return topicMetadatas.get(0);
       }
     };
@@ -197,5 +204,13 @@ public class KafkaTool implements Closeable {
   
   static interface Operation<T> {
     public T execute() throws Exception;
+  }
+
+  public void createTopic(String[] args) {    
+    TopicCommandOptions options = new TopicCommandOptions(args);
+    ZkClient client = new ZkClient(zkConnects, 10000, 10000, ZKStringSerializer$.MODULE$);
+    TopicCommand.createTopic(client, options);
+
+    client.close();
   }
 }

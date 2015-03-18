@@ -1,25 +1,32 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.storage;
 
 import java.util.HashMap;
 
-public class SinkDescriptor extends HashMap<String, String>{
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class StorageDescriptor extends HashMap<String, String> {
+  public StorageDescriptor() { }
   
-  public SinkDescriptor() {}
-  
-  public SinkDescriptor(String type) {
+  public StorageDescriptor(String type) {
     setType(type);
   }
   
-  public SinkDescriptor(String type, String location) {
+  public StorageDescriptor(String type, String location) {
     setType(type);
-    setLocation(location) ;
+    setLocation(location);
   }
   
+  @JsonIgnore
   public String getType() { return get("type"); }
-  public void setType(String type) { put("type", type); }
-  
+  public void   setType(String type) { 
+    put("type", type); 
+  }
+ 
+  @JsonIgnore
   public String getLocation() { return get("location"); }
-  public void   setLocation(String location) { put("location", location); }
+  public void   setLocation(String location) { 
+    put("location", location); 
+  }
   
   public String attribute(String name) {
     return get(name);

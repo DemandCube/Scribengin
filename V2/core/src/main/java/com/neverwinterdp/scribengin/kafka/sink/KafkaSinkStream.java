@@ -1,18 +1,18 @@
 package com.neverwinterdp.scribengin.kafka.sink;
 
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class KafkaSinkStream implements SinkStream {
-  private SinkStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
   
-  public KafkaSinkStream(SinkStreamDescriptor descriptor) {
+  public KafkaSinkStream(StreamDescriptor descriptor) {
     this.descriptor = descriptor;
   }
   
   @Override
-  public SinkStreamDescriptor getDescriptor() { return descriptor; }
+  public StreamDescriptor getDescriptor() { return descriptor; }
 
   @Override
   public void delete() throws Exception {

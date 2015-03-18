@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink;
+package com.neverwinterdp.scribengin.storage.sink;
 
 import com.neverwinterdp.scribengin.Record;
 

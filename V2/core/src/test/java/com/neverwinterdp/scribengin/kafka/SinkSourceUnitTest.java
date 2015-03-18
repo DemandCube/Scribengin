@@ -8,10 +8,10 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.kafka.source.KafkaSource;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
-import com.neverwinterdp.scribengin.source.SourceStream;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 import com.neverwinterdp.server.kafka.KafkaCluster;
 
 public class SinkSourceUnitTest {

@@ -92,7 +92,12 @@ public class AckKafkaWriter extends AbstractKafkaWriter {
     producer.close(); 
   }
   
-  public void close() { producer.close(); }
+  public void close() throws InterruptedException { 
+    if(resendThread != null && resendThread.isAlive()) {
+      resendThread.waitForTermination(60000);
+    }
+    producer.close(); 
+  }
   
   public class ResendThread extends Thread {
     public void run() {
@@ -114,6 +119,14 @@ public class AckKafkaWriter extends AbstractKafkaWriter {
         System.err.println("Resend " + needToResendRecords.size() + " done!!!!!!!!!!!!!!");
         needToResendRecords =  waittingAckBuffer.getNeedToResendRecords();
       }
+    }
+    
+    synchronized void notifyTermination() {
+      notifyAll() ;
+    }
+    
+    synchronized void waitForTermination(long timeout) throws InterruptedException {
+      wait(timeout);
     }
   }
   

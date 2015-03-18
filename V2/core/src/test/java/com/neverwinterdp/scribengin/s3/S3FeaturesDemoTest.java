@@ -125,7 +125,7 @@ public class S3FeaturesDemoTest {
     s3Client.createBucket(bucketName);
   }
 
-  public void listBuckets() throws AmazonServiceException {
+  public void listBuckets() {
     System.out.println("Listing buckets: ");
     List<Bucket> buckets = s3Client.listBuckets();
     for (Bucket bucket : buckets) {

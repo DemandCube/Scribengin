@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 

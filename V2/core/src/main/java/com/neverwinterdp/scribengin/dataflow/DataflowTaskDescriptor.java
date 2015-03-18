@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 
 public class DataflowTaskDescriptor {
   static public enum Status { INIT, PROCESSING, SUSPENDED, TERMINATED }
@@ -13,8 +12,8 @@ public class DataflowTaskDescriptor {
   private int                               id;
   private Status                            status = Status.INIT;
   private String                            scribe;
-  private SourceStreamDescriptor            sourceStreamDescriptor;
-  private Map<String, SinkStreamDescriptor> sinkStreamDescriptors;
+  private StreamDescriptor            streamDescriptor;
+  private Map<String, StreamDescriptor> sinkStreamDescriptors;
   private String                            storedPath;
   
   public int getId() { return id; }
@@ -26,20 +25,20 @@ public class DataflowTaskDescriptor {
   public String getScribe() { return scribe;}
   public void setScribe(String scribe) { this.scribe = scribe; }
   
-  public SourceStreamDescriptor getSourceStreamDescriptor() { return sourceStreamDescriptor; }
-  public void setSourceStreamDescriptor(SourceStreamDescriptor sourceStreamDescriptor) {
-    this.sourceStreamDescriptor = sourceStreamDescriptor;
+  public StreamDescriptor getSourceStreamDescriptor() { return streamDescriptor; }
+  public void setSourceStreamDescriptor(StreamDescriptor streamDescriptor) {
+    this.streamDescriptor = streamDescriptor;
   }
   
-  public void add(String name, SinkStreamDescriptor sinkDescriptor) {
+  public void add(String name, StreamDescriptor sinkDescriptor) {
     if(sinkStreamDescriptors == null) {
-      sinkStreamDescriptors = new HashMap<String, SinkStreamDescriptor>() ;
+      sinkStreamDescriptors = new HashMap<String, StreamDescriptor>() ;
     }
     sinkStreamDescriptors.put(name, sinkDescriptor);
   }
   
-  public Map<String, SinkStreamDescriptor> getSinkStreamDescriptors() { return sinkStreamDescriptors; }
-  public void setSinkStreamDescriptors(Map<String, SinkStreamDescriptor> sinkStreamDescriptors) {
+  public Map<String, StreamDescriptor> getSinkStreamDescriptors() { return sinkStreamDescriptors; }
+  public void setSinkStreamDescriptors(Map<String, StreamDescriptor> sinkStreamDescriptors) {
     this.sinkStreamDescriptors = sinkStreamDescriptors;
   }
   

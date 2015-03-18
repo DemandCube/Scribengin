@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 

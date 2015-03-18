@@ -18,9 +18,9 @@ import com.google.common.io.Files;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkBuffer;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
-import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.OffsetPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.util.Label;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
@@ -33,7 +33,7 @@ public class SinkBufferUnitTest {
 
   @Before
   public void setUp() throws IOException {
-    SinkStreamDescriptor descriptor = null;
+    StreamDescriptor descriptor = null;
     descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.setLocation("");
     config = new S3SinkConfig(descriptor);

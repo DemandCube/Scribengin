@@ -20,7 +20,7 @@ import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkStreamWriter;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 /**
@@ -29,7 +29,7 @@ import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTest {
   protected void init(String propFilePath) {
-    SinkStreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
+    StreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
     descriptor.setLocation("");
     Injector injector = Guice.createInjector(new S3TestModule(descriptor, false));
     sink = injector.getInstance(S3SinkStreamWriter.class);
@@ -111,7 +111,7 @@ public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTes
   }
   @Test(expected = AmazonClientException.class)
   public void testUploadToNonExistentBucket() throws Exception {
-    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
+    StreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.put("bucketName", "xxxxx");
     descriptor.setLocation("");
     Injector injector = Guice.createInjector(new S3TestModule(descriptor, false));
@@ -124,7 +124,7 @@ public class S3SinkStreamWriterIntegrationTest extends S3SinkStreamWriterUnitTes
   }
   @Test(expected = AmazonClientException.class)
   public void testUploadToReadOnlyBucket() throws Exception {
-    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
+    StreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.put("bucketName", "nellouzereadonly");
     descriptor.setLocation("");
     Injector injector = Guice.createInjector(new S3TestModule(descriptor, false));

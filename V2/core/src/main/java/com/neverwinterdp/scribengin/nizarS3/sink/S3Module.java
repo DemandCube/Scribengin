@@ -6,9 +6,9 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.AbstractModule;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
-import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.OffsetPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.SinkPartitioner;
 
 /**
  * The Class S3Module.
@@ -28,9 +28,8 @@ public class S3Module extends AbstractModule {
    * @param kafkaPartition
    *          the kafka partition
    */
-  public S3Module(SinkStreamDescriptor propMap) {
+  public S3Module(StreamDescriptor propMap) {
     s3SinkConfig = new S3SinkConfig(propMap);
-
   }
 
   /*

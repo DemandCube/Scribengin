@@ -1,23 +1,31 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
+import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
+import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGeneratorRecord;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
-//TODO: replace by the kafka message send tool and kafka message check tool
+
 public class KafkaDataflowTest extends DataflowTest {
-  final static public String SOURCE_TOPIC       = "hello.source" ;
-  final static public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
-  final static public String INVALID_SINK_TOPIC = "hello.sink.invalid" ;
+  @Parameter(names = "--source-topic", description = "Source topic")
+  public String SOURCE_TOPIC       = "hello.source" ;
   
+  @Parameter(names = "--sink-topic", description = "Default sink topic")
+  public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
+  
+  @Parameter(names = "--invalidsink-topic", description = "Invalid sink topic")
+  public String INVALID_SINK_TOPIC = "hello.sink.invalid" ;
+  
+  @Parameter(names = "--flow-name", description = "Invalid sink topic")
   private String name                   = "hello";
   
   @Parameter(names = "--kafka-write-period", description = "The write period for each partition in ms")
@@ -30,18 +38,23 @@ public class KafkaDataflowTest extends DataflowTest {
   private int maxMessagePerPartition = 100;
   
   protected void doRun(ScribenginShell shell) throws Exception {
+    
     long start = System.currentTimeMillis();
     ScribenginClient scribenginClient = shell.getScribenginClient();
     RegistryConfig registryConfig = scribenginClient.getRegistry().getRegistryConfig();
     String zkConnect = registryConfig.getConnect();
-
-    //TODO: need to use the KafkaMessageSendTool instead of the kafka generator, run the send tool in its own thread
-    KafkaSourceGenerator generator = new KafkaSourceGenerator("hello", zkConnect);
-    generator.setNumOfPartitions(numPartitions);
-    generator.setDuration(duration);
-    generator.setWritePeriod(writePeriod);
-    generator.setMaxNumOfRecordPerStream(maxMessagePerPartition);
-    generator.generate(SOURCE_TOPIC);
+    
+    
+    String[] sendArgs = {"--topic", SOURCE_TOPIC, 
+                     "--send-period", Integer.toString(writePeriod),
+                     "--num-partition", Integer.toString(numPartitions),
+                     "--send-max-per-partition", Integer.toString(maxMessagePerPartition),
+                     "--send-max-duration", Long.toString(duration),
+                     "--zk-connect", zkConnect};
+    KafkaMessageSendTool sendTool = new KafkaMessageSendTool();
+    new JCommander(sendTool, sendArgs);
+    sendTool.setMessageGenerator(new KafkaMessageGeneratorRecord());
+    sendTool.runAsDeamon();
 
     KafkaTool client = new KafkaTool(name, zkConnect) ;
     client.connect();
@@ -55,21 +68,21 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
 
-    SourceDescriptor sourceDescriptor = new SourceDescriptor("KAFKA") ;
-    sourceDescriptor.attribute("name", name);
-    sourceDescriptor.attribute("topic", SOURCE_TOPIC);
-    sourceDescriptor.attribute("zk.connect", zkConnect);
-    sourceDescriptor.attribute("broker.list", brokerList);
-    dflDescriptor.setSourceDescriptor(sourceDescriptor);
+    StorageDescriptor storageDescriptor = new StorageDescriptor("KAFKA") ;
+    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("topic", SOURCE_TOPIC);
+    storageDescriptor.attribute("zk.connect", zkConnect);
+    storageDescriptor.attribute("broker.list", brokerList);
+    dflDescriptor.setSourceDescriptor(storageDescriptor);
 
-    SinkDescriptor defaultSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor defaultSink = new StorageDescriptor("KAFKA");
     defaultSink.attribute("name", name);
     defaultSink.attribute("topic", DEFAULT_SINK_TOPIC);
     defaultSink.attribute("zk.connect", zkConnect);
     defaultSink.attribute("broker.list", brokerList);
     dflDescriptor.addSinkDescriptor("default", defaultSink);
 
-    SinkDescriptor invalidSink = new SinkDescriptor("KAFKA");
+    StorageDescriptor invalidSink = new StorageDescriptor("KAFKA");
     invalidSink.attribute("name", name);
     invalidSink.attribute("topic", INVALID_SINK_TOPIC);
     invalidSink.attribute("zk.connect", zkConnect);
@@ -77,13 +90,37 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-    //TODO: launch the KafkaMessageCheckTool here in its own thread
+    
+    
+    String[] checkArgs = {"--topic", DEFAULT_SINK_TOPIC,
+        //"--num-partition", Integer.toString(numPartitions),
+        "--consume-max-duration", Long.toString(duration),
+        "--consume-max", Integer.toString(maxMessagePerPartition*numPartitions),
+        "--zk-connect", zkConnect,
+        "--tap-enable"};
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    new JCommander(checkTool, checkArgs);
+    checkTool.runAsDeamon();
+    
+    
+    //TODO: Support making sure a topic stays empty
+    /*
+    String[] checkInvalidArgs = {"--topic", INVALID_SINK_TOPIC, 
+        "--consume-max-duration", Integer.toString(writePeriod*this.numPartitions),
+        "--consume-max", Integer.toString(maxMessagePerPartition*this.numPartitions),
+        "--zk-connect", zkConnect};
+    KafkaMessageCheckTool checkInvalidTool = new KafkaMessageCheckTool();
+    new JCommander(checkInvalidTool, checkInvalidArgs);
+    checkInvalidTool.setExpectNumberOfMessage(0);
+    checkInvalidTool.runAsDeamon();
+    */
+    
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     waitingEventListener.waitForEvents(duration);
+    checkTool.waitForTermination(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
-    //TODO: wait for the message check tool to consume all the messages, print out the report
   }
 }

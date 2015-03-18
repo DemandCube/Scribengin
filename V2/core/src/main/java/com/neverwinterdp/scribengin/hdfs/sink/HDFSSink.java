@@ -8,27 +8,27 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 
 public class HDFSSink implements Sink {
   private FileSystem fs;
-  private SinkDescriptor descriptor;
+  private StorageDescriptor descriptor;
 
   private int idTracker = 0;
   private LinkedHashMap<Integer, HDFSSinkStream> streams = new LinkedHashMap<Integer, HDFSSinkStream>() ;
   
   public HDFSSink(FileSystem fs, String location) throws FileNotFoundException, IllegalArgumentException, IOException {
-    this(fs, new SinkDescriptor("HDFS", location));
+    this(fs, new StorageDescriptor("HDFS", location));
   }
   
-  public HDFSSink(FileSystem fs, SinkStreamDescriptor streamDescriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSink(FileSystem fs, StreamDescriptor streamDescriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this(fs, getSinkDescriptor(streamDescriptor));
   }
   
-  public HDFSSink(FileSystem fs, SinkDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
+  public HDFSSink(FileSystem fs, StorageDescriptor descriptor) throws FileNotFoundException, IllegalArgumentException, IOException {
     this.fs = fs;
     this.descriptor = descriptor;
     
@@ -41,9 +41,9 @@ public class HDFSSink implements Sink {
     }
   }
   
-  public SinkDescriptor getDescriptor() { return this.descriptor; }
+  public StorageDescriptor getDescriptor() { return this.descriptor; }
   
-  public SinkStream  getStream(SinkStreamDescriptor descriptor) throws Exception {
+  public SinkStream  getStream(StreamDescriptor descriptor) throws Exception {
     SinkStream stream = streams.get(descriptor.getId());
     if(stream == null) {
       throw new Exception("Cannot find the stream " + descriptor.getId()) ;
@@ -69,7 +69,7 @@ public class HDFSSink implements Sink {
   synchronized public SinkStream newStream() throws IOException {
     int id = idTracker++;
     String location = descriptor.getLocation() + "/stream-" + id;
-    SinkStreamDescriptor streamDescriptor = new SinkStreamDescriptor("HDFS", id, location) ;
+    StreamDescriptor streamDescriptor = new StreamDescriptor("HDFS", id, location) ;
     HDFSSinkStream stream = new HDFSSinkStream(fs, streamDescriptor);
     streams.put(streamDescriptor.getId(), stream) ;
     return stream;
@@ -83,10 +83,10 @@ public class HDFSSink implements Sink {
     //TODO: this method should go through all the sink stream and call fsCheck of each stream
   }
   
-  static SinkDescriptor getSinkDescriptor(SinkStreamDescriptor streamDescriptor) {
+  static StorageDescriptor getSinkDescriptor(StreamDescriptor streamDescriptor) {
     String location = streamDescriptor.getLocation();
     location = location.substring(0, location.lastIndexOf('/'));
-    SinkDescriptor descriptor = new SinkDescriptor(streamDescriptor.getType(), location);
+    StorageDescriptor descriptor = new StorageDescriptor(streamDescriptor.getType(), location);
     return descriptor;
   }
 }

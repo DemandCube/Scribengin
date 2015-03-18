@@ -159,7 +159,7 @@ public class DataflowRegistry {
         tasksAvailableQueue.offer(name.getBytes());
         //tasksAssigned.getChild(name).rdelete();
         Transaction transaction = registry.getTransaction();
-        transaction.rdelete(tasksAssigned + "/" + name);
+        transaction.rdelete(tasksAssigned.getPath() + "/" + name);
         transaction.commit();
         return true;
       }

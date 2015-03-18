@@ -20,7 +20,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class CommandServletDataFlowUnitTest {
   
@@ -52,9 +52,9 @@ public class CommandServletDataFlowUnitTest {
     assertEquals(DescriptorBuilderDefaults._dataflowName, dfDesc.getName());
     assertEquals("KAFKA", dfDesc.getSourceDescriptor().getType());
     
-    Map<String, SinkDescriptor> sinks = dfDesc.getSinkDescriptors();
+    Map<String, StorageDescriptor> sinks = dfDesc.getSinkDescriptors();
     
-    for (Entry<String, SinkDescriptor> entry : sinks.entrySet()) {
+    for (Entry<String, StorageDescriptor> entry : sinks.entrySet()) {
       assertEquals("KAFKA", entry.getValue().getType());
     }
     
@@ -111,9 +111,9 @@ public class CommandServletDataFlowUnitTest {
     assertEquals("sourceZkConnect", dfDesc.getSourceDescriptor().attribute("zk.connect"));
     assertEquals("sourceBrokerList", dfDesc.getSourceDescriptor().attribute("broker.list"));
     
-    Map<String, SinkDescriptor> sinks = dfDesc.getSinkDescriptors();
-    SinkDescriptor sink = sinks.get("default");
-    SinkDescriptor invalidSink = sinks.get("invalid");
+    Map<String, StorageDescriptor> sinks = dfDesc.getSinkDescriptors();
+    StorageDescriptor sink = sinks.get("default");
+    StorageDescriptor invalidSink = sinks.get("invalid");
     
     assertEquals("KAFKA", sink.getType());
     assertEquals("sinkName", sink.attribute("name"));

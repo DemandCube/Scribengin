@@ -9,12 +9,12 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.VMDataflowWorkerApp;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkFactory;
-import com.neverwinterdp.scribengin.source.Source;
-import com.neverwinterdp.scribengin.source.SourceFactory;
-import com.neverwinterdp.scribengin.source.SourceStream;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
+import com.neverwinterdp.scribengin.storage.source.Source;
+import com.neverwinterdp.scribengin.storage.source.SourceFactory;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -34,7 +34,7 @@ public class DataflowServiceInititializer {
     
     Source source    = sourceFactory.create(dataflowDescriptor.getSourceDescriptor()) ;
     Map<String, Sink> sinks = new HashMap<String, Sink>();
-    for(Map.Entry<String, SinkDescriptor> entry : dataflowDescriptor.getSinkDescriptors().entrySet()) {
+    for(Map.Entry<String, StorageDescriptor> entry : dataflowDescriptor.getSinkDescriptors().entrySet()) {
       Sink sink = sinkFactory.create(entry.getValue());
       sinks.put(entry.getKey(), sink);
     }
