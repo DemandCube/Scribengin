@@ -92,21 +92,19 @@ public class KafkaDataflowTest extends DataflowTest {
     
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
-    //Thread.sleep(5000);
     
     String[] checkArgs = {"--topic", DEFAULT_SINK_TOPIC,
         //"--num-partition", Integer.toString(numPartitions),
-        "--consume-max-duration", Long.toString(duration*10),
+        "--consume-max-duration", Long.toString(duration),
         "--consume-max", Integer.toString(maxMessagePerPartition*numPartitions),
         "--zk-connect", zkConnect,
         "--tap-enable"};
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
     new JCommander(checkTool, checkArgs);
-    //checkTool.setExpectNumberOfMessage(maxMessagePerPartition);
     checkTool.runAsDeamon();
     
     
-    
+    //TODO: Support making sure a topic stays empty
     /*
     String[] checkInvalidArgs = {"--topic", INVALID_SINK_TOPIC, 
         "--consume-max-duration", Integer.toString(writePeriod*this.numPartitions),
