@@ -180,7 +180,7 @@ public class DataflowRegistry {
         //update the task descriptor
         transaction.setData(descriptor.getStoredPath(), descriptor);
         transaction.createChild(tasksFinished, name, NodeCreateMode.PERSISTENT);
-        transaction.rdelete(tasksAssigned + "/" + name);
+        transaction.rdelete(tasksAssigned.getPath() + "/" + name);
         //tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
         //tasksAssigned.getChild(name).rdelete(transaction);
         transaction.commit();
