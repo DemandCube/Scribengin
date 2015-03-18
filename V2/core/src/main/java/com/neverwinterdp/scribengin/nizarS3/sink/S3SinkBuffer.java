@@ -13,7 +13,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
-import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.SinkPartitioner;
 import com.neverwinterdp.scribengin.Record;
 
 /**

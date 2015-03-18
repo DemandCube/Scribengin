@@ -10,7 +10,7 @@ import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 
 public class PropertyUtils {
 
@@ -77,8 +77,8 @@ public class PropertyUtils {
         return properties;
     }
 
-  public SinkStreamDescriptor getDescriptor() {
-    SinkStreamDescriptor descriptor = new SinkStreamDescriptor();
+  public StreamDescriptor getDescriptor() {
+    StreamDescriptor descriptor = new StreamDescriptor();
     for (Object key : properties.keySet()){
       descriptor.put((String)key, (String) properties.get(key));
     }

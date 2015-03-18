@@ -1,6 +1,5 @@
 package com.neverwinterdp.scribengin.nizarS3;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -13,16 +12,13 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
@@ -32,8 +28,8 @@ import com.google.inject.Injector;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkStreamWriter;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.util.PropertyUtils;
 
 /**
@@ -62,7 +58,7 @@ public class S3SinkStreamWriterUnitTest {
    *          the prop file path
    */
   protected void init(String propFilePath) {
-    SinkStreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
+    StreamDescriptor descriptor = new PropertyUtils(propFilePath).getDescriptor();
     descriptor.setLocation("");
     Injector injector = Guice.createInjector(new S3TestModule(descriptor, true));
     sink = injector.getInstance(S3SinkStreamWriter.class);
@@ -102,7 +98,7 @@ public class S3SinkStreamWriterUnitTest {
   // upload 10 small to a bucket
   @Test
   public void testUploadManyFilesToManyBuckets() throws Exception {
-    SinkStreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
+    StreamDescriptor descriptor = new PropertyUtils("s3.default.properties").getDescriptor();
     descriptor.setLocation("");
     Injector injector = Guice.createInjector(new S3TestModule(descriptor, true));
     SinkStreamWriter sink1 = injector.getInstance(S3SinkStreamWriter.class);

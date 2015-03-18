@@ -23,8 +23,8 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
-import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.SinkPartitioner;
 
 public class S3SinkStreamWriter implements SinkStreamWriter {
 

@@ -3,14 +3,13 @@ package com.neverwinterdp.scribengin.dataflow;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.neverwinterdp.scribengin.sink.SinkDescriptor;
-import com.neverwinterdp.scribengin.source.SourceDescriptor;
+import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class DataflowDescriptor {
   private String                      name;
   private String                      dataflowAppHome;
-  private SourceDescriptor            sourceDescriptor;
-  private Map<String, SinkDescriptor> sinkDescriptors;
+  private StorageDescriptor            storageDescriptor;
+  private Map<String, StorageDescriptor> sinkDescriptors;
   private int                         numberOfWorkers =  1;
   private int                         numberOfExecutorsPerWorker = 1;
   private long                        taskMaxExecuteTime = -1;
@@ -27,16 +26,16 @@ public class DataflowDescriptor {
     this.dataflowAppHome = dataflowAppHome;
   }
 
-  public SourceDescriptor getSourceDescriptor() { return sourceDescriptor;}
-  public void setSourceDescriptor(SourceDescriptor sourceDescriptor) { this.sourceDescriptor = sourceDescriptor;}
+  public StorageDescriptor getSourceDescriptor() { return storageDescriptor;}
+  public void setSourceDescriptor(StorageDescriptor storageDescriptor) { this.storageDescriptor = storageDescriptor;}
 
-  public void addSinkDescriptor(String name, SinkDescriptor descriptor) {
-    if(sinkDescriptors == null) sinkDescriptors = new HashMap<String, SinkDescriptor>();
+  public void addSinkDescriptor(String name, StorageDescriptor descriptor) {
+    if(sinkDescriptors == null) sinkDescriptors = new HashMap<String, StorageDescriptor>();
     sinkDescriptors.put(name, descriptor);
   }
   
-  public Map<String, SinkDescriptor> getSinkDescriptors() { return sinkDescriptors; }
-  public void setSinkDescriptors(Map<String, SinkDescriptor> sinkDescriptors) {
+  public Map<String, StorageDescriptor> getSinkDescriptors() { return sinkDescriptors; }
+  public void setSinkDescriptors(Map<String, StorageDescriptor> sinkDescriptors) {
     this.sinkDescriptors = sinkDescriptors;
   }
   

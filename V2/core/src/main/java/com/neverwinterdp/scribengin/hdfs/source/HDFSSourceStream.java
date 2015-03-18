@@ -5,20 +5,20 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.FileSystem;
 
-import com.neverwinterdp.scribengin.source.SourceStream;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class HDFSSourceStream implements SourceStream {
   private FileSystem fs ;
-  private SourceStreamDescriptor descriptor ;
+  private StreamDescriptor descriptor ;
   
-  public HDFSSourceStream(FileSystem fs, SourceStreamDescriptor descriptor) {
+  public HDFSSourceStream(FileSystem fs, StreamDescriptor descriptor) {
     this.fs = fs;
     this.descriptor = descriptor;
   }
   
-  public SourceStreamDescriptor getDescriptor() { return descriptor ; }
+  public StreamDescriptor getDescriptor() { return descriptor ; }
   
   @Override
   public SourceStreamReader getReader(String name) throws FileNotFoundException, IllegalArgumentException, IOException {

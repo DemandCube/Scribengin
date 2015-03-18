@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.sink.partitioner;
+package com.neverwinterdp.scribengin.storage.sink.partitioner;
 
 public interface SinkPartitioner {
   String getPartition();

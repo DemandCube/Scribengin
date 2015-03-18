@@ -5,16 +5,15 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.sink.Sink;
-import com.neverwinterdp.scribengin.sink.SinkFactory;
-import com.neverwinterdp.scribengin.sink.SinkStream;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
-import com.neverwinterdp.scribengin.source.Source;
-import com.neverwinterdp.scribengin.source.SourceFactory;
-import com.neverwinterdp.scribengin.source.SourceStream;
-import com.neverwinterdp.scribengin.source.SourceStreamDescriptor;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.Sink;
+import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
+import com.neverwinterdp.scribengin.storage.sink.SinkStream;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.source.Source;
+import com.neverwinterdp.scribengin.storage.source.SourceFactory;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class DataflowTaskContext {
   private DataflowTaskReport report ;
@@ -25,9 +24,9 @@ public class DataflowTaskContext {
   
   public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws Exception {
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
-    Iterator<Map.Entry<String, SinkStreamDescriptor>> i = descriptor.getSinkStreamDescriptors().entrySet().iterator() ;
+    Iterator<Map.Entry<String, StreamDescriptor>> i = descriptor.getSinkStreamDescriptors().entrySet().iterator() ;
     while(i.hasNext()) {
-      Map.Entry<String, SinkStreamDescriptor> entry = i.next();
+      Map.Entry<String, StreamDescriptor> entry = i.next();
       SinkContext context = new SinkContext(container.getSinkFactory(), entry.getValue());
       sinkContexts.put(entry.getKey(), context) ;
     }
@@ -112,7 +111,7 @@ public class DataflowTaskContext {
     private SourceStream assignedSourceStream ;
     private SourceStreamReader assignedSourceStreamReader;
   
-    public SourceContext(SourceFactory factory, SourceStreamDescriptor streamDescriptor) throws Exception {
+    public SourceContext(SourceFactory factory, StreamDescriptor streamDescriptor) throws Exception {
       this.source = factory.create(streamDescriptor) ;
       this.assignedSourceStream = source.getStream(streamDescriptor.getId());
       this.assignedSourceStreamReader = assignedSourceStream.getReader("DataflowTask");
@@ -145,7 +144,7 @@ public class DataflowTaskContext {
     private SinkStreamWriter assignedSinkStreamWriter;
   
     
-    public SinkContext(SinkFactory factory, SinkStreamDescriptor streamDescriptor) throws Exception {
+    public SinkContext(SinkFactory factory, StreamDescriptor streamDescriptor) throws Exception {
       this.sink = factory.create(streamDescriptor);
       this.assignedSinkStream = sink.getStream(streamDescriptor);
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();

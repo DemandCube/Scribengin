@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.s3.S3Folder;
 import com.neverwinterdp.scribengin.s3.S3ObjectWriter;
-import com.neverwinterdp.scribengin.sink.SinkStreamWriter;
+import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.util.JSONSerializer;
 
 public class S3SinkStreamWriter implements SinkStreamWriter {

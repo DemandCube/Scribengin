@@ -3,7 +3,7 @@ package com.neverwinterdp.scribengin.dataflow;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
-import com.neverwinterdp.scribengin.source.SourceStreamReader;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class DataflowTask {
   private DataflowContainer container;

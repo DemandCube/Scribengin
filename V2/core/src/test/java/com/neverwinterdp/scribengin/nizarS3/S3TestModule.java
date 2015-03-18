@@ -8,9 +8,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.AbstractModule;
 import com.neverwinterdp.scribengin.nizarS3.sink.S3SinkConfig;
-import com.neverwinterdp.scribengin.sink.SinkStreamDescriptor;
-import com.neverwinterdp.scribengin.sink.partitioner.OffsetPartitioner;
-import com.neverwinterdp.scribengin.sink.partitioner.SinkPartitioner;
+import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.OffsetPartitioner;
+import com.neverwinterdp.scribengin.storage.sink.partitioner.SinkPartitioner;
 
 /**
  * The Class S3Module.
@@ -23,7 +23,7 @@ public class S3TestModule extends AbstractModule {
   /** The mock. */
   private boolean              mock = true;
 
-  private SinkStreamDescriptor descriptor;
+  private StreamDescriptor descriptor;
 
   /**
    * The Constructor.
@@ -35,12 +35,12 @@ public class S3TestModule extends AbstractModule {
    * @param kafkaPartition
    *          the kafka partition
    */
-  public S3TestModule(SinkStreamDescriptor descriptor) {
+  public S3TestModule(StreamDescriptor descriptor) {
     s3SinkConfig = new S3SinkConfig(descriptor);
     this.mock = false;
   }
 
-  public S3TestModule(SinkStreamDescriptor descriptor, boolean mock) {
+  public S3TestModule(StreamDescriptor descriptor, boolean mock) {
     this.descriptor = descriptor;
     s3SinkConfig = new S3SinkConfig(descriptor);
 
