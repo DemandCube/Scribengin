@@ -320,15 +320,12 @@ function kafka_start() {
   config_path=$(get_opt --config-path '/opt/kafka/config/default.properties' $@)
 
   if $withzk ; then
-    zookeeper_start
+    zookeeper_start $@
   fi
 
   #clean the hadoop data and logs if clean = true
   if  $clean  ; then
     kafka_clean
-    if $withzk ; then
-      zookeeper_clean
-    fi
   fi
 
   if $javaagent ; then
