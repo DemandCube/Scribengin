@@ -388,7 +388,7 @@ public class RegistryImpl implements Registry {
   public List<String> findDencendantPaths(String path) throws RegistryException {
     checkConnected();
     try {
-      PathUtils.validatePath(path);
+      PathUtils.validatePath(realPath(path));
       return ZKUtil.listSubTreeBFS(zkClient, realPath(path));
     } catch (InterruptedException | KeeperException e) {
       throw new RegistryException(ErrorCode.Unknown, e) ;

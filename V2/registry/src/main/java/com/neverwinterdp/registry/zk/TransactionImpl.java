@@ -36,7 +36,6 @@ public class TransactionImpl implements Transaction {
 
   @Override
   public Transaction rdelete(String path) throws RegistryException {
-    PathUtils.validatePath(path);
     List<String> tree = registry.findDencendantPaths(path);
     for (int i = tree.size() - 1; i >= 0 ; --i) {
       //Delete the leaves first and eventually get rid of the root
