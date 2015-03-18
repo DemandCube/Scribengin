@@ -267,7 +267,7 @@ function zookeeper_start() {
   javaagent=$(has_opt --with-javaagent $@)
   JMXPORT=$(get_opt --jmxport 10001 $@)
   
-  #clean the hadoop data and logs if clean = true
+  #clean the zookeeper data and logs if clean = true
   if  $clean  ; then
     zookeeper_clean
   fi
@@ -323,7 +323,7 @@ function kafka_start() {
     zookeeper_start $@
   fi
 
-  #clean the hadoop data and logs if clean = true
+  #clean the kafka data and logs if clean = true
   if  $clean  ; then
     kafka_clean
   fi
