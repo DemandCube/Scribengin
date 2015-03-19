@@ -47,9 +47,6 @@ public class DataflowHdfsToHdfsUnitTest {
     String command = 
         "dataflow-test hdfs " + 
         "  --numOfWorkers 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000";
-      shell.execute(command);
-
+    shell.execute(command);
   }
-  
-
 }
