@@ -86,7 +86,8 @@ public class KafkaTool implements Closeable {
   }
 
   public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
-    String[] args = { "--create",
+    String[] args = { 
+        "--create",
         "--partition", String.valueOf(numPartitions),
         "--replication-factor", String.valueOf(numOfReplication),
         "--topic", topicName,
