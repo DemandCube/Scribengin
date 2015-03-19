@@ -73,7 +73,7 @@ public class KafkaTopicConfig {
     public boolean    tapEnabled = false;
     
     @Parameter(names = "--tap-file", description = "If TAP is enabled, then output results to this file.")
-    public String tapFile = "KafkaMessageCheckTool.xml";
+    public String tapFile = "build/KafkaMessageCheckTool.xml";
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
     public Map<String, String> consumerProperties = new HashMap<String, String>();
