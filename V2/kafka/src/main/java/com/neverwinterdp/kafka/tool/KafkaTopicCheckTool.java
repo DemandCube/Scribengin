@@ -101,6 +101,8 @@ public class KafkaTopicCheckTool implements Runnable {
       checkTool.setInterrupt(true);
       Thread.sleep(3000);
     }
+    progressReporter.interrupt();
+    
     topicReport = new KafkaTopicReport();
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
