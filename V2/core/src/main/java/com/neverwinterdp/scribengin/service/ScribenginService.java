@@ -89,6 +89,7 @@ public class ScribenginService {
     return result.getResult();
   }
   
+  //TODO: use transaction
   private void moveToHistory(DataflowDescriptor descriptor) throws Exception {
     String fromPath = dataflowsRunningNode.getPath() + "/" + descriptor.getName();
     String toPath   = dataflowsHistoryNode.getPath() + "/" + descriptor.getName() + "-" + historyIdTracker.getAndIncrement();
