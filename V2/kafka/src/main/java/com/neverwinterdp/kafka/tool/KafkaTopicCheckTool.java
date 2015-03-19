@@ -83,6 +83,19 @@ public class KafkaTopicCheckTool implements Runnable {
     Thread.sleep(500);
     
     checkTool.runAsDeamon();
+    
+    Thread progressReporter = new Thread() {
+      public void run() {
+        try {
+          while(true) {
+            Thread.sleep(10000);
+            System.out.println("Progress: sent = " + sendTool.getSentCount() + ", consumed = " + checkTool.getMessageCounter().getTotal());
+          }
+        } catch (InterruptedException e) {
+        }
+      }
+    };
+    progressReporter.start();
     sendTool.waitForTermination();
     if(!checkTool.waitForTermination()) {
       checkTool.setInterrupt(true);

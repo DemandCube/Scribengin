@@ -42,6 +42,8 @@ public class KafkaMessageSendTool implements Runnable {
     messageGenerator = generator;
   }
 
+  public long getSentCount() { return sendCounter.get(); }
+  
   public boolean isSending() { return sendCounter.get() > 0 ; }
   
   public void report(KafkaTopicReport report) {

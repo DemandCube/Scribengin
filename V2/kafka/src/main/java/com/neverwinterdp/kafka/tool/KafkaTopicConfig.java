@@ -66,6 +66,10 @@ public class KafkaTopicConfig {
     @Parameter(names = "--consume-max", description = "The max number of messages to consume")
     public int   consumeMax = 100000000;
     
+    @Parameter(names = "--consume-batch-fetch", description = "The number of messages that kafka should fetch from server each time")
+    public int   consumeBatchFetch = 500;
+    
+    //This parameter is not a good name 
     @Parameter(names = "--consume-connect-retries", description = "The max number of times to try connecting while number of partitions is < 1")
     public int   connectRetries = 20;
     

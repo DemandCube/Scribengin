@@ -116,15 +116,16 @@ public class KafkaMessageCheckTool implements Runnable {
     
     //Added so that the checktool doesn't fail immediately if its started before 
     //topic is created/written to
+    //TODO: this code should be moved into the kafkaTool.findTopicMetadata(String topic, int retry)
     int tries = 0;
-    do{
+    do {
       topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
       partitionMetas = topicMeta.partitionsMetadata();
       tries++;
       if(partitionMetas.size() < 1){
-        Thread.sleep(500*tries);
+        Thread.sleep(500 * tries);
       }
-    }while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
+    } while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
     kafkaTool.close();
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
@@ -134,7 +135,7 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
-    int fetchSize = 1000 * (topicConfig.producerConfig.messageSize + 100) ;
+    int fetchSize = topicConfig.consumerConfig.consumeBatchFetch * (topicConfig.producerConfig.messageSize + 100) ;
     while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages;

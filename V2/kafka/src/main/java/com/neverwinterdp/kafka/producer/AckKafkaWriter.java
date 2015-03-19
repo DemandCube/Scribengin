@@ -101,22 +101,19 @@ public class AckKafkaWriter extends AbstractKafkaWriter {
   
   public class ResendThread extends Thread {
     public void run() {
-      System.err.println("Start resend thread");
       try {
         Thread.sleep(500);
       } catch (InterruptedException e) {
         return;
       }
-      System.err.println("Start resend thread after 500ms");
       List<WaittingAckProducerRecord<byte[],byte[]>> needToResendRecords =  waittingAckBuffer.getNeedToResendRecords();
       while(needToResendRecords.size() > 0) {
-        System.err.println("Resend " + needToResendRecords.size());
         for(WaittingAckProducerRecord<byte[], byte[]> sel : needToResendRecords) {
           AckCallback ackCallback = new AckCallback(sel.getId());
           producer.send(sel.getProducerRecord(), ackCallback);
           sel.setNeedToResend(false);
         }
-        System.err.println("Resend " + needToResendRecords.size() + " done!!!!!!!!!!!!!!");
+        System.err.println("Resend " + needToResendRecords.size());
         needToResendRecords =  waittingAckBuffer.getNeedToResendRecords();
       }
     }
