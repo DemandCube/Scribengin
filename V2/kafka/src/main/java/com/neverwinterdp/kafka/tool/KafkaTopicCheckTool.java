@@ -84,7 +84,10 @@ public class KafkaTopicCheckTool implements Runnable {
     
     checkTool.runAsDeamon();
     sendTool.waitForTermination();
-    checkTool.waitForTermination();
+    if(!checkTool.waitForTermination()) {
+      checkTool.setInterrupt(true);
+      Thread.sleep(3000);
+    }
     topicReport = new KafkaTopicReport();
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
