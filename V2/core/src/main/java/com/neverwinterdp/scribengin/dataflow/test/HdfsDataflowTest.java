@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
+import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 
 
 public class HdfsDataflowTest extends DataflowTest {

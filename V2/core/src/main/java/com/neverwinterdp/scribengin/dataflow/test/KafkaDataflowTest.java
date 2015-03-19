@@ -1,18 +1,22 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
+import com.neverwinterdp.kafka.tool.KafkaMessageGenerator;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
-import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGeneratorRecord;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.util.JSONSerializer;
 
 
 public class KafkaDataflowTest extends DataflowTest {
@@ -123,4 +127,14 @@ public class KafkaDataflowTest extends DataflowTest {
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
   }
+  
+  static public class KafkaMessageGeneratorRecord implements KafkaMessageGenerator {
+    static public AtomicLong idTracker = new AtomicLong() ;
+    
+    public byte[] nextMessage(int partition, int messageSize) {
+      String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
+      return JSONSerializer.INSTANCE.toString(new Record(key, new byte[messageSize] )).getBytes();
+    }
+  }
+
 }

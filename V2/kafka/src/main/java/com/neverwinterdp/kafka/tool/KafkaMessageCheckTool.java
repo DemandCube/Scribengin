@@ -28,7 +28,6 @@ public class KafkaMessageCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
-  private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
   private boolean interrupt = false;
   private Thread deamonThread;
@@ -51,10 +50,6 @@ public class KafkaMessageCheckTool implements Runnable {
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
     //expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
-  }
-
-  public void setFetchSize(int fetchSize) {
-    this.fetchSize = fetchSize;
   }
 
   //TODO: replace by the KafkaTopicReport.ConsumerReport
@@ -139,12 +134,12 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
-    
+    int fetchSize = 1000 * (topicConfig.producerConfig.messageSize + 100) ;
     while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages;
         try{
-          messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
+          messages = partitionReader[k].fetch(fetchSize, 1000/*max read*/, 1000 /*max wait*/);
         } catch(Exception e){
           messageCounter.count(partitionReader[k].getPartition(), 0);
           continue;

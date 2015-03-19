@@ -18,8 +18,6 @@ import com.neverwinterdp.kafka.producer.AckKafkaWriter;
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport.ProducerReport;
-import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGenerator;
-import com.neverwinterdp.kafka.tool.messagegenerator.KafkaMessageGeneratorSimple;
 
 public class KafkaMessageSendTool implements Runnable {
   @ParametersDelegate
@@ -28,7 +26,7 @@ public class KafkaMessageSendTool implements Runnable {
   private Thread deamonThread;
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
-  private KafkaMessageGenerator messageGenerator = null;
+  private KafkaMessageGenerator messageGenerator = KafkaMessageGenerator.DEFAULT_MESSAGE_GENERATOR;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -92,9 +90,6 @@ public class KafkaMessageSendTool implements Runnable {
   public void doSend() throws Exception {
     System.out.println("KafkaMessageSendTool: Start sending the message to kafka");
     runDuration.start();
-    if(messageGenerator == null){
-      messageGenerator = new KafkaMessageGeneratorSimple();
-    }
     ExecutorService writerService = Executors.newFixedThreadPool(topicConfig.numberOfPartition);
     KafkaTool kafkaTool = new KafkaTool("KafkaTool", topicConfig.zkConnect);
     kafkaTool.connect();
