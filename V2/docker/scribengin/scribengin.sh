@@ -54,7 +54,8 @@ function deploy(){
     ssh neverwinterdp@hadoop-master -C "/opt/cluster.sh clean"
   fi
   
-  #Copy 
+  #Copy
+  ssh neverwinterdp@hadoop-master -C "/opt/cluster.sh exec \"rm -rf /opt/scribengin\""
   scp -r ../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
   ssh neverwinterdp@hadoop-master -C "yes | /opt/cluster.sh sync"
 }
