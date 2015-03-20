@@ -4,10 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
@@ -24,6 +24,66 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
   @Override
   int getKafkaBrokers() {
     return 4;
+  }
+
+  //Here we investigate what happens when topic is in brokers 1,2 with broker 1 as leader.
+  //We then swap and have broker 2 as leader.
+  //Does default producer lose messages?
+  
+  //Update. This tests fails. This shows that the default kafka writer does not lose messages on swapping leader
+ @Test
+ @Ignore
+  public void testLeaderSwap() throws Exception {
+
+    //create topic on brokers 1,2
+    String[] args = { "--create", "--partition", "1", "--replication-factor", "2", "--topic", NAME,
+        "--zookeeper", cluster.getZKConnect(), "--replica-assignment", "1:2" };
+    KafkaTool tool = new KafkaTool(NAME, cluster.getZKConnect());
+    tool.connect();
+    tool.createTopic(args);
+
+    // while writing, re-balance topic to have isr {2,1} and have 2 as leader
+    DefaultKafkaWriter writer = createKafkaWriter();
+    MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
+    int[] newBrokers = {2,1};
+    int leaderId1 = 0;
+    int leaderId2 = 0;
+    for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
+      writer.send(NAME, 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
+      if (i == 5) {
+        leaderId1 = tool.findPartitionMetadata(NAME, 0).leader().id();
+        KafkaLeaderElector leaderElector = new KafkaLeaderElector(NAME, 0, tool, newBrokers);
+        new Thread(leaderElector).start();
+      }
+    }
+    writer.close();
+
+    // Thread.sleep(5000);
+    String[] checkArgs = { "--topic", NAME,
+        "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
+        "--zk-connect", cluster.getZKConnect(),
+    };
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    new JCommander(checkTool, checkArgs);
+
+    checkTool.runAsDeamon();
+    if (checkTool.waitForTermination(10000)) {
+      checkTool.setInterrupt(true);
+      Thread.sleep(3000);
+    }
+    leaderId2 = tool.findPartitionMetadata(NAME, 0).leader().id();
+
+    System.out.println("initial leader " + leaderId1);
+    System.out.println("new leader " + leaderId2);
+    //ensure that leader election worked
+    assertNotEquals(leaderId1, leaderId2);
+    assertEquals(2, leaderId2);
+
+    tool.close();
+
+    System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
+    System.out.println("read messages = " + checkTool.getMessageCounter().getTotal());
+    assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
 
   /**
@@ -45,20 +105,21 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     // while writing, re-balance topic to have isr {1,2,3} and have 1 as leader
     DefaultKafkaWriter writer = createKafkaWriter();
     MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
+    int[] brokers= {1,2,3};
     int leaderId1 = 0;
     int leaderId2 = 0;
     for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
-      writer.send("test", 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
+      writer.send(NAME, 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
       if (i == 5) {
         leaderId1 = tool.findPartitionMetadata(NAME, 0).leader().id();
-        KafkaLeaderElector leaderElector = new KafkaLeaderElector("test", 0, tool);
+        KafkaLeaderElector leaderElector = new KafkaLeaderElector(NAME, 0, tool, brokers);
         new Thread(leaderElector).start();
       }
     }
     writer.close();
 
     // Thread.sleep(5000);
-    String[] checkArgs = { "--topic", "test",
+    String[] checkArgs = { "--topic", NAME,
         "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
         "--zk-connect", cluster.getZKConnect(),
     };
@@ -108,17 +169,17 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
 
     for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
 
-      writer.send("test", 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
+      writer.send(NAME, 0, "key-" + i, "test-1-" + i, failDebugCallback, 5000);
       if (i == 5) {
         leaderId1 = tool.findPartitionMetadata(NAME, 0).leader().id();
         System.out.println("leader1 " + leaderId1);
-        KafkaTopicRebalancer leaderKiller = new KafkaTopicRebalancer("test", 0, tool);
+        KafkaTopicRebalancer leaderKiller = new KafkaTopicRebalancer(NAME, 0, tool);
         new Thread(leaderKiller).start();
       }
     }
     writer.close();
 
-    String[] checkArgs = { "--topic", "test",
+    String[] checkArgs = { "--topic", NAME,
         "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
         "--zk-connect", cluster.getZKConnect(),
     };
@@ -141,7 +202,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
 
     System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
     System.out.println("read messages = " + checkTool.getMessageCounter().getTotal());
-    Assert.assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
+    assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
   }
 
   class KafkaTopicRebalancer implements Runnable {
@@ -162,7 +223,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     @Override
     public void run() {
       try {
-        boolean success= tool.reassignPartition(topic, partition, remainingBrokers);
+        boolean success = tool.reassignPartition(topic, partition, remainingBrokers);
         logger.info("reasign " + success);
         Thread.sleep(500);
       } catch (Exception e) {
@@ -173,7 +234,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     //a list of broker id's
     //move topic to brokers 3,4
     private List<Object> getRemainingBrokers() {
-      List<Object> brokerIds = new ArrayList<Object>();
+      List<Object> brokerIds = new LinkedList<Object>();
 
       brokerIds.add(3);
       brokerIds.add(4);
@@ -196,19 +257,21 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     private int partition;
     private String topic;
     private KafkaTool tool;
+    private int[] brokers;
 
-    public KafkaLeaderElector(String topic, int partition, KafkaTool tool) {
+    public KafkaLeaderElector(String topic, int partition, KafkaTool tool, int[] newBrokers) {
       super();
       this.topic = topic;
       this.partition = partition;
       this.tool = tool;
+      this.brokers= newBrokers;
     }
 
     @Override
     public void run() {
       try {
         KafkaTopicRebalancer topicRebalancer = new KafkaTopicRebalancer(topic, partition, tool);
-        topicRebalancer.setNewBrokers(1, 2, 3);
+        topicRebalancer.setNewBrokers(brokers);
         topicRebalancer.run();
 
         tool.moveLeaderToPreferredReplica(topic, partition);

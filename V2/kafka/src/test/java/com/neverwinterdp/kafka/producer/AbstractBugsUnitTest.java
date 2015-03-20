@@ -40,7 +40,7 @@ public abstract class AbstractBugsUnitTest {
   public void tearDown() throws Exception {
     logger.info("from here we shutdown");
     cluster.shutdown();
-    Thread.sleep(2000);
+    Thread.sleep(3000);
   }
 
   protected DefaultKafkaWriter createKafkaWriter() {
