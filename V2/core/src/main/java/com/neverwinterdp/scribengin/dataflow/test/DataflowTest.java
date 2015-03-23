@@ -5,6 +5,9 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 
 abstract public class DataflowTest {
+  @Parameter(names = "--flow-name", description = "The flow name")
+  protected String name = "hello";
+  
   @Parameter(names = "--worker", description = "Number of the workers")
   protected int    numOfWorkers           = 3;
   

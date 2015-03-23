@@ -174,6 +174,10 @@ public class KafkaTool implements Closeable {
   }
 
   public TopicMetadata findTopicMetadata(final String topic) throws Exception {
+    return this.findTopicMetadata(topic, 1);
+  }
+
+  public TopicMetadata findTopicMetadata(final String topic, int retries) throws Exception {
     Operation<TopicMetadata> findTopicOperation = new Operation<TopicMetadata>() {
       @Override
       public TopicMetadata execute() throws Exception {
@@ -189,8 +193,10 @@ public class KafkaTool implements Closeable {
         return topicMetadatas.get(0);
       }
     };
-    return findTopicOperation.execute();
+    return execute(findTopicOperation, retries);
   }
+
+  
 
   public PartitionMetadata findPartitionMetadata(String topic, int partition) throws Exception {
     TopicMetadata topicMetadata = findTopicMetadata(topic);
@@ -261,6 +267,21 @@ public class KafkaTool implements Closeable {
     return command.reassignPartitions();
   }
 
+  <T> T execute(Operation<T> op, int retries) throws Exception {
+    Exception error = null ;
+    for(int i = 0; i < retries; i++) {
+      try {
+        if(error != null) {
+          nextLeader();
+        }
+        return op.execute();
+      } catch(Exception ex) {
+        error = ex;
+      }
+    }
+    throw error ;
+  }
+  
   static interface Operation<T> {
     public T execute() throws Exception;
   }

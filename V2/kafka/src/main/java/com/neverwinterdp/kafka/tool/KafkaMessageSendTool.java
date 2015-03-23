@@ -46,7 +46,16 @@ public class KafkaMessageSendTool implements Runnable {
   
   public boolean isSending() { return sendCounter.get() > 0 ; }
   
-  public void report(KafkaTopicReport report) {
+  public KafkaTopicReport getReport() {
+    KafkaTopicReport topicReport = new KafkaTopicReport() ;
+    topicReport.setTopic(topicConfig.topic);
+    topicReport.setNumOfPartitions(topicConfig.numberOfPartition);
+    topicReport.setNumOfReplications(topicConfig.replication);
+    populate(topicReport) ;
+    return topicReport ;
+  }
+  
+  public void populate(KafkaTopicReport report) {
     ProducerReport producerReport = report.getProducerReport();
     producerReport.setWriter(topicConfig.producerConfig.writerType);
     producerReport.setMessageSize(topicConfig.producerConfig.messageSize);

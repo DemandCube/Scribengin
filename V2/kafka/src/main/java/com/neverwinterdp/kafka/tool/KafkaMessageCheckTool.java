@@ -29,27 +29,17 @@ public class KafkaMessageCheckTool implements Runnable {
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
   private MessageCounter messageCounter = new MessageCounter();
+  private int numOfPartitions = 0;
   private boolean interrupt = false;
-  private Thread deamonThread;
+  private Thread  deamonThread;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
-  //private int expectNumberOfMessage;
   
   public KafkaMessageCheckTool() {
   }
 
-  //Removed this constructor because otherwire if you used command line style parameters
-  //and parsed with JCommander, you'd have to manually set expectNumberOfMessage
-  //Removed for consistency
-//  public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
-//    topicConfig.zkConnect = zkConnect;
-//    topicConfig.topic = topic;
-//    expectNumberOfMessage = expect;
-//  }
-
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    //expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
   }
 
   //TODO: replace by the KafkaTopicReport.ConsumerReport
@@ -64,10 +54,6 @@ public class KafkaMessageCheckTool implements Runnable {
   public void setInterrupt(boolean b) {
     this.interrupt = b;
   }
-
-  //public void setExpectNumberOfMessage(int num) {
-  //  expectNumberOfMessage = num;
-  //}
 
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
     if (!running) return !running;
@@ -111,21 +97,9 @@ public class KafkaMessageCheckTool implements Runnable {
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
     
-    TopicMetadata topicMeta;
-    List<PartitionMetadata> partitionMetas;
-    
-    //Added so that the checktool doesn't fail immediately if its started before 
-    //topic is created/written to
-    //TODO: this code should be moved into the kafkaTool.findTopicMetadata(String topic, int retry)
-    int tries = 0;
-    do {
-      topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
-      partitionMetas = topicMeta.partitionsMetadata();
-      tries++;
-      if(partitionMetas.size() < 1){
-        Thread.sleep(500 * tries);
-      }
-    } while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
+    TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic, 3);
+    List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
+    this.numOfPartitions = partitionMetas.size();
     kafkaTool.close();
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
@@ -192,7 +166,17 @@ public class KafkaMessageCheckTool implements Runnable {
     }
   }
 
-  public void report(KafkaTopicReport report) {
+  public KafkaTopicReport getReport() {
+    KafkaTopicReport report = new KafkaTopicReport() ;
+    report.setTopic(topicConfig.topic);
+    report.setNumOfPartitions(numOfPartitions);
+    report.setNumOfReplications(topicConfig.replication);
+    populate(report);
+    return report ;
+  }
+  
+  
+  public void populate(KafkaTopicReport report) {
     ConsumerReport consumerReport = report.getConsumerReport();
     consumerReport.setMessagesRead(messageCounter.totalMessages);
     consumerReport.setRunDuration(readDuration.elapsed(TimeUnit.MILLISECONDS));

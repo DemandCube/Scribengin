@@ -49,8 +49,14 @@ public class KafkaTopicReport {
       TabularFormater reportFormater = new TabularFormater(header);
       reportFormater.setTitle("Topic Report ");
       for(KafkaTopicReport  sel : report) {
-        long messageSentRate = sel.producerReport.messageSent/(sel.producerReport.runDuration/1000);
-        long messageReadRate = sel.consumerReport.messagesRead/(sel.consumerReport.runDuration/1000);
+        long messageSentRate = 0 ;
+        if(sel.producerReport.messageSent > 0) {
+          messageSentRate = sel.producerReport.messageSent/(sel.producerReport.runDuration/1000);
+        }
+        long messageReadRate = 0;
+        if(sel.consumerReport.messagesRead > 0) {
+          messageReadRate = sel.consumerReport.messagesRead/(sel.consumerReport.runDuration/1000);
+        }
         Object[] cells = {
           sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
           sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,

@@ -108,8 +108,8 @@ public class KafkaTopicCheckTool implements Runnable {
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
     topicReport.setNumOfReplications(kafkaTopicConfig.replication);
-    sendTool.report(topicReport);
-    checkTool.report(topicReport);
+    sendTool.populate(topicReport);
+    checkTool.populate(topicReport);
   }
 
   static public void main(String[] args) throws Exception {

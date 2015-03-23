@@ -87,7 +87,8 @@ public class DataflowUnitTest {
         String command = 
           "dataflow-test kafka " + 
           "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
-          "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
+          "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
+          "  --sink-name output";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
