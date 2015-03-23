@@ -23,22 +23,17 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
   @Override
   public void init(ScribenginClient scribenginClient) {
     zkConnect = scribenginClient.getRegistry().getRegistryConfig().getConnect();
-    String[] args = {
-      "--topic",                  sinkName, 
-      "--num-partition",          Integer.toString(5),
-      "--zk-connect",             zkConnect
-    };
-    kafkaMessageCheckTool = new KafkaMessageCheckTool();
-    new JCommander(kafkaMessageCheckTool, args);
   }
   
   @Override
   public void run() {
+    kafkaMessageCheckTool = createKafkaMessageCheckTool();
     kafkaMessageCheckTool.run();
   }
 
   @Override
   public void runInBackground() {
+    kafkaMessageCheckTool = createKafkaMessageCheckTool();
     kafkaMessageCheckTool.runAsDeamon();
   }
 
@@ -60,5 +55,17 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
     sinkReport.setNumberOfStreams(topicReport.getNumOfPartitions());
     sinkReport.setReadCount(topicReport.getConsumerReport().getMessagesRead());
     sinkReport.setDuration(topicReport.getConsumerReport().getRunDuration());
+  }
+  
+  KafkaMessageCheckTool createKafkaMessageCheckTool() {
+    String[] args = {
+      "--topic",                  sinkName, 
+      "--num-partition",          Integer.toString(5),
+      "--consume-max",            Long.toString(expectRecords),
+      "--zk-connect",             zkConnect
+    };
+    KafkaMessageCheckTool kafkaMessageCheckTool = new KafkaMessageCheckTool();
+    new JCommander(kafkaMessageCheckTool, args);
+    return kafkaMessageCheckTool;
   }
 }

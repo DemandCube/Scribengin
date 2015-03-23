@@ -19,6 +19,8 @@ abstract public class DataflowSourceGenerator implements Runnable {
   
   @Parameter(names = "--source-max-duration", description = "The maximum number of record per stream")
   protected long    maxDuration;
+
+  private   long    numberOfGeneratedRecords ;
   
   public String getSourceName() { return sourceName; }
 
@@ -29,6 +31,11 @@ abstract public class DataflowSourceGenerator implements Runnable {
   public long getWritePeriod() { return writePeriod; }
 
   public long getMaxDuration() { return maxDuration; }
+
+  public long getNumberOfGeneratedRecords() { return numberOfGeneratedRecords; }
+  public void setNumberOfGeneratedRecords(long numberOfGeneratedRecords) {
+    this.numberOfGeneratedRecords = numberOfGeneratedRecords;
+  }
 
   abstract public StorageDescriptor getSourceDescriptor();
   

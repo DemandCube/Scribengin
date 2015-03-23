@@ -53,6 +53,7 @@ public class KafkaDataflowTest extends DataflowTest {
     dataflowInfoThread.interrupt();
     
     
+    sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
     sinkValidator.run();
     sinkValidator.waitForTermination();
     DataflowTestReport report = new DataflowTestReport() ;

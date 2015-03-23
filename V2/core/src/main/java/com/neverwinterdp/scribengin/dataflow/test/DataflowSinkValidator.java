@@ -8,6 +8,11 @@ abstract public class DataflowSinkValidator implements Runnable {
   @Parameter(names = "--sink-name", required=true, description = "The storage sink name, usually the database name or dir name of the storage")
   protected String sinkName ;
   
+  @Parameter(names = "--sink-expect-records", description = "The expect number of records in the sink")
+  protected long    expectRecords = 100000;
+  
+  public void setExpectRecords(long num) { this.expectRecords = num ; }
+  
   abstract public StorageDescriptor getSinkDescriptor() ;
   
   abstract public void init(ScribenginClient scribenginClient) ;

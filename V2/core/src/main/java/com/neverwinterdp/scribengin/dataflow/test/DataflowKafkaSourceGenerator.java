@@ -31,6 +31,7 @@ public class DataflowKafkaSourceGenerator extends DataflowSourceGenerator {
     sendTool = new KafkaMessageSendTool();
     new JCommander(sendTool, sendArgs);
     sendTool.setMessageGenerator(new KafkaMessageGeneratorRecord());
+    setNumberOfGeneratedRecords(numberOfStream * maxRecordsPerStream);
   }
 
   
