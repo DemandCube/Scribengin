@@ -23,6 +23,9 @@ abstract public class DataflowTest {
   @Parameter(names = "--print-dataflow-info", description = "Max duration for the test")
   protected long printDataflowInfo = 5000;
   
+  @Parameter(names = "--junit-report", description = "The junit report output file")
+  protected String juniReport;
+  
   public void run(ScribenginShell shell) throws Exception {
     doRun(shell);
   }
@@ -33,6 +36,11 @@ abstract public class DataflowTest {
   
   abstract protected void doRun(ScribenginShell shell) throws Exception ;
 
+  protected void junitReport(DataflowTestReport report) throws Exception {
+    //TODO: implement this method and output the the junit report. The method should report only if 
+    //the juniParameter is not null.
+  }
+  
   static public class PrintDataflowInfoThread extends Thread {
     ScribenginShell shell;
     DataflowDescriptor descriptor;

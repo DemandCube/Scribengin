@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.kafka.tool.KafkaMessageGenerator;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -60,8 +59,10 @@ public class KafkaDataflowTest extends DataflowTest {
     sourceGenerator.populate(report);
     sinkValidator.populate(report);
     report.report(System.out);
+    //TODO: Implemement and test the juniReport method
+    junitReport(report);
   }
-  
+
   static public class TestCopyScribe extends ScribeAbstract {
     private int count = 0;
     
@@ -84,5 +85,4 @@ public class KafkaDataflowTest extends DataflowTest {
       return JSONSerializer.INSTANCE.toString(new Record(key, new byte[messageSize] )).getBytes();
     }
   }
-
 }
