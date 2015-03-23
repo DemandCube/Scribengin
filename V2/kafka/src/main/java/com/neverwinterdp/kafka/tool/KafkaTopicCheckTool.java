@@ -92,6 +92,7 @@ public class KafkaTopicCheckTool implements Runnable {
             System.out.println("Progress: sent = " + sendTool.getSentCount() + ", consumed = " + checkTool.getMessageCounter().getTotal());
           }
         } catch (InterruptedException e) {
+          System.out.println("Exit the progress reporter");
         }
       }
     };
