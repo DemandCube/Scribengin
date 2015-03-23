@@ -34,7 +34,7 @@ public abstract class AbstractBugsUnitTest {
     Thread.sleep(2000);
   }
 
-  abstract int getKafkaBrokers();
+  public abstract int getKafkaBrokers();
 
   @After
   public void tearDown() throws Exception {

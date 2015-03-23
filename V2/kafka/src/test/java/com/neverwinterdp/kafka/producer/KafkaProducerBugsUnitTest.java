@@ -22,7 +22,7 @@ import com.neverwinterdp.server.Server;
 public class KafkaProducerBugsUnitTest extends AbstractBugsUnitTest {
 
   @Override
-  int getKafkaBrokers() {
+  public int getKafkaBrokers() {
     return 2;
   }
 

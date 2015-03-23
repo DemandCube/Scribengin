@@ -22,7 +22,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
   * For total re-balance we start with two brokers then move the data to two new brokers.
   * */
   @Override
-  int getKafkaBrokers() {
+  public int getKafkaBrokers() {
     return 4;
   }
 
