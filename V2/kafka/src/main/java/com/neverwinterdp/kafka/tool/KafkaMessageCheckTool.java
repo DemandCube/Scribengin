@@ -189,7 +189,6 @@ public class KafkaMessageCheckTool implements Runnable {
       testSet.addTestResult( t );
       
       tapProducer.dump(testSet, new File(topicConfig.consumerConfig.tapFile));
-      //System.out.println(tapProducer.dump(testSet));
     }
   }
 
