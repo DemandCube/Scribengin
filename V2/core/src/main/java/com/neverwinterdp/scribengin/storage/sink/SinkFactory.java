@@ -4,10 +4,10 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.neverwinterdp.scribengin.hdfs.sink.HDFSSink;
-import com.neverwinterdp.scribengin.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
+import com.neverwinterdp.scribengin.storage.hdfs.sink.HDFSSink;
+import com.neverwinterdp.scribengin.storage.kafka.sink.KafkaSink;
 
 @Singleton
 public class SinkFactory {

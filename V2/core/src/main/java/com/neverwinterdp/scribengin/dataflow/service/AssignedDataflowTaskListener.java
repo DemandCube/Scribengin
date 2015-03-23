@@ -35,6 +35,7 @@ public class AssignedDataflowTaskListener extends NodeChildrenListener<Scribengi
     NodeEvent nodeEvent = event.getNodeEvent();
     if(nodeEvent.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
       onChildrenChange(event) ;
+    } else if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
     } else {
       System.err.println("unhandle assigned dataflow task event: " + nodeEvent.getPath() + " - " + nodeEvent.getType());
     }
@@ -73,8 +74,8 @@ public class AssignedDataflowTaskListener extends NodeChildrenListener<Scribengi
   public class DataflowTaskHeartbeatListener extends NodeEventListener<ScribenginEvent> {
     public DataflowTaskHeartbeatListener(DataflowRegistry dataflowRegistry, String taskName) throws RegistryException {
       super(dataflowRegistry.getRegistry(), true);
-      String hearbeatPath = dataflowRegistry.getTasksAssignedPath() + "/" + taskName + "/heartbeat";
-      watchExists(hearbeatPath);
+      String heartbeatPath = dataflowRegistry.getTasksAssignedPath() + "/" + taskName + "/heartbeat";
+      watchExists(heartbeatPath);
     }
     
     @Override

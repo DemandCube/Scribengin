@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin;
 
 import static com.neverwinterdp.vm.builder.VMClusterBuilder.h1;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.Node;
@@ -55,11 +56,17 @@ public class ScribenginClient {
   }
   
   public List<DataflowDescriptor> getRunningDataflowDescriptor() throws RegistryException {
-    return vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
+    List<DataflowDescriptor> holder =
+      vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
+    holder.removeAll(Collections.singleton(null));
+    return holder;
   }
   
   public List<DataflowDescriptor> getHistoryDataflowDescriptor() throws RegistryException {
-    return vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_HISTORY_PATH, DataflowDescriptor.class) ;
+    List<DataflowDescriptor> holder = 
+        vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_HISTORY_PATH, DataflowDescriptor.class) ;
+    holder.removeAll(Collections.singleton(null));
+    return holder;
   }
   
   public DataflowRegistry getRunningDataflowRegistry(String name) throws Exception {

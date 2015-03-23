@@ -19,15 +19,9 @@ import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 
 
-public class KafkaDataflowTest extends DataflowTest {
+public class KafkaToS3DataflowTest extends DataflowTest {
   @Parameter(names = "--source-topic", description = "Source topic")
   public String SOURCE_TOPIC       = "hello.source" ;
-  
-  @Parameter(names = "--sink-topic", description = "Default sink topic")
-  public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
-  
-  @Parameter(names = "--invalidsink-topic", description = "Invalid sink topic")
-  public String INVALID_SINK_TOPIC = "hello.sink.invalid" ;
   
   @Parameter(names = "--flow-name", description = "Invalid sink topic")
   private String name                   = "hello";
@@ -41,7 +35,12 @@ public class KafkaDataflowTest extends DataflowTest {
   @Parameter(names = "--kafka-max-message-per-partition", description = "Number of the partitions")
   private int maxMessagePerPartition = 100;
   
+  static public String BUCKET_NAME = "sink-source-test";
+  static public String STORAGE_PATH = "database";
+  
   protected void doRun(ScribenginShell shell) throws Exception {
+    
+    
     
     long start = System.currentTimeMillis();
     ScribenginClient scribenginClient = shell.getScribenginClient();
@@ -79,51 +78,22 @@ public class KafkaDataflowTest extends DataflowTest {
     storageDescriptor.attribute("broker.list", brokerList);
     dflDescriptor.setSourceDescriptor(storageDescriptor);
 
-    StorageDescriptor defaultSink = new StorageDescriptor("KAFKA");
-    defaultSink.attribute("name", name);
-    defaultSink.attribute("topic", DEFAULT_SINK_TOPIC);
-    defaultSink.attribute("zk.connect", zkConnect);
-    defaultSink.attribute("broker.list", brokerList);
-    dflDescriptor.addSinkDescriptor("default", defaultSink);
+    StorageDescriptor defaultSink = new StorageDescriptor("S3");
+    defaultSink.attribute("s3.bucket.name",  BUCKET_NAME);
+    defaultSink.attribute("s3.storage.path", STORAGE_PATH);
+    
 
-    StorageDescriptor invalidSink = new StorageDescriptor("KAFKA");
+    StorageDescriptor invalidSink = new StorageDescriptor("S3");
     invalidSink.attribute("name", name);
-    invalidSink.attribute("topic", INVALID_SINK_TOPIC);
-    invalidSink.attribute("zk.connect", zkConnect);
-    invalidSink.attribute("broker.list", brokerList);
-    dflDescriptor.addSinkDescriptor("invalid", invalidSink);
+
     
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
-    
-    String[] checkArgs = {"--topic", DEFAULT_SINK_TOPIC,
-        //"--num-partition", Integer.toString(numPartitions),
-        "--consume-max-duration", Long.toString(duration),
-        "--consume-max", Integer.toString(maxMessagePerPartition*numPartitions),
-        "--zk-connect", zkConnect,
-        "--tap-enable"};
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
-    new JCommander(checkTool, checkArgs);
-    checkTool.runAsDeamon();
-    
-    
-    //TODO: Support making sure a topic stays empty
-    /*
-    String[] checkInvalidArgs = {"--topic", INVALID_SINK_TOPIC, 
-        "--consume-max-duration", Integer.toString(writePeriod*this.numPartitions),
-        "--consume-max", Integer.toString(maxMessagePerPartition*this.numPartitions),
-        "--zk-connect", zkConnect};
-    KafkaMessageCheckTool checkInvalidTool = new KafkaMessageCheckTool();
-    new JCommander(checkInvalidTool, checkInvalidArgs);
-    checkInvalidTool.setExpectNumberOfMessage(0);
-    checkInvalidTool.runAsDeamon();
-    */
-    
+     
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     waitingEventListener.waitForEvents(duration);
-    checkTool.waitForTermination(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
   }

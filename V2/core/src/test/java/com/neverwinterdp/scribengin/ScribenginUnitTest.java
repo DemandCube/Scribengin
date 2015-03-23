@@ -11,8 +11,8 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder;
 import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
-import com.neverwinterdp.scribengin.kafka.KafkaSourceGenerator;
+import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
+import com.neverwinterdp.scribengin.storage.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
 
