@@ -31,16 +31,18 @@ public class KafkaServerLauncher implements Server {
     properties.put("log.dirs", "./build/data/kafka");
     properties.put("zookeeper.connect", "127.0.0.1:2181");
     properties.put("default.replication.factor", "1");
-    
+    //enable topic deletion
+    properties.put("delete.topic.enable", "true");
+
     properties.put("controlled.shutdown.enable", "true");
     properties.put("auto.leader.rebalance.enable", "true");
     properties.put("controller.socket.timeout.ms", "30000");
     properties.put("controlled.shutdown.enable", "true");
     properties.put("controlled.shutdown.max.retries", "3");
     properties.put("controlled.shutdown.retry.backoff.ms", "5000");
-    properties.put("zookeeper.session.timeout.ms",  "15000");
+    properties.put("zookeeper.session.timeout.ms", "15000");
   }
-  
+
   public KafkaServerLauncher(int id, String dataDir, int port) {
     this();
     properties.put("broker.id", Integer.toString(id));
@@ -50,21 +52,21 @@ public class KafkaServerLauncher implements Server {
 
   public KafkaServerLauncher(Map<String, String> overrideProperties) {
     this();
-    if(overrideProperties != null) {
+    if (overrideProperties != null) {
       properties.putAll(overrideProperties);
     }
   }
-  
+
   public KafkaServerLauncher setReplication(int replication) {
     properties.put("default.replication.factor", Integer.toString(replication));
     return this;
   }
-  
+
   public KafkaServerLauncher setZkConnect(String zkConnect) {
     properties.put("zookeeper.connect", zkConnect);
     return this;
   }
-  
+
   public KafkaServerLauncher setNumOfPartition(int number) {
     properties.put("num.partitions", Integer.toString(number));
     return this;

@@ -27,6 +27,7 @@ import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.TopicMetadataResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.utils.ZKStringSerializer$;
+import kafka.utils.ZkUtils;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.KeeperException;
@@ -96,13 +97,14 @@ public class KafkaTool implements Closeable {
     };
     createTopic(args);
   }
-/**
- * Create a topic. 
- * For valid configs see https://cwiki.apache.org/confluence/display/KAFKA/Replication+tools#Replicationtools-Howtousethetool?.3
- *
- * @See https://kafka.apache.org/documentation.html#topic-config 
- * for more valid configs
- * */
+
+  /**
+   * Create a topic. This method will not create a topic that is currently scheduled for deletion.
+   * For valid configs see https://cwiki.apache.org/confluence/display/KAFKA/Replication+tools#Replicationtools-Howtousethetool?.3
+   *
+   * @See https://kafka.apache.org/documentation.html#topic-config 
+   * for more valid configs
+   * */
   public void createTopic(String[] args) throws Exception {
     int sessionTimeoutMs = 10000;
     int connectionTimeoutMs = 10000;
@@ -123,27 +125,35 @@ public class KafkaTool implements Closeable {
   }
 
   /**
-   * This delete method doesn't work
+   * This method works if cluster has "delete.topic.enable" = "true".
+   * It can also be implemented by TopicCommand.deleteTopic which simply calls AdminUtils.delete 
    *
    * @param topicName
    * @throws Exception
    */
-  //TODO un-deprecate by using TopicCommand.deleteTopic()
-  //Also ensure cluster has "delete.topic.enable" = "true"
-  @Deprecated
   public void deleteTopic(String topicName) throws Exception {
-    int sessionTimeoutMs = 1000;
-    int connectionTimeoutMs = 1000;
+    int sessionTimeoutMs = 10000;
+    int connectionTimeoutMs = 10000;
     ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
     AdminUtils.deleteTopic(zkClient, topicName);
     zkClient.close();
   }
 
+  /**
+   * Returns true if topic path exists in zk.
+   * Warns user if topic is scheduled for deletion.
+   * 
+   * @See http://search-hadoop.com/m/4TaT4VWNg8/v=plain
+   * */
+  //TODO warn user if topic is scheduled for deletion 
   public boolean topicExits(String topicName) throws Exception {
-    int sessionTimeoutMs = 1000;
-    int connectionTimeoutMs = 1000;
+    int sessionTimeoutMs = 10000;
+    int connectionTimeoutMs = 10000;
     ZkClient zkClient = new ZkClient(zkConnects, sessionTimeoutMs, connectionTimeoutMs, ZKStringSerializer$.MODULE$);
     boolean exists = AdminUtils.topicExists(zkClient, topicName);
+    if (exists && ZkUtils.pathExists(zkClient, ZkUtils.getDeleteTopicPath(topicName))) {
+      System.err.println("Topic "+topicName+" exists but is scheduled for deletion!");
+    }
     zkClient.close();
     return exists;
   }
