@@ -18,13 +18,10 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
 
   /*
   * For simple re-balance, we start with two brokers, add a new broker and make it leader
-  * 
   * For total re-balance we start with two brokers then move the data to two new brokers.
   * */
   @Override
-  public int getKafkaBrokers() {
-    return 4;
-  }
+  public int getKafkaBrokers() { return 4; }
 
   //Here we investigate what happens when topic is in brokers 1,2 with broker 1 as leader.
   //We then swap and have broker 2 as leader.
@@ -34,10 +31,11 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
  @Test
  @Ignore
   public void testLeaderSwap() throws Exception {
-
     //create topic on brokers 1,2
-    String[] args = { "--create", "--partition", "1", "--replication-factor", "2", "--topic", NAME,
-        "--zookeeper", cluster.getZKConnect(), "--replica-assignment", "1:2" };
+    String[] args = { 
+        "--create", "--partition", "1", "--replication-factor", "2", "--topic", NAME,
+        "--zookeeper", cluster.getZKConnect(), "--replica-assignment", "1:2" 
+    };
     KafkaTool tool = new KafkaTool(NAME, cluster.getZKConnect());
     tool.connect();
     tool.createTopic(args);
@@ -63,7 +61,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
         "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
         "--zk-connect", cluster.getZKConnect(),
     };
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     new JCommander(checkTool, checkArgs);
 
     checkTool.runAsDeamon();
@@ -96,8 +94,10 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
   @Test
   public void testSimpleTopicRebalance() throws Exception {
     //create topic on brokers 2,3
-    String[] args = { "--create", "--partition", "1", "--replication-factor", "2", "--topic", NAME,
-        "--zookeeper", cluster.getZKConnect(), "--replica-assignment", "2:3" };
+    String[] args = { 
+      "--create", "--partition", "1", "--replication-factor", "2", "--topic", NAME,
+      "--zookeeper", cluster.getZKConnect(), "--replica-assignment", "2:3" 
+    };
     KafkaTool tool = new KafkaTool(NAME, cluster.getZKConnect());
     tool.connect();
     tool.createTopic(args);
@@ -105,7 +105,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     // while writing, re-balance topic to have isr {1,2,3} and have 1 as leader
     DefaultKafkaWriter writer = createKafkaWriter();
     MessageFailDebugCallback failDebugCallback = new MessageFailDebugCallback();
-    int[] brokers= {1,2,3};
+    int[] brokers= { 1, 2, 3 };
     int leaderId1 = 0;
     int leaderId2 = 0;
     for (int i = 0; i < NUM_OF_SENT_MESSAGES; i++) {
@@ -119,11 +119,12 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     writer.close();
 
     // Thread.sleep(5000);
-    String[] checkArgs = { "--topic", NAME,
-        "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
-        "--zk-connect", cluster.getZKConnect(),
+    String[] checkArgs = {
+      "--topic", NAME,
+      "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
+      "--zk-connect", cluster.getZKConnect(),
     };
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     new JCommander(checkTool, checkArgs);
 
     checkTool.runAsDeamon();
@@ -141,6 +142,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
 
     tool.close();
 
+    System.out.println("Sent message count = " + NUM_OF_SENT_MESSAGES);
     System.out.println("send done, failed message count = " + failDebugCallback.failedCount);
     System.out.println("read messages = " + checkTool.getMessageCounter().getTotal());
     assertTrue(checkTool.getMessageCounter().getTotal() < NUM_OF_SENT_MESSAGES);
@@ -183,7 +185,7 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
         "--consume-max", Integer.toString(NUM_OF_SENT_MESSAGES),
         "--zk-connect", cluster.getZKConnect(),
     };
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     new JCommander(checkTool, checkArgs);
     //KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(cluster.getZKConnect(), "test", NUM_OF_SENT_MESSAGES);
     checkTool.runAsDeamon();
@@ -235,10 +237,8 @@ public class KafkaProducerTopicRebalanceBugUnitTest extends AbstractBugsUnitTest
     //move topic to brokers 3,4
     private List<Object> getRemainingBrokers() {
       List<Object> brokerIds = new LinkedList<Object>();
-
       brokerIds.add(3);
       brokerIds.add(4);
-
       return brokerIds;
     }
 

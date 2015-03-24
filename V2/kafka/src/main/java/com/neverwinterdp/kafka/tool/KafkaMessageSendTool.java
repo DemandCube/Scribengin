@@ -8,6 +8,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.RecordMetadata;
+
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
@@ -26,12 +29,17 @@ public class KafkaMessageSendTool implements Runnable {
   private Thread deamonThread;
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
+  private AtomicLong   sendFailedCounter = new AtomicLong() ;
   private KafkaMessageGenerator messageGenerator = KafkaMessageGenerator.DEFAULT_MESSAGE_GENERATOR;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
 
   public KafkaMessageSendTool() {
+  }
+  
+  public KafkaMessageSendTool(String[] args) {
+    new JCommander(this, args);
   }
 
   public KafkaMessageSendTool(KafkaTopicConfig topicConfig) {
@@ -43,6 +51,8 @@ public class KafkaMessageSendTool implements Runnable {
   }
 
   public long getSentCount() { return sendCounter.get(); }
+  
+  public long getSentFailedCount() { return sendFailedCounter.get(); }
   
   public boolean isSending() { return sendCounter.get() > 0 ; }
   
@@ -65,7 +75,7 @@ public class KafkaMessageSendTool implements Runnable {
       messageSent += writer.writeCount;
     }
     producerReport.setMessageSent(messageSent);
-    //TODO add failed
+    producerReport.setFailed(sendFailedCounter.get());;
   }
 
   
@@ -105,10 +115,12 @@ public class KafkaMessageSendTool implements Runnable {
     KafkaTool kafkaTool = new KafkaTool("KafkaTool", topicConfig.zkConnect);
     kafkaTool.connect();
     String kafkaConnects = kafkaTool.getKafkaBrokerList();
-    if (kafkaTool.topicExits(topicConfig.topic)) {
-      kafkaTool.deleteTopic(topicConfig.topic);
+    //TODO: add option to delete topic if it exists
+    //kafkaTool.deleteTopic(topicConfig.topic);
+    if(!kafkaTool.topicExits(topicConfig.topic)) {
+      kafkaTool.createTopic(topicConfig.topic, topicConfig.replication, topicConfig.numberOfPartition);
     }
-    kafkaTool.createTopic(topicConfig.topic, topicConfig.replication, topicConfig.numberOfPartition);
+   
     TopicMetadata topicMetadata = kafkaTool.findTopicMetadata(topicConfig.topic);
     List<PartitionMetadata> partitionMetadataHolder = topicMetadata.partitionsMetadata();
     for (PartitionMetadata sel : partitionMetadataHolder) {
@@ -131,10 +143,12 @@ public class KafkaMessageSendTool implements Runnable {
     private String kafkaConnects;
     //TODO atomic integer for thread safety
     private int writeCount = 0;
+    private MessageFailedCountCallback failedCountCallback ;
 
     PartitionMessageWriter(PartitionMetadata metadata, String kafkaConnects) {
       this.metadata = metadata;
       this.kafkaConnects = kafkaConnects;
+      failedCountCallback = new MessageFailedCountCallback();
     }
 
     public int getWriteCount() { return this.writeCount ; }
@@ -148,7 +162,7 @@ public class KafkaMessageSendTool implements Runnable {
           //System.err.println("Partition id: "+Integer.toString(metadata.partitionId())+" - Write count: "+Integer.toString(writeCount));
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
           byte[] message = messageGenerator.nextMessage(metadata.partitionId(), topicConfig.producerConfig.messageSize) ;
-          writer.send(topicConfig.topic, metadata.partitionId(), key, message, null, topicConfig.producerConfig.sendTimeout);
+          writer.send(topicConfig.topic, metadata.partitionId(), key, message, failedCountCallback, topicConfig.producerConfig.sendTimeout);
           writeCount++;
           sendCounter.incrementAndGet();
           //Check max message per partition
@@ -164,6 +178,7 @@ public class KafkaMessageSendTool implements Runnable {
       } finally {
         if (writer != null) {
           try {
+            Thread.sleep(1000); //wait to make sure writer flush or handle all the messages in the buffer
             writer.close();
           } catch (Exception e) {
             e.printStackTrace();
@@ -178,6 +193,14 @@ public class KafkaMessageSendTool implements Runnable {
       } else {
         return new DefaultKafkaWriter("KafkaMessageSendTool", topicConfig.producerConfig.producerProperties, kafkaConnects);
       }
+    }
+  }
+  
+  class MessageFailedCountCallback implements Callback {
+    @Override
+    public void onCompletion(RecordMetadata metadata, Exception exception) {
+      if (exception != null)
+        sendFailedCounter.incrementAndGet();
     }
   }
 

@@ -44,28 +44,28 @@ public class KafkaTopicReport {
     String[] header = { 
         "Topic", "Replication", "Partitions", "F Sim", 
         "Writer","W Duration", "W Rate", "W Total", "R Duration", "R Rate", "R Total"
-      };
+    };
       
-      TabularFormater reportFormater = new TabularFormater(header);
-      reportFormater.setTitle("Topic Report ");
-      for(KafkaTopicReport  sel : report) {
-        long messageSentRate = 0 ;
-        if(sel.producerReport.messageSent > 0) {
-          messageSentRate = sel.producerReport.messageSent/(sel.producerReport.runDuration/1000);
-        }
-        long messageReadRate = 0;
-        if(sel.consumerReport.messagesRead > 0) {
-          messageReadRate = sel.consumerReport.messagesRead/(sel.consumerReport.runDuration/1000);
-        }
-        Object[] cells = {
+    TabularFormater reportFormater = new TabularFormater(header);
+    reportFormater.setTitle("Topic Report ");
+    for(KafkaTopicReport  sel : report) {
+      long messageSentRate = 0 ;
+      if(sel.producerReport.messageSent > 0) {
+        messageSentRate = sel.producerReport.messageSent/(sel.producerReport.runDuration/1000);
+      }
+      long messageReadRate = 0;
+      if(sel.consumerReport.messagesRead > 0) {
+        messageReadRate = sel.consumerReport.messagesRead/(sel.consumerReport.runDuration/1000);
+      }
+      Object[] cells = {
           sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
           sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,
           sel.consumerReport.runDuration, messageReadRate, sel.consumerReport.messagesRead,
-        };
-        reportFormater.addRow(cells);
-      }
-      out.append("\n");
-      out.append(reportFormater.getFormatText());
+      };
+      reportFormater.addRow(cells);
+    }
+    out.append("\n");
+    out.append(reportFormater.getFormatText());
   }
   
   static public class ProducerReport {
@@ -73,7 +73,7 @@ public class KafkaTopicReport {
     private long   runDuration;
     private int    messageSent;
     private int    messageSize; //bytes
-    private int    failed; // gotten from writer
+    private long   failed; // gotten from writer
 
     public String getWriter() { return writer; }
     public void setWriter(String writer) { this.writer = writer; }
@@ -87,8 +87,8 @@ public class KafkaTopicReport {
     public int getMessageSize() { return messageSize; }
     public void setMessageSize(int messageSize) { this.messageSize = messageSize; }
 
-    public int getFailed() { return failed; }
-    public void setFailed(int failed) { this.failed = failed; }
+    public long getFailed() { return failed; }
+    public void setFailed(long failed) { this.failed = failed; }
 
     @Override
     public String toString() {

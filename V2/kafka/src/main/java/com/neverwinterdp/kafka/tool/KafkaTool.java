@@ -7,6 +7,7 @@ import static scala.collection.JavaConversions.asScalaSet;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -87,13 +88,12 @@ public class KafkaTool implements Closeable {
 
   public void createTopic(String topicName, int numOfReplication, int numPartitions) throws Exception {
     String[] args = { 
-        "--create",
-        "--partition", String.valueOf(numPartitions),
-        "--replication-factor", String.valueOf(numOfReplication),
-        "--topic", topicName,
-        "--zookeeper", zkConnects
+      "--create",
+      "--topic", topicName,
+      "--partition", String.valueOf(numPartitions),
+      "--replication-factor", String.valueOf(numOfReplication),
+      "--zookeeper", zkConnects
     };
-
     createTopic(args);
   }
 /**
@@ -237,9 +237,7 @@ public class KafkaTool implements Closeable {
     TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
     //move leader to broker 1
     Set<TopicAndPartition> topicsAndPartitions = asScalaSet(Collections.singleton(topicAndPartition));
-    PreferredReplicaLeaderElectionCommand commands = new PreferredReplicaLeaderElectionCommand(client,
-        topicsAndPartitions);
-
+    PreferredReplicaLeaderElectionCommand commands = new PreferredReplicaLeaderElectionCommand(client, topicsAndPartitions);
     commands.moveLeaderToPreferredReplica();
     client.close();
   }
@@ -264,6 +262,17 @@ public class KafkaTool implements Closeable {
     scala.collection.mutable.Map<TopicAndPartition, Seq<Object>> x = asScalaMap(map);
     ReassignPartitionsCommand command = new ReassignPartitionsCommand(client, x);
 
+    return command.reassignPartitions();
+  }
+  
+  public boolean reassignPartitionReplicas(String topic, int partition, Integer ... brokerId) {
+    ZkClient client = new ZkClient(zkConnects, 10000, 10000, ZKStringSerializer$.MODULE$);
+    TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
+
+    Buffer<Object> seqs = asScalaBuffer(Arrays.asList((Object[])brokerId));
+    Map<TopicAndPartition, Seq<Object>> map = new HashMap<>();
+    map.put(topicAndPartition, seqs);
+    ReassignPartitionsCommand command = new ReassignPartitionsCommand(client, asScalaMap(map));
     return command.reassignPartitions();
   }
 

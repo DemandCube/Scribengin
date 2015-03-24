@@ -16,6 +16,7 @@ import org.tap4j.util.StatusValues;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
@@ -35,7 +36,8 @@ public class KafkaMessageCheckTool implements Runnable {
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
   
-  public KafkaMessageCheckTool() {
+  public KafkaMessageCheckTool(String[] args) {
+    new JCommander(this, args);
   }
 
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {

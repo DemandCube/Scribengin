@@ -64,8 +64,7 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
       "--consume-max",            Long.toString(expectRecords),
       "--zk-connect",             zkConnect
     };
-    KafkaMessageCheckTool kafkaMessageCheckTool = new KafkaMessageCheckTool();
-    new JCommander(kafkaMessageCheckTool, args);
+    KafkaMessageCheckTool kafkaMessageCheckTool = new KafkaMessageCheckTool(args);
     return kafkaMessageCheckTool;
   }
 }

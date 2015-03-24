@@ -135,8 +135,7 @@ public class AnthonyAckKafkaWriterUnitTest extends AbstractBugsUnitTest {
         "--zk-connect", cluster.getZKConnect(),
         "--consume-batch-fetch", "10000"
     };
-    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool();
-    new JCommander(checkTool, checkArgs);
+    KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     checkTool.runAsDeamon();
     if (checkTool.waitForTermination(10000)) {
       checkTool.setInterrupt(true);
