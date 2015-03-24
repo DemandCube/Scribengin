@@ -113,6 +113,28 @@ dataflow:
     8. The dataflow master should shutdown the backup dataflow master.
     9. The dataflow master shutdown itself
     10. The scribengin master should detect a dataflow terminated and move it to the history
+
+    Need to figure out a way to log those steps in the registry since the dataflow master can fail at the middle. 
+    The backup master should continue the process according to the log in the registry. Many operation should use 
+    the registry transaction as well to make sure that each step is reliablely processed
+
+    Actually, we need to make a framework that allow us to split an action into many steps. Those step should be store in the registry.
+    Each step should be reliably executed and mark as waiting, finished status... The master should be responsible to coordinate and 
+    schedule those steps. If the master crashed, the backup master suppose to be able to resume the steps.
+
+  * pause
+    This command should pause a running dataflow
+
+    --dataflow-id:  The dataflow id 
+
+    TODO: See the stop subcommand to have an idea what need to be done
+
+  * pause
+    This command should resume a pause dataflow
+
+    --dataflow-id:  The dataflow id 
+
+    TODO: See the stop subcommand to have an idea what need to be done
   
   * kafka                     
     submit a kafka dataflow
