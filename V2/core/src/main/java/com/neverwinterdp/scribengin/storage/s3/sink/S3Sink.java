@@ -18,8 +18,13 @@ public class S3Sink implements Sink {
   
   private int idTracker = 0;
   private LinkedHashMap<Integer, S3SinkStream> streams = new LinkedHashMap<Integer, S3SinkStream>() ;
-  
-  public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
+  public S3Sink(StorageDescriptor  descriptor) {
+        String regionName = descriptor.attribute("s3.region.name");
+        S3Client s3Client = new S3Client(regionName);
+        s3Client.onInit();
+        init(s3Client, descriptor);
+  }
+  private void init(S3Client s3Client, StorageDescriptor descriptor) {
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");
     if(!s3Client.hasBucket(bucketName)) {
@@ -42,6 +47,10 @@ public class S3Sink implements Sink {
         idTracker = stream.getDescriptor().getId();
       }
     }
+    
+  }
+  public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
+    init(s3Client, descriptor);
   }
   
   public S3Folder getSinkFolder() { return this.sinkFolder ; }

@@ -9,7 +9,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
   protected String sourceName = "hello";
   
   @Parameter(names = "--source-num-of-stream", description = "The number of stream for the source")
-  protected int    numberOfStream ;
+  protected int    numberOfStream = 2;
   
   @Parameter(names = "--source-max-records-per-stream", description = "The maximum number of record per stream")
   protected int    maxRecordsPerStream;

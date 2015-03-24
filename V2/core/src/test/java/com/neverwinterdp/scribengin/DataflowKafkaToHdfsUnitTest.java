@@ -15,12 +15,13 @@ import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class DataflowHdfsToHdfsUnitTest {
+public class DataflowKafkaToHdfsUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
 
+  
   protected ScribenginClusterBuilder clusterBuilder;
   protected ScribenginShell shell;
 
@@ -49,15 +50,15 @@ public class DataflowHdfsToHdfsUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
-
-    try {
+     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-hdfs-dataflow");
-      Assert.assertEquals("hello-hdfs-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
+      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-hdfs-dataflow");
+  
+      Assert.assertEquals("hello-kafka-hdfs-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
-
+      
       VMClient vmClient = scribenginClient.getVMClient();
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
       Assert.assertEquals(3, dataflowWorkers.size());
@@ -65,27 +66,27 @@ public class DataflowHdfsToHdfsUnitTest {
       Thread.sleep(2000);
       shell.execute("registry   dump");
       submitter.waitForTermination(300000);
-
+      
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
+      shell.execute("dataflow   info --history hello-kafka-dataflow-0");
       shell.execute("registry   dump");
-      
-    } catch (Throwable err) {
+    } catch(Throwable err) {
       throw err;
     } finally {
-      if (submitter.isAlive())
-        submitter.interrupt();
-      // Thread.sleep(100000000);
+      if(submitter.isAlive()) submitter.interrupt();
+      //Thread.sleep(100000000);
     }
+
   }
 
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        String command = "dataflow-test hdfs "
-            + "--worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000";
+        String command = "dataflow-test kafka-hdfs " +
+            "  --worker 3 --executor-per-worker 1 --duration 70000 --num-partition 2 --task-max-execute-time 1000" +
+            "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();
@@ -100,4 +101,5 @@ public class DataflowHdfsToHdfsUnitTest {
       wait(timeout);
     }
   }
+
 }
