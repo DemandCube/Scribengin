@@ -23,11 +23,19 @@ import com.google.inject.Singleton;
 @Singleton
 public class S3Client {
   private AmazonS3Client s3Client ;
+  private Region region;
+  
+  public S3Client(String regionName){
+    region = Region.getRegion(Regions.fromName(regionName));
+  }
+  public S3Client(){
+    region = Region.getRegion(Regions.US_WEST_1);
+  }
   
   @PostConstruct
   public void onInit() {
     s3Client = new AmazonS3Client();
-    Region region = Region.getRegion(Regions.US_WEST_1);
+    
     s3Client.setRegion(region);
   }
 
