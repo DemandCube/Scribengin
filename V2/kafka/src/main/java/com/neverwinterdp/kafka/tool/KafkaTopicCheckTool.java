@@ -44,6 +44,13 @@ public class KafkaTopicCheckTool implements Runnable {
   
   public KafkaMessageSendTool getKafkaMessageSendTool() { return this.sendTool; }
   
+  //TODO: make sure this method work
+  public void junitReport() throws Exception {
+    if(kafkaTopicConfig.junitReportFile != null) {
+      topicReport.junitReport(kafkaTopicConfig.junitReportFile);
+    }
+  }
+  
   synchronized public boolean waitForTermination() throws InterruptedException {
     if (!running) return !running;
     checkTool.waitForTermination();
@@ -108,13 +115,15 @@ public class KafkaTopicCheckTool implements Runnable {
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
     topicReport.setNumOfReplications(kafkaTopicConfig.replication);
-    sendTool.report(topicReport);
-    checkTool.report(topicReport);
+    sendTool.populate(topicReport);
+    checkTool.populate(topicReport);
   }
 
   static public void main(String[] args) throws Exception {
     KafkaTopicCheckTool tool = new KafkaTopicCheckTool(args, true);
     tool.run();
+    //TODO: make sure this call works
+    tool.junitReport();
     tool.getKafkaTopicReport().report(System.out);
   }
 }
