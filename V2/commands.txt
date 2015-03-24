@@ -43,11 +43,22 @@ vm:
   * info       
     print out info about running and history vms
 
-  * shutdown                  
-    shutdown a vm
-  
+    TODO: 
+
   * start                     
     start a vm
+
+    TODO:
+    1. Change this command description to: This command will start the first vm, vm-master. The vm-master will be responsible to manage, start, stop
+    the other vm on request.
+
+  * shutdown                  
+    shutdown a vm
+
+    TODO:
+    1. Change this command description to: This command whill shutdown all the running vm, and then shutdown the vm-master. This is a dangerrous operation
+    and it cannot shutdown the cluster properly unless you already shutdown the running vm properly.
+  
 
 scribengin:                    
   commands for interacting with the scribengin cluster.
