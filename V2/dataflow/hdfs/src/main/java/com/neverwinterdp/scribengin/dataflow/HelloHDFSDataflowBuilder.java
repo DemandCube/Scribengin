@@ -4,7 +4,7 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.hdfs.HDFSSourceGenerator;
+import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 

@@ -16,6 +16,7 @@ import org.tap4j.util.StatusValues;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
@@ -28,33 +29,19 @@ public class KafkaMessageCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
   
-  private int fetchSize = 500 * 1024;
   private MessageCounter messageCounter = new MessageCounter();
+  private int numOfPartitions = 0;
   private boolean interrupt = false;
-  private Thread deamonThread;
+  private Thread  deamonThread;
   private Stopwatch readDuration = Stopwatch.createUnstarted();
   private boolean running = false;
-  //private int expectNumberOfMessage;
   
-  public KafkaMessageCheckTool() {
+  public KafkaMessageCheckTool(String[] args) {
+    new JCommander(this, args);
   }
-
-  //Removed this constructor because otherwire if you used command line style parameters
-  //and parsed with JCommander, you'd have to manually set expectNumberOfMessage
-  //Removed for consistency
-//  public KafkaMessageCheckTool(String zkConnect, String topic, int expect) {
-//    topicConfig.zkConnect = zkConnect;
-//    topicConfig.topic = topic;
-//    expectNumberOfMessage = expect;
-//  }
 
   public KafkaMessageCheckTool(KafkaTopicConfig topicConfig) {
     this.topicConfig = topicConfig;
-    //expectNumberOfMessage = topicConfig.consumerConfig.consumeMax;
-  }
-
-  public void setFetchSize(int fetchSize) {
-    this.fetchSize = fetchSize;
   }
 
   //TODO: replace by the KafkaTopicReport.ConsumerReport
@@ -69,10 +56,6 @@ public class KafkaMessageCheckTool implements Runnable {
   public void setInterrupt(boolean b) {
     this.interrupt = b;
   }
-
-  //public void setExpectNumberOfMessage(int num) {
-  //  expectNumberOfMessage = num;
-  //}
 
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
     if (!running) return !running;
@@ -116,20 +99,9 @@ public class KafkaMessageCheckTool implements Runnable {
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
     
-    TopicMetadata topicMeta;
-    List<PartitionMetadata> partitionMetas;
-    
-    //Added so that the checktool doesn't fail immediately if its started before 
-    //topic is created/written to
-    int tries = 0;
-    do{
-      topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic);
-      partitionMetas = topicMeta.partitionsMetadata();
-      tries++;
-      if(partitionMetas.size() < 1){
-        Thread.sleep(500*tries);
-      }
-    }while(partitionMetas.size() < 1 && tries < topicConfig.consumerConfig.connectRetries);
+    TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic, 3);
+    List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
+    this.numOfPartitions = partitionMetas.size();
     kafkaTool.close();
     
     KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
@@ -139,12 +111,12 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
-    
+    int fetchSize = topicConfig.consumerConfig.consumeBatchFetch * (topicConfig.producerConfig.messageSize + 100) ;
     while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages;
         try{
-          messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
+          messages = partitionReader[k].fetch(fetchSize, 1000/*max read*/, 1000 /*max wait*/);
         } catch(Exception e){
           messageCounter.count(partitionReader[k].getPartition(), 0);
           continue;
@@ -173,6 +145,7 @@ public class KafkaMessageCheckTool implements Runnable {
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
     readDuration.stop();
     
+    //TODO: Move this code to KafkaTopicReport junitReport()
     TapProducer tapProducer = null;
     TestSet testSet =null;
     if(topicConfig.consumerConfig.tapEnabled){
@@ -182,22 +155,31 @@ public class KafkaMessageCheckTool implements Runnable {
       
       //Create test result for total messages read
       TestResult t = null;
-      if(messageCounter.getTotal() == topicConfig.consumerConfig.consumeMax){
+      if(messageCounter.getTotal() >= topicConfig.consumerConfig.consumeMax){
         t = new TestResult( StatusValues.OK, ++testNum );
       }
       else{
         t = new TestResult( StatusValues.NOT_OK, ++testNum );
       }
-      t.setDescription(" Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
+      t.setDescription("Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
           " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
       testSet.addTestResult( t );
       
       tapProducer.dump(testSet, new File(topicConfig.consumerConfig.tapFile));
-      //System.out.println(tapProducer.dump(testSet));
     }
   }
 
-  public void report(KafkaTopicReport report) {
+  public KafkaTopicReport getReport() {
+    KafkaTopicReport report = new KafkaTopicReport() ;
+    report.setTopic(topicConfig.topic);
+    report.setNumOfPartitions(numOfPartitions);
+    report.setNumOfReplications(topicConfig.replication);
+    populate(report);
+    return report ;
+  }
+  
+  
+  public void populate(KafkaTopicReport report) {
     ConsumerReport consumerReport = report.getConsumerReport();
     consumerReport.setMessagesRead(messageCounter.totalMessages);
     consumerReport.setRunDuration(readDuration.elapsed(TimeUnit.MILLISECONDS));

@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.neverwinterdp.kafka.tool.KafkaTool;
-import com.neverwinterdp.util.JSONSerializer;
-
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.cluster.Broker;
@@ -25,6 +22,9 @@ import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.MessageAndOffset;
+
+import com.neverwinterdp.kafka.tool.KafkaTool;
+import com.neverwinterdp.util.JSONSerializer;
 
 
 public class KafkaPartitionReader {
@@ -57,23 +57,11 @@ public class KafkaPartitionReader {
     consumer = new SimpleConsumer(broker.host(), broker.port(), 100000, 64 * 1024, name);
   }
   
-  //TODO: need to refresh the broker if the given borker is down or changed
   public void commit() throws Exception {
-    saveOffsetInKafka(this.currentOffset, (short)0) ;
+    CommitOperation commitOp = new CommitOperation(currentOffset, (short) 0) ;
+    execute(commitOp, 3);
   }
   
-  short saveOffsetInKafka(long offset, short errorCode) throws Exception{
-    short versionID = 0;
-    int correlationId = 0;
-    TopicAndPartition tp = new TopicAndPartition(topic, partitionMetadata.partitionId());
-    OffsetAndMetadata offsetAndMeta = new OffsetAndMetadata(offset, OffsetAndMetadata.NoMetadata(), errorCode);
-    Map<TopicAndPartition, OffsetAndMetadata> mapForCommitOffset = new HashMap<TopicAndPartition, OffsetAndMetadata>();
-    mapForCommitOffset.put(tp, offsetAndMeta);
-    OffsetCommitRequest offsetCommitReq = new OffsetCommitRequest(name, mapForCommitOffset, correlationId, name, versionID);
-    OffsetCommitResponse offsetCommitResp = consumer.commitOffsets(offsetCommitReq);
-    return (Short) offsetCommitResp.errors().get(tp);
-  }
-
   public void close() throws Exception {
     consumer.close();
   }
@@ -107,25 +95,8 @@ public class KafkaPartitionReader {
   }
   
   public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
-    FetchOperation fOp = new FetchOperation();
-    Exception error = null ;
-    for(int i = 0; i < 3; i++) {
-      try {
-        if(error != null) {
-        //Refresh the partition metadata
-          KafkaTool kafkaTool = new KafkaTool("KafkaTool", zkConnect);
-          kafkaTool.connect();
-          this.partitionMetadata = kafkaTool.findPartitionMetadata(topic, partitionMetadata.partitionId());
-          kafkaTool.close();
-          reconnect();
-        }
-        return fOp.fetch(fetchSize, maxRead, maxWait);
-      } catch(Exception ex) {
-        System.err.println("Try " + (i + 1) + " error: " + ex.getMessage()) ;
-        error = ex;
-      }
-    }
-    throw error; 
+    FetchOperation fetchOperation = new FetchOperation(fetchSize, maxRead, maxWait);
+    return execute(fetchOperation, 3);
   }
   
   byte[] getCurrentMessagePayload() {
@@ -172,8 +143,66 @@ public class KafkaPartitionReader {
     return currOffset;
   }
   
-  class FetchOperation {
-    public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
+  <T> T execute(Operation<T> op, int retry) throws Exception {
+    Exception error = null;
+    for(int i = 0; i < retry; i++) {
+      try {
+        if(error != null) {
+          //Refresh the partition metadata
+            KafkaTool kafkaTool = new KafkaTool("KafkaTool", zkConnect);
+            kafkaTool.connect();
+            this.partitionMetadata = kafkaTool.findPartitionMetadata(topic, partitionMetadata.partitionId());
+            kafkaTool.close();
+            reconnect();
+          }
+        return op.execute();
+      } catch(Exception ex) {
+        error = ex;
+        System.err.println(op.getClass().getSimpleName() + " try " + (i + 1) + " error: " + ex.getMessage()) ;
+      }
+    }
+    throw error;
+  }
+  
+  static public interface Operation<T> {
+    public T execute() throws Exception ;
+  }
+  
+  class CommitOperation implements Operation<Short> {
+    long offset;
+    short errorCode;
+    
+    public CommitOperation(long offset, short errorCode) {
+      this.offset = offset;
+      this.errorCode = errorCode;
+    }
+    
+    @Override
+    public Short execute() throws Exception {
+      short versionID = 0;
+      int correlationId = 0;
+      TopicAndPartition tp = new TopicAndPartition(topic, partitionMetadata.partitionId());
+      OffsetAndMetadata offsetAndMeta = new OffsetAndMetadata(offset, OffsetAndMetadata.NoMetadata(), errorCode);
+      Map<TopicAndPartition, OffsetAndMetadata> mapForCommitOffset = new HashMap<TopicAndPartition, OffsetAndMetadata>();
+      mapForCommitOffset.put(tp, offsetAndMeta);
+      OffsetCommitRequest offsetCommitReq = new OffsetCommitRequest(name, mapForCommitOffset, correlationId, name, versionID);
+      OffsetCommitResponse offsetCommitResp = consumer.commitOffsets(offsetCommitReq);
+      return (Short) offsetCommitResp.errors().get(tp);
+    }
+  }
+
+  class FetchOperation implements Operation<List<byte[]>> {
+    int fetchSize;
+    int maxRead;
+    int maxWait;
+    
+    public FetchOperation(int fetchSize, int maxRead, int maxWait) {
+      this.fetchSize = fetchSize;
+      this.maxRead = maxRead ;
+      this.maxWait = maxWait ;
+    }
+    
+    public List<byte[]> execute() throws Exception {
       FetchRequest req = 
           new FetchRequestBuilder().
           clientId(name).
