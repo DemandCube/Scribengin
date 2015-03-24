@@ -72,7 +72,7 @@ public class CommandServletDataFlowUnitTest {
         .field("dataflow-NumWorkers"            , "10")
         .field("dataflow-NumExecutorsPerWorkers", "20")
         .field("source-Type"      , "KAFKA")
-        .field("source-Name"      , "sourceName")
+        .field("source-Name"      , "sinkName")
         .field("source-Topic"     , "sourceTopic")
         .field("source-ZkConnect" , "sourceZkConnect")
         .field("source-BrokerList", "sourceBrokerList")
@@ -106,7 +106,7 @@ public class CommandServletDataFlowUnitTest {
 
     
     assertEquals("KAFKA", dfDesc.getSourceDescriptor().getType());
-    assertEquals("sourceName", dfDesc.getSourceDescriptor().attribute("name"));
+    assertEquals("sinkName", dfDesc.getSourceDescriptor().attribute("name"));
     assertEquals("sourceTopic", dfDesc.getSourceDescriptor().attribute("topic"));
     assertEquals("sourceZkConnect", dfDesc.getSourceDescriptor().attribute("zk.connect"));
     assertEquals("sourceBrokerList", dfDesc.getSourceDescriptor().attribute("broker.list"));
