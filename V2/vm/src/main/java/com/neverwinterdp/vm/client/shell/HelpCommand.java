@@ -58,7 +58,11 @@ public class HelpCommand extends Command {
         for (ParameterDescription parameterDescription : params) {
           builder.append(repeat(" ", 8) + parameterDescription.getNames() + ": ");
           length = parameterDescription.getNames().length();
-          builder.append(repeat(" ", argIndent - length) + parameterDescription.getDescription())
+          int indent = argIndent - length;
+          if(indent - length <= 0){
+            indent = 1;
+          }
+          builder.append(repeat(" ", indent) + parameterDescription.getDescription())
               .append("\n");
         }
       }

@@ -50,12 +50,12 @@ public class DataflowUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
 
-    Thread.sleep(15000); //make sure that the dataflow start and running;
+    Thread.sleep(10000); //make sure that the dataflow start and running;
 
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
-
+      shell.execute("registry dump");
       DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
       Assert.assertEquals("hello-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
