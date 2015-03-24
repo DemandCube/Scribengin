@@ -120,7 +120,7 @@ public class DataflowCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
-          new HelloKafkaDataflowBuilder(scribenginShell.getScribenginClient());
+        new HelloKafkaDataflowBuilder(scribenginShell.getScribenginClient());
       
       if(submit || createSource) {
         String zkConnect = scribenginShell.getScribenginClient().getRegistry().getRegistryConfig().getConnect();

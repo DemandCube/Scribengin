@@ -18,7 +18,7 @@ public abstract class AbstractBugsUnitTest {
   }
 
   protected static String NAME = "test";
-  protected static int NUM_OF_SENT_MESSAGES = 50000;
+  protected static int    NUM_OF_SENT_MESSAGES = 50000;
 
   protected Logger logger = Logger.getLogger(getClass());
   protected KafkaCluster cluster;
@@ -34,7 +34,7 @@ public abstract class AbstractBugsUnitTest {
     Thread.sleep(2000);
   }
 
-  abstract int getKafkaBrokers();
+  public abstract int getKafkaBrokers();
 
   @After
   public void tearDown() throws Exception {

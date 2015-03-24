@@ -13,14 +13,12 @@ public class HdfsDataflowTest extends DataflowTest {
   protected void doRun(ScribenginShell shell) throws Exception {
     ScribenginShell scribenginShell = (ScribenginShell) shell;
     FileSystem fs = FileSystem.getLocal(new Configuration());
-    HelloHDFSDataflowBuilder hdfDataflowBuilder = new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(),
-        getDataDir());
+    HelloHDFSDataflowBuilder hdfDataflowBuilder = 
+      new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(), getDataDir());
     new HDFSSourceGenerator().generateSource(fs, getDataDir() + "/source");
     ScribenginWaitingEventListener eventListener = hdfDataflowBuilder.submit();
     eventListener.waitForEvents(60000);
   }
 
-  private String getDataDir() {
-    return "./build/hdfs";
-  }
+  private String getDataDir() { return "./build/hdfs"; }
 }

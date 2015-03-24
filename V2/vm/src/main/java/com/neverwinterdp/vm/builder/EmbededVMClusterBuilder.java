@@ -47,7 +47,7 @@ public class EmbededVMClusterBuilder extends VMClusterBuilder {
   public void startKafkaCluster() throws Exception {
     h1("Start kafka cluster");
     kafkaCluster = new KafkaCluster(baseDir, 1, 1);
-    kafkaCluster.setNumOfPartition(3);
+    kafkaCluster.setNumOfPartition(5);
     kafkaCluster.start();
     Thread.sleep(1000);
   }
