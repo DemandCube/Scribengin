@@ -1,0 +1,110 @@
+#Requirements#
+
+config
+  change-config (change config on the fly)
+status
+  up time (how long cluster has been up, and each individual node)
+  container info (memory, cpu usage, etc)
+upload [jar]
+  upload an arbitrary dataflow
+  upload an arbitrary job to run in the cluster
+scribengin
+  restart
+registry
+  info on specific dataflows, machines
+  info on history, etc
+dataflow
+  dataflow [name of flow] info
+  dataflow [name of flow] stop
+  dataflow [name of flow] pause
+  dataflow [name of flow] resume
+
+
+#The command implementations#
+
+help:
+  This command should print out the help and description for all the available commands and subcommands. If the user enter 
+  the help command name for ex: help help, help vm, help scribengin, print only the description of the command and subcommands.
+  
+  TODO: We need to have a formater that help to print out the help instructions exactly like this format.
+
+registry: 
+  Commands for querying the registry
+  
+  * dump                      
+    Dump contents of the registry path
+    
+    --path: The path to dump, the default path is root /
+
+vm:  
+  Commands related to VM instances.
+  
+  * info       
+    print out info about running and history vms
+
+  * shutdown                  
+    shutdown a vm
+  
+  * start                     
+    start a vm
+
+scribengin:                    
+  commands for interacting with the scribengin cluster.
+  
+  * info                      
+    get info about the scribengin cluster
+  
+  * master                    
+    commands for managing the Scribengin master.
+    
+    --list:            List all running scribengin masters
+    --shutdown:        Shutdown current master
+  
+  * shutdown                  
+    shutdown a scribengin cluster.
+  
+  * start                     
+    start a scribenging cluster
+
+dataflow:             
+  commands for interacting with dataflows
+
+  * hdfs                
+    submit a HDFS dataflow
+
+    --create-source:   Submit hello hdfs dataflow
+    --data-dir:        Submit hello hdfs dataflow
+    --submit:          Submit hello hdfs dataflow
+
+    TODO: this command should be removed. We will use the dataflow-test command with various subcommand and options
+
+  * info                     
+    display more info about dataflows
+
+    --history:         The history dataflow id
+    --running:         The running dataflow name
+  
+  * kafka                     
+    submit a kafka dataflow
+
+    --create-source:   Create kafka source
+    --submit:          Launch the submit dataflow(hdfs, kafka)
+
+    TODO: this command should be removed. We will use the dataflow-test command with various subcommand and options
+  
+  * submit                    
+    submit a dataflow
+    
+    --deploy:          The dataflow path to deploy
+    --descriptor:      The dataflow descriptor path in the json format
+
+dataflow-test: 
+  a sample dataflow
+  
+  * hdfs                      
+    creates the sample dataflow
+
+  * kafka                     
+    creates the sample dataflow
+  
+  TODO: figure out a way to print out the description and parameters for this command

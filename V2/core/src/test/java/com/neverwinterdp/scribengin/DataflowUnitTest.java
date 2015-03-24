@@ -73,6 +73,8 @@ public class DataflowUnitTest {
       shell.execute("scribengin info");
       shell.execute("dataflow   info --history hello-kafka-dataflow-0");
       shell.execute("registry   dump");
+      shell.execute("help");
+
     } catch(Throwable err) {
       throw err;
     } finally {
