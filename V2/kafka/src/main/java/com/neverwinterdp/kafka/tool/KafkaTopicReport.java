@@ -68,6 +68,10 @@ public class KafkaTopicReport {
     out.append(reportFormater.getFormatText());
   }
   
+  public void junitReport(String fileName) throws Exception {
+    //TODO: implement the junit report here ,  you should have all the requirement info in this report
+  }
+  
   static public class ProducerReport {
     private String writer;
     private long   runDuration;

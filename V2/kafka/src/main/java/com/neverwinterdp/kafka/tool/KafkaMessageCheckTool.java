@@ -145,6 +145,7 @@ public class KafkaMessageCheckTool implements Runnable {
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
     readDuration.stop();
     
+    //TODO: Move this code to KafkaTopicReport junitReport()
     TapProducer tapProducer = null;
     TestSet testSet =null;
     if(topicConfig.consumerConfig.tapEnabled){
@@ -160,7 +161,7 @@ public class KafkaMessageCheckTool implements Runnable {
       else{
         t = new TestResult( StatusValues.NOT_OK, ++testNum );
       }
-      t.setDescription(" Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
+      t.setDescription("Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
           " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
       testSet.addTestResult( t );
       

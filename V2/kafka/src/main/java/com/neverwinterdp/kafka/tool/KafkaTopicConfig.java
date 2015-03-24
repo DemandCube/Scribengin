@@ -21,6 +21,8 @@ public class KafkaTopicConfig {
   @Parameter(names = "--replication", description = "The number of the replication for the topic")
   public int    replication = 1;
   
+  @Parameter(names = "--junit-report", description = "The junit report file name. No junit report if the report file is not available")
+  public String junitReportFile = "build/KafkaMessageCheckTool.xml";
   
   @ParametersDelegate
   public Producer producerConfig = new Producer();
@@ -69,13 +71,11 @@ public class KafkaTopicConfig {
     @Parameter(names = "--consume-batch-fetch", description = "The number of messages that kafka should fetch from server each time")
     public int   consumeBatchFetch = 500;
     
-    //This parameter is not a good name 
-    @Parameter(names = "--consume-connect-retries", description = "The max number of times to try connecting while number of partitions is < 1")
-    public int   connectRetries = 20;
-    
+    //TODO: remove, use the --junit-report
     @Parameter(names = "--tap-enable", description = "If set, outputs TAP")
     public boolean    tapEnabled = false;
     
+  //TODO: remove, use the --junit-report
     @Parameter(names = "--tap-file", description = "If TAP is enabled, then output results to this file.")
     public String tapFile = "build/KafkaMessageCheckTool.xml";
     
