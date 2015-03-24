@@ -4,6 +4,9 @@ bin=`cd "$bin"; pwd`
 
 USER="neverwinterdp"
 
+#### Include shell2junit library
+. $bin/sh2ju.sh
+
 PRINT_INSTRUCTIONS=true
 
 function print_usage() {
@@ -154,6 +157,49 @@ function servers_exec() {
   done
 }
 
+function testProcess() {
+  servers=$1
+  process=$2
+  operation=$3
+
+  servers=`echo "$servers" | tr ',' ' '`
+  if [[ "$process" == "zookeeper" ]]; then
+    grep_process="QuorumPeerMain"
+  elif [[ "$process" == "kafka" ]]; then
+    grep_process="Kafka"
+  fi
+
+  for server in $servers; do
+    echo "testing on $server"
+    pid=$(ssh -o "StrictHostKeyChecking no" $USER@$server "ps ax | grep -i '$grep_process' | grep java | grep -v grep | awk '{print \$1}'")
+
+    echo "Running $grep_process-$pid on $server"
+
+    if [[ "$operation" == "start" ]]; then
+      if [[ -z "$pid" ]]; then
+        #### Success command
+        success_command='-not-started-successfully'
+        juLog -name=$server$success_command false
+      else
+        #### Failure
+        failure_command='-started-successfully'
+        juLog -name=$server$failure_command true
+      fi
+    elif [[ "$operation" == "stop" ]]; then
+      if [[ -z "$pid" ]]; then
+        #### Success command
+        success_command='-stopped-successfully'
+        juLog -name=$server$success_command true
+      else
+        #### Failure
+        failure_command="-not-stopped-successfully"
+        juLog -name=$server$failure_command false
+      fi
+    fi
+  done
+}
+
+
 function kafka_start() {
   h1 "Start kafka server(s) $1"
   servers_exec  "$1" "/opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties"
@@ -178,6 +224,12 @@ function kafka_restart() {
   clean=$(has_opt --clean $@)
  
   kafka_stop  "$broker" 
+  
+  #allow kafka brokers to stop
+  sleep 5
+
+  #test kafka brokers are stoped
+  testProcess $broker 'kafka' 'stop'
 
   h1 "Waiting for $wait_before_start to start failed kafka servers"  
   sleep $wait_before_start
@@ -188,6 +240,11 @@ function kafka_restart() {
   
   kafka_start "$broker"
   
+  #allow kafka brokers to start
+  sleep 5
+ 
+  #test kafka brokers sre started
+  testProcess $broker 'kafka' 'start' 
 }
 
 function zookeeper_clean() {
@@ -215,6 +272,12 @@ function zookeeper_restart() {
   
   zookeeper_stop "$zk_server"
   
+  #allow zookeeper to stop
+  sleep 5
+
+  #test zookeeper stopped
+  testProcess $zk_server 'zookeeper' 'stop'
+  
   h1 "Waiting for $wait_before_start to start failed zookeeper servers"
   sleep $wait_before_start
   
@@ -223,6 +286,12 @@ function zookeeper_restart() {
   fi
   
   zookeeper_start "$zk_server"
+
+  #allow zookeeper to start
+  sleep 5
+
+  #test zookeeper started
+  testProcess $zk_server 'zookeeper' 'start'
 }
 
 function select_random_servers() {

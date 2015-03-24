@@ -11,7 +11,7 @@ MAINTAINER Tuan Nguyen <tuan@demandcube.com>
 #Update and installl the dependencies
 RUN echo "Update and install the requirement software"
 RUN apt-get update 
-RUN apt-get install -y wget openssh-server openssh-client rsync vim
+RUN apt-get install -y wget openssh-server openssh-client rsync vim bc
 
 RUN apt-get install -y openjdk-7-jdk
 RUN echo 'JAVA_HOME="/usr/lib/jvm/java-7-openjdk-amd64"' >> /etc/environment
