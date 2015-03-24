@@ -27,6 +27,7 @@ help:
   the help command name for ex: help help, help vm, help scribengin, print only the description of the command and subcommands.
   
   TODO: We need to have a formater that help to print out the help instructions exactly like this format.
+  For the parameter list , we can reuse our tabular formater
 
 registry: 
   Commands for querying the registry
