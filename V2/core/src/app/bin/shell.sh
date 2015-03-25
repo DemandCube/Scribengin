@@ -19,7 +19,7 @@ if [ "x$JAVA_HOME" == "x" ] ; then
   echo "WARNING JAVA_HOME is not set"
 fi
 
-(which $JAVACMD)
+(which $JAVACMD > /dev/null)
 isjava=$?
 
 if $ismac && [ $isjava -ne 0 ] ; then

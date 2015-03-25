@@ -9,11 +9,13 @@ import java.util.Map.Entry;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterDescription;
+import com.neverwinterdp.util.text.TabularFormater;
 
 public class HelpCommand extends Command {
-  private int commandIndent = 30;
-  private int subcommandIndent = commandIndent - 4;
-  private int argIndent = subcommandIndent - 5;
+  private int indent = 2;
+  //private int commandIndent = 30;
+  //private int subcommandIndent = commandIndent - 4;
+  private int argIndent = 20;
 
   public void execute(Shell shell, CommandInput cmdInput) throws Exception {
     Map<String, Command> commands = shell.getCommands();
@@ -34,37 +36,76 @@ public class HelpCommand extends Command {
       }
     }
   }
+  
+  private String wordWrap(String toWrap, int indents){
+    return wordWrap(toWrap, indents, 75);
+  }
+  
+  private String wordWrap(String toWrap, int indents, int lineLimit){
+    StringBuilder sb = new StringBuilder(toWrap);
+    int i = 0;
+    while (i + lineLimit < sb.length() && (i = sb.lastIndexOf(" ", i + lineLimit)) != -1) {
+      sb.replace(i, i + 1, "\n"+repeat(" ", indents));
+        //To avoid any sort of string that might kill this
+        if(i > 10000){
+          return toWrap;
+        }
+    }
+    return sb.toString();
+  }
+  
+  private String indent(String toIndent, int indents){
+    StringBuilder sb = new StringBuilder();
+    for(String x: toIndent.split("\n")){
+      sb.append(repeat(" ", indents)+ x + "\n");
+    }
+    return sb.toString();
+  }
 
   private String printSubCommand(Map.Entry<String, Command> entry) throws Exception {
 
     StringBuilder builder = new StringBuilder();
     String commandName = entry.getKey();
-    int length1 = commandName.length();
-    builder.append("" + commandName + ":");
-    builder.append(repeat(" ", commandIndent - length1) + entry.getValue().getDescription())
-        .append("\n");
+    builder.append("" + commandName + ":\n");
+    builder.append(repeat(" ", indent) + wordWrap(entry.getValue().getDescription(), indent*1))
+        .append("\n\n");
     for (Entry<String, Class<? extends SubCommand>> subCommands : entry.getValue().getSubcommands()
         .entrySet()) {
-      builder.append("     " + subCommands.getKey());
-      builder.append(repeat(" ", subcommandIndent - subCommands.getKey().length())
-          + subCommands.getValue().newInstance().getDescription()).append("\n");
+      builder.append(repeat(" ",indent)).append("* " + subCommands.getKey());
+      builder.append("\n").append(repeat(" ", indent*2)+
+          wordWrap(subCommands.getValue().newInstance().getDescription(), indent*2)).append("\n\n");
       JCommander jcommander = new JCommander(subCommands.getValue().newInstance());
       List<ParameterDescription> params = jcommander.getParameters();
 
       if (params.size() > 0) {
         Collections.sort(params, new ParameterComparator());
-
-        int length = 0;
+        TabularFormater formatter = null;
         for (ParameterDescription parameterDescription : params) {
-          builder.append(repeat(" ", 8) + parameterDescription.getNames() + ": ");
+          int length = 0;
+          //builder.append(repeat(" ", indent*3) + parameterDescription.getNames() + ": ");
           length = parameterDescription.getNames().length();
-          int indent = argIndent - length;
-          if(indent - length <= 0){
-            indent = 1;
+          int thisargsindent = argIndent - length;
+          if(thisargsindent <= 0){
+            thisargsindent = 1;
           }
-          builder.append(repeat(" ", indent) + parameterDescription.getDescription())
-              .append("\n");
+          //builder.append(wordWrap(repeat(" ", thisargsindent)+parameterDescription.getDescription(),argIndent+8))
+          //    .append("\n");
+          formatter = new TabularFormater("Option", "Description", "Default Value");
+          try{
+            formatter.addRow(parameterDescription.getNames().trim(),
+                          parameterDescription.getDescription().trim(),
+                          parameterDescription.getDefault());
+          } catch (Exception e){
+            formatter.addRow(parameterDescription.getNames().trim(),
+                parameterDescription.getDescription().trim(),
+                "");
+          }
+          
         }
+        if(formatter != null){
+          builder.append(indent(formatter.getFormatText(), indent*4));
+        }
+        builder.append("\n");
       }
     }
     builder.append("\n");

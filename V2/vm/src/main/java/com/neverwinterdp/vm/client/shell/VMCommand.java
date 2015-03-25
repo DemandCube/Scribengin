@@ -20,7 +20,7 @@ public class VMCommand extends Command {
 
     @Override
     public String getDescription() {
-      return "start a vm";
+      return "This will start the first vm, vm-master. The vm-master will be responsible for managing, starting, and stopping other VMs upon request";
     }
   }
   
@@ -33,7 +33,7 @@ public class VMCommand extends Command {
 
     @Override
     public String getDescription() {
-      return "shutdown a vm";
+      return "This command will shutdown all the running vm, and then shutdown the vm-master. This is a dangerous operation - the cluster will not shutdown properly unless you have already shutdown all running VMs properly";
     }
   }
   
