@@ -18,8 +18,8 @@ public class AckKafkaWriterUnitTest {
       "--send-writer-type", "ack",
       "--send-period", "0",
       "--send-message-size", "1024",
-      "--send-max-per-partition", "25000",
-      "--send-max-duration", "120000",
+      "--send-max-per-partition", "250000",
+      "--send-max-duration", "300000",
 
       "--producer:message.send.max.retries=5",
       "--producer:retry.backoff.ms=100",
@@ -31,7 +31,7 @@ public class AckKafkaWriterUnitTest {
       "--producer:batch.num.messages=100",
       "--producer:acks=all",
 
-      "--consume-max-duration", "150000"
+      "--consume-max-duration", "300000"
   };
 
   @Test

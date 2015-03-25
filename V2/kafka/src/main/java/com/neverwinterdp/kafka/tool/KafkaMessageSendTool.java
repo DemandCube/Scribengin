@@ -31,7 +31,7 @@ public class KafkaMessageSendTool implements Runnable {
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
   private AtomicLong   sendFailedCounter = new AtomicLong() ;
-  private MessageGenerator messageGenerator = MessageGenerator.DEFAULT_MESSAGE_GENERATOR;
+  private MessageGenerator messageGenerator = new MessageGenerator.DefaultMessageGenerator();
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();

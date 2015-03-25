@@ -11,12 +11,13 @@ public class MessageTrackerUnitTest {
   @Test
   public void testPartitionGeneratedMessageTracker() throws Exception {
     PartitionMessageTracker tracker = new PartitionMessageTracker(0) ;
-    log(tracker, 0, 10) ;
+    log(tracker, 0, 10)  ;
     log(tracker, 10, 20) ;
     log(tracker, 21, 30) ;
     log(tracker, 40, 50) ;
     log(tracker, 30, 40) ;
     log(tracker, 30, 60) ;
+    log(tracker, 100, 200) ;
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -26,7 +27,7 @@ public class MessageTrackerUnitTest {
     log(tracker, 100, 0);
     log(tracker, 200, 80);
     log(tracker, 1000, 200);
-    //tracker.optimize();
+    tracker.optimize();
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   

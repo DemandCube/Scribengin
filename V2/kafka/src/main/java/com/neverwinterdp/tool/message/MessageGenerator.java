@@ -7,7 +7,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.neverwinterdp.util.JSONSerializer;
 
 public interface MessageGenerator {
-  static public MessageGenerator DEFAULT_MESSAGE_GENERATOR = new MessageGenerator() {
+  
+  public byte[] nextMessage(int partition, int messageSize);
+  
+  
+  static public class DefaultMessageGenerator implements MessageGenerator {
     private Map<Integer, AtomicInteger> idTrackers = new HashMap<>() ;
     
     @Override
@@ -29,6 +33,4 @@ public interface MessageGenerator {
       }
     }
   };
-  
-  public byte[] nextMessage(int partition, int messageSize);
 }
