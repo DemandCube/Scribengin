@@ -21,6 +21,7 @@ public class KafkaCluster {
   private String serverDir;
   private Map<String, Server> kafkaServers;
   private Map<String, Server> zookeeperServers;
+  private boolean verbose = true;
 
   public KafkaCluster(String serverDir) throws Exception {
     this(serverDir, 1, 3);
@@ -28,7 +29,6 @@ public class KafkaCluster {
 
   public KafkaCluster(String serverDir, int numOfZkInstances, int numOfKafkaInstances) throws Exception {
     FileUtil.removeIfExist(serverDir, false);
-    //deleteDirectory(new File(serverDir));
     this.serverDir = serverDir;
     this.numOfZkInstances = numOfZkInstances;
     this.numOfKafkaInstances = numOfKafkaInstances;
@@ -36,6 +36,11 @@ public class KafkaCluster {
     kafkaServers = new HashMap<String, Server>();
   }
 
+  public KafkaCluster setVerbose(boolean b) {
+    this.verbose = b;
+    return this;
+  }
+  
   public KafkaCluster setBaseZKPort(int port) {
     this.baseZKPort = port;
     return this;
@@ -76,6 +81,7 @@ public class KafkaCluster {
       int id = i + 1;
       String serverName = "kafka-" + id;
       KafkaServerLauncher kafka = new KafkaServerLauncher(id, serverDir + "/" + serverName, baseKafkaPort + i);
+      kafka.setVerbose(verbose);
       kafka.setReplication(replication);
       kafka.setNumOfPartition(numOfPartitions);
       kafka.start();

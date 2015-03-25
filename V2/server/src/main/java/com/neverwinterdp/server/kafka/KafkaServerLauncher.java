@@ -21,7 +21,8 @@ public class KafkaServerLauncher implements Server {
   int kafkaGroupTracker = 1;
   private Properties properties = new Properties();
   private Thread thread;
-
+  private boolean verbose = true;
+  
   public KafkaServerLauncher() {
     properties.put("host.name", "127.0.0.1");
     properties.put("advertised.host.name", "127.0.0.1");
@@ -57,6 +58,11 @@ public class KafkaServerLauncher implements Server {
     }
   }
 
+  public KafkaServerLauncher setVerbose(boolean b) {
+    verbose = b ;
+    return this;
+  }
+  
   public KafkaServerLauncher setReplication(int replication) {
     properties.put("default.replication.factor", Integer.toString(replication));
     return this;
@@ -79,7 +85,9 @@ public class KafkaServerLauncher implements Server {
     logDir = logDir.replace("/", File.separator);
     properties.setProperty("log.dirs", logDir);
 
-    System.out.println("kafka properties:\n" + JSONSerializer.INSTANCE.toString(properties));
+    if(verbose) {
+      System.out.println("kafka properties:\n" + JSONSerializer.INSTANCE.toString(properties));
+    }
     thread = new Thread(kafkaGroup, "KafkaLauncher") {
       public void run() {
         server = new KafkaServer(new KafkaConfig(properties), new SystemTime());
@@ -110,8 +118,7 @@ public class KafkaServerLauncher implements Server {
     kafkaGroup.interrupt();
     kafkaGroup = null;
     server = null;
-    System.out.println("KafkaThreadKiller thread shutdown kafka successfully");
-    System.out.println("Shutdown KafkaServer in " + (System.currentTimeMillis() - startTime) + "ms");
+    System.out.println("KafkaThreadKiller thread shutdown kafka successfully in " + (System.currentTimeMillis() - startTime) + "ms");
   }
 
   static public class SystemTime implements Time {
