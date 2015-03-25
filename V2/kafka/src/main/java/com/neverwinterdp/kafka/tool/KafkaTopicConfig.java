@@ -71,14 +71,6 @@ public class KafkaTopicConfig {
     @Parameter(names = "--consume-batch-fetch", description = "The number of messages that kafka should fetch from server each time")
     public int   consumeBatchFetch = 500;
     
-    //TODO: remove, use the --junit-report
-    @Parameter(names = "--tap-enable", description = "If set, outputs TAP")
-    public boolean    tapEnabled = false;
-    
-  //TODO: remove, use the --junit-report
-    @Parameter(names = "--tap-file", description = "If TAP is enabled, then output results to this file.")
-    public String tapFile = "build/KafkaMessageCheckTool.xml";
-    
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
     public Map<String, String> consumerProperties = new HashMap<String, String>();
   }

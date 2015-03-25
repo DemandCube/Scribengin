@@ -46,7 +46,6 @@ public class KafkaTopicCheckTool implements Runnable {
   
   public KafkaMessageCheckTool getKafkaMessageCheckTool() { return this.checkTool ; }
   
-  //TODO: make sure this method work
   public void junitReport() throws Exception {
     if(kafkaTopicConfig.junitReportFile != null) {
       topicReport.junitReport(kafkaTopicConfig.junitReportFile);
