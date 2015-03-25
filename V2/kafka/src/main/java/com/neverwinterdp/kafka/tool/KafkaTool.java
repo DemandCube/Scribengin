@@ -145,7 +145,6 @@ public class KafkaTool implements Closeable {
    * 
    * @See http://search-hadoop.com/m/4TaT4VWNg8/v=plain
    * */
-  //TODO warn user if topic is scheduled for deletion 
   public boolean topicExits(String topicName) throws Exception {
     int sessionTimeoutMs = 10000;
     int connectionTimeoutMs = 10000;
