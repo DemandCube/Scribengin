@@ -69,6 +69,7 @@ public class AckKafkaWriterTestRunner {
     topicReport = topicCheckTool.getKafkaTopicReport();
     topicReport.setFailureSimulation(leaderKiller.failureCount);
     topicReport.report(System.out);
+    topicCheckTool.getKafkaMessageCheckTool().getMessageTracker().dump(System.out);
   }
 
   class KafkapartitionLeaderKiller implements Runnable {

@@ -2,11 +2,8 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.amazonaws.regions.Regions;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
-import com.neverwinterdp.kafka.tool.KafkaMessageGenerator;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
 import com.neverwinterdp.kafka.tool.KafkaTool;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -18,6 +15,7 @@ import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder.Test
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
+import com.neverwinterdp.tool.message.MessageGenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
 public class KafkaToS3DataflowTest extends DataflowTest {
@@ -116,7 +114,7 @@ public class KafkaToS3DataflowTest extends DataflowTest {
     dataflowInfoThread.interrupt();
   }
 
-  static public class KafkaMessageGeneratorRecord implements KafkaMessageGenerator {
+  static public class KafkaMessageGeneratorRecord implements MessageGenerator {
     static public AtomicLong idTracker = new AtomicLong();
 
     public byte[] nextMessage(int partition, int messageSize) {

@@ -1,8 +1,12 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.tool.message.Message;
+import com.neverwinterdp.tool.message.MessageExtractor;
+import com.neverwinterdp.util.JSONSerializer;
 
 abstract public class DataflowSinkValidator implements Runnable {
   @Parameter(names = "--sink-name", required=true, description = "The storage sink name, usually the database name or dir name of the storage")
@@ -26,4 +30,12 @@ abstract public class DataflowSinkValidator implements Runnable {
   abstract public boolean waitForTermination(long timeout) throws InterruptedException;
   
   abstract public void populate(DataflowTestReport report) ;
+  
+  static public class RecordMessageExtractor implements MessageExtractor {
+    @Override
+    public Message extract(byte[] message) {
+      Record record = JSONSerializer.INSTANCE.fromBytes(message, Record.class) ;
+      return MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR.extract(record.getData()) ;
+    }
+  }
 }

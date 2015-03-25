@@ -16,7 +16,7 @@ import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class DataflowUnitTest {
+public class KafkaDataflowUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
@@ -50,12 +50,14 @@ public class DataflowUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
 
-    Thread.sleep(15000); //make sure that the dataflow start and running;
+    Thread.sleep(5000); //make sure that the dataflow start and running;
 
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
-
+      
+      shell.execute("registry   dump");
+      
       DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
       Assert.assertEquals("hello-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());

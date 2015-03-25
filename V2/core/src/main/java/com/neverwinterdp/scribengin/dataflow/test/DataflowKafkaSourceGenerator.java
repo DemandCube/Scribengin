@@ -1,16 +1,11 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.beust.jcommander.JCommander;
-import com.neverwinterdp.kafka.tool.KafkaMessageGenerator;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport;
-import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSourceGeneratorReport;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
-import com.neverwinterdp.util.JSONSerializer;
 
 public class DataflowKafkaSourceGenerator extends DataflowSourceGenerator {
   private KafkaMessageSendTool sendTool;
@@ -28,12 +23,10 @@ public class DataflowKafkaSourceGenerator extends DataflowSourceGenerator {
         "--send-max-duration",      Long.toString(maxDuration),
         "--zk-connect",             zkConnect
     };
-    sendTool = new KafkaMessageSendTool();
-    new JCommander(sendTool, sendArgs);
-    sendTool.setMessageGenerator(new KafkaMessageGeneratorRecord());
+    sendTool = new KafkaMessageSendTool(sendArgs);
+    sendTool.setMessageGenerator(new RecordMessageGenerator());
     setNumberOfGeneratedRecords(numberOfStream * maxRecordsPerStream);
   }
-
   
   @Override
   public void run() {
@@ -62,14 +55,5 @@ public class DataflowKafkaSourceGenerator extends DataflowSourceGenerator {
     sourceDescriptor.attribute("topic", sourceName);
     sourceDescriptor.attribute("zk.connect", zkConnect);
     return sourceDescriptor;
-  }
-  
-  static public class KafkaMessageGeneratorRecord implements KafkaMessageGenerator {
-    static public AtomicLong idTracker = new AtomicLong() ;
-    
-    public byte[] nextMessage(int partition, int messageSize) {
-      String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
-      return JSONSerializer.INSTANCE.toString(new Record(key, new byte[messageSize] )).getBytes();
-    }
   }
 }

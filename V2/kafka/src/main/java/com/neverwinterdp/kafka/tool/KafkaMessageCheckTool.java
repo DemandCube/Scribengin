@@ -7,20 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import kafka.javaapi.PartitionMetadata;
+import kafka.javaapi.TopicMetadata;
+
 import org.tap4j.model.TestResult;
 import org.tap4j.model.TestSet;
 import org.tap4j.producer.TapProducer;
 import org.tap4j.producer.TapProducerFactory;
 import org.tap4j.util.StatusValues;
 
-import kafka.javaapi.PartitionMetadata;
-import kafka.javaapi.TopicMetadata;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.kafka.consumer.KafkaPartitionReader;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport.ConsumerReport;
+import com.neverwinterdp.tool.message.MessageExtractor;
+import com.neverwinterdp.tool.message.MessageTracker;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class KafkaMessageCheckTool implements Runnable {
@@ -28,7 +30,8 @@ public class KafkaMessageCheckTool implements Runnable {
 
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
-  
+  private MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR;
+  private MessageTracker   messageTracker = new MessageTracker() ;
   private MessageCounter messageCounter = new MessageCounter();
   private int numOfPartitions = 0;
   private boolean interrupt = false;
@@ -44,18 +47,18 @@ public class KafkaMessageCheckTool implements Runnable {
     this.topicConfig = topicConfig;
   }
 
+  public void setMessageExtractor(MessageExtractor extractor) {
+    this.messageExtractor = extractor ;
+  }
+  
+  public MessageTracker getMessageTracker() { return messageTracker ; }
+  
   //TODO: replace by the KafkaTopicReport.ConsumerReport
-  public MessageCounter getMessageCounter() {
-    return messageCounter;
-  }
+  public MessageCounter getMessageCounter() { return messageCounter; }
 
-  public Stopwatch getReadDuration() {
-    return readDuration;
-  }
+  public Stopwatch getReadDuration() { return readDuration; }
 
-  public void setInterrupt(boolean b) {
-    this.interrupt = b;
-  }
+  public void setInterrupt(boolean b) { this.interrupt = b; }
 
   synchronized public boolean waitForTermination(long maxWaitTime) throws InterruptedException {
     if (!running) return !running;
@@ -114,16 +117,13 @@ public class KafkaMessageCheckTool implements Runnable {
     int fetchSize = topicConfig.consumerConfig.consumeBatchFetch * (topicConfig.producerConfig.messageSize + 100) ;
     while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages;
-        try{
-          messages = partitionReader[k].fetch(fetchSize, 1000/*max read*/, 1000 /*max wait*/);
-        } catch(Exception e){
-          messageCounter.count(partitionReader[k].getPartition(), 0);
-          continue;
-        }
+        List<byte[]> messages = partitionReader[k].fetch(fetchSize, 1000/*max read*/, 1000 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
+        for(byte[] messagePayload : messages) {
+          messageTracker.log(messageExtractor.extract(messagePayload));
+        }
       }
-      if (lastCount == messageCounter.getTotal()) {
+      if(lastCount == messageCounter.getTotal()) {
         cannotReadCount++;
       } else {
         cannotReadCount = 0;
@@ -135,6 +135,9 @@ public class KafkaMessageCheckTool implements Runnable {
     for (int k = 0; k < partitionReader.length; k++) {
       List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/);
       messageCounter.count(partitionReader[k].getPartition(), messages.size());
+      for(byte[] messagePayload : messages) {
+        messageTracker.log(messageExtractor.extract(messagePayload));
+      }
     }
 
     for (int k = 0; k < partitionReader.length; k++) {
@@ -143,6 +146,7 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
+    messageTracker.optimize();
     readDuration.stop();
     
     //TODO: Move this code to KafkaTopicReport junitReport()
