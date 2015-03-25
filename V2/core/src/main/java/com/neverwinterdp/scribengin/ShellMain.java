@@ -12,7 +12,10 @@ import com.neverwinterdp.vm.client.YarnVMClient;
 public class ShellMain {
   static public void main(String[] args) throws Exception {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
-    if(args.length > 0 && args[0].equals("help")){
+    if((args.length > 0 && args[0].equals("help")) || args.length < 1){
+      if(args.length < 1){
+        args = new String[]{"help"};
+      }
       Registry registry = new RegistryImpl();
       VMClient vmClient = new VMClient(registry);
       ScribenginShell shell = new ScribenginShell(vmClient) ;
