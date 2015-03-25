@@ -1,6 +1,13 @@
 package com.neverwinterdp.kafka.tool;
 
+import java.io.File;
 import java.io.IOException;
+
+import org.tap4j.model.TestResult;
+import org.tap4j.model.TestSet;
+import org.tap4j.producer.TapProducer;
+import org.tap4j.producer.TapProducerFactory;
+import org.tap4j.util.StatusValues;
 
 import com.neverwinterdp.util.text.TabularFormater;
 
@@ -71,7 +78,36 @@ public class KafkaTopicReport {
   }
   
   public void junitReport(String fileName) throws Exception {
-    //TODO: implement the junit report here ,  you should have all the requirement info in this report
+    TapProducer tapProducer = null;
+    TestSet testSet =null;
+    tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
+    testSet = new TestSet();
+    int testNum=0;
+    
+    //Create test result for total messages read
+    TestResult sentVsReadMessage = null;
+    if(consumerReport.messagesRead >= producerReport.messageSent ){
+      sentVsReadMessage = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      sentVsReadMessage = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    sentVsReadMessage.setDescription("Messages sent: "+ Integer.toString(producerReport.messageSent)+
+        " Messages Consumed: "+ Integer.toString(consumerReport.messagesRead));
+    testSet.addTestResult( sentVsReadMessage );
+    
+    //Test result for messages failed
+    TestResult messagesFailed = null;
+    if(producerReport.messageSentFailed < 1 ){
+      messagesFailed = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      messagesFailed = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    messagesFailed.setDescription("Messages failed: "+ Long.toString(producerReport.messageSentFailed));
+    testSet.addTestResult( messagesFailed );
+    
+    tapProducer.dump(testSet, new File(fileName));
   }
   
   static public class ProducerReport {

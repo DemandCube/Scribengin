@@ -1,6 +1,5 @@
 package com.neverwinterdp.kafka.tool;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -9,12 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
-
-import org.tap4j.model.TestResult;
-import org.tap4j.model.TestSet;
-import org.tap4j.producer.TapProducer;
-import org.tap4j.producer.TapProducerFactory;
-import org.tap4j.util.StatusValues;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
@@ -97,7 +90,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   //TODO each partition reader on a separate thread. same as SendTool
   public void check() throws Exception {
-    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.  Expecting "+Integer.toString(topicConfig.consumerConfig.consumeMax)+" messages");
+    System.out.println("KafkaMessageCheckTool: Start running kafka message check tool.");
     readDuration.start();
     KafkaTool kafkaTool = new KafkaTool(NAME, topicConfig.zkConnect);
     kafkaTool.connect();
@@ -151,27 +144,8 @@ public class KafkaMessageCheckTool implements Runnable {
     messageTracker.optimize();
     readDuration.stop();
     
-    //TODO: Move this code to KafkaTopicReport junitReport()
-    TapProducer tapProducer = null;
-    TestSet testSet =null;
     if(topicConfig.consumerConfig.tapEnabled){
-      tapProducer = TapProducerFactory.makeTapJunitProducer(topicConfig.consumerConfig.tapFile);
-      testSet = new TestSet();
-      int testNum=0;
-      
-      //Create test result for total messages read
-      TestResult t = null;
-      if(messageCounter.getTotal() >= topicConfig.consumerConfig.consumeMax){
-        t = new TestResult( StatusValues.OK, ++testNum );
-      }
-      else{
-        t = new TestResult( StatusValues.NOT_OK, ++testNum );
-      }
-      t.setDescription("Total Expected Messages: "+ Integer.toString(topicConfig.consumerConfig.consumeMax)+
-          " Total Messages Read: "+ Integer.toString(messageCounter.getTotal()));
-      testSet.addTestResult( t );
-      
-      tapProducer.dump(testSet, new File(topicConfig.consumerConfig.tapFile));
+      getReport().junitReport(topicConfig.junitReportFile);
     }
   }
 
