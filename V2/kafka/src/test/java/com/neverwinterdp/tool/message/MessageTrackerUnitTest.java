@@ -6,6 +6,7 @@ import com.neverwinterdp.tool.message.PartitionMessageTracker;
 
 public class MessageTrackerUnitTest {
   //TODO: figure out different cases, add unit test and assert
+  //You can add more method to PartitionMessageTracker and MessageTracker to help verify
   
   @Test
   public void testPartitionGeneratedMessageTracker() throws Exception {
@@ -22,17 +23,23 @@ public class MessageTrackerUnitTest {
   @Test
   public void testOutOfOrderPartitionGeneratedMessageTracker() throws Exception {
     PartitionMessageTracker tracker = new PartitionMessageTracker(0) ;
-    for(int num = 1001; num >= 0; num--) {
-      tracker.log(num);
-    }
+    log(tracker, 100, 0);
+    log(tracker, 200, 80);
+    log(tracker, 1000, 200);
     //tracker.optimize();
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
   
   private void log(PartitionMessageTracker tracker, int from, int to) {
-    for(int num = from; num <= to; num++) {
-      tracker.log(num);
+    if(from < to) {
+      for(int num = from; num <= to; num++) {
+        tracker.log(num);
+      }
+    } else {
+      for(int num = from; num >= to; num--) {
+        tracker.log(num);
+      } 
     }
   }
 }
