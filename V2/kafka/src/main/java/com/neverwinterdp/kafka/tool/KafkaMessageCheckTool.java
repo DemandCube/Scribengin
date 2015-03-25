@@ -144,7 +144,7 @@ public class KafkaMessageCheckTool implements Runnable {
     messageTracker.optimize();
     readDuration.stop();
     
-    if(topicConfig.consumerConfig.tapEnabled){
+    if(!topicConfig.junitReportFile.isEmpty()){
       getReport().junitReport(topicConfig.junitReportFile);
     }
   }
