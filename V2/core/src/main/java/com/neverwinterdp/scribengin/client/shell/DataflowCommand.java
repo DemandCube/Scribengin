@@ -2,22 +2,14 @@ package com.neverwinterdp.scribengin.client.shell;
 
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
-import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder;
-import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
-import com.neverwinterdp.scribengin.storage.kafka.KafkaSourceGenerator;
 import com.neverwinterdp.util.IOUtil;
-import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
 import com.neverwinterdp.vm.client.shell.Console;
@@ -28,8 +20,13 @@ public class DataflowCommand extends Command {
   public DataflowCommand() {
     add("info",   Info.class) ;
     add("submit", Submit.class) ;
-    add("hdfs",   Hdfs.class) ;
-    add("kafka",  Kafka.class) ;
+    //add("hdfs",   Hdfs.class) ;
+    //add("kafka",  Kafka.class) ;
+  }
+  
+  @Override
+  public String getDescription() {
+        return "commands for interacting with dataflows";
   }
   
   static public class Info extends SubCommand {
@@ -109,6 +106,7 @@ public class DataflowCommand extends Command {
     }
   }
   
+  /*
   static public class Kafka extends SubCommand {
     @Parameter(names = "--create-source", description = "Create kafka source")
     private boolean createSource ;
@@ -175,9 +173,6 @@ public class DataflowCommand extends Command {
       return "submit a HDFS dataflow";
     }
   }
-
-  @Override
-  public String getDescription() {
-        return "commands for interacting with dataflows";
-  }
+  */
+  
 }
