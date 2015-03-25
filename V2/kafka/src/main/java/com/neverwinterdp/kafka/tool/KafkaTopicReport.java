@@ -104,8 +104,30 @@ public class KafkaTopicReport {
     else{
       messagesFailed = new TestResult( StatusValues.NOT_OK, ++testNum );
     }
-    messagesFailed.setDescription("Messages failed: "+ Long.toString(producerReport.messageSentFailed));
+    messagesFailed.setDescription("Messages sent failed: "+ Long.toString(producerReport.messageSentFailed));
     testSet.addTestResult( messagesFailed );
+    
+    TestResult duration = null;
+    if(producerReport.runDuration > 0 && consumerReport.runDuration > 0 ){
+      duration = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      duration = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    duration.setDescription("Producer run duration: "+ Long.toString(producerReport.runDuration)+
+                          " --- Consumer run duration: "+Long.toString(consumerReport.runDuration));
+    testSet.addTestResult( duration );
+    
+    TestResult messageSize = null;
+    if(producerReport.messageSize > 0  ){
+      messageSize = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      messageSize = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    messageSize.setDescription("Producer Message Size: "+ Integer.toString(producerReport.messageSize));
+    testSet.addTestResult( messageSize );
+    
     
     tapProducer.dump(testSet, new File(fileName));
   }
