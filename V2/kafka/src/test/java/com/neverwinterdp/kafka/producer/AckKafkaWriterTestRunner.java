@@ -12,7 +12,6 @@ import com.neverwinterdp.kafka.tool.KafkaTopicConfig;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 import com.neverwinterdp.server.Server;
 import com.neverwinterdp.server.kafka.KafkaCluster;
-import com.neverwinterdp.util.FileUtil;
 
 /**
  * @author Tuan
@@ -31,8 +30,8 @@ public class AckKafkaWriterTestRunner {
   public KafkaTopicReport getKafkaTopicReport() { return this.topicReport; }
 
   public void setUp() throws Exception {
-    FileUtil.removeIfExist("./build/kafka", false);
     cluster = new KafkaCluster("./build/kafka", 1, config.replication);
+    cluster.setVerbose(false);
     cluster.setReplication(config.replication);
     cluster.setNumOfPartition(config.numberOfPartition);
     cluster.start();
@@ -52,6 +51,7 @@ public class AckKafkaWriterTestRunner {
     KafkaTopicCheckTool topicCheckTool = new KafkaTopicCheckTool(config);
     KafkaTopicConfig config = topicCheckTool.getKafkaConfig();
     topicCheckTool.runAsDeamon();
+
     //Make sure that messgages are sending before start the failure simulator
     while(!topicCheckTool.getKafkaMessageSendTool().isSending()) {
       Thread.sleep(100);
@@ -108,6 +108,7 @@ public class AckKafkaWriterTestRunner {
           Thread.sleep(sleepBeforeRestart);
           kafkaServer.start();
           kafkaTool.close();
+          Thread.sleep(10000); //wait to make sure that the kafka server start
         }
       } catch (Exception e) {
         e.printStackTrace();

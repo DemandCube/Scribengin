@@ -76,7 +76,7 @@ public class KafkaMessageSendTool implements Runnable {
       messageSent += writer.writeCount;
     }
     producerReport.setMessageSent(messageSent);
-    producerReport.setFailed(sendFailedCounter.get());;
+    producerReport.setMessageSentFailed(sendFailedCounter.get());;
   }
 
   

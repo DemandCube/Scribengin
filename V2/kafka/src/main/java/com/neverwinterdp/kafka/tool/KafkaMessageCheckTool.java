@@ -114,10 +114,11 @@ public class KafkaMessageCheckTool implements Runnable {
     }
     interrupt = false;
     int lastCount = 0, cannotReadCount = 0;
-    int fetchSize = topicConfig.consumerConfig.consumeBatchFetch * (topicConfig.producerConfig.messageSize + 100) ;
+    int batchFetch = topicConfig.consumerConfig.consumeBatchFetch ;
+    int fetchSize = batchFetch * (topicConfig.producerConfig.messageSize + 100) ;
     while (messageCounter.getTotal() < topicConfig.consumerConfig.consumeMax && !interrupt) {
       for (int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages = partitionReader[k].fetch(fetchSize, 1000/*max read*/, 1000 /*max wait*/);
+        List<byte[]> messages = partitionReader[k].fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
         for(byte[] messagePayload : messages) {
           messageTracker.log(messageExtractor.extract(messagePayload));
@@ -125,6 +126,7 @@ public class KafkaMessageCheckTool implements Runnable {
       }
       if(lastCount == messageCounter.getTotal()) {
         cannotReadCount++;
+        Thread.sleep(1000);
       } else {
         cannotReadCount = 0;
       }

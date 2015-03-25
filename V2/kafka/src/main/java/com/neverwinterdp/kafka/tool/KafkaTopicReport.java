@@ -43,7 +43,8 @@ public class KafkaTopicReport {
   static public void report(Appendable out, KafkaTopicReport ... report) throws IOException {
     String[] header = { 
         "Topic", "Replication", "Partitions", "F Sim", 
-        "Writer","W Duration", "W Rate", "W Total", "R Duration", "R Rate", "R Total"
+        "Writer","W Duration", "W Rate", "W Total", "W Failed", 
+        "R Duration", "R Rate", "R Total"
     };
       
     TabularFormater reportFormater = new TabularFormater(header);
@@ -60,6 +61,7 @@ public class KafkaTopicReport {
       Object[] cells = {
           sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
           sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,
+          sel.producerReport.messageSentFailed,
           sel.consumerReport.runDuration, messageReadRate, sel.consumerReport.messagesRead,
       };
       reportFormater.addRow(cells);
@@ -77,7 +79,7 @@ public class KafkaTopicReport {
     private long   runDuration;
     private int    messageSent;
     private int    messageSize; //bytes
-    private long   failed; // gotten from writer
+    private long   messageSentFailed; // gotten from writer
 
     public String getWriter() { return writer; }
     public void setWriter(String writer) { this.writer = writer; }
@@ -91,8 +93,8 @@ public class KafkaTopicReport {
     public int getMessageSize() { return messageSize; }
     public void setMessageSize(int messageSize) { this.messageSize = messageSize; }
 
-    public long getFailed() { return failed; }
-    public void setFailed(long failed) { this.failed = failed; }
+    public long getMessageSentFailed() { return messageSentFailed; }
+    public void setMessageSentFailed(long failed) { this.messageSentFailed = failed; }
 
     @Override
     public String toString() {
@@ -103,8 +105,8 @@ public class KafkaTopicReport {
       builder.append(messageSent);
       builder.append(", messageSize=");
       builder.append(messageSize);
-      builder.append(", failed=");
-      builder.append(failed);
+      builder.append(", messageSentFailed=");
+      builder.append(messageSentFailed);
       builder.append("]");
       return builder.toString();
     }

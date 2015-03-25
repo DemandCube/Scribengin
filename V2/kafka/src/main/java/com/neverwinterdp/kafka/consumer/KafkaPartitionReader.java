@@ -162,6 +162,7 @@ public class KafkaPartitionReader {
       } catch(Exception ex) {
         error = ex;
         System.err.println(op.getClass().getSimpleName() + " try " + (i + 1) + " error: " + ex.getMessage()) ;
+        //ex.printStackTrace();
       }
     }
     throw error;
