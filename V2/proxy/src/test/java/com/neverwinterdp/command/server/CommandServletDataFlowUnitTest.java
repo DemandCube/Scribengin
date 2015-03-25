@@ -23,7 +23,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class CommandServletDataFlowUnitTest {
-  
+  /*
   @BeforeClass
   public static void setup() throws Exception{
     CommandServletUnitTest.setup();
@@ -129,14 +129,14 @@ public class CommandServletDataFlowUnitTest {
     assertEquals("invalidsinkBrokerList", invalidSink.attribute("broker.list"));
     
     
-    /*
-    resp = Unirest.post("http://localhost:"+Integer.toString(CommandServletUnitTest.port))
-        .field("command", "registry dump")
-        .asString();
-    System.out.println(resp.getBody());
-    */
+    
+    //resp = Unirest.post("http://localhost:"+Integer.toString(CommandServletUnitTest.port))
+    //    .field("command", "registry dump")
+    //    .asString();
+    //System.out.println(resp.getBody());
+    
   }
   
   
-
+*/
 }

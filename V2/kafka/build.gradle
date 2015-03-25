@@ -12,6 +12,6 @@ dependencies {
   compile project(':server')
 
   compile group: 'org.tap4j', name: 'tap4j', version: '4.1'
-   compile group: 'com.google.guava', name: 'guava', version: '18.0'
+  compile group: 'com.google.guava', name: 'guava', version: '18.0'
   testCompile "org.apache.kafka:kafka_2.10:0.8.2.0:test"
 }

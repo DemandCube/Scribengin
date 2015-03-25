@@ -11,15 +11,7 @@ eclipse {
 configurations.all {
   exclude(group: 'ring', module: 'ring-core')
   exclude(group: 'storm', module: 'storm')
-  
-  //This is because hadoop uses and older version of jetty,
-  //and the proxy server needs version 3
   exclude(group: 'javax.servlet', module: 'servlet-api')
-  
-
-  resolutionStrategy {
-    force 'com.google.guava:guava:13.0'
-  }
 }
 
 dependencies {

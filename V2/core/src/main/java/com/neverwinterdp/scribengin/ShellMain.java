@@ -6,16 +6,29 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.VMConfig;
+import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.YarnVMClient;
 
 public class ShellMain {
   static public void main(String[] args) throws Exception {
     System.setProperty("HADOOP_USER_NAME", "neverwinterdp"); 
-    
+    if(args.length > 0 && args[0].equals("help")){
+      Registry registry = new RegistryImpl();
+      VMClient vmClient = new VMClient(registry);
+      ScribenginShell shell = new ScribenginShell(vmClient) ;
+      shell.execute(args);
+      return;
+    }
     String zkConnect = System.getProperty("shell.zk-connect");
     RegistryConfig registryConfig = RegistryConfig.getDefault();
     registryConfig.setConnect(zkConnect);
-    Registry registry = new RegistryImpl(registryConfig).connect();
+    Registry registry = null;
+    try{
+      registry = new RegistryImpl(registryConfig).connect();
+    } catch(Exception e){
+      System.err.println("Could not connect to the registry at: "+ registryConfig.getConnect()+"\n"+e.getMessage());
+      return;
+    }
     
     String hadoopMaster = System.getProperty("shell.hadoop-master");
     HadoopProperties hadoopProps = new HadoopProperties() ;

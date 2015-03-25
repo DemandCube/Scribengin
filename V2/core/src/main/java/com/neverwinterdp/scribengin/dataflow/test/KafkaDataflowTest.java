@@ -1,10 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.neverwinterdp.kafka.tool.KafkaMessageGenerator;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -12,7 +9,6 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
-import com.neverwinterdp.util.JSONSerializer;
 
 
 public class KafkaDataflowTest extends DataflowTest {
@@ -20,17 +16,18 @@ public class KafkaDataflowTest extends DataflowTest {
   private DataflowSourceGenerator sourceGenerator = new DataflowKafkaSourceGenerator();
   
   @ParametersDelegate
-  private DataflowSinkValidator   sinkValidator = new DataflowKafkaSinkValidator();
+  private DataflowSinkValidator   sinkValidator   = new DataflowKafkaSinkValidator();
   
   @Parameter(names = "--sink-topic", description = "Default sink topic")
   public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
   
   protected void doRun(ScribenginShell shell) throws Exception {
+    shell.console().println("KafkaDataflowTest: Prepare to launch the KafkaDataflowTest!!");
     long start = System.currentTimeMillis();
     ScribenginClient scribenginClient = shell.getScribenginClient();
-
     sourceGenerator.init(scribenginClient);
     sourceGenerator.runInBackground();
+    shell.console().println("KafkaDataflowTest: Finish launching the source generator in the background!!");
     
     sinkValidator.init(scribenginClient);
     
@@ -43,8 +40,9 @@ public class KafkaDataflowTest extends DataflowTest {
 
     dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
+    shell.console().println("Finish creating the dataflow descriptor!!!");
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-    
+    shell.console().println("Finish submitting the dataflow descriptor!!!");
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
@@ -75,15 +73,6 @@ public class KafkaDataflowTest extends DataflowTest {
         ctx.commit();
         count = 0;
       }
-    }
-  }
-  
-  static public class KafkaMessageGeneratorRecord implements KafkaMessageGenerator {
-    static public AtomicLong idTracker = new AtomicLong() ;
-    
-    public byte[] nextMessage(int partition, int messageSize) {
-      String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
-      return JSONSerializer.INSTANCE.toString(new Record(key, new byte[messageSize] )).getBytes();
     }
   }
 }

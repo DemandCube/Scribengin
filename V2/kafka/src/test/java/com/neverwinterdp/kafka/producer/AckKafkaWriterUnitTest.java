@@ -2,9 +2,6 @@ package com.neverwinterdp.kafka.producer;
 
 import org.junit.Test;
 
-import com.neverwinterdp.kafka.tool.KafkaTopicCheckTool;
-import com.neverwinterdp.kafka.tool.KafkaTopicConfig;
-
 /**
  * @author Tuan
  */
@@ -39,23 +36,9 @@ public class AckKafkaWriterUnitTest {
 
   @Test
   public void testRunner() throws Exception {
-
     AckKafkaWriterTestRunner runner = new AckKafkaWriterTestRunner(topicConfigArgs);
     runner.setUp();
     runner.run();
     runner.tearDown();
-  }
-
-  @Test
-  public void testKillTwoLeaders() {
-    
-    //Start cluster
-    //start writer thread, tell it what to write
-    //Start killer thread
-    //start reader thread
-    //assert results
-    KafkaTopicConfig config = new KafkaTopicConfig(topicConfigArgs);
-    KafkaTopicCheckTool topicCheckTool = new KafkaTopicCheckTool(config);
-    topicCheckTool.runAsDeamon();
   }
 }

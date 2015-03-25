@@ -14,14 +14,6 @@ repositories {
 configurations.all {
   exclude(group: 'ring', module: 'ring-core')
   exclude(group: 'storm', module: 'storm')
-  
-  //This is because hadoop uses and older version of jetty,
-  //and the proxy server needs version 3
-  //exclude(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
-  
-  //resolutionStrategy {
-  //  force 'com.google.guava:guava:13.0'
-  //}
 }
 
 dependencies {
@@ -34,11 +26,9 @@ dependencies {
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
   compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+  compile group: 'com.google.guava',           name: 'guava', version: '18.0'
   compile 'com.amazonaws:aws-java-sdk:1.9.6'
   
-  //TODO: move to use jackson
-  //compile 'org.json:json:20090211'
-  //compile group: 'com.google.guava', name: 'guava', version: '13.0'
   compile group: 'junit', name: 'junit', version: '4.11'
 }
 
@@ -60,7 +50,6 @@ def doRelease(String releaseDir) {
     "scribengin.server", "scribengin.registry", "scribengin.vm", "scribengin.core", 
 
     "jackson-core-2.4.3", "jackson-databind-2.4.3", "jackson-annotations-2.4.3", "jackson-datatype-protobuf", 
-    //"jcommander", "reflections", "guava-16.0.1", "javassist",
     "jcommander", "reflections", "guava-13.0", "javassist",
     'guice', 'javax.inject', 'hazelcast', 'aopalliance',
     "kafka", "scala-library",

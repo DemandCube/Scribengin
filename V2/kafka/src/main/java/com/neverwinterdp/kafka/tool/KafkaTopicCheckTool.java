@@ -44,6 +44,8 @@ public class KafkaTopicCheckTool implements Runnable {
   
   public KafkaMessageSendTool getKafkaMessageSendTool() { return this.sendTool; }
   
+  public KafkaMessageCheckTool getKafkaMessageCheckTool() { return this.checkTool ; }
+  
   //TODO: make sure this method work
   public void junitReport() throws Exception {
     if(kafkaTopicConfig.junitReportFile != null) {
@@ -120,10 +122,11 @@ public class KafkaTopicCheckTool implements Runnable {
   }
 
   static public void main(String[] args) throws Exception {
-    KafkaTopicCheckTool tool = new KafkaTopicCheckTool(args, true);
-    tool.run();
+    KafkaTopicCheckTool topicCheckTool = new KafkaTopicCheckTool(args, true);
+    topicCheckTool.run();
     //TODO: make sure this call works
-    tool.junitReport();
-    tool.getKafkaTopicReport().report(System.out);
+    topicCheckTool.junitReport();
+    topicCheckTool.getKafkaTopicReport().report(System.out);
+    topicCheckTool.getKafkaMessageCheckTool().getMessageTracker().dump(System.out);
   }
 }

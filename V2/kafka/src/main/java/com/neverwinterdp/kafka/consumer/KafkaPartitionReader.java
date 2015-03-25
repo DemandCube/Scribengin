@@ -21,6 +21,7 @@ import kafka.javaapi.OffsetFetchResponse;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.message.Message;
 import kafka.message.MessageAndOffset;
 
 import com.neverwinterdp.kafka.tool.KafkaTool;
@@ -103,7 +104,8 @@ public class KafkaPartitionReader {
     while(currentMessageSetIterator.hasNext()) {
       MessageAndOffset messageAndOffset = currentMessageSetIterator.next();
       if (messageAndOffset.offset() < currentOffset) continue; //old offset, ignore
-      ByteBuffer payload = messageAndOffset.message().payload();
+      Message message = messageAndOffset.message();
+      ByteBuffer payload = message.payload();
       byte[] bytes = new byte[payload.limit()];
       payload.get(bytes);
       currentOffset = messageAndOffset.nextOffset();

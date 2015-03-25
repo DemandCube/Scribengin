@@ -26,7 +26,7 @@ public class AnthonyAckKafkaWriterUnitTest extends AbstractBugsUnitTest {
 
   //This method tests the send(topic,partition, timeout) method
   // it throws IAE because of line 35 in com.neverwinterdp.kafka.producer.AbstractKafkaWriter sets the default partition to -1
-  @Test
+  @Test(expected=IllegalArgumentException.class)
   public void testSendMethod() throws Exception {
     String message = "test-message-";
     int messageCount = 1000;
@@ -40,7 +40,7 @@ public class AnthonyAckKafkaWriterUnitTest extends AbstractBugsUnitTest {
 
   //This method tests the send(topic, Object, timeout) method
   // it throws IAE because of line 45 in com.neverwinterdp.kafka.producer.AbstractKafkaWriter sets the default partition to -1
-  @Test
+  @Test(expected=IllegalArgumentException.class)
   public void testSendObjectMethod() throws Exception {
     int messageCount = 1000;
 
@@ -55,7 +55,7 @@ public class AnthonyAckKafkaWriterUnitTest extends AbstractBugsUnitTest {
 
   //This method tests the send(topic, key, message, timeout) method
   //it throws IAE because of line 35 in com.neverwinterdp.kafka.producer.AbstractKafkaWriter sets the default partition to -1
-  @Test
+  @Test(expected=IllegalArgumentException.class)
   public void testSendKeyMethod() throws Exception {
     String message = "test-message-";
     int messageCount = 1000;

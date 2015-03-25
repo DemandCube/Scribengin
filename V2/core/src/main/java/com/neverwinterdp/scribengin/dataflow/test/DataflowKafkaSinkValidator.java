@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import com.beust.jcommander.JCommander;
+import java.io.IOException;
+
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 import com.neverwinterdp.scribengin.ScribenginClient;
@@ -55,6 +56,11 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
     sinkReport.setNumberOfStreams(topicReport.getNumOfPartitions());
     sinkReport.setReadCount(topicReport.getConsumerReport().getMessagesRead());
     sinkReport.setDuration(topicReport.getConsumerReport().getRunDuration());
+    try {
+      kafkaMessageCheckTool.getMessageTracker().dump(System.out);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
   
   KafkaMessageCheckTool createKafkaMessageCheckTool() {
@@ -65,6 +71,7 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
       "--zk-connect",             zkConnect
     };
     KafkaMessageCheckTool kafkaMessageCheckTool = new KafkaMessageCheckTool(args);
+    kafkaMessageCheckTool.setMessageExtractor(new RecordMessageExtractor());
     return kafkaMessageCheckTool;
   }
 }

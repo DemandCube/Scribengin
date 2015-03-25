@@ -65,6 +65,7 @@ public class KafkaProducerKillPartitionLeaderBugUnitTest  {
     System.out.println("Sent count = " + sendTool.getReport().getProducerReport().getMessageSent());
     System.out.println("Sent failed count = " + sendTool.getReport().getProducerReport().getFailed());
     System.out.println("Check count = " + checkTool.getMessageCounter().getTotal());
+    checkTool.getMessageTracker().dump(System.out);
     assertTrue(checkTool.getMessageCounter().getTotal() < sendTool.getSentCount());
   }
 }

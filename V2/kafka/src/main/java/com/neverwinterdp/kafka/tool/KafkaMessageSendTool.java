@@ -21,6 +21,7 @@ import com.neverwinterdp.kafka.producer.AckKafkaWriter;
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.kafka.producer.KafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTopicReport.ProducerReport;
+import com.neverwinterdp.tool.message.MessageGenerator;
 
 public class KafkaMessageSendTool implements Runnable {
   @ParametersDelegate
@@ -30,7 +31,7 @@ public class KafkaMessageSendTool implements Runnable {
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
   private AtomicLong   sendFailedCounter = new AtomicLong() ;
-  private KafkaMessageGenerator messageGenerator = KafkaMessageGenerator.DEFAULT_MESSAGE_GENERATOR;
+  private MessageGenerator messageGenerator = MessageGenerator.DEFAULT_MESSAGE_GENERATOR;
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
   private Stopwatch runDuration = Stopwatch.createUnstarted();
@@ -46,7 +47,7 @@ public class KafkaMessageSendTool implements Runnable {
     this.topicConfig = topicConfig;
   }
   
-  public void setMessageGenerator(KafkaMessageGenerator generator) {
+  public void setMessageGenerator(MessageGenerator generator) {
     messageGenerator = generator;
   }
 
