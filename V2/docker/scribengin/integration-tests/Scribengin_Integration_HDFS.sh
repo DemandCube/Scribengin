@@ -1,5 +1,5 @@
 #Set up Scribengin cluster
-cd /root/Scribengin/V2/
+cd V2/
 ./installDependencies.sh
 cd docker/scribengin/
 ./docker.sh container clean || true
