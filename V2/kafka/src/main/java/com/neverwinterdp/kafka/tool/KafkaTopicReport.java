@@ -81,57 +81,39 @@ public class KafkaTopicReport {
     TestSet testSet = new TestSet();
     int testNum = 0;
     
-    //Create test result for total messages read
-    TestResult sentVsReadMessage = null;
-    if(consumerReport.messagesRead >= producerReport.messageSent ){
-      sentVsReadMessage = new TestResult( StatusValues.OK, ++testNum );
-    }
-    else{
-      sentVsReadMessage = new TestResult( StatusValues.NOT_OK, ++testNum );
-    }
-    sentVsReadMessage.setDescription("Messages sent: "+ producerReport.messageSent + " Messages Consumed: " + consumerReport.messagesRead);
-    testSet.addTestResult( sentVsReadMessage );
+    testSet.addTestResult(newTestResult(++testNum, 
+        "Messages sent: "+ producerReport.messageSent, 
+        producerReport.messageSent > 0 ));
     
-    //Test result for messages failed
-    TestResult messagesFailed = null;
-    if(producerReport.messageSentFailed < 1 ){
-      messagesFailed = new TestResult( StatusValues.OK, ++testNum );
-    } else {
-      messagesFailed = new TestResult( StatusValues.NOT_OK, ++testNum );
-    }
-    messagesFailed.setDescription("Messages sent failed: "+ Long.toString(producerReport.messageSentFailed));
-    testSet.addTestResult( messagesFailed );
+    testSet.addTestResult(newTestResult(++testNum, 
+        "Messages sent: "+ producerReport.messageSent + " --- Messages Consumed: " + consumerReport.messagesRead, 
+        consumerReport.messagesRead >= producerReport.messageSent ));
     
-    TestResult duration = null;
-    if(producerReport.runDuration > 0 && consumerReport.runDuration > 0 ){
-      duration = new TestResult( StatusValues.OK, ++testNum );
-    } else{
-      duration = new TestResult( StatusValues.NOT_OK, ++testNum );
-    }
-    duration.setDescription("Producer run duration: "+ producerReport.runDuration +
-                          " --- Consumer run duration: "+ consumerReport.runDuration );
-    testSet.addTestResult( duration );
+    testSet.addTestResult(newTestResult(++testNum, 
+        "Messages sent failed: "+ producerReport.messageSentFailed, 
+        true ));
     
-    TestResult messageSize = null;
-    if(producerReport.messageSize > 0  ){
-      messageSize = new TestResult( StatusValues.OK, ++testNum );
-    }
-    else{
-      messageSize = new TestResult( StatusValues.NOT_OK, ++testNum );
-    }
-    messageSize.setDescription("Producer Message Size: "+ Integer.toString(producerReport.messageSize));
-    testSet.addTestResult( messageSize );
+    testSet.addTestResult(newTestResult(++testNum, 
+        "Producer run duration: "+ producerReport.runDuration + " --- Consumer run duration: "+ consumerReport.runDuration, 
+        producerReport.runDuration > 0 && consumerReport.runDuration > 0  ));
+    
+    testSet.addTestResult(newTestResult(++testNum, 
+        "Producer Message Size: "+ producerReport.messageSize, 
+        producerReport.messageSize > 0   ));
     
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
     tapProducer.dump(testSet, new File(fileName));
   }
   
-  TestResult newTestResult(int testNum, String desc, boolean cond )  {
-    if(cond){
-      return new TestResult( StatusValues.OK, ++testNum );
+  TestResult newTestResult(int testNum, String desc, boolean passed )  {
+    TestResult tr = null;
+    if(passed){
+      tr = new TestResult( StatusValues.OK, testNum );
     } else {
-      return new TestResult( StatusValues.NOT_OK, ++testNum );
+      tr = new TestResult( StatusValues.NOT_OK, testNum );
     }
+    tr.setDescription(desc);
+    return tr;
   }
   
   static public class ProducerReport {
