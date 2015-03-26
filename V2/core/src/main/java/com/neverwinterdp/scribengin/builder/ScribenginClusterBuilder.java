@@ -3,11 +3,9 @@ package com.neverwinterdp.scribengin.builder;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.vm.VMStatus;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
-
-import static com.neverwinterdp.vm.builder.VMClusterBuilder.*;
-
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
+import static com.neverwinterdp.vm.tool.VMClusterBuilder.* ;
 
 public class ScribenginClusterBuilder {
   private VMClusterBuilder vmClusterBuilder ;

@@ -4,9 +4,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.junit.Before;
 
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class ScribenginSingleJVMUnitTest extends ScribenginUnitTest {
   static {
@@ -28,7 +28,6 @@ public class ScribenginSingleJVMUnitTest extends ScribenginUnitTest {
   protected String getDataDir() { return "./build/hdfs"; }
   
   protected VMClusterBuilder getVMClusterBuilder() throws Exception {
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
-    return builder;
+    return new EmbededVMClusterBuilder();
   }
 }
