@@ -154,7 +154,7 @@ public class KafkaMessageCheckTool implements Runnable {
     KafkaTopicReport report = new KafkaTopicReport() ;
     report.setTopic(topicConfig.topic);
     report.setNumOfPartitions(numOfPartitions);
-    report.setNumOfReplications(topicConfig.replication);
+    report.setNumOfReplicas(topicConfig.replication);
     populate(report);
     return report ;
   }

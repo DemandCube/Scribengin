@@ -13,7 +13,7 @@ subprojects {
   apply plugin: 'jacoco'
 
   jacoco {
-    toolVersion = "0.6.2.201302030002"
+    toolVersion = "0.7.0.201403182114"
     reportsDir = file("$buildDir/JacocoReportDir")
   }
   

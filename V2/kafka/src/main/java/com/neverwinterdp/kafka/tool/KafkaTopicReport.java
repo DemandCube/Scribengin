@@ -32,7 +32,7 @@ public class KafkaTopicReport {
   public void setNumOfPartitions(int numOfPartitions) { this.numOfPartitions = numOfPartitions; }
   
   public int getNumOfReplications() { return numOfReplications; }
-  public void setNumOfReplications(int numOfReplications) { this.numOfReplications = numOfReplications; }
+  public void setNumOfReplicas(int numOfReplications) { this.numOfReplications = numOfReplications; }
   
   public int getFailureSimulation() { return failureSimulation; }
   public void setFailureSimulation(int failureSimulation) { this.failureSimulation = failureSimulation; }
@@ -68,7 +68,7 @@ public class KafkaTopicReport {
       Object[] cells = {
           sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
           sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,
-          sel.producerReport.messageSentFailed,
+          sel.producerReport.messagesRetried,
           sel.consumerReport.runDuration, messageReadRate, sel.consumerReport.messagesRead,
       };
       reportFormater.addRow(cells);
@@ -90,7 +90,7 @@ public class KafkaTopicReport {
         consumerReport.messagesRead >= producerReport.messageSent ));
     
     testSet.addTestResult(newTestResult(++testNum, 
-        "Messages sent failed: "+ producerReport.messageSentFailed, 
+        "Messages retried: "+ producerReport.messagesRetried, 
         true ));
     
     testSet.addTestResult(newTestResult(++testNum, 
@@ -105,7 +105,7 @@ public class KafkaTopicReport {
     tapProducer.dump(testSet, new File(fileName));
   }
   
-  TestResult newTestResult(int testNum, String desc, boolean passed )  {
+  private TestResult newTestResult(int testNum, String desc, boolean passed )  {
     TestResult tr = null;
     if(passed){
       tr = new TestResult( StatusValues.OK, testNum );
@@ -121,7 +121,7 @@ public class KafkaTopicReport {
     private long   runDuration;
     private int    messageSent;
     private int    messageSize; //bytes
-    private long   messageSentFailed; // gotten from writer
+    private long   messagesRetried; // messages that needed to be retried
 
     public String getWriter() { return writer; }
     public void setWriter(String writer) { this.writer = writer; }
@@ -135,8 +135,8 @@ public class KafkaTopicReport {
     public int getMessageSize() { return messageSize; }
     public void setMessageSize(int messageSize) { this.messageSize = messageSize; }
 
-    public long getMessageSentFailed() { return messageSentFailed; }
-    public void setMessageSentFailed(long failed) { this.messageSentFailed = failed; }
+    public long getMessageRetried() { return messagesRetried; }
+    public void setMessageRetried(long retried) { this.messagesRetried = retried; }
 
     @Override
     public String toString() {
@@ -147,8 +147,8 @@ public class KafkaTopicReport {
       builder.append(messageSent);
       builder.append(", messageSize=");
       builder.append(messageSize);
-      builder.append(", messageSentFailed=");
-      builder.append(messageSentFailed);
+      builder.append(", messagesRetried=");
+      builder.append(messagesRetried);
       builder.append("]");
       return builder.toString();
     }

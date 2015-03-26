@@ -115,7 +115,7 @@ public class KafkaTopicCheckTool implements Runnable {
     topicReport = new KafkaTopicReport();
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
-    topicReport.setNumOfReplications(kafkaTopicConfig.replication);
+    topicReport.setNumOfReplicas(kafkaTopicConfig.replication);
     sendTool.populate(topicReport);
     checkTool.populate(topicReport);
   }
