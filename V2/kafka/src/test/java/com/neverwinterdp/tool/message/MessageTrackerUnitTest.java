@@ -1,45 +1,251 @@
 package com.neverwinterdp.tool.message;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import com.neverwinterdp.tool.message.PartitionMessageTracker;
 
 public class MessageTrackerUnitTest {
-  //TODO: figure out different cases, add unit test and assert
-  //You can add more method to PartitionMessageTracker and MessageTracker to help verify
+
+  @Test
+  public void testCase1() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 11, 20);
+    log(tracker, 21, 30);
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+  @Test
+  public void testCase2() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 10, 20);
+    log(tracker, 20, 30);
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 2);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(10,20)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+  @Test
+  public void testCase3() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 5, 20);
+    log(tracker, 15, 30);
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 12);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+  @Test
+  public void testCase4() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 2, 8);
+    log(tracker, 4, 6);
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 10);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  
+  @Test
+  public void testCase5() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 3, 5);
+    log(tracker, 7, 9);
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 6);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  @Test
+  public void testCase6() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 15, 20);
+    log(tracker, 25, 30);
+    assertEquals(tracker.getMap().size(), 3);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(1).getFrom(), 15);
+    assertEquals(tracker.getMap().get(1).getCurrent(), 20);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent() + 5, tracker.getMap().get(1).getFrom());
+    assertEquals(tracker.getMap().get(1).getCurrent() + 5, tracker.getMap().get(2).getFrom());
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+  public void testCase7() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 0, 10);
+    log(tracker, 15, 20);
+    log(tracker, 18, 30);
+    assertEquals(tracker.getMap().size(), 3);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(1).getFrom(), 15);
+    assertEquals(tracker.getMap().get(1).getCurrent(), 20);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 4);
+    assertEquals(tracker.getMap().get(0).getCurrent() + 5, tracker.getMap().get(1).getFrom());
+    assertEquals(tracker.getMap().get(1).getCurrent() + 5, tracker.getMap().get(2).getFrom());
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  @Test
+  public void testCase8() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 20, 11);
+    log(tracker, 30, 21);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  
+  @Test
+  public void testCase9() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 20, 10);
+    log(tracker, 30, 20);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 2);
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+  @Test
+  public void testCase10() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 20, 5);
+    log(tracker, 30, 15);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 12);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+
+    @Test
+  public void testCase11() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 8, 2);
+    log(tracker, 6, 4);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 10);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  
+  @Test
+  public void testCase12() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 5, 3);
+    log(tracker, 9, 7);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 1);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 6);
+    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  
+  @Test
+  public void testCase13() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 20, 15);
+    log(tracker, 30, 25);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 3);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
+  
+  @Test
+  public void testCase14() throws Exception {
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
+    log(tracker, 10, 0);
+    log(tracker, 20, 15);
+    log(tracker, 30, 18);
+    tracker.optimize();
+    assertEquals(tracker.getMap().size(), 2);
+    assertEquals(tracker.getMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getMap().get(1).getDuplicatedCount(), 3);
+    assertTrue(tracker.getMap().get(1).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
+    tracker.dump(System.out, "Sequence Number Tracker");
+  }
   
   @Test
   public void testPartitionGeneratedMessageTracker() throws Exception {
     PartitionMessageTracker tracker = new PartitionMessageTracker(0) ;
-    log(tracker, 0, 10) ;
+    log(tracker, 0, 10)  ;
     log(tracker, 10, 20) ;
     log(tracker, 21, 30) ;
     log(tracker, 40, 50) ;
     log(tracker, 30, 40) ;
     log(tracker, 30, 60) ;
+    log(tracker, 100, 200) ;
     tracker.dump(System.out, "Sequence Number Tracker");
   }
-  
   @Test
   public void testOutOfOrderPartitionGeneratedMessageTracker() throws Exception {
-    PartitionMessageTracker tracker = new PartitionMessageTracker(0) ;
+    PartitionMessageTracker tracker = new PartitionMessageTracker(0);
     log(tracker, 100, 0);
     log(tracker, 200, 80);
     log(tracker, 1000, 200);
-    //tracker.optimize();
+    tracker.optimize();
     tracker.dump(System.out, "Sequence Number Tracker");
   }
-  
-  
+
   private void log(PartitionMessageTracker tracker, int from, int to) {
-    if(from < to) {
-      for(int num = from; num <= to; num++) {
+    if (from < to) {
+      for (int num = from; num <= to; num++) {
         tracker.log(num);
       }
     } else {
-      for(int num = from; num >= to; num--) {
+      for (int num = from; num >= to; num--) {
         tracker.log(num);
-      } 
+      }
     }
   }
 }

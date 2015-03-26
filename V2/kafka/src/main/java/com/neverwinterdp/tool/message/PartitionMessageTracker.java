@@ -182,4 +182,8 @@ public class PartitionMessageTracker {
       }
     }
   }
+
+  public List<SequenceMap> getMap() {
+    return map;
+  }
 }
