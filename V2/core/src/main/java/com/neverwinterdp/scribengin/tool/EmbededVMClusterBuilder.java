@@ -1,19 +1,20 @@
-package com.neverwinterdp.vm.builder;
+package com.neverwinterdp.scribengin.tool;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.server.kafka.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.client.LocalVMClient;
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class EmbededVMClusterBuilder extends VMClusterBuilder {
   private String baseDir = "./build/data";

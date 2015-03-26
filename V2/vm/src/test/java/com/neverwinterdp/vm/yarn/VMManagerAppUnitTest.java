@@ -17,7 +17,6 @@ import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.YarnVMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
@@ -28,6 +27,7 @@ import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.service.VMServicePlugin;
+import com.neverwinterdp.vm.tool.VMZKClusterBuilder;
 
 public class VMManagerAppUnitTest {
   
@@ -36,7 +36,7 @@ public class VMManagerAppUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
  
-  EmbededVMClusterBuilder vmCluster ;
+  VMZKClusterBuilder vmCluster ;
   MiniYARNCluster miniYarnCluster ;
 
   @Before
@@ -50,9 +50,9 @@ public class VMManagerAppUnitTest {
     yarnProps.put("yarn.resourcemanager.scheduler.address", "0.0.0.0:8030");
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
-    vmCluster = new EmbededVMClusterBuilder(vmClient) ;
+    vmCluster = new VMZKClusterBuilder(vmClient) ;
     vmCluster.clean(); 
-    vmCluster.startKafkaCluster();
+    vmCluster.starZookeeper();
     vmCluster.getVMClient().getRegistry().connect();
   }
 

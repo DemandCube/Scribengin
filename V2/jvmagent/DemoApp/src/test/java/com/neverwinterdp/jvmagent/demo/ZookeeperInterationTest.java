@@ -4,16 +4,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class ZookeeperInterationTest {
-  private ZookeeperServerLauncher zkServerLauncher ;
+  private EmbededZKServer zkServerLauncher ;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
   

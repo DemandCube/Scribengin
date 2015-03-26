@@ -13,8 +13,8 @@ import com.neverwinterdp.scribengin.dataflow.test.HelloKafkaDataflowBuilder;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.scribengin.storage.kafka.KafkaSourceGenerator;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 abstract public class ScribenginUnitTest {
   protected ScribenginClusterBuilder clusterBuilder ;

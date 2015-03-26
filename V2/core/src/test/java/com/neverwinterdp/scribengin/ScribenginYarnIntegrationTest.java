@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -15,11 +13,11 @@ import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.HadoopProperties;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.YarnVMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class ScribenginYarnIntegrationTest extends ScribenginUnitTest {
   static {
@@ -68,7 +66,7 @@ public class ScribenginYarnIntegrationTest extends ScribenginUnitTest {
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
     vmClient.setLocalAppHome("build/release/Scribengin.V2");
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder(vmClient) ;
+    VMClusterBuilder builder = new EmbededVMClusterBuilder(vmClient) ;
     return builder;
   }
   

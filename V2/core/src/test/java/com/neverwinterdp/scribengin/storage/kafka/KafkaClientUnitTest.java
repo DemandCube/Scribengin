@@ -11,7 +11,7 @@ import com.neverwinterdp.kafka.tool.ZKTool;
 import com.neverwinterdp.scribengin.storage.kafka.sink.KafkaSink;
 import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 public class KafkaClientUnitTest {
   static {

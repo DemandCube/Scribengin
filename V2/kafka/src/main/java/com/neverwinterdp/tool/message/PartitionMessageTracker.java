@@ -11,12 +11,42 @@ import com.neverwinterdp.util.text.TabularFormater;
 
 public class PartitionMessageTracker {
   private int partition ;
+  private int logCount ;
   private List<SequenceMap> map = new ArrayList<>();
   private int idealSequenceMapSize = 100;
   
   public PartitionMessageTracker(int partition) {
     this.partition = partition ;
   }
+  
+  public int getLogCount() { return this.logCount ; }
+  
+  public int getDuplicatedCount() {
+    //TODO: implement this method
+    return 0 ;
+  }
+  
+  public int getMinMessageId() {
+    //TODO: implement this method
+    return 0 ;
+  }
+  
+  public int getMaxMessageId() { 
+  //TODO: implement this method
+    return 0 ;
+  }
+  
+  public boolean isInSequence() {
+    //TODO: implement this method
+    return true;
+  }
+  
+  public SequenceMap getSequenceMap(int idx) {
+    return map.get(idx) ;
+  }
+  
+  //TODO: remove this code
+  public List<SequenceMap> getSequenceMap() { return map; }
   
   public int getPartition() { return this.partition ; }
   
@@ -48,6 +78,7 @@ public class PartitionMessageTracker {
       SequenceMap seqMap = new SequenceMap(trackId);
       map.add(seqMap) ;
     } finally {
+      logCount++ ;
       if(map.size() > idealSequenceMapSize) {
         optimize();
       }
@@ -181,9 +212,5 @@ public class PartitionMessageTracker {
         duplicated.add(num);
       }
     }
-  }
-
-  public List<SequenceMap> getMap() {
-    return map;
   }
 }

@@ -4,12 +4,12 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.client.shell.SubCommand;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class ScribenginCommand extends Command {
   public ScribenginCommand() {

@@ -9,11 +9,11 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class CommandServerTestBase {
   public static String commandServerFolder = "./src/test/resources/commandServer";

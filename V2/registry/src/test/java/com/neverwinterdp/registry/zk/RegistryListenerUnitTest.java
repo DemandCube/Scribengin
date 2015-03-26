@@ -12,8 +12,8 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.event.RegistryListener;
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class RegistryListenerUnitTest {
   static {
@@ -21,12 +21,12 @@ public class RegistryListenerUnitTest {
   }
   
   static public String TEST_PATH = "/node/event" ;
-  static private ZookeeperServerLauncher zkServerLauncher ;
+  static private EmbededZKServer zkServerLauncher ;
   
   @BeforeClass
   static public void startServer() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
   

@@ -11,10 +11,10 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class KafkaDataflowUnitTest {
   static {
@@ -41,8 +41,7 @@ public class KafkaDataflowUnitTest {
   }
   
   protected VMClusterBuilder getVMClusterBuilder() throws Exception {
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
-    return builder;
+    return new EmbededVMClusterBuilder();
   }
   
   @Test
@@ -90,7 +89,8 @@ public class KafkaDataflowUnitTest {
           "dataflow-test kafka " + 
           "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
-          "  --sink-name output";
+          "  --sink-name output "+
+          "--junit-report build/tap.xml";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
