@@ -35,7 +35,7 @@ abstract public class DataflowTest {
   protected long printDataflowInfo = 5000;
 
   @Parameter(names = "--junit-report", description = "The junit report output file")
-  protected String junitReport  = "build/DataFLowTest.xml";;
+  protected String junitReport;
 
   public void run(ScribenginShell shell) throws Exception {
     doRun(shell);
@@ -88,6 +88,10 @@ abstract public class DataflowTest {
     testSet.addTestResult(newTestResult(++testNum,
         "Read Count: " + sinkReport.getReadCount(),
         sinkReport.getReadCount() > 0));
+    
+    testSet.addTestResult(newTestResult(++testNum,
+        "Overall Test success : " + (sinkReport.getReadCount() >= sourceReport.getWriteCount()),
+        sinkReport.getReadCount() >= sourceReport.getWriteCount()));
 
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(junitReport);
     tapProducer.dump(testSet, new File(junitReport));
