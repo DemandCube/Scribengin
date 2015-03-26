@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.io.IOException;
 
-import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class DataflowTestReport {
