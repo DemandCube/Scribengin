@@ -5,8 +5,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class MessageTracker {
-  TreeMap<Integer, PartitionMessageTracker> partitions = new TreeMap<>() ;
-
+  private TreeMap<Integer, PartitionMessageTracker> partitions = new TreeMap<>() ;
+  private int logCount = 0;
+  
+  public int getLogCount() { return this.logCount ; }
+  
   public void log(Message message) {
     log(message.getPartition(), message.getTrackId());
   }
@@ -14,6 +17,7 @@ public class MessageTracker {
   public void log(int partition, int trackId) {
     PartitionMessageTracker partitionTracker = getPartitionMessageTracker(partition) ;
     partitionTracker.log(trackId);
+    logCount++ ;
   }
   
   PartitionMessageTracker getPartitionMessageTracker(int partition) {
@@ -41,5 +45,6 @@ public class MessageTracker {
       PartitionMessageTracker partitionTracker = entry.getValue() ;
       partitionTracker.dump(out, "Tracking message for the partition " + partition);
     }
+    out.append("\nLog Count: " + logCount + "\n");
   }
 }

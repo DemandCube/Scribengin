@@ -53,7 +53,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
   abstract public void populate(DataflowTestReport report) ;
 
   static public class RecordMessageGenerator implements MessageGenerator {
-    MessageGenerator defaultMessageGenerator = MessageGenerator.DEFAULT_MESSAGE_GENERATOR ;
+    MessageGenerator defaultMessageGenerator = new MessageGenerator.DefaultMessageGenerator() ;
     static public AtomicLong idTracker = new AtomicLong() ;
     
     public byte[] nextMessage(int partition, int messageSize) {

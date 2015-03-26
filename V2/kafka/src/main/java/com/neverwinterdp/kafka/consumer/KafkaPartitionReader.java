@@ -60,7 +60,7 @@ public class KafkaPartitionReader {
   
   public void commit() throws Exception {
     CommitOperation commitOp = new CommitOperation(currentOffset, (short) 0) ;
-    execute(commitOp, 3);
+    execute(commitOp, 3, 500);
   }
   
   public void close() throws Exception {
@@ -97,7 +97,7 @@ public class KafkaPartitionReader {
   
   public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
     FetchOperation fetchOperation = new FetchOperation(fetchSize, maxRead, maxWait);
-    return execute(fetchOperation, 3);
+    return execute(fetchOperation, 3, 500);
   }
   
   byte[] getCurrentMessagePayload() {
@@ -145,12 +145,13 @@ public class KafkaPartitionReader {
     return currOffset;
   }
   
-  <T> T execute(Operation<T> op, int retry) throws Exception {
+  <T> T execute(Operation<T> op, int retry, long retryDelay) throws Exception {
     Exception error = null;
     for(int i = 0; i < retry; i++) {
       try {
         if(error != null) {
-          //Refresh the partition metadata
+            Thread.sleep(retryDelay);
+            //Refresh the partition metadata
             KafkaTool kafkaTool = new KafkaTool("KafkaTool", zkConnect);
             kafkaTool.connect();
             this.partitionMetadata = kafkaTool.findPartitionMetadata(topic, partitionMetadata.partitionId());
@@ -161,6 +162,7 @@ public class KafkaPartitionReader {
       } catch(Exception ex) {
         error = ex;
         System.err.println(op.getClass().getSimpleName() + " try " + (i + 1) + " error: " + ex.getMessage()) ;
+        //ex.printStackTrace();
       }
     }
     throw error;

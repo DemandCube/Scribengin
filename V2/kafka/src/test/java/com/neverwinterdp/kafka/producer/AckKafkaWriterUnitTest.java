@@ -13,13 +13,13 @@ public class AckKafkaWriterUnitTest {
   String[] topicConfigArgs = {
       "--topic", "hello",
       "--num-partition", "3",
-      "--replication", "2",
+      "--replication", "3",
 
       "--send-writer-type", "ack",
       "--send-period", "0",
       "--send-message-size", "1024",
-      "--send-max-per-partition", "25000",
-      "--send-max-duration", "120000",
+      "--send-max-per-partition", "50000",
+      "--send-max-duration", "300000",
 
       "--producer:message.send.max.retries=5",
       "--producer:retry.backoff.ms=100",
@@ -31,7 +31,7 @@ public class AckKafkaWriterUnitTest {
       "--producer:batch.num.messages=100",
       "--producer:acks=all",
 
-      "--consume-max-duration", "150000"
+      "--consume-max-duration", "300000", "--consume-batch-fetch", "1000"
   };
 
   @Test

@@ -1,6 +1,13 @@
 package com.neverwinterdp.kafka.tool;
 
+import java.io.File;
 import java.io.IOException;
+
+import org.tap4j.model.TestResult;
+import org.tap4j.model.TestSet;
+import org.tap4j.producer.TapProducer;
+import org.tap4j.producer.TapProducerFactory;
+import org.tap4j.util.StatusValues;
 
 import com.neverwinterdp.util.text.TabularFormater;
 
@@ -43,7 +50,8 @@ public class KafkaTopicReport {
   static public void report(Appendable out, KafkaTopicReport ... report) throws IOException {
     String[] header = { 
         "Topic", "Replication", "Partitions", "F Sim", 
-        "Writer","W Duration", "W Rate", "W Total", "R Duration", "R Rate", "R Total"
+        "Writer","W Duration", "W Rate", "W Total", "W Failed", 
+        "R Duration", "R Rate", "R Total"
     };
       
     TabularFormater reportFormater = new TabularFormater(header);
@@ -60,6 +68,7 @@ public class KafkaTopicReport {
       Object[] cells = {
           sel.topic, sel.numOfReplications, sel.numOfPartitions, sel.failureSimulation,
           sel.producerReport.writer, sel.producerReport.runDuration, messageSentRate, sel.producerReport.messageSent,
+          sel.producerReport.messageSentFailed,
           sel.consumerReport.runDuration, messageReadRate, sel.consumerReport.messagesRead,
       };
       reportFormater.addRow(cells);
@@ -69,7 +78,58 @@ public class KafkaTopicReport {
   }
   
   public void junitReport(String fileName) throws Exception {
-    //TODO: implement the junit report here ,  you should have all the requirement info in this report
+    TapProducer tapProducer = null;
+    TestSet testSet =null;
+    tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
+    testSet = new TestSet();
+    int testNum=0;
+    
+    //Create test result for total messages read
+    TestResult sentVsReadMessage = null;
+    if(consumerReport.messagesRead >= producerReport.messageSent ){
+      sentVsReadMessage = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      sentVsReadMessage = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    sentVsReadMessage.setDescription("Messages sent: "+ Integer.toString(producerReport.messageSent)+
+        " Messages Consumed: "+ Integer.toString(consumerReport.messagesRead));
+    testSet.addTestResult( sentVsReadMessage );
+    
+    //Test result for messages failed
+    TestResult messagesFailed = null;
+    if(producerReport.messageSentFailed < 1 ){
+      messagesFailed = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      messagesFailed = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    messagesFailed.setDescription("Messages sent failed: "+ Long.toString(producerReport.messageSentFailed));
+    testSet.addTestResult( messagesFailed );
+    
+    TestResult duration = null;
+    if(producerReport.runDuration > 0 && consumerReport.runDuration > 0 ){
+      duration = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      duration = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    duration.setDescription("Producer run duration: "+ Long.toString(producerReport.runDuration)+
+                          " --- Consumer run duration: "+Long.toString(consumerReport.runDuration));
+    testSet.addTestResult( duration );
+    
+    TestResult messageSize = null;
+    if(producerReport.messageSize > 0  ){
+      messageSize = new TestResult( StatusValues.OK, ++testNum );
+    }
+    else{
+      messageSize = new TestResult( StatusValues.NOT_OK, ++testNum );
+    }
+    messageSize.setDescription("Producer Message Size: "+ Integer.toString(producerReport.messageSize));
+    testSet.addTestResult( messageSize );
+    
+    
+    tapProducer.dump(testSet, new File(fileName));
   }
   
   static public class ProducerReport {
@@ -77,7 +137,7 @@ public class KafkaTopicReport {
     private long   runDuration;
     private int    messageSent;
     private int    messageSize; //bytes
-    private long   failed; // gotten from writer
+    private long   messageSentFailed; // gotten from writer
 
     public String getWriter() { return writer; }
     public void setWriter(String writer) { this.writer = writer; }
@@ -91,8 +151,8 @@ public class KafkaTopicReport {
     public int getMessageSize() { return messageSize; }
     public void setMessageSize(int messageSize) { this.messageSize = messageSize; }
 
-    public long getFailed() { return failed; }
-    public void setFailed(long failed) { this.failed = failed; }
+    public long getMessageSentFailed() { return messageSentFailed; }
+    public void setMessageSentFailed(long failed) { this.messageSentFailed = failed; }
 
     @Override
     public String toString() {
@@ -103,8 +163,8 @@ public class KafkaTopicReport {
       builder.append(messageSent);
       builder.append(", messageSize=");
       builder.append(messageSize);
-      builder.append(", failed=");
-      builder.append(failed);
+      builder.append(", messageSentFailed=");
+      builder.append(messageSentFailed);
       builder.append("]");
       return builder.toString();
     }
