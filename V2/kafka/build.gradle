@@ -9,7 +9,7 @@ eclipse {
 }
 
 dependencies {
-  compile project(':server')
+  compile project(':commons')
   compile project(':registry')
 
   compile group: 'org.tap4j', name: 'tap4j', version: '4.1'
