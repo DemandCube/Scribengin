@@ -170,32 +170,47 @@ function testProcess() {
   fi
 
   for server in $servers; do
-    echo "testing on $server"
-    pid=$(ssh -o "StrictHostKeyChecking no" $USER@$server "ps ax | grep -i '$grep_process' | grep java | grep -v grep | awk '{print \$1}'")
+    retry=6
+    count=1    
+    while [ "$count" -le "$retry"  ]
+    do
+      sleep 5
+      echo "Testing $process is running on $server - Try $count"
+      pid=$(ssh -o "StrictHostKeyChecking no" $USER@$server "ps ax | grep -i '$grep_process' | grep java | grep -v grep | awk '{print \$1}'")
 
-    echo "Running $grep_process-$pid on $server"
-
-    if [[ "$operation" == "start" ]]; then
-      if [[ -z "$pid" ]]; then
-        #### Success command
-        success_command='-not-started-successfully'
-        juLog -name=$server$success_command false
-      else
-        #### Failure
-        failure_command='-started-successfully'
-        juLog -name=$server$failure_command true
+      echo "Running $grep_process-$pid on $server"
+  
+      if [[ "$operation" == "start" ]]; then
+        if [[ -z "$pid" ]]; then
+          if [[ "$count" -eq "$retry" ]]; then
+            #### Failure
+            success_command='-failed-to-start'
+            juLog -name=$server$success_command false
+            break
+          fi
+        else
+          #### Success
+          failure_command='-started-successfully'
+          juLog -name=$server$failure_command true
+          break
+        fi
+      elif [[ "$operation" == "stop" ]]; then
+        if [[ -z "$pid" ]]; then
+          #### Success
+          success_command='-stopped-successfully'
+          juLog -name=$server$success_command true
+          break
+        else
+          if [[ "$count" -eq "$retry" ]]; then
+            #### Failure
+            failure_command="-failed-to-stop"
+            juLog -name=$server$failure_command false
+            break
+          fi
+        fi
       fi
-    elif [[ "$operation" == "stop" ]]; then
-      if [[ -z "$pid" ]]; then
-        #### Success command
-        success_command='-stopped-successfully'
-        juLog -name=$server$success_command true
-      else
-        #### Failure
-        failure_command="-not-stopped-successfully"
-        juLog -name=$server$failure_command false
-      fi
-    fi
+      count=$[$count+1]
+    done
   done
 }
 
@@ -224,9 +239,6 @@ function kafka_restart() {
   clean=$(has_opt --clean $@)
  
   kafka_stop  "$broker" 
-  
-  #allow kafka brokers to stop
-  sleep 5
 
   #test kafka brokers are stoped
   testProcess $broker 'kafka' 'stop'
@@ -240,9 +252,6 @@ function kafka_restart() {
   
   kafka_start "$broker"
   
-  #allow kafka brokers to start
-  sleep 5
- 
   #test kafka brokers sre started
   testProcess $broker 'kafka' 'start' 
 }
@@ -272,9 +281,6 @@ function zookeeper_restart() {
   
   zookeeper_stop "$zk_server"
   
-  #allow zookeeper to stop
-  sleep 5
-
   #test zookeeper stopped
   testProcess $zk_server 'zookeeper' 'stop'
   
@@ -286,9 +292,6 @@ function zookeeper_restart() {
   fi
   
   zookeeper_start "$zk_server"
-
-  #allow zookeeper to start
-  sleep 5
 
   #test zookeeper started
   testProcess $zk_server 'zookeeper' 'start'
