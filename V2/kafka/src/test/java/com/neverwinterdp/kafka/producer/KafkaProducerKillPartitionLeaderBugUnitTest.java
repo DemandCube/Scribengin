@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.neverwinterdp.kafka.tool.KafkaClusterTool;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 /**
  * This unit test is used to isolate and show all the kafka producer bugs and limitation. 

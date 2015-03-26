@@ -23,6 +23,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
+  
   private MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR;
   private MessageTracker   messageTracker = new MessageTracker() ;
   private MessageCounter messageCounter = new MessageCounter();

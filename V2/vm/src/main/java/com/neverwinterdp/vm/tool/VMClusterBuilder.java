@@ -1,7 +1,15 @@
-package com.neverwinterdp.vm.builder;
+package com.neverwinterdp.vm.tool;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
@@ -54,6 +62,22 @@ public class VMClusterBuilder {
     h1(format("Create VM master %s", name));
     vmClient.createVMMaster(name);
     return waitingListener;
+  }
+  
+  public <T> Injector newAppContainer() {
+    Map<String, String> props = new HashMap<String, String>();
+    props.put("registry.connect", "127.0.0.1:2181") ;
+    props.put("registry.db-domain", "/NeverwinterDP") ;
+    
+    props.put("implementation:" + Registry.class.getName(), RegistryImpl.class.getName()) ;
+    AppModule module = new AppModule(props) ;
+    return Guice.createInjector(module);
+  }
+  
+  public RegistryConfig getRegistryConfig() { return vmClient.getRegistry().getRegistryConfig() ; }
+  
+  public Registry newRegistry() {
+    return new RegistryImpl(getRegistryConfig());
   }
   
   static public void h1(String title) {

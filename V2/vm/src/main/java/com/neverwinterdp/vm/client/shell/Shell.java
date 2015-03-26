@@ -23,13 +23,9 @@ public class Shell {
     add("vm", new VMCommand());
   }
 
-  public Console console() {
-    return this.console;
-  }
+  public Console console() { return this.console; }
 
-  public VMClient getVMClient() {
-    return this.vmClient;
-  }
+  public VMClient getVMClient() { return this.vmClient; }
 
   public void add(String name, Command command) {
     commands.put(name, command);
@@ -39,9 +35,7 @@ public class Shell {
     return this.commands;
   }
 
-  public Object attribute(String name) {
-    return attributes.get(name);
-  }
+  public Object attribute(String name) { return attributes.get(name); }
 
   public void attribute(String name, Object attr) {
     attributes.put(name, attr);

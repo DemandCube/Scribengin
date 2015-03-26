@@ -1,21 +1,20 @@
-package com.neverwinterdp.server.kafka;
+package com.neverwinterdp.kafka.tool.server;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.Time;
 
-import com.neverwinterdp.server.Server;
+import com.neverwinterdp.tool.server.Server;
 import com.neverwinterdp.util.JSONSerializer;
 
 /**
  * @author Tuan Nguyen
  * @email tuan08@gmail.com
  */
-public class KafkaServerLauncher implements Server {
+public class EmbededKafkaServer implements Server {
   private KafkaServer server;
   ThreadGroup kafkaGroup;
   int kafkaGroupTracker = 1;
@@ -23,7 +22,7 @@ public class KafkaServerLauncher implements Server {
   private Thread thread;
   private boolean verbose = true;
   
-  public KafkaServerLauncher() {
+  public EmbededKafkaServer(int id, String dataDir, int port) {
     properties.put("host.name", "127.0.0.1");
     properties.put("advertised.host.name", "127.0.0.1");
     properties.put("port", "9092");
@@ -42,38 +41,28 @@ public class KafkaServerLauncher implements Server {
     properties.put("controlled.shutdown.max.retries", "3");
     properties.put("controlled.shutdown.retry.backoff.ms", "5000");
     properties.put("zookeeper.session.timeout.ms", "15000");
-  }
-
-  public KafkaServerLauncher(int id, String dataDir, int port) {
-    this();
+    
     properties.put("broker.id", Integer.toString(id));
     properties.put("port", Integer.toString(port));
     properties.put("log.dirs", dataDir);
   }
 
-  public KafkaServerLauncher(Map<String, String> overrideProperties) {
-    this();
-    if (overrideProperties != null) {
-      properties.putAll(overrideProperties);
-    }
-  }
-
-  public KafkaServerLauncher setVerbose(boolean b) {
+  public EmbededKafkaServer setVerbose(boolean b) {
     verbose = b ;
     return this;
   }
   
-  public KafkaServerLauncher setReplication(int replication) {
+  public EmbededKafkaServer setReplication(int replication) {
     properties.put("default.replication.factor", Integer.toString(replication));
     return this;
   }
 
-  public KafkaServerLauncher setZkConnect(String zkConnect) {
+  public EmbededKafkaServer setZkConnect(String zkConnect) {
     properties.put("zookeeper.connect", zkConnect);
     return this;
   }
 
-  public KafkaServerLauncher setNumOfPartition(int number) {
+  public EmbededKafkaServer setNumOfPartition(int number) {
     properties.put("num.partitions", Integer.toString(number));
     return this;
   }
@@ -146,5 +135,10 @@ public class KafkaServerLauncher implements Server {
   @Override
   public int getPort() {
     return server.config().advertisedPort();
+  }
+  
+  @Override
+  public String getConnectString() {
+    return getHost() + ":" + getPort() ;
   }
 }

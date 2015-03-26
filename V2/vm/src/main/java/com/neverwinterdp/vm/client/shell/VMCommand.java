@@ -1,7 +1,7 @@
 package com.neverwinterdp.vm.client.shell;
 
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class VMCommand extends Command {
   public VMCommand() {

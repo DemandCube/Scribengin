@@ -1,6 +1,6 @@
 package com.neverwinterdp.vm.client;
 
-import static com.neverwinterdp.vm.builder.VMClusterBuilder.h1;
+import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.util.List;
 

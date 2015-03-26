@@ -16,14 +16,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class ZookeeperUnitTest {
   public final Id ANYONE_ID = new Id("world", "anyone");
   public final ArrayList<ACL> OPEN_ACL = new ArrayList<ACL>(Collections.singletonList(new ACL(Perms.ALL, ANYONE_ID)));
   
-  private ZookeeperServerLauncher zkServerLauncher ;
+  private EmbededZKServer zkServerLauncher ;
   private ZooKeeper zkClient ;
   static String connection;
 
@@ -31,7 +31,7 @@ public class ZookeeperUnitTest {
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
     
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
     
     Watcher watcher = new Watcher() {

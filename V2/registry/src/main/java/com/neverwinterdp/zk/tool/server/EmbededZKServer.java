@@ -1,4 +1,4 @@
-package com.neverwinterdp.server.zookeeper;
+package com.neverwinterdp.zk.tool.server;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,23 +12,23 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 import org.apache.zookeeper.server.quorum.QuorumPeerMain;
 
-import com.neverwinterdp.server.Server;
+import com.neverwinterdp.tool.server.Server;
 import com.neverwinterdp.util.JSONSerializer;
 /**
  * @author Tuan Nguyen
  * @email tuan08@gmail.com
  */
-public class ZookeeperServerLauncher implements Server {
+public class EmbededZKServer implements Server {
   private ZookeeperLaucher launcher;
   private Thread zkThread;
   private Properties zkProperties = new Properties();
   private int port;
 
-  public ZookeeperServerLauncher(Map<String, String> overrideProperties) {
+  public EmbededZKServer(Map<String, String> overrideProperties) {
     init(overrideProperties);
   }
 
-  public ZookeeperServerLauncher(String dataDir, int port) {
+  public EmbededZKServer(String dataDir, int port) {
     Map<String, String> props = new HashMap<String, String>();
     props.put("dataDir", dataDir);
     this.port = port;
@@ -36,7 +36,7 @@ public class ZookeeperServerLauncher implements Server {
     init(props);
   }
   
-  public ZookeeperServerLauncher(String dataDir) {
+  public EmbededZKServer(String dataDir) {
     this(dataDir, 2181);
   }
 
@@ -64,8 +64,8 @@ public class ZookeeperServerLauncher implements Server {
           launcher.start();
         } catch (Exception ex) {
           launcher = null;
-          System.err.println("Cannot lauch the ZookeeperServerLauncher" + ex);
-          throw new RuntimeException("Cannot lauch the ZookeeperServerLauncher", ex);
+          System.err.println("Cannot lauch the EmbededZKServer" + ex);
+          throw new RuntimeException("Cannot lauch the EmbededZKServer", ex);
         }
       }
     };
@@ -89,6 +89,23 @@ public class ZookeeperServerLauncher implements Server {
           .println("Either no config or no quorum defined in config, running in standalone mode");
       // there is only server in the quorum -- run as standalone
       return new ZooKeeperServerMainExt(zkConfig);
+    }
+  }
+
+  @Override
+  public String getHost() { return "127.0.0.1"; }
+
+  @Override
+  public int getPort() { return this.port; }
+  
+  @Override
+  public String getConnectString() { return getHost() + ":" + getPort() ; }
+
+  @Override
+  public void shutdown() {
+    if (launcher != null) {
+      launcher.shutdown();
+      launcher = null;
     }
   }
 
@@ -117,11 +134,10 @@ public class ZookeeperServerLauncher implements Server {
 
     @Override
     public QuorumPeerConfig getConfig() {
-
       return zkConfig;
     }
   }
-
+  
   public class ZooKeeperServerMainExt extends ZooKeeperServerMain implements ZookeeperLaucher {
     private QuorumPeerConfig qConfig;
 
@@ -143,24 +159,6 @@ public class ZookeeperServerLauncher implements Server {
     @Override
     public QuorumPeerConfig getConfig() {
       return qConfig;
-    }
-  }
-
-  @Override
-  public String getHost() {
-    return "127.0.0.1";
-  }
-
-  @Override
-  public int getPort() {
-    return this.port;
-  }
-
-  @Override
-  public void shutdown() {
-    if (launcher != null) {
-      launcher.shutdown();
-      launcher = null;
     }
   }
 }
