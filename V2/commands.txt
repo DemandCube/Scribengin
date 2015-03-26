@@ -20,82 +20,26 @@ dataflow
   dataflow [name of flow] resume
 
 
-#The command implementations#
 
-help:
-  This command should print out the help and description for all the available commands and subcommands. If the user enter 
-  the help command name for ex: help help, help vm, help scribengin, print only the description of the command and subcommands.
-  
-  TODO: We need to have a formater that help to print out the help instructions exactly like this format.
-  For the parameter list , we can reuse our tabular formater
 
-registry: 
-  Commands for querying the registry
-  
-  * dump                      
-    Dump contents of the registry path
-    
-    --path: The path to dump, the default path is root /
-
-vm:  
-  Commands related to VM instances.
-  
-  * info       
-    print out info about running and history vms
-
-    TODO: 
-
-  * start                     
-    start a vm
-
-    TODO:
-    1. Change this command description to: This command will start the first vm, vm-master. The vm-master will be responsible to manage, start, stop
-    the other vm on request.
-
-  * shutdown                  
-    shutdown a vm
-
-    TODO:
-    1. Change this command description to: This command whill shutdown all the running vm, and then shutdown the vm-master. This is a dangerrous operation
-    and it cannot shutdown the cluster properly unless you already shutdown the running vm properly.
-  
-
-scribengin:                    
-  commands for interacting with the scribengin cluster.
-  
-  * info                      
-    get info about the scribengin cluster
-  
-  * master                    
-    commands for managing the Scribengin master.
-    
-    --list:            List all running scribengin masters
-    --shutdown:        Shutdown current master
-  
-  * shutdown                  
-    shutdown a scribengin cluster.
-  
-  * start                     
-    start a scribenging cluster
-
-dataflow:             
+Available commands:
+==================
+dataflow:
   commands for interacting with dataflows
 
-  * hdfs                
-    submit a HDFS dataflow
-
-    --create-source:   Submit hello hdfs dataflow
-    --data-dir:        Submit hello hdfs dataflow
-    --submit:          Submit hello hdfs dataflow
-
-    TODO: this command should be removed. We will use the dataflow-test command with various subcommand and options
-
-  * info                     
+  * info
     display more info about dataflows
 
-    --history:         The history dataflow id
-    --running:         The running dataflow name
+        Option      Description                 Default Value
+        --------------------------------------------------------
+        --running   The running dataflow name
 
+  * submit
+    submit a dataflow
+
+        Option         Description                                       Default Value
+        ---------------------------------------------------------------------------------
+        --descriptor   The dataflow descriptor path in the json format
   * stop
     This command should stop a running dataflow
 
@@ -129,36 +73,88 @@ dataflow:
 
     TODO: See the stop subcommand to have an idea what need to be done
 
-  * pause
+  * resume
     This command should resume a pause dataflow
 
     --dataflow-id:  The dataflow id 
 
     TODO: See the stop subcommand to have an idea what need to be done
   
-  * kafka                     
-    submit a kafka dataflow
 
-    --create-source:   Create kafka source
-    --submit:          Launch the submit dataflow(hdfs, kafka)
 
-    TODO: this command should be removed. We will use the dataflow-test command with various subcommand and options
-  
-  * submit                    
-    submit a dataflow
-    
-    --deploy:          The dataflow path to deploy
-    --descriptor:      The dataflow descriptor path in the json format
-
-  TODO: 
-
-dataflow-test: 
+dataflow-test:
   a sample dataflow
-  
-  * hdfs                      
+
+  * hdfs
     creates the sample dataflow
 
-  * kafka                     
+  * hdfs-kafka
     creates the sample dataflow
-  
+
+  * kafka
+    creates the sample dataflow
+
+  * kafka-hdfs
+    creates the sample dataflow
+
+  * kafka-s3
+    creates the sample dataflow
+    
   TODO: figure out a way to print out the description and parameters for this command
+
+
+help:
+  displays valid commands and their arguments.
+
+
+
+registry:
+  Commands for querying the registry
+
+  * dump
+    dump contents of the registry path
+
+        Option   Description                                    Default Value
+        ------------------------------------------------------------------------
+        --path   The path to dump, the default path is root /   /
+
+
+
+scribengin:
+  commands for interacting with the scribengin cluster.
+
+  * info
+    get info about the scribengin cluster
+
+  * master
+    commands for managing the Scribengin master.
+
+        Option       Description               Default Value
+        -------------------------------------------------------
+        --shutdown   Shutdown current master   false
+
+  * shutdown
+    shutdown a scribengin cluster.
+
+  * start
+    start a scribenging cluster
+
+
+
+vm:
+  Commands related to VM instances.
+
+  * info
+    print out info about running and history vms
+
+  * shutdown
+    This command will shutdown all the running vm, and then shutdown the
+    vm-master. This is a dangerous operation - the cluster will not
+    shutdown properly unless you have already shutdown all running VMs
+    properly
+
+  * start
+    This will start the first vm, vm-master. The vm-master will be responsible
+    for managing, starting, and stopping other VMs upon request
+
+
