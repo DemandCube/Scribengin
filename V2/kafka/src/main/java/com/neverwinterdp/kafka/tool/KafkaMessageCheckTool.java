@@ -23,6 +23,7 @@ public class KafkaMessageCheckTool implements Runnable {
 
   @ParametersDelegate
   private KafkaTopicConfig topicConfig = new KafkaTopicConfig();
+  
   private MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR;
   private MessageTracker   messageTracker = new MessageTracker() ;
   private MessageCounter messageCounter = new MessageCounter();
@@ -144,7 +145,7 @@ public class KafkaMessageCheckTool implements Runnable {
     messageTracker.optimize();
     readDuration.stop();
     
-    if(!topicConfig.junitReportFile.isEmpty()){
+    if(topicConfig.junitReportFile != null && !topicConfig.junitReportFile.isEmpty()){
       getReport().junitReport(topicConfig.junitReportFile);
     }
   }
@@ -153,7 +154,7 @@ public class KafkaMessageCheckTool implements Runnable {
     KafkaTopicReport report = new KafkaTopicReport() ;
     report.setTopic(topicConfig.topic);
     report.setNumOfPartitions(numOfPartitions);
-    report.setNumOfReplications(topicConfig.replication);
+    report.setNumOfReplicas(topicConfig.replication);
     populate(report);
     return report ;
   }

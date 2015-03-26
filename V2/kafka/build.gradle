@@ -9,7 +9,8 @@ eclipse {
 }
 
 dependencies {
-  compile project(':server')
+  compile project(':commons')
+  compile project(':registry')
 
   compile group: 'org.tap4j', name: 'tap4j', version: '4.1'
   compile group: 'com.google.guava', name: 'guava', version: '18.0'

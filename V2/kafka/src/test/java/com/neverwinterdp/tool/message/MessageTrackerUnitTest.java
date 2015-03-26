@@ -17,10 +17,10 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 11, 20);
     log(tracker, 21, 30);
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 0);
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -30,11 +30,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 10, 20);
     log(tracker, 20, 30);
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 2);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(10,20)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 2);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(10,20)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -44,11 +44,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 5, 20);
     log(tracker, 15, 30);
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 12);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 12);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -58,11 +58,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 2, 8);
     log(tracker, 4, 6);
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 10);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 10);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -72,11 +72,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 3, 5);
     log(tracker, 7, 9);
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 6);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 6);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   @Test
@@ -85,14 +85,14 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 15, 20);
     log(tracker, 25, 30);
-    assertEquals(tracker.getMap().size(), 3);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(1).getFrom(), 15);
-    assertEquals(tracker.getMap().get(1).getCurrent(), 20);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent() + 5, tracker.getMap().get(1).getFrom());
-    assertEquals(tracker.getMap().get(1).getCurrent() + 5, tracker.getMap().get(2).getFrom());
+    assertEquals(tracker.getSequenceMap().size(), 3);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(1).getFrom(), 15);
+    assertEquals(tracker.getSequenceMap().get(1).getCurrent(), 20);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent() + 5, tracker.getSequenceMap().get(1).getFrom());
+    assertEquals(tracker.getSequenceMap().get(1).getCurrent() + 5, tracker.getSequenceMap().get(2).getFrom());
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -101,15 +101,15 @@ public class MessageTrackerUnitTest {
     log(tracker, 0, 10);
     log(tracker, 15, 20);
     log(tracker, 18, 30);
-    assertEquals(tracker.getMap().size(), 3);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(1).getFrom(), 15);
-    assertEquals(tracker.getMap().get(1).getCurrent(), 20);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 4);
-    assertEquals(tracker.getMap().get(0).getCurrent() + 5, tracker.getMap().get(1).getFrom());
-    assertEquals(tracker.getMap().get(1).getCurrent() + 5, tracker.getMap().get(2).getFrom());
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
+    assertEquals(tracker.getSequenceMap().size(), 3);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(1).getFrom(), 15);
+    assertEquals(tracker.getSequenceMap().get(1).getCurrent(), 20);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 4);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent() + 5, tracker.getSequenceMap().get(1).getFrom());
+    assertEquals(tracker.getSequenceMap().get(1).getCurrent() + 5, tracker.getSequenceMap().get(2).getFrom());
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   @Test
@@ -119,10 +119,10 @@ public class MessageTrackerUnitTest {
     log(tracker, 20, 11);
     log(tracker, 30, 21);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 0);
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -133,10 +133,10 @@ public class MessageTrackerUnitTest {
     log(tracker, 20, 10);
     log(tracker, 30, 20);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 2);
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 2);
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -147,11 +147,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 20, 5);
     log(tracker, 30, 15);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 30);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 12);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 30);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 12);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(5,6,7,8,9,10,15,16,17,18,19,20)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
 
@@ -162,11 +162,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 8, 2);
     log(tracker, 6, 4);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 10);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 10);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(2,3,4,5,6,7,8)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -177,11 +177,11 @@ public class MessageTrackerUnitTest {
     log(tracker, 5, 3);
     log(tracker, 9, 7);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 1);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 6);
-    assertTrue(tracker.getMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
+    assertEquals(tracker.getSequenceMap().size(), 1);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 6);
+    assertTrue(tracker.getSequenceMap().get(0).getDuplicatedNumbers().containsAll(Arrays.asList(3,4,5,7,8,9)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -192,10 +192,10 @@ public class MessageTrackerUnitTest {
     log(tracker, 20, 15);
     log(tracker, 30, 25);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 3);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getSequenceMap().size(), 3);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 0);
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   
@@ -206,12 +206,12 @@ public class MessageTrackerUnitTest {
     log(tracker, 20, 15);
     log(tracker, 30, 18);
     tracker.optimize();
-    assertEquals(tracker.getMap().size(), 2);
-    assertEquals(tracker.getMap().get(0).getFrom(), 0);
-    assertEquals(tracker.getMap().get(0).getCurrent(), 10);
-    assertEquals(tracker.getMap().get(0).getDuplicatedCount(), 0);
-    assertEquals(tracker.getMap().get(1).getDuplicatedCount(), 3);
-    assertTrue(tracker.getMap().get(1).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
+    assertEquals(tracker.getSequenceMap().size(), 2);
+    assertEquals(tracker.getSequenceMap().get(0).getFrom(), 0);
+    assertEquals(tracker.getSequenceMap().get(0).getCurrent(), 10);
+    assertEquals(tracker.getSequenceMap().get(0).getDuplicatedCount(), 0);
+    assertEquals(tracker.getSequenceMap().get(1).getDuplicatedCount(), 3);
+    assertTrue(tracker.getSequenceMap().get(1).getDuplicatedNumbers().containsAll(Arrays.asList(18,19,20)));
     tracker.dump(System.out, "Sequence Number Tracker");
   }
   

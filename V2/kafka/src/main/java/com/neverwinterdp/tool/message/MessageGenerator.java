@@ -17,7 +17,7 @@ public interface MessageGenerator {
     @Override
     public byte[] nextMessage(int partition, int messageSize) {
       AtomicInteger idTracker = getIdTracker(partition) ;
-      Message message = new Message(partition, idTracker.getAndIncrement(), messageSize) ;
+      Message message = new Message(partition, idTracker.incrementAndGet(), messageSize) ;
       return JSONSerializer.INSTANCE.toBytes(message) ;
     }
     

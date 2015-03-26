@@ -6,10 +6,9 @@ import org.junit.Test;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class HelpCommandUnitTest {
 
@@ -18,7 +17,7 @@ public class HelpCommandUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
 
-  EmbededVMClusterBuilder vmCluster;
+  VMClusterBuilder vmCluster;
   ScribenginShell shell;
   VMClient vmClient;
 
@@ -46,7 +45,6 @@ public class HelpCommandUnitTest {
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
-    return builder;
+    return new EmbededVMClusterBuilder();
   }
 }

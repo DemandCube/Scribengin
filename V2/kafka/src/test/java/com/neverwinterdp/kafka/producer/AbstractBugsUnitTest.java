@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 public abstract class AbstractBugsUnitTest {
 

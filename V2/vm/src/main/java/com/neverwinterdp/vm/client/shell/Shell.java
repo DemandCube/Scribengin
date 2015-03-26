@@ -8,7 +8,7 @@ import com.neverwinterdp.vm.client.VMClient;
 public class Shell {
   protected Console console;
   protected VMClient vmClient;
-  protected Map<String, Command> commands = new TreeMap<String, Command>();
+  protected Map<String, Command> commands  = new TreeMap<String, Command>();
   protected Map<String, Object> attributes = new TreeMap<String, Object>();
 
   public Shell(VMClient vmClient) {
@@ -18,19 +18,14 @@ public class Shell {
   public Shell(VMClient vmClient, Console console) {
     this.console = console;
     this.vmClient = vmClient;
+    add("help", new HelpCommand());
     add("registry", new RegistryCommand());
     add("vm", new VMCommand());
-    add("help", new HelpCommand());
-
   }
 
-  public Console console() {
-    return this.console;
-  }
+  public Console console() { return this.console; }
 
-  public VMClient getVMClient() {
-    return this.vmClient;
-  }
+  public VMClient getVMClient() { return this.vmClient; }
 
   public void add(String name, Command command) {
     commands.put(name, command);
@@ -40,9 +35,7 @@ public class Shell {
     return this.commands;
   }
 
-  public Object attribute(String name) {
-    return attributes.get(name);
-  }
+  public Object attribute(String name) { return attributes.get(name); }
 
   public void attribute(String name, Object attr) {
     attributes.put(name, attr);

@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.neverwinterdp.kafka.tool.KafkaClusterTool;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 import com.neverwinterdp.kafka.tool.KafkaMessageSendTool;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 /**
  * This unit test is used to isolate and show all the kafka producer bugs and limitation. 
@@ -63,7 +63,7 @@ public class KafkaProducerKillPartitionLeaderBugUnitTest  {
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     checkTool.run();
     System.out.println("Sent count = " + sendTool.getReport().getProducerReport().getMessageSent());
-    System.out.println("Sent failed count = " + sendTool.getReport().getProducerReport().getMessageSentFailed());
+    System.out.println("Sent failed count = " + sendTool.getReport().getProducerReport().getMessageRetried());
     System.out.println("Check count = " + checkTool.getMessageCounter().getTotal());
     checkTool.getMessageTracker().dump(System.out);
     assertTrue(checkTool.getMessageCounter().getTotal() < sendTool.getSentCount());

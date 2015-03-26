@@ -30,7 +30,7 @@ public class KafkaMessageSendTool implements Runnable {
   private Thread deamonThread;
   private boolean running = false;
   private AtomicLong   sendCounter = new AtomicLong() ;
-  private AtomicLong   sendFailedCounter = new AtomicLong() ;
+  private AtomicLong   retried = new AtomicLong() ;
   private MessageGenerator messageGenerator = new MessageGenerator.DefaultMessageGenerator();
 
   Map<Integer, PartitionMessageWriter> writers = new HashMap<Integer, PartitionMessageWriter>();
@@ -53,7 +53,7 @@ public class KafkaMessageSendTool implements Runnable {
 
   public long getSentCount() { return sendCounter.get(); }
   
-  public long getSentFailedCount() { return sendFailedCounter.get(); }
+  public long getSentFailedCount() { return retried.get(); }
   
   public boolean isSending() { return sendCounter.get() > 0 ; }
   
@@ -61,7 +61,7 @@ public class KafkaMessageSendTool implements Runnable {
     KafkaTopicReport topicReport = new KafkaTopicReport() ;
     topicReport.setTopic(topicConfig.topic);
     topicReport.setNumOfPartitions(topicConfig.numberOfPartition);
-    topicReport.setNumOfReplications(topicConfig.replication);
+    topicReport.setNumOfReplicas(topicConfig.replication);
     populate(topicReport) ;
     return topicReport ;
   }
@@ -76,7 +76,7 @@ public class KafkaMessageSendTool implements Runnable {
       messageSent += writer.writeCount;
     }
     producerReport.setMessageSent(messageSent);
-    producerReport.setMessageSentFailed(sendFailedCounter.get());;
+    producerReport.setMessageRetried(retried.get());;
   }
 
   
@@ -201,7 +201,7 @@ public class KafkaMessageSendTool implements Runnable {
     @Override
     public void onCompletion(RecordMetadata metadata, Exception exception) {
       if (exception != null)
-        sendFailedCounter.incrementAndGet();
+        retried.incrementAndGet();
     }
   }
 

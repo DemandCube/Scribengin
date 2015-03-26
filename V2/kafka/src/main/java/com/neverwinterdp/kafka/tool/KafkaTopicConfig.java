@@ -22,7 +22,7 @@ public class KafkaTopicConfig {
   public int    replication = 1;
   
   @Parameter(names = "--junit-report", description = "The junit report file name. No junit report if the report file is not available")
-  public String junitReportFile = "build/KafkaMessageCheckTool.xml";
+  public String junitReportFile = null;
   
   @ParametersDelegate
   public Producer producerConfig = new Producer();

@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.io.IOException;
 
-import com.neverwinterdp.kafka.tool.KafkaTopicReport;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class DataflowTestReport {
@@ -14,7 +13,7 @@ public class DataflowTestReport {
   public DataflowSinkValidatorReport getSinkValidatorReport() { return sinkValidatorReport; }
 
   public void report(Appendable out) throws IOException {
-    String[] header = {  "Name", "Value" };
+    String[] header = { "Name", "Value" };
 
     TabularFormater reportFormater = new TabularFormater(header);
     reportFormater.setTitle("Dataflow Test Report ");

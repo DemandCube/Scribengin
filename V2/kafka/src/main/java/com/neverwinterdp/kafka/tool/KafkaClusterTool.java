@@ -4,8 +4,8 @@ import kafka.cluster.Broker;
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
 
-import com.neverwinterdp.server.Server;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.tool.server.Server;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 public class KafkaClusterTool {
   private KafkaCluster cluster;

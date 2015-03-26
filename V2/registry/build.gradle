@@ -9,6 +9,8 @@ eclipse {
 }
 
 dependencies {
-  compile project(':server')
+  compile project(':commons')
+
+  compile group: 'com.google.guava',           name: 'guava', version: '18.0'
   compile group: 'com.mycila', name: 'mycila-jmx', version: '1.1.ga'
 }

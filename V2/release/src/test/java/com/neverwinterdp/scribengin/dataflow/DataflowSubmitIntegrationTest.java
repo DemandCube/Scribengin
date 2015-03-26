@@ -16,13 +16,13 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.util.IOUtil;
 import com.neverwinterdp.vm.HadoopProperties;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
 import com.neverwinterdp.vm.client.YarnVMClient;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class DataflowSubmitIntegrationTest {
   static {
@@ -96,7 +96,6 @@ public class DataflowSubmitIntegrationTest {
     Registry registry = new RegistryImpl(RegistryConfig.getDefault());
     YarnVMClient vmClient = new YarnVMClient(registry, yarnProps,miniYarnCluster.getConfig());
     vmClient.setLocalAppHome("build/release/scribengin");
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder(vmClient) ;
-    return builder;
+    return new EmbededVMClusterBuilder(vmClient) ;
   }
 }

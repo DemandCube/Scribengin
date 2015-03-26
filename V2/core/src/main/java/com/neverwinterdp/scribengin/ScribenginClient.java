@@ -1,6 +1,6 @@
 package com.neverwinterdp.scribengin;
 
-import static com.neverwinterdp.vm.builder.VMClusterBuilder.h1;
+import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.util.Collections;
 import java.util.List;

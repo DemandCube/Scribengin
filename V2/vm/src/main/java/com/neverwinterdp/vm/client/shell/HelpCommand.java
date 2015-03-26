@@ -76,7 +76,6 @@ public class HelpCommand extends Command {
           wordWrap(subCommands.getValue().newInstance().getDescription(), indent*2)).append("\n\n");
       JCommander jcommander = new JCommander(subCommands.getValue().newInstance());
       List<ParameterDescription> params = jcommander.getParameters();
-
       if (params.size() > 0) {
         Collections.sort(params, new ParameterComparator());
         TabularFormater formatter = null;

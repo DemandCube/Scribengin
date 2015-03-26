@@ -1,10 +1,10 @@
 apply plugin: 'maven-publish'
 
-archivesBaseName = 'scribengin.server'
+archivesBaseName = 'scribengin.commons'
 
 eclipse {
   project {
-    name = 'scribengin.server'
+    name = 'scribengin.commons'
   }
 }
 
@@ -17,9 +17,6 @@ dependencies {
   compile group: 'com.google.inject', name: 'guice', version: '3.0'
 }
 
-
-
 test {
   exclude '**'
 }
-

@@ -14,21 +14,21 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class RegistryUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
   
-  private ZookeeperServerLauncher zkServerLauncher ;
+  private EmbededZKServer zkServerLauncher ;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
     
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
   

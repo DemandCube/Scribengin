@@ -9,22 +9,22 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class DistributedQueueUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
   
-  private ZookeeperServerLauncher zkServerLauncher ;
+  private EmbededZKServer zkServerLauncher ;
   private Registry registry;
   private DistributedQueue queue;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
     registry = new RegistryImpl(RegistryConfig.getDefault()).connect() ;
     queue = new DistributedQueue(registry, "/queue") ;

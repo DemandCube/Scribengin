@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
-import com.neverwinterdp.vm.builder.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.builder.VMClusterBuilder;
+import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
+import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class DataflowCommandUnitTest {
   static {
@@ -40,8 +40,7 @@ public class DataflowCommandUnitTest {
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
-    EmbededVMClusterBuilder builder = new EmbededVMClusterBuilder();
-    return builder;
+    return new EmbededVMClusterBuilder();
   }
 
   @Test

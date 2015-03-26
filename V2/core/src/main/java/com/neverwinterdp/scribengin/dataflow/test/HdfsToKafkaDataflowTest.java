@@ -5,8 +5,6 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.neverwinterdp.kafka.tool.KafkaTool;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;

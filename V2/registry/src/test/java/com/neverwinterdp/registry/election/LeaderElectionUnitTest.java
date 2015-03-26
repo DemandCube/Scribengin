@@ -16,11 +16,9 @@ import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.election.LeaderElection;
-import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.registry.zk.RegistryImpl;
-import com.neverwinterdp.server.zookeeper.ZookeeperServerLauncher;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class LeaderElectionUnitTest {
   static {
@@ -29,14 +27,14 @@ public class LeaderElectionUnitTest {
   
   final static String ELECTION_PATH = "/locks" ;
   
-  private ZookeeperServerLauncher zkServerLauncher ;
+  private EmbededZKServer zkServerLauncher ;
   private AtomicLong lockOrder ;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
     lockOrder = new AtomicLong() ;
-    zkServerLauncher = new ZookeeperServerLauncher("./build/data/zookeeper") ;
+    zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
   

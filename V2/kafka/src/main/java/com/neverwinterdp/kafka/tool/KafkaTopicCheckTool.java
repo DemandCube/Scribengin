@@ -47,7 +47,7 @@ public class KafkaTopicCheckTool implements Runnable {
   public KafkaMessageCheckTool getKafkaMessageCheckTool() { return this.checkTool ; }
   
   public void junitReport() throws Exception {
-    if(kafkaTopicConfig.junitReportFile != null) {
+    if(kafkaTopicConfig.junitReportFile != null && ! kafkaTopicConfig.junitReportFile.isEmpty()) {
       topicReport.junitReport(kafkaTopicConfig.junitReportFile);
     }
   }
@@ -115,7 +115,7 @@ public class KafkaTopicCheckTool implements Runnable {
     topicReport = new KafkaTopicReport();
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
-    topicReport.setNumOfReplications(kafkaTopicConfig.replication);
+    topicReport.setNumOfReplicas(kafkaTopicConfig.replication);
     sendTool.populate(topicReport);
     checkTool.populate(topicReport);
   }

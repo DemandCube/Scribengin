@@ -12,7 +12,7 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 
 public class SinkSourceUnitTest {
   static {

@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
 import com.neverwinterdp.util.FileUtil;
 
 public class KafkaTopicCheckToolUnitTest {
@@ -36,7 +36,8 @@ public class KafkaTopicCheckToolUnitTest {
       "--send-period", "10",
       "--send-message-size", "500",
       "--send-max-per-partition", "100",
-      "--send-max-duration", "60000"
+      "--send-max-duration", "60000",
+      "--junit-report", "build/test.xml"
     };
     KafkaTopicCheckTool.main(args);
   }

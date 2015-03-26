@@ -9,7 +9,8 @@ import org.junit.Test;
 
 import com.neverwinterdp.kafka.producer.DefaultKafkaWriter;
 import com.neverwinterdp.kafka.tool.KafkaTool;
-import com.neverwinterdp.server.kafka.KafkaCluster;
+import com.neverwinterdp.kafka.tool.server.KafkaCluster;
+
 
 public class KafkaToolUnitTest {
 
