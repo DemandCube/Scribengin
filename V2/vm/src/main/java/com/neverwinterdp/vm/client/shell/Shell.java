@@ -8,7 +8,7 @@ import com.neverwinterdp.vm.client.VMClient;
 public class Shell {
   protected Console console;
   protected VMClient vmClient;
-  protected Map<String, Command> commands = new TreeMap<String, Command>();
+  protected Map<String, Command> commands  = new TreeMap<String, Command>();
   protected Map<String, Object> attributes = new TreeMap<String, Object>();
 
   public Shell(VMClient vmClient) {
@@ -18,10 +18,9 @@ public class Shell {
   public Shell(VMClient vmClient, Console console) {
     this.console = console;
     this.vmClient = vmClient;
+    add("help", new HelpCommand());
     add("registry", new RegistryCommand());
     add("vm", new VMCommand());
-    add("help", new HelpCommand());
-
   }
 
   public Console console() {
