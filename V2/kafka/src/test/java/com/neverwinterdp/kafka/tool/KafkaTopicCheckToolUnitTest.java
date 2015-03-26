@@ -36,7 +36,8 @@ public class KafkaTopicCheckToolUnitTest {
       "--send-period", "10",
       "--send-message-size", "500",
       "--send-max-per-partition", "100",
-      "--send-max-duration", "60000"
+      "--send-max-duration", "60000",
+      "--junit-report", "build/test.xml"
     };
     KafkaTopicCheckTool.main(args);
   }

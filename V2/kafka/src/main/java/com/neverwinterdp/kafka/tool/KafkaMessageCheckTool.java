@@ -145,7 +145,7 @@ public class KafkaMessageCheckTool implements Runnable {
     messageTracker.optimize();
     readDuration.stop();
     
-    if(!topicConfig.junitReportFile.isEmpty()){
+    if(topicConfig.junitReportFile != null && !topicConfig.junitReportFile.isEmpty()){
       getReport().junitReport(topicConfig.junitReportFile);
     }
   }
