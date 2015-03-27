@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.OpResult;
-import org.apache.zookeeper.common.PathUtils;
 
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
@@ -36,12 +35,22 @@ public class TransactionImpl implements Transaction {
 
   @Override
   public Transaction rdelete(String path) throws RegistryException {
-    List<String> tree = registry.findDencendantPaths(path);
+    List<String> tree = registry.findDencendantRealPaths(path);
     for (int i = tree.size() - 1; i >= 0 ; --i) {
       //Delete the leaves first and eventually get rid of the root
       zkTransaction.delete(tree.get(i), -1);
     }
     return this;
+  }
+  
+  public void rcopy(String path, String toPath) throws RegistryException {
+    List<String> tree = registry.findDencendantPaths(path);
+    for (int i = 0; i < tree.size(); i++) {
+      String selPath = tree.get(i);
+      String selToPath = selPath.replace(path, toPath);
+      byte[] data = registry.getData(selPath) ;
+      create(selToPath, data, NodeCreateMode.PERSISTENT) ;
+    }
   }
   
   @Override
@@ -100,7 +109,17 @@ public class TransactionImpl implements Transaction {
 
   @Override
   public <T> Transaction createDescendant(Node node, String relativePath, T obj , NodeCreateMode mode) {
-    return this.createDescendant(node, relativePath, JSONSerializer.INSTANCE.toBytes(obj), mode);
+    return createDescendant(node, relativePath, JSONSerializer.INSTANCE.toBytes(obj), mode);
+  }
+  
+  public Transaction deleteChild(Node node, String name) {
+    delete(node.getPath() + "/" + name) ;
+    return this ;
+  }
+  
+  public Transaction deleteDescendant(Node node, String relativePath) {
+    delete(node.getPath() + "/" + relativePath) ;
+    return this ;
   }
   
   @Override

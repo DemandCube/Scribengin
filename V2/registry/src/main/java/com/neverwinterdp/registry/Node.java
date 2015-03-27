@@ -39,6 +39,18 @@ public class Node {
     return registry.exists(path) ;
   }
   
+  public void create(NodeCreateMode mode) throws RegistryException {
+    registry.create(path, mode);
+  }
+  
+  public void create(byte[] data, NodeCreateMode mode) throws RegistryException {
+    registry.create(path, data, mode);
+  }
+  
+  public <T> void create(T data, NodeCreateMode mode) throws RegistryException {
+    registry.create(path, data, mode);
+  }
+  
   public byte[] getData() throws RegistryException { 
     return registry.getData(path); 
   }

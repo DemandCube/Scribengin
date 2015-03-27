@@ -386,6 +386,17 @@ public class RegistryImpl implements Registry {
   }
   
   public List<String> findDencendantPaths(String path) throws RegistryException {
+    List<String> paths = findDencendantRealPaths(path) ;
+    List<String> holder = new ArrayList<String>() ;
+    for(int i = 0; i < paths.size(); i++) {
+      String selPath = paths.get(i) ;
+      selPath = selPath.substring(config.getDbDomain().length());
+      holder.add(selPath);
+    }
+    return holder ;
+  }
+  
+  public List<String> findDencendantRealPaths(String path) throws RegistryException {
     checkConnected();
     try {
       PathUtils.validatePath(realPath(path));
@@ -421,9 +432,7 @@ public class RegistryImpl implements Registry {
         T result = ops.execute(this);
         return result;
       } catch (RegistryException e) {
-        if(e.getErrorCode() != ErrorCode.Timeout) {
-          throw e;
-        }
+        if(e.getErrorCode() != ErrorCode.Timeout) throw e;
       } catch (Exception e) {
         throw new RegistryException(ErrorCode.Unknown, e);
       }
