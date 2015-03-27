@@ -215,7 +215,9 @@ function testProcess() {
 }
 
 function clean_shutdown() {
-  servers_exec "$1" "$2"
+  servers=$1
+  commands=$2
+  servers_exec "$servers" "$commands"
 }
 
 function kafka_start() {
