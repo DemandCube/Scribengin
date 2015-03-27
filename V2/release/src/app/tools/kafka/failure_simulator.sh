@@ -214,6 +214,11 @@ function testProcess() {
   done
 }
 
+function clean_shutdown() {
+  servers=$1
+  commands=$2
+  servers_exec "$servers" "$commands"
+}
 
 function kafka_start() {
   h1 "Start kafka server(s) $1"
@@ -222,7 +227,7 @@ function kafka_start() {
 
 function kafka_stop() {
   h1 "Stop kafka server(s) $1"
-  servers_exec  "$1" "/opt/kafka/bin/kafka-server-stop.sh"
+  clean_shutdown "$1" "/opt/kafka/bin/kafka-server-stop.sh"
 }
 
 function kafka_clean() {
@@ -271,7 +276,7 @@ function zookeeper_start() {
 
 function zookeeper_stop() {
   h1 "Stop the zookeeper server $1"
-  servers_exec  "$1" "/opt/zookeeper/bin/zkServer.sh stop"
+  clean_shutdown "$1" "/opt/zookeeper/bin/zkServer.sh stop"
 }
 
 function zookeeper_restart() {
@@ -372,8 +377,8 @@ function zk_failure_simulator() {
 }
 
 function start_simulator() {
-  zk_server=$(get_opt zk-server '' $@)
-  kafka_broker=$(get_opt kafka-broker '' $@) 
+  zk_server=$(get_opt --zk-server '' $@)
+  kafka_broker=$(get_opt --kafka-broker '' $@) 
 
   if [ ! -z "$kafka_broker" ]; then
     kafka_failure_simulator $@ &
