@@ -372,8 +372,8 @@ function zk_failure_simulator() {
 }
 
 function start_simulator() {
-  zk_server=$(get_opt zk-server '' $@)
-  kafka_broker=$(get_opt kafka-broker '' $@) 
+  zk_server=$(get_opt --zk-server '' $@)
+  kafka_broker=$(get_opt --kafka-broker '' $@) 
 
   if [ ! -z "$kafka_broker" ]; then
     kafka_failure_simulator $@ &
