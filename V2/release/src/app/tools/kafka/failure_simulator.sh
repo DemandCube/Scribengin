@@ -22,13 +22,13 @@ function print_usage() {
   echo "    --wait-before-start         :Time to wait before start zookeeper server, Measured in seconds ( Example: --wait-before-start=10 )"
   echo "    --clean                     :Clean zookeeper old datas"
   echo "simulate			:To simulate failures for kafka and zookeeper servers"
-  echo "  zk-failure			:Time interval to fail zookeeper server ( Example: zk-failure=180 )"
-  echo "  kafka-failure			:Time interval to fail kafka broker ( Example: kafka-failure=60 )"
-  echo "  wait-before-start		:Time to wait before start kafka or zookeeper, Measured in seconds ( Example: wait-before-start=10 )"  
-  echo "  zk-server			:Zokeeper servers, Multiple values can be given in comma seperated value ( Example: zk-server=zookeeper-1,zookeeper-2 )"
-  echo "  kafka-broker                  :Kafka brokers, Multiple values can be given in comma seperated value ( Example: kafka-broker=kafka-1,kafka-2 )"
-  echo "  min-zk			:The minimum number of ZK nodes that must always stay up. (This is optional, by default it will keep 1 Zk node always alive)"
-  echo "  min-kafka			:The minimum number of kafka brokers that must always stay up. (This is optional, by default it will keep 1 kafka broker always alive)"
+  echo "  --zk-failure                  :Time interval to fail zookeeper server ( Example: zk-failure=180 )"
+  echo "  --kafka-failure               :Time interval to fail kafka broker ( Example: kafka-failure=60 )"
+  echo "  --wait-before-start           :Time to wait before start kafka or zookeeper, Measured in seconds ( Example: wait-before-start=10 )"  
+  echo "  --zk-server                   :Zokeeper servers, Multiple values can be given in comma seperated value ( Example: zk-server=zookeeper-1,zookeeper-2 )"
+  echo "  --kafka-broker                :Kafka brokers, Multiple values can be given in comma seperated value ( Example: kafka-broker=kafka-1,kafka-2 )"
+  echo "  --min-zk			:The minimum number of ZK nodes that must always stay up. (This is optional, by default it will keep 1 Zk node always alive)"
+  echo "  --min-kafka                   :The minimum number of kafka brokers that must always stay up. (This is optional, by default it will keep 1 kafka broker always alive)"
   echo " "
 }
 
@@ -322,10 +322,10 @@ function select_random_servers() {
 
 function kafka_failure_simulator() {
   temp_kafka_time=0
-  kafka_failure_time=$(get_opt kafka-failure 60 $@)
-  wait_before_start=$(get_opt wait-before-start 10 $@)
-  brokers_to_kill=$(get_opt kafka-broker '' $@)
-  min_kafka=$(get_opt min-kafka 1 $@)
+  kafka_failure_time=$(get_opt --kafka-failure 60 $@)
+  wait_before_start=$(get_opt --wait-before-start 10 $@)
+  brokers_to_kill=$(get_opt --kafka-broker '' $@)
+  min_kafka=$(get_opt --min-kafka 1 $@)
   KAFKA_SERVERS_ARRAY=($KAFKA_SERVERS)
   actual_max_num_of_server_to_die=`expr ${#KAFKA_SERVERS_ARRAY[@]} - $min_kafka`
 
@@ -347,10 +347,10 @@ function kafka_failure_simulator() {
 
 function zk_failure_simulator() {
   temp_zk_time=0
-  zk_failure_time=$(get_opt zk-failure 180 $@)
-  wait_before_start=$(get_opt wait-before-start 10 $@)
-  zk_to_kill=$(get_opt zk-server '' $@)
-  min_zk=$(get_opt min-zk 1 $@)
+  zk_failure_time=$(get_opt --zk-failure 180 $@)
+  wait_before_start=$(get_opt --wait-before-start 10 $@)
+  zk_to_kill=$(get_opt --zk-server '' $@)
+  min_zk=$(get_opt --min-zk 1 $@)
   ZOOKEEPER_SERVERS_ARRAY=($ZOOKEEPER_SERVERS)
   actual_max_num_of_server_to_die=`expr ${#ZOOKEEPER_SERVERS_ARRAY[@]} - $min_zk`
 
