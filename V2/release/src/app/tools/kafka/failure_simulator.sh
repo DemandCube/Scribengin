@@ -144,7 +144,6 @@ function parse_hosts_file() {
   done < $FILENAME
   
   ALL_SERVERS="$HADOOP_SERVERS $ZOOKEEPER_SERVERS $KAFKA_SERVERS"
-
 }
 
 function servers_exec() {
@@ -163,20 +162,16 @@ function testProcess() {
   operation=$3
 
   servers=`echo "$servers" | tr ',' ' '`
-  if [[ "$process" == "zookeeper" ]]; then
-    grep_process="QuorumPeerMain"
-  elif [[ "$process" == "kafka" ]]; then
-    grep_process="Kafka"
-  fi
 
   for server in $servers; do
     retry=6
-    count=1    
+    count=1
+    killed_process=false
     while [ "$count" -le "$retry"  ]
     do
       sleep 5
       echo "Testing $process is running on $server - Try $count"
-      pid=$(ssh -o "StrictHostKeyChecking no" $USER@$server "ps ax | grep -i '$grep_process' | grep java | grep -v grep | awk '{print \$1}'")
+      pid=$(ssh -o "StrictHostKeyChecking no" $USER@$server "ps ax | grep -i '$process' | grep java | grep -v grep | awk '{print \$1}'")
 
       echo "Running $grep_process-$pid on $server"
   
@@ -203,9 +198,15 @@ function testProcess() {
         else
           if [[ "$count" -eq "$retry" ]]; then
             #### Failure
-            failure_command="-failed-to-stop"
-            juLog -name=$server$failure_command false
-            break
+            if [[ "$killed_process" == "true" ]]; then
+              failure_command="-failed-to-stop"
+              juLog -name=$server$failure_command false
+              exit 1
+            else
+              kill_process $server $process
+              killed_process=true
+              count=0
+            fi
           fi
         fi
       fi
@@ -218,6 +219,13 @@ function clean_shutdown() {
   servers=$1
   commands=$2
   servers_exec "$servers" "$commands"
+}
+
+function kill_process(){
+  servers=$1
+  process=$2
+  h1 "kill $process on $servers"
+  servers_exec "$servers" "pkill -9 -f $process"
 }
 
 function kafka_start() {
@@ -246,7 +254,7 @@ function kafka_restart() {
   kafka_stop  "$broker" 
 
   #test kafka brokers are stoped
-  testProcess $broker 'kafka' 'stop'
+  testProcess $broker 'Kafka' 'stop'
 
   h1 "Waiting for $wait_before_start to start failed kafka servers"  
   sleep $wait_before_start
@@ -258,7 +266,7 @@ function kafka_restart() {
   kafka_start "$broker"
   
   #test kafka brokers sre started
-  testProcess $broker 'kafka' 'start' 
+  testProcess $broker 'Kafka' 'start' 
 }
 
 function zookeeper_clean() {
@@ -287,7 +295,7 @@ function zookeeper_restart() {
   zookeeper_stop "$zk_server"
   
   #test zookeeper stopped
-  testProcess $zk_server 'zookeeper' 'stop'
+  testProcess $zk_server 'QuorumPeerMain' 'stop'
   
   h1 "Waiting for $wait_before_start to start failed zookeeper servers"
   sleep $wait_before_start
@@ -299,7 +307,7 @@ function zookeeper_restart() {
   zookeeper_start "$zk_server"
 
   #test zookeeper started
-  testProcess $zk_server 'zookeeper' 'start'
+  testProcess $zk_server 'QuorumPeerMain' 'start'
 }
 
 function select_random_servers() {
