@@ -63,7 +63,7 @@ public class KafkaProducerKillPartitionLeaderBugUnitTest  {
     KafkaMessageCheckTool checkTool = new KafkaMessageCheckTool(checkArgs);
     checkTool.run();
     System.out.println("Sent count = " + sendTool.getReport().getProducerReport().getMessageSent());
-    System.out.println("Sent failed count = " + sendTool.getReport().getProducerReport().getMessageRetried());
+    System.out.println("Retried count = " + sendTool.getReport().getProducerReport().getMessageRetried());
     System.out.println("Check count = " + checkTool.getMessageCounter().getTotal());
     checkTool.getMessageTracker().dump(System.out);
     assertTrue(checkTool.getMessageCounter().getTotal() < sendTool.getSentCount());
