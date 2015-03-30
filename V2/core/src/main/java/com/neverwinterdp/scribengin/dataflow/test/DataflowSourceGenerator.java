@@ -13,8 +13,14 @@ abstract public class DataflowSourceGenerator implements Runnable {
   @Parameter(names = "--source-name", description = "The storage source name, usually the database name or dir name of the storage")
   protected String sourceName = "hello";
   
+  @Parameter(names = "--source-drop-if-exists", description = "The maximum number of record per stream")
+  protected boolean dropIfExists;
+  
   @Parameter(names = "--source-num-of-stream", description = "The number of stream for the source")
   protected int    numberOfStream = 2;
+  
+  @Parameter(names = "--source-record-size", description = "The maximum number of record per stream")
+  protected int    recordSize;
   
   @Parameter(names = "--source-max-records-per-stream", description = "The maximum number of record per stream")
   protected int    maxRecordsPerStream;

@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.storage.s3;
 
+import java.util.UUID;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -13,13 +15,14 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class S3SinkSourceIntegrationTest {
-  static public String BUCKET_NAME = "sink-source-test";
+  static public String BUCKET_NAME ;
   static public String STORAGE_PATH = "database";
   
   static S3Client s3Client ;
   
   @BeforeClass
   static public void beforeClass() {
+    BUCKET_NAME = "sink-source-test-" + UUID.randomUUID(); 
     s3Client = new S3Client() ;
     s3Client.onInit();
     if(s3Client.hasBucket(BUCKET_NAME)) {
@@ -27,12 +30,15 @@ public class S3SinkSourceIntegrationTest {
     }
     s3Client.createBucket(BUCKET_NAME);
     s3Client.createS3Folder(BUCKET_NAME, STORAGE_PATH);
+    //TODO: You may need to remove this and really create a stream with some data 
+    //in order the source can work properly
     s3Client.createS3Folder(BUCKET_NAME, STORAGE_PATH + "/stream-0");
     s3Client.createS3Folder(BUCKET_NAME, STORAGE_PATH + "/stream-1");
   }
   
   @AfterClass
   static public void afterClass() {
+    s3Client.deleteBucket(BUCKET_NAME, true);
     s3Client.onDestroy();
   }
   

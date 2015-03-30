@@ -6,6 +6,7 @@ public interface Transaction {
 
   public Transaction delete(final String path) ;
   
+  public void rcopy(String path, String toPath) throws RegistryException ;
   public Transaction rdelete(final String path) throws RegistryException ;
 
   public Transaction check(String path) ;
@@ -30,5 +31,9 @@ public interface Transaction {
   
   public <T> Transaction createDescendant(Node node, String relativePath, T obj , NodeCreateMode mode);
  
+  public Transaction deleteChild(Node node, String name);
+  
+  public Transaction deleteDescendant(Node node, String relativePath) ;
+  
   public void commit() throws RegistryException ;
 }
