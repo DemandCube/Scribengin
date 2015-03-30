@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityStep {
-  static public enum Status { INIT, ASSIGNED, FINISHED }
+  static public enum Status { INIT, ASSIGNED, EXECUTING, FINISHED }
   
   private String             description;
   private String             type ;

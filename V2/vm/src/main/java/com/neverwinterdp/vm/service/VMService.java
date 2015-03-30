@@ -2,6 +2,8 @@ package com.neverwinterdp.vm.service;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
@@ -29,13 +31,14 @@ public class VMService {
   
   @Inject
   private Registry registry;
-  @Inject
-  private RegistryListener registryListener;
   
   @Inject
   private VMServicePlugin plugin ;
   
-  @Inject
+  private RegistryListener registryListener;
+  
+  
+  @PostConstruct
   public void onInit() throws Exception {
     registry.createIfNotExist(MASTER_PATH + "/status") ;
     registry.createIfNotExist(LEADER_PATH) ;
@@ -43,7 +46,7 @@ public class VMService {
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
     registry.setData(MASTER_PATH + "/status", Status.INIT);
-    
+    registryListener = new RegistryListener(registry);
   }
   
   public void shutdown() { 

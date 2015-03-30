@@ -3,6 +3,7 @@ package com.neverwinterdp.registry.activity;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import com.google.inject.Injector;
 import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
@@ -12,15 +13,29 @@ import com.neverwinterdp.registry.Transaction;
 
 public class ActivityService {
   static DecimalFormat ORDER_FORMATER = new DecimalFormat("#000");
-  
+  private Injector container ;
   private Registry registry;
+  
   private Node     activeNode;
   private Node     historyNode;
   
-  public ActivityService(Registry registry, String activityPath) throws RegistryException {
-    this.registry     = registry ;
+  public ActivityService(Injector container, String activityPath) throws RegistryException {
+    this.container = container;
+    registry     = container.getInstance(Registry.class) ;
     activeNode  = registry.createIfNotExist(activityPath + "/active") ;
     historyNode = registry.createIfNotExist(activityPath + "/history") ;
+  }
+  
+  public <T extends ActivityCoordinator> T getActivityCoordinator(String type) throws Exception {
+    return container.getInstance((Class<T>)Class.forName(type));
+  }
+  
+  public <T extends ActivityCoordinator> T getActivityCoordinator(Class<T> type) throws Exception {
+    return  container.getInstance(type);
+  }
+  
+  public <T extends ActivityStepExecutor> T getActivityStepExecutor(String type) throws Exception {
+    return container.getInstance((Class<T>)Class.forName(type));
   }
   
   public Activity create(ActivityBuilder builder) throws RegistryException {
@@ -59,6 +74,7 @@ public class ActivityService {
     return getActivitySteps(activity.getId()) ;
   }
   
+  
   public ActivityStep getActivityStep(String activityName, String stepName) throws RegistryException {
     Node stepNode = activityStepNode(activityName, stepName);
     return stepNode.getDataAs(ActivityStep.class) ;
@@ -69,15 +85,46 @@ public class ActivityService {
     return stepsNode.getChildrenAs(ActivityStep.class) ;
   }
   
-  public <T> void assign(final Activity activity, final ActivityStep activityStep, final T workerInfo) throws RegistryException {
+  public <T> void updateActivityStepAssigned(final Activity activity, final ActivityStep step) throws RegistryException {
     BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
-        Node activityStepNode = activityStepNode(activity, activityStep);
+        Node activityStepNode = getActivityStepNode(activity, step);
         Transaction transaction = registry.getTransaction() ;
-        activityStep.setStatus(ActivityStep.Status.ASSIGNED);
-        transaction.setData(activityStepNode, activityStep);
+        step.setStatus(ActivityStep.Status.ASSIGNED);
+        transaction.setData(activityStepNode, step);
+        transaction.commit();
+        return true;
+      }
+    };
+    registry.executeBatch(ops, 3, 1000);
+  }
+  
+  public <T> void updateActivityStepExecuting(final Activity activity, final ActivityStep step, final T workerInfo) throws RegistryException {
+    BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
+      @Override
+      public Boolean execute(Registry registry) throws RegistryException {
+        Node activityStepNode = getActivityStepNode(activity, step);
+        Transaction transaction = registry.getTransaction() ;
+        step.setStatus(ActivityStep.Status.EXECUTING);
+        transaction.setData(activityStepNode, step);
         transaction.createChild(activityStepNode, "heartbeat", workerInfo, NodeCreateMode.EPHEMERAL) ;
+        transaction.commit();
+        return true;
+      }
+    };
+    registry.executeBatch(ops, 3, 1000);
+  }
+  
+  public <T> void updateActivityStepFinished(final Activity activity, final ActivityStep step) throws RegistryException {
+    BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
+      @Override
+      public Boolean execute(Registry registry) throws RegistryException {
+        Node activityStepNode = getActivityStepNode(activity, step);
+        Transaction transaction = registry.getTransaction() ;
+        step.setStatus(ActivityStep.Status.FINISHED);
+        transaction.setData(activityStepNode, step);
+        transaction.deleteChild(activityStepNode, "heartbeat") ;
         transaction.commit();
         return true;
       }
@@ -89,7 +136,7 @@ public class ActivityService {
     BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
-        Node activityStepNode = activityStepNode(activity, activityStep);
+        Node activityStepNode = getActivityStepNode(activity, activityStep);
         Transaction transaction = registry.getTransaction() ;
         activityStep.setStatus(ActivityStep.Status.FINISHED);
         transaction.setData(activityStepNode, activityStep);
@@ -110,15 +157,11 @@ public class ActivityService {
     transaction.commit();
   }
   
-  private Node activityNode(Activity activity) throws RegistryException {
+  public Node getActivityNode(Activity activity) throws RegistryException {
     return activeNode.getChild(activity.getId());
   }
   
-  private Node activityStepsNode(Activity activity) throws RegistryException {
-    return activeNode.getChild(activity.getId() + "/activity-steps");
-  }
-  
-  private Node activityStepNode(Activity activity, ActivityStep step) throws RegistryException {
+  public Node getActivityStepNode(Activity activity, ActivityStep step) throws RegistryException {
     return activityStepNode(activity.getId(), step.getId());
   }
   

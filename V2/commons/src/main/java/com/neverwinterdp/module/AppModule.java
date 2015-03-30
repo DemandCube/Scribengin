@@ -43,9 +43,12 @@ public class AppModule extends AbstractModule {
   }
   
   public <T> void bindType(Class<T> type, String impl) throws ClassNotFoundException {
-    Key<T> key = Key.get(type, Names.named(type.getSimpleName())) ;
     Class<?> clazz = (Class<?>)Class.forName(impl);
     bind(type).to((Class)clazz);
+  }
+  
+  public <T> void bindType(Class<T> type, Class<? extends T> clazz) {
+    bind(type).to(clazz);
   }
   
   public void bindType(String type) throws ClassNotFoundException {

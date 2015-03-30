@@ -2,16 +2,18 @@ package com.neverwinterdp.registry.activity;
 
 import java.util.Random;
 
+import com.google.inject.Singleton;
+
 
 public class HelloActivityBuilder extends ActivityBuilder {
   public HelloActivityBuilder() {
+    getActivity().setDescription("Hello Activity");
     getActivity().setType("hello");
     getActivity().withCoordinator(HelloActivityCoordinator.class);
   }
   
   public HelloActivityBuilder(int numOfStep) {
-    getActivity().setType("hello");
-    getActivity().withCoordinator(HelloActivityCoordinator.class);
+    this();
     Random rand = new Random() ;
     for(int i = 0; i < numOfStep; i++) {
       if(rand.nextInt() % 2 == 0) {
@@ -25,7 +27,7 @@ public class HelloActivityBuilder extends ActivityBuilder {
   public HelloActivityBuilder addHelloStep(String name) {
     add(new ActivityStep().
         withType(name).
-        withExecutor(HelloActivityExecutor.class));
+        withExecutor(HelloActivityStepExecutor.class));
     return this ;
   }
   
@@ -36,43 +38,24 @@ public class HelloActivityBuilder extends ActivityBuilder {
     return this ;
   }
   
-  static public class HelloActivityExecutor implements ActivityStepExecutor {
+  @Singleton
+  static public class HelloActivityStepExecutor implements ActivityStepExecutor {
     @Override
     public void execute(Activity activity, ActivityStep step) {
       System.out.println("hello activity executor, step = " + step.getId()) ;
     }
   }
   
+  @Singleton
   static public class PauseActivityExecutor implements ActivityStepExecutor {
     @Override
     public void execute(Activity activity, ActivityStep step) {
       System.out.println("pause activity executor,  step = " + step.getId() + ", pause = 3s") ;
       try {
-        Thread.sleep(3000);
+        Thread.sleep(500);
       } catch (InterruptedException e) {
       }
       System.out.println("pause activity executor,  step = " + step.getId() + ", resume") ;
-    }
-  }
-  
-  static public class HelloActivityCoordinator implements ActivityCoordinator {
-    @Override
-    public void onStart(Activity activity) {
-    }
-    
-    public void onResume(Activity activity) {
-    }
-
-    @Override
-    public void onAssign(Activity activity, ActivityStep step) {
-    }
-
-    @Override
-    public void onFinish(Activity activity, ActivityStep step) {
-    }
-
-    @Override
-    public void onFinish(Activity activity) {
     }
   }
 }

@@ -19,7 +19,6 @@ class Cluster(ServerSet.ServerSet):
         self.addServer(Server.KafkaServer("kafka-2"));
         self.addServer(Server.KafkaServer("kafka-3"));
     
-    
     def getServersByRole(self, role):
         serverSet = ServerSet.ServerSet(role);
         for server in self.getServers() :
