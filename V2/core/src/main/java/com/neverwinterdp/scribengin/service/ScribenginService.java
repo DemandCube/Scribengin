@@ -33,6 +33,7 @@ public class ScribenginService {
   @Inject
   private VMConfig vmConfig; 
   private Registry registry;
+  
   private VMClient vmClient ;
   private RegistryListener registryListener ;
   

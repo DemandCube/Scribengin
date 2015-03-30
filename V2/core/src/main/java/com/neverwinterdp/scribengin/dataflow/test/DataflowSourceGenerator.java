@@ -16,6 +16,9 @@ abstract public class DataflowSourceGenerator implements Runnable {
   @Parameter(names = "--source-num-of-stream", description = "The number of stream for the source")
   protected int    numberOfStream = 2;
   
+  @Parameter(names = "--source-record-size", description = "The maximum number of record per stream")
+  protected int    recordSize;
+  
   @Parameter(names = "--source-max-records-per-stream", description = "The maximum number of record per stream")
   protected int    maxRecordsPerStream;
   
