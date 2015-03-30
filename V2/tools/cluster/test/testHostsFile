@@ -1,0 +1,26 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+fe80::1%lo0	localhost
+
+
+##SCRIBENGIN CLUSTER START##
+172.17.0.64    kafka-3
+172.17.0.63    kafka-2
+172.17.0.62    kafka-1
+172.17.0.60    hadoop-worker-3
+172.17.0.61    zookeeper-1
+172.17.0.59    hadoop-worker-2
+172.17.0.58    hadoop-worker-1
+172.17.0.57    hadoop-master
+##SCRIBENGIN CLUSTER END##
+
+
+10.10.10.2 otherStuff
+78.88.91.1 things here
