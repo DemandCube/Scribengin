@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.JCommander;
@@ -120,6 +122,12 @@ public class KafkaToS3DataflowTest extends DataflowTest {
     public byte[] nextMessage(int partition, int messageSize) {
       String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
       return JSONSerializer.INSTANCE.toString(new Record(key, new byte[messageSize])).getBytes();
+    }
+
+    @Override
+    public Map<Integer, AtomicInteger> getMessageTrackers() {
+      // TODO Auto-generated method stub
+      return null;
     }
   }
 

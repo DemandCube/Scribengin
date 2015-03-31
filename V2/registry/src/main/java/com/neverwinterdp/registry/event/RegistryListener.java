@@ -4,20 +4,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.neverwinterdp.registry.ErrorCode;
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 
-@Singleton
 public class RegistryListener {
-  @Inject
   private Registry registry;
   private TreeMap<String, NodeWatcherWrapper> watchers = new TreeMap<String, NodeWatcherWrapper>() ;
   private boolean closed = false;
-  
-  public RegistryListener() { }
   
   public RegistryListener(Registry registry) {
     this.registry = registry;
@@ -44,6 +39,14 @@ public class RegistryListener {
   
   public void watch(String path, NodeWatcher nodeWatcher) throws RegistryException {
     watch(path, nodeWatcher, true) ;
+  }
+  
+  public void watchHeartbeat(String path, NodeWatcher nodeWatcher) throws RegistryException {
+    watch(path + "/heartbeat", nodeWatcher, true) ;
+  }
+  
+  public void watchHeartbeat(Node node, NodeWatcher nodeWatcher) throws RegistryException {
+    watch(node.getPath() + "/heartbeat", nodeWatcher, true) ;
   }
   
   public void watchModify(String path, NodeWatcher nodeWatcher, boolean persistent) throws RegistryException {

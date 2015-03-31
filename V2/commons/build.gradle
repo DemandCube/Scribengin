@@ -13,8 +13,12 @@ dependencies {
 
   compile group: 'org.apache.kafka', name: 'kafka_2.10', version: "0.8.2.0"
   compile group: 'com.beust', name: 'jcommander', version: '1.35'
-  
+
   compile group: 'com.google.inject', name: 'guice', version: '3.0'
+
+  compile group: 'com.google.inject.extensions', name: 'guice-jmx', version: '3.0'
+  compile group: 'com.mycila.guice', name: 'mycila-guice-all', version: '3.6.ga'
+  compile group: 'com.mycila', name: 'mycila-jmx', version: '1.1.ga'
 }
 
 test {
