@@ -43,7 +43,3 @@ class Cluster(ServerSet):
           self.addServer(HadoopMasterServer(hostname)) 
         if re.match("hadoop-worker.*", hostname, re.IGNORECASE) is not None :
           self.addServer(HadoopWorkerServer(hostname))
-  
-  
-    
-  

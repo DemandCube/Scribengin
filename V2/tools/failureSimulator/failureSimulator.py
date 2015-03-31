@@ -108,28 +108,17 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
   click.echo(cluster.getReport())
 
 @mastercommand.command(help="Failure Simulation")
-def failure():
-  print "failure!"
+@click.option('--zk-failure', default=180, help="Time interval (in seconds) to fail Zookeeper nodes")
+@click.option('--kafka-failure', default=180, help="Time interval (in seconds) to fail Kafka nodes")
+@click.option('--wait-before-start', default=180, help="Time to wait (in seconds) before starting Kafka or Zookeeper")
+@click.option('--zk-server', default="", help="Zookeeper servers to effect.  Command separated list (i.e. --zk-server zk1,zk2,zk3)")
+@click.option('--kafka-broker', default="", help="Kafka brokers to effect.  Command separated list (i.e. --kafka-broker kafka1,kafka2)")
+@click.option('--min-zk', default=1, help="Minimum number of Zookeeper nodes that must stay up")
+@click.option('--min-kafka', default=1, help="Minimum number of Kafka nodes that must stay up")
+def failure(zk_failure, kafka_failure, wait_before_start, zk_server, kafka_broker, min_zk, min_kafka):
+  cluster = Cluster()
+  
+  click.echo(cluster.getReport())
 
 if __name__ == '__main__':
   mastercommand()
-
-#   echo "kafka                           :Main command to invoke kafka related operations"
-#   echo "  restart                       :To restart any kafka server"
-#   echo "    --broker                    :Kafka brokers, Multiple values can be given in comma seperated value ( Example: --broker=kafka-1,kafka-2 )"
-#   echo "    --wait-before-start         :Time to wait before start kafka server, Measured in seconds ( Example: --wait-before-start=10 )"
-#   echo "    --clean      :Clean kafka old datas"
-#   echo "zookeeper                       :Main command to invoke zookeeper related operations"
-#   echo "  restart                       :To restart any zookeeper server"
-#   echo "    --zk-server                 :Zokeeper servers, Multiple values can be given in comma seperated value ( Example: --zk-server=zookeeper-1,zookeeper-2 )"
-#   echo "    --wait-before-start         :Time to wait before start zookeeper server, Measured in seconds ( Example: --wait-before-start=10 )"
-#   echo "    --clean                     :Clean zookeeper old datas"
-#   echo "simulate      :To simulate failures for kafka and zookeeper servers"
-#   echo "  --zk-failure                  :Time interval to fail zookeeper server ( Example: zk-failure=180 )"
-#   echo "  --kafka-failure               :Time interval to fail kafka broker ( Example: kafka-failure=60 )"
-#   echo "  --wait-before-start           :Time to wait before start kafka or zookeeper, Measured in seconds ( Example: wait-before-start=10 )"  
-#   echo "  --zk-server                   :Zokeeper servers, Multiple values can be given in comma seperated value ( Example: zk-server=zookeeper-1,zookeeper-2 )"
-#   echo "  --kafka-broker                :Kafka brokers, Multiple values can be given in comma seperated value ( Example: kafka-broker=kafka-1,kafka-2 )"
-#   echo "  --min-zk      :The minimum number of ZK nodes that must always stay up. (This is optional, by default it will keep 1 Zk node always alive)"
-#   echo "  --min-kafka                   :The minimum number of kafka brokers that must always stay up. (This is optional, by default it will keep 1 kafka broker always alive)"
-#   echo " "
