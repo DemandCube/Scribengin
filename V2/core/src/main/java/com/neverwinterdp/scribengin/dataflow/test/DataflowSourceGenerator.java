@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.beust.jcommander.Parameter;
@@ -66,6 +68,12 @@ abstract public class DataflowSourceGenerator implements Runnable {
       byte[] messagePayload = defaultMessageGenerator.nextMessage(partition, messageSize);
       String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
       return JSONSerializer.INSTANCE.toString(new Record(key, messagePayload)).getBytes();
+    }
+
+    @Override
+    public Map<Integer, AtomicInteger> getMessageTrackers() {
+      // TODO Auto-generated method stub
+      return null;
     }
   }
 }
