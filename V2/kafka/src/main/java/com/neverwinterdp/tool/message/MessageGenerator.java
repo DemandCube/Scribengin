@@ -10,6 +10,9 @@ public interface MessageGenerator {
   
   public byte[] nextMessage(int partition, int messageSize);
   
+  //TODO remove after testing
+  public Map<Integer, AtomicInteger> getMessageTrackers();
+  
   
   static public class DefaultMessageGenerator implements MessageGenerator {
     private Map<Integer, AtomicInteger> idTrackers = new HashMap<>() ;
@@ -31,6 +34,11 @@ public interface MessageGenerator {
         idTrackers.put(partition, idTracker) ;
         return  idTracker;
       }
+    }
+
+    @Override
+    public Map<Integer, AtomicInteger> getMessageTrackers() {
+      return idTrackers;
     }
   };
 }

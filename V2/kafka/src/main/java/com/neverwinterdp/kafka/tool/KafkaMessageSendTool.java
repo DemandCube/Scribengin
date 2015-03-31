@@ -3,9 +3,11 @@ package com.neverwinterdp.kafka.tool;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.kafka.clients.producer.Callback;
@@ -75,6 +77,16 @@ public class KafkaMessageSendTool implements Runnable {
     for (PartitionMessageWriter writer : writers.values()) {
       messageSent += writer.writeCount;
     }
+    
+    System.out.println("messages sent "+ messageSent);
+    for (Entry<Integer, PartitionMessageWriter> writer : writers.entrySet()) {
+      System.out.println("Partition "+ writer.getKey()+ " count "+ writer.getValue().writeCount);
+    }
+    for (Entry<Integer, AtomicInteger> entry : messageGenerator.getMessageTrackers().entrySet()) {
+      System.out.println("Partition "+ entry.getKey()+ " count "+ entry.getValue().get());
+    }
+    
+   messageGenerator.getClass();
     producerReport.setMessageSent(messageSent);
     producerReport.setMessageRetried(retried.get());;
   }
