@@ -30,7 +30,8 @@ abstract public class ActivityStepWorkerService {
     }
     executorService.shutdown();
   
-    service = new ActivityService(container, HelloActivityCoordinator.ACTIVITIES_PATH);
+    //TODO: fix this
+    service = new ActivityService(container, "/activities");
   }
   
   abstract public ActivityStepWorkerDescriptor getActivityStepWorkerDescriptor() ;
