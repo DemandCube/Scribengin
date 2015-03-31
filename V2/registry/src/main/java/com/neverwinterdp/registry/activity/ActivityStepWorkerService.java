@@ -8,19 +8,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.neverwinterdp.registry.RegistryException;
 
-abstract public class ActivityStepWorkerService {
+public class ActivityStepWorkerService<T> {
+  private T workerDescriptor ;
   private ActivityService service ;
   
   private List<ActivityStepWorker> workers = new ArrayList<>();
   private ExecutorService executorService ;
   private Random rand = new Random() ;
 
-  @Inject
-  public void onInit(Injector container) throws RegistryException {
+  public ActivityStepWorkerService(T workerDescriptor, Injector container, String activityPath) throws RegistryException {
+    this.workerDescriptor = workerDescriptor;
     int numOfWorkers = 5;
     executorService = Executors.newFixedThreadPool(numOfWorkers);
     for(int i = 0; i < numOfWorkers; i++) {
@@ -34,7 +34,7 @@ abstract public class ActivityStepWorkerService {
     service = new ActivityService(container, "/activities");
   }
   
-  abstract public ActivityStepWorkerDescriptor getActivityStepWorkerDescriptor() ;
+  public T getWorkerDescriptor() { return workerDescriptor; }
   
   public void exectute(Activity activity, ActivityStep step) {
     ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(activity, step) ;
@@ -57,7 +57,7 @@ abstract public class ActivityStepWorkerService {
           Activity activity = activityStepWorkUnit.getActivity() ;
           ActivityStep activityStep = activityStepWorkUnit.getActivityStep() ;
           try {
-            service.updateActivityStepExecuting(activity, activityStep, getActivityStepWorkerDescriptor());
+            service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
             ActivityStepExecutor executor = 
                 service.getActivityStepExecutor(activityStepWorkUnit.getActivityStep().getExecutor());
             executor.execute(activityStepWorkUnit.getActivity(), activityStepWorkUnit.getActivityStep());

@@ -1,30 +1,14 @@
 package com.neverwinterdp.registry.activity;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.RegistryException;
 
 @Singleton
-public class HelloActivityStepWorkerService extends ActivityStepWorkerService {
-  private HelloActivityStepWorkerDescriptor workerDescriptor = new HelloActivityStepWorkerDescriptor(1) ;
-  
-  @Override
-  public ActivityStepWorkerDescriptor getActivityStepWorkerDescriptor() {
-    return workerDescriptor;
-  }
-
-  static public class HelloActivityStepWorkerDescriptor implements ActivityStepWorkerDescriptor {
-    private int id;
-    String      refPath = "some/path";
-
-    public HelloActivityStepWorkerDescriptor() {} 
-    
-    public HelloActivityStepWorkerDescriptor(int id) {
-      this.id = id ;
-    }
-    
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getRefPath() { return refPath; }
-    public void setRefPath(String refPath) { this.refPath = refPath; }
+public class HelloActivityStepWorkerService extends ActivityStepWorkerService<String> {
+  @Inject
+  public HelloActivityStepWorkerService(Injector container) throws RegistryException {
+    super("HelloWorker", container, "/activities");
   }
 }
