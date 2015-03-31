@@ -30,7 +30,7 @@ class ClusterIntegrationTest(unittest.TestCase):
     
     
     print "Start ZK"
-    cluster.startZookeepers()
+    cluster.startZookeeper()
     print "Start Kafka"
     cluster.startKafka()
     sleep(5)
@@ -53,14 +53,14 @@ class ClusterIntegrationTest(unittest.TestCase):
     print "\n"
     
     print "Shutdown ZK"
-    cluster.shutdownZookeepers()
+    cluster.shutdownZookeeper()
     print "Shutdown Kafka"
     cluster.shutdownKafka()
     sleep(5)
     
     #Sometimes Kafka/ZK likes to stay up and running
     if(cluster.isProcessRunning("zookeeper")):
-      cluster.killZookeepers()
+      cluster.killZookeeper()
     if(cluster.isProcessRunning("kafka")):
       cluster.killKafka()
     self.assertFalse(cluster.isProcessRunning("kafka"))
@@ -77,7 +77,7 @@ class ClusterIntegrationTest(unittest.TestCase):
     
     
     print "Start ZK"
-    cluster.startZookeepers()
+    cluster.startZookeeper()
     print "Start Kafka"
     cluster.startKafka()
     sleep(5)
@@ -85,7 +85,7 @@ class ClusterIntegrationTest(unittest.TestCase):
     self.assertTrue(cluster.isProcessRunning("kafka"))
     
     print "Kill ZK"
-    cluster.killZookeepers()
+    cluster.killZookeeper()
     print "Kill Kafka"
     cluster.killKafka()
     self.assertFalse(cluster.isProcessRunning("zookeeper"))

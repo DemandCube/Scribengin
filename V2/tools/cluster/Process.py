@@ -39,9 +39,12 @@ class Process(object):
             "processID" : self.getRunningPid()
             }
   
-  def report(self):
+  def getReport(self):
     report = self.getReportDict()
-    print tabulate([report.values()], headers=report.keys())
+    return tabulate([report.values()], headers=report.keys())
+    
+  def report(self):
+    print self.getReport()
     
   
   def isRunning(self):

@@ -15,6 +15,9 @@ def mastercommand(debug, logfile):
   global _debug, _logfile
   _debug = debug
   _logfile = logfile
+  
+  #Setting paramiko's logger to be quiet, otherwise too much noise
+  logging.getLogger("paramiko").setLevel(logging.WARNING)
   if _debug:
       #Set logging file, overwrite file, set logging level to DEBUG
       logging.basicConfig(filename=_logfile, filemode="w", level=logging.DEBUG)
@@ -24,21 +27,38 @@ def mastercommand(debug, logfile):
     #Set logging file, overwrite file, set logging level to INFO
     logging.basicConfig(filename=_logfile, filemode="w", level=logging.INFO)
 
+@mastercommand.command(help="Get Cluster status")
+@click.option('--role',  default="",  help="Which role to check on (i.e. kafka, zookeeper, hadoop-master, hadoop-worker)")
+def status(role):
+  cluster = Cluster()
+  if len(role) > 0 :
+    cluster = cluster.getServersByRole(role)
+  
+  click.echo(cluster.getReport())
+  
 @mastercommand.command(help="Standalone Kafka options")
 @click.option('--restart',           is_flag=True, help="restart kafka brokers")
 @click.option('--start',             is_flag=True, help="start kafka brokers")
 @click.option('--stop',              is_flag=True, help="stop kafka brokers")
 @click.option('--force-stop',        is_flag=True, help="kill -9 kafka on brokers")
 @click.option('--clean',             is_flag=True, help="Clean old kafka data")
-@click.option('--brokers',           is_flag=True, help="Which kafka brokers to effect (command separated list)")
-@click.option('--wait-before-start', default=0,     help="Time to wait before restarting kafka server (seconds)")
-def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start):
+@click.option('--brokers',           default="",   help="Which kafka brokers to effect (command separated list)")
+@click.option('--wait-before-start', default=0,    help="Time to wait before restarting kafka server (seconds)")
+@click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing Kafka process (seconds)")
+def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, wait_before_kill):
   cluster = Cluster()
+  
+  if len(brokers) > 0 :
+    brokerList = brokers.split(",")
+    cluster = cluster.getServersByHostname(brokerList)
+  
   if(restart or stop):
     logging.debug("Shutting down Kafka")
     cluster.shutdownKafka()
   
   if(force_stop):
+    logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
+    sleep(wait_before_kill)
     logging.debug("Force Killing Kafka")
     cluster.killKafka()
   
@@ -51,18 +71,41 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start):
     sleep(wait_before_start)
     logging.debug("Starting Kafka")
     cluster.startKafka()
-    
+  click.echo(cluster.getReport())  
   
 
 @mastercommand.command(help="Standalone ZK commands")
-@click.option('--restart',           default=False, help="restart ZK nodes")
-@click.option('--start',             default=False, help="start ZK nodes")
-@click.option('--stop',              default=False, help="stop ZK nodes")
-@click.option('--clean',             default=False, help="Clean old ZK data")
-@click.option('--zk-servers',        default=False, help="Which ZK nodes to effect (command separated list)")
-@click.option('--wait-before-start', default=10,    help="Time to wait before starting ZK server (seconds)")
-def zookeeper():
-  print "ZK!"
+@click.option('--restart',           is_flag=True, help="restart ZK nodes")
+@click.option('--start',             is_flag=True, help="start ZK nodes")
+@click.option('--stop',              is_flag=True, help="stop ZK nodes")
+@click.option('--force-stop',        is_flag=True, help="kill -9 ZK on brokers")
+@click.option('--clean',             is_flag=True, help="Clean old ZK data")
+@click.option('--zk-servers',        is_flag=True, help="Which ZK nodes to effect (command separated list)")
+@click.option('--wait-before-start', default=0,     help="Time to wait before starting ZK server (seconds)")
+@click.option('--wait-before-kill',  default=0,     help="Time to wait before force killing ZK process (seconds)")
+def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_start, wait_before_kill):
+  cluster = Cluster()
+  if(restart or stop):
+    logging.debug("Shutting down Zookeeper")
+    cluster.shutdownZookeeper()
+  
+  if(force_stop):
+    logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
+    sleep(wait_before_kill)
+    logging.debug("Force Killing Zookeeper")
+    cluster.killZookeeper()
+  
+  if(clean):
+    logging.debug("Cleaning Zookeeper")
+    cluster.cleanZookeeper()
+  
+  if(restart or start):
+    logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    sleep(wait_before_start)
+    logging.debug("Starting Zookeeper")
+    cluster.startZookeeper()
+  
+  click.echo(cluster.getReport())
 
 @mastercommand.command(help="Failure Simulation")
 def failure():
