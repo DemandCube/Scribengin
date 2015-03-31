@@ -1,6 +1,11 @@
 import unittest,re
 from time import sleep
-from .. import Process
+
+#Add the directory above to the python path
+import sys; import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import Process #@UnresolvedImport
 
 class ProcessIntegrationTest(unittest.TestCase):
   """
@@ -81,6 +86,8 @@ class ProcessIntegrationTest(unittest.TestCase):
 class NonRunningProcess(Process.Process):
   def __init__(self, hostname):
     Process.Process.__init__(self, "ThisWillFail", hostname, "/opt/kafka", "ThisWillFail")    
-    
+
+
+
 if __name__ == '__main__':
   unittest.main()

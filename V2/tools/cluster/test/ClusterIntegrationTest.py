@@ -1,6 +1,11 @@
 import unittest
 from time import sleep
-from .. import Cluster 
+
+#Add the directory above to the python path
+import sys; import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import Cluster #@UnresolvedImport
 
 
 class ClusterIntegrationTest(unittest.TestCase):
@@ -9,54 +14,54 @@ class ClusterIntegrationTest(unittest.TestCase):
   nosetests should not run this class automatically
   """
   def test_LaunchCluster(self):
-    x = Cluster.Cluster()
-    x.report()
+    cluster = Cluster.Cluster()
+    cluster.report()
     
     print "Clean ZK and Kafka"
-    x.cleanZookeeper()
-    x.cleanKafka()
+    cluster.cleanZookeeper()
+    cluster.cleanKafka()
     
     print "Start ZK"
-    x.startZookeepers()
+    cluster.startZookeepers()
     print "Start Kafka"
-    x.startKafka()
+    cluster.startKafka()
     sleep(5)
-    self.assertTrue(x.isProcessRunning("zookeeper"))
-    self.assertTrue(x.isProcessRunning("kafka"))
+    self.assertTrue(cluster.isProcessRunning("zookeeper"))
+    self.assertTrue(cluster.isProcessRunning("kafka"))
     
-    x.reportProcess("kafka")
-    x.reportProcess("zookeeper")
+    cluster.reportProcess("kafka")
+    cluster.reportProcess("zookeeper")
     
     
     print "Shutdown ZK"
-    x.shutdownZookeepers()
+    cluster.shutdownZookeepers()
     print "Shutdown Kafka"
-    x.shutdownKafka()
+    cluster.shutdownKafka()
     sleep(5)
     
     #Sometimes Kafka/ZK likes to stay up and running
-    if(x.isProcessRunning("zookeeper")):
-      x.killZookeepers()
-    if(x.isProcessRunning("kafka")):
-      x.killKafka()
-    self.assertFalse(x.isProcessRunning("kafka"))
-    x.cleanZookeeper()
-    x.cleanKafka()
+    if(cluster.isProcessRunning("zookeeper")):
+      cluster.killZookeepers()
+    if(cluster.isProcessRunning("kafka")):
+      cluster.killKafka()
+    self.assertFalse(cluster.isProcessRunning("kafka"))
+    cluster.cleanZookeeper()
+    cluster.cleanKafka()
     
     print "Start ZK"
-    x.startZookeepers()
+    cluster.startZookeepers()
     print "Start Kafka"
-    x.startKafka()
+    cluster.startKafka()
     sleep(5)
-    self.assertTrue(x.isProcessRunning("zookeeper"))
-    self.assertTrue(x.isProcessRunning("kafka"))
+    self.assertTrue(cluster.isProcessRunning("zookeeper"))
+    self.assertTrue(cluster.isProcessRunning("kafka"))
     
     print "Kill ZK"
-    x.killZookeepers()
+    cluster.killZookeepers()
     print "Kill Kafka"
-    x.killKafka()
-    self.assertFalse(x.isProcessRunning("zookeeper"))
-    self.assertFalse(x.isProcessRunning("kafka"))
+    cluster.killKafka()
+    self.assertFalse(cluster.isProcessRunning("zookeeper"))
+    self.assertFalse(cluster.isProcessRunning("kafka"))
     
     
     
