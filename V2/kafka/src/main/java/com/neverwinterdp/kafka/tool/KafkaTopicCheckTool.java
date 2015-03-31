@@ -128,5 +128,12 @@ public class KafkaTopicCheckTool implements Runnable {
     topicCheckTool.junitReport();
     topicCheckTool.getKafkaTopicReport().report(System.out);
     topicCheckTool.getKafkaMessageCheckTool().getMessageTracker().dump(System.out);
+    
+   String[]  args2 = { 
+        "--broker-list","kafka-1:9092,kafka-2:9092,kafka-3:9092",
+        "--topic", topicCheckTool.getKafkaTopicReport().getTopic(),
+        "--time", "-1",
+    };
+    kafka.tools.GetOffsetShell.main(args2);
   }
 }

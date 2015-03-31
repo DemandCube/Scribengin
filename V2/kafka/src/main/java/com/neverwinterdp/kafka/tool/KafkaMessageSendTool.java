@@ -78,7 +78,7 @@ public class KafkaMessageSendTool implements Runnable {
       messageSent += writer.writeCount;
     }
     
-    System.out.println("messages sent "+ messageSent);
+    System.out.println("messages sent "+ sendCounter.get());
     for (Entry<Integer, PartitionMessageWriter> writer : writers.entrySet()) {
       System.out.println("Partition "+ writer.getKey()+ " count "+ writer.getValue().writeCount);
     }
