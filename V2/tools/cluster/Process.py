@@ -1,21 +1,22 @@
 from os.path import expanduser, join
+from tabulate import tabulate
 import paramiko
 
 
 class Process(object):
-  def __init__(self, name, hostname, homeDir, processIdentifier, defaultSSHKeyPath=join(expanduser("~"),".ssh/id_rsa")):
+  def __init__(self, name, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.name = name ;
     self.hostname = hostname;
     self.homeDir = homeDir;
     self.processIdentifier = processIdentifier;
-    self.defaultSSHKeyPath = defaultSSHKeyPath
+    self.sshKeyPath = sshKeyPath
   
   def sshExecute(self, command, user = "neverwinterdp"):
     """
     SSH onto a machine, execute a command
     Returns [stdout,stderr]
     """
-    key = paramiko.RSAKey.from_private_key_file(self.defaultSSHKeyPath)
+    key = paramiko.RSAKey.from_private_key_file(self.sshKeyPath)
     c = paramiko.SSHClient()
     c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     c.connect( hostname = self.hostname, username = user, pkey = key )
@@ -27,8 +28,24 @@ class Process(object):
     
     return stdout,stderr
   
+  def getReportDict(self):
+    return  {
+            "name" : self.name,
+            "hostname": self.hostname,
+            "homeDir" : self.homeDir,
+            "processIdentifier" : self.processIdentifier,
+            "sshKeyPath" : self.sshKeyPath,
+            "isRunning" : str(self.isRunning()),
+            "processID" : self.getRunningPid()
+            }
+  
+  def getReport(self):
+    report = self.getReportDict()
+    return tabulate([report.values()], headers=report.keys())
+    
   def report(self):
-    print "REPORT!: "+self.hostname
+    print self.getReport()
+    
   
   def isRunning(self):
     return len(self.getRunningPid()) > 0
