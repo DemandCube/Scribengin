@@ -33,7 +33,6 @@ public class ActivityServiceUnitTest {
 
   private Injector container ;
   private Registry registry ;
- 
   
   @BeforeClass
   static public void startServer() throws Exception {

@@ -44,6 +44,9 @@ public class HelloActivityBuilder extends ActivityBuilder {
     public void execute(Activity activity, ActivityStep step) {
       System.out.println("hello activity executor, step = " + step.getId()) ;
     }
+
+    @Override
+    public <T> T getWorkerInfo() { return (T) new HelloActivityStepWorkerDescriptor(1); }
   }
   
   @Singleton
@@ -57,5 +60,25 @@ public class HelloActivityBuilder extends ActivityBuilder {
       }
       System.out.println("pause activity executor,  step = " + step.getId() + ", resume") ;
     }
+
+    @Override
+    public <T> T getWorkerInfo() { return (T) new HelloActivityStepWorkerDescriptor(1); }
+  }
+  
+  static public class HelloActivityStepWorkerDescriptor {
+    private int id;
+    String      refPath = "some/path";
+
+    public HelloActivityStepWorkerDescriptor() {} 
+    
+    public HelloActivityStepWorkerDescriptor(int id) {
+      this.id = id ;
+    }
+    
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getRefPath() { return refPath; }
+    public void setRefPath(String refPath) { this.refPath = refPath; }
   }
 }
