@@ -4,7 +4,6 @@ import static com.neverwinterdp.vm.event.VMEvent.VM_HEARTBEAT;
 import static com.neverwinterdp.vm.event.VMEvent.VM_MASTER_ELECTION;
 import static com.neverwinterdp.vm.event.VMEvent.VM_STATUS;
 
-import com.neverwinterdp.registry.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.election.LeaderElectionNodeWatcher;
@@ -14,7 +13,6 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.event.VMEvent.VMAttr;
 import com.neverwinterdp.vm.service.VMService;
-import com.neverwinterdp.vm.service.VMService.Status;
 
 public class VMWaitingEventListener extends WaitingEventListener {
   
