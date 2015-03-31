@@ -29,7 +29,8 @@ public class DataflowRegistry {
   final static public String TASKS_ASSIGNED_PATH    = TASKS_PATH + "/executors/assigned" ;
   final static public String TASKS_FINISHED_PATH    = TASKS_PATH + "/executors/finished";
   final static public String TASKS_LOCK_PATH        = TASKS_PATH + "/executors/locks";
-  
+
+  final static public String ACTIVITIES_PATH = "activities";
   final static public String MASTER_PATH  = "master";
   final static public String MASTER_LEADER_PATH  = MASTER_PATH + "/leader";
   
@@ -56,6 +57,7 @@ public class DataflowRegistry {
   private Node               tasksAssigned;
   private Node               tasksFinished;
   private Node               tasksLock;
+  private Node               activities;
   private Node               workers;
 
 
@@ -73,6 +75,8 @@ public class DataflowRegistry {
   
   public String getTasksAssignedPath() { return this.tasksAssigned.getPath(); }
   
+  public String getActivitiesPath() { return activities.getPath(); } 
+  
   public Registry getRegistry() { return this.registry ; }
   
   public DataflowDescriptor getDataflowDescriptor() throws RegistryException {
@@ -88,7 +92,9 @@ public class DataflowRegistry {
     tasksFinished  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_FINISHED_PATH);
     tasksLock      = registry.createIfNotExist(dataflowPath   + "/" + TASKS_LOCK_PATH);
     registry.createIfNotExist(dataflowPath + "/" + MASTER_LEADER_PATH);
+    activities = registry.createIfNotExist(dataflowPath + "/" + ACTIVITIES_PATH);
     workers = registry.createIfNotExist(dataflowPath + "/" + WORKERS_PATH);
+    
   }
   
   public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
@@ -100,7 +106,6 @@ public class DataflowRegistry {
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
     String nodeName = taskNode.getName();
     tasksAvailableQueue.offer(nodeName.getBytes());
-
    }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {

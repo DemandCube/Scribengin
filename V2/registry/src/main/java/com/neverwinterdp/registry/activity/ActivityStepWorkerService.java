@@ -19,7 +19,14 @@ public class ActivityStepWorkerService<T> {
   private ExecutorService executorService ;
   private Random rand = new Random() ;
 
+  public ActivityStepWorkerService() {
+  }
+  
   public ActivityStepWorkerService(T workerDescriptor, Injector container, String activityPath) throws RegistryException {
+    init(workerDescriptor, container, activityPath);
+  }
+
+  public void init(T workerDescriptor, Injector container, String activityPath) throws RegistryException {
     this.workerDescriptor = workerDescriptor;
     int numOfWorkers = 5;
     executorService = Executors.newFixedThreadPool(numOfWorkers);
@@ -29,10 +36,9 @@ public class ActivityStepWorkerService<T> {
       executorService.submit(worker);
     }
     executorService.shutdown();
-  
-    //TODO: fix this
-    service = new ActivityService(container, "/activities");
+    service = new ActivityService(container, activityPath);
   }
+
   
   public T getWorkerDescriptor() { return workerDescriptor; }
   

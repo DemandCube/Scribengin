@@ -62,7 +62,14 @@ abstract public class ActivityCoordinator {
   
   public void onFinish(ActivityService service, Activity activity) throws RegistryException {
     service.history(activity);
+    synchronized(this) {
+      notifyAll();
+    }
     System.err.println("ActivityCoordinator: onFinish  " + activity.getDescription());
+  }
+  
+  synchronized public void waitForTermination(long timeout) throws InterruptedException {
+    wait(timeout);
   }
   
   public void shutdown() {

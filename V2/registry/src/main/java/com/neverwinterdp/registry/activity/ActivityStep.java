@@ -1,18 +1,21 @@
 package com.neverwinterdp.registry.activity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ActivityStep {
   static public enum Status { INIT, ASSIGNED, EXECUTING, FINISHED }
   
-  private String             description;
-  private String             type ;
-  private String             id ;
-  private Status             status = Status.INIT;
-  private String             executor;
-  private int                maxRetries = 1;
-  private List<String>       logs ;
+  private String              description;
+  private String              type;
+  private String              id;
+  private Status              status     = Status.INIT;
+  private String              executor;
+  private int                 maxRetries = 1;
+  private Map<String, Object> attributes;
+  private List<String>        logs;
   private ActivityStepResult result;
   
   public String getDescription() { return description; }
@@ -47,6 +50,21 @@ public class ActivityStep {
   
   public int getMaxRetries() { return maxRetries; }
   public void setMaxRetries(int maxRetries) { this.maxRetries = maxRetries; }
+  
+  public Map<String, Object> getAttributes() { return attributes; }
+  public void setAttributes(Map<String, Object> attributes) {
+    this.attributes = attributes;
+  }
+  
+  public <T> T attribute(String name) {
+    return (T) attributes.get(name);
+  }
+  
+  public <T> ActivityStep attribute(String name, T value) {
+    if(attributes == null) attributes = new HashMap<String, Object>();
+    attributes.put(name, value);
+    return this;
+  }
   
   public List<String> getLogs() { return logs; }
   public void setLogs(List<String> logs) { this.logs = logs;}

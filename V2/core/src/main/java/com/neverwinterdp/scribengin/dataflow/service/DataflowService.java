@@ -4,9 +4,12 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowInitActivityBuilder;
 import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.vm.VMConfig;
@@ -28,6 +31,9 @@ public class DataflowService {
   @Inject
   private SinkFactory sinkFactory ;
   
+  @Inject
+  private DataflowActivityService activityService;
+  
   private VMWaitingEventListener workerListener ;
   
   private AssignedDataflowTaskListener assignedDataflowTaskListener;
@@ -36,6 +42,8 @@ public class DataflowService {
   
   public DataflowRegistry getDataflowRegistry() { return dataflowRegistry; }
 
+  public DataflowActivityService getDataflowActivityService() { return this.activityService ;  }
+  
   public SourceFactory getSourceFactory() { return sourceFactory; }
 
   public SinkFactory getSinkFactory() { return sinkFactory; }
@@ -50,28 +58,21 @@ public class DataflowService {
   }
   
   public void run() throws Exception {
-    onInit() ;
-    onRunning() ;
-    onFinish();
-  }
-  
-  void onInit() throws Exception {
     System.err.println("onInit.....................");
     workerListener = new VMWaitingEventListener(dataflowRegistry.getRegistry());
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
     
     assignedDataflowTaskListener = new AssignedDataflowTaskListener(dataflowRegistry);
     
-    new DataflowServiceInititializer().onInit(this);
-  }
-  
-  void onRunning() throws Exception {
+    DataflowInitActivityBuilder dataflowInitActivityBuilder = new DataflowInitActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+    ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
+    coordinator.waitForTermination(60000);
+    
     System.err.println("onRunning.....................");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
     workerListener.waitForEvents(5 * 60 * 1000);
-  }
-  
-  void onFinish() throws Exception {
+    
+    //finish
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
   }
 }

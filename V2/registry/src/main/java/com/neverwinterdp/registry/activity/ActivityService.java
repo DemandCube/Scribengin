@@ -19,12 +19,19 @@ public class ActivityService {
   private Node     activeNode;
   private Node     historyNode;
   
+  public ActivityService() { }
+  
   public ActivityService(Injector container, String activityPath) throws RegistryException {
+    init(container, activityPath);
+  }
+
+  protected void init(Injector container, String activityPath) throws RegistryException {
     this.container = container;
     registry     = container.getInstance(Registry.class) ;
     activeNode  = registry.createIfNotExist(activityPath + "/active") ;
     historyNode = registry.createIfNotExist(activityPath + "/history") ;
   }
+
   
   public <T extends ActivityCoordinator> T getActivityCoordinator(String type) throws Exception {
     return container.getInstance((Class<T>)Class.forName(type));
@@ -41,6 +48,14 @@ public class ActivityService {
   public Activity create(ActivityBuilder builder) throws RegistryException {
     return create(builder.getActivity(), builder.getActivitySteps());
   }
+ 
+  public ActivityCoordinator start(ActivityBuilder builder) throws Exception {
+    Activity activity = create(builder.getActivity(), builder.getActivitySteps());
+    ActivityCoordinator coordinator = getActivityCoordinator(activity.getCoordinator());
+    coordinator.onStart(this, activity);
+    return coordinator;
+  }
+ 
   
   public Activity create(Activity activity, List<ActivityStep> activitySteps) throws RegistryException {
     Node activityNode = activeNode.createChild(activity.getType() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
