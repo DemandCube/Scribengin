@@ -103,9 +103,4 @@ class Cluster(ServerSet):
   def cleanHadoopWorker(self):
     return self.cleanProcess("hadoop-worker")
     
-  def report(self) : 
-    """
-    Prints out report
-    """
-    for server in self.servers :
-      server.report();
+  

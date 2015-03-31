@@ -15,23 +15,42 @@ class ClusterIntegrationTest(unittest.TestCase):
   """
   def test_LaunchCluster(self):
     cluster = Cluster.Cluster()
+    
     cluster.report()
+    print "\n"
+    cluster.reportProcess("kafka")
+    print "\n"
+    cluster.reportProcess("zookeeper")
+    print "\n"
+    
     
     print "Clean ZK and Kafka"
     cluster.cleanZookeeper()
     cluster.cleanKafka()
+    
     
     print "Start ZK"
     cluster.startZookeepers()
     print "Start Kafka"
     cluster.startKafka()
     sleep(5)
+    
+    cluster.report()
+    print "\n"
+    cluster.reportProcess("kafka")
+    print "\n"
+    cluster.reportProcess("zookeeper")
+    print "\n"
+    
     self.assertTrue(cluster.isProcessRunning("zookeeper"))
     self.assertTrue(cluster.isProcessRunning("kafka"))
     
+    cluster.report()
+    print "\n"
     cluster.reportProcess("kafka")
+    print "\n"
     cluster.reportProcess("zookeeper")
-    
+    print "\n"
     
     print "Shutdown ZK"
     cluster.shutdownZookeepers()
@@ -47,6 +66,15 @@ class ClusterIntegrationTest(unittest.TestCase):
     self.assertFalse(cluster.isProcessRunning("kafka"))
     cluster.cleanZookeeper()
     cluster.cleanKafka()
+    
+    cluster.report()
+    print "\n"
+    cluster.reportProcess("kafka")
+    print "\n"
+    cluster.reportProcess("zookeeper")
+    print "\n"
+    
+    
     
     print "Start ZK"
     cluster.startZookeepers()

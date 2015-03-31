@@ -1,13 +1,14 @@
-import paramiko
 from Process import KafkaProcess,ZookeeperProcess,HadoopMasterProcess,HadoopWorkerProcess
 from os.path import expanduser, join
+from tabulate import tabulate
+
 
 class Server(object):
-  def __init__(self, hostname, defaultSSHKeyPath=join(expanduser("~"),".ssh/id_rsa")):
+  def __init__(self, hostname, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.hostname = hostname 
     self.role = 'unknown' 
     self.processes = {} 
-    self.defaultSSHKeyPath=defaultSSHKeyPath
+    self.sshKeyPath=sshKeyPath
         
   def getHostname(self):
     return self.hostname;
@@ -23,17 +24,25 @@ class Server(object):
     
   def getProcesses(self):
     return self.processes
+  
+  def getReportDict(self):
+    procDict= {}
+    
+    for key in self.processes:
+      procDict["ProcName"]=self.processes[key].getName()  
+      procDict["isRunning"] = str(self.processes[key].isRunning())
+      
+    return dict({
+            "hostname" : self.hostname,
+            "sshKeyPath" : self.sshKeyPath,
+            "role"     : self.role,
+            "Num processess": len(self.processes.keys())}.items() + procDict.items())
+                
     
   def report(self):
-    print('Hostname : ' + self.hostname)
-    print('  Processes: ')
-    for key in self.processes:
-      process = self.processes[key]
-      print ('    ', process.getName(), 'running = false')
+    report = self.getReportDict()
+    print tabulate([report.values()] )
 
-
-  
-  
   
 class KafkaServer(Server):
   def __init__(self, hostname):

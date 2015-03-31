@@ -16,30 +16,30 @@ class ProcessIntegrationTest(unittest.TestCase):
     """
     Ensures kafka can be started and stopped successfully
     """
-    x = Process.KafkaProcess("kafka-1")
-    self.StartingStoppingKillProcesses(x)
+    proc = Process.KafkaProcess("kafka-1")
+    self.StartingStoppingKillProcesses(proc)
   
   def test_ZookeeperProcess(self):
     """
     Ensures Zookeeper can be started and stopped successfully
     """
-    x = Process.ZookeeperProcess("zookeeper-1")
-    self.StartingStoppingKillProcesses(x)
+    proc = Process.ZookeeperProcess("zookeeper-1")
+    self.StartingStoppingKillProcesses(proc)
   
   def test_HadoopWorkerProcess(self):
     """
     Ensures Hadoop worker processes can be started and stopped successfully
     """
-    x = Process.HadoopWorkerProcess("hadoop-worker-1")
-    #self.StartingStoppingKillProcesses(x)
+    proc = Process.HadoopWorkerProcess("hadoop-worker-1")
+    #self.StartingStoppingKillProcesses(proc)
     #TODO: Implement the test
   
   def test_HadoopMasterProcess(self):
     """
     Ensures Hadoop Master Processes can be started and stopped successfully
     """
-    x = Process.HadoopMasterProcess("hadoop-master")
-    #self.StartingStoppingKillProcesses(x)
+    proc = Process.HadoopMasterProcess("hadoop-master")
+    #self.StartingStoppingKillProcesses(proc)
     #TODO: Implement the test
     
   def StartingStoppingKillProcesses(self, process):
@@ -48,15 +48,18 @@ class ProcessIntegrationTest(unittest.TestCase):
     print "Started: "+process.getRunningPid()
     self.assertTrue(re.match("\d+",  process.getRunningPid()) is not None)
     self.assertTrue(process.isRunning() is True)
+    process.report()
     
-    sleep(10)
+    
+    sleep(5)
     print "Clean Shutdown"
     process.shutdown()
     sleep(5)
     print "Shutdown Complete: "+process.getRunningPid()
     self.assertTrue(re.match("\d+",  process.getRunningPid()) is None)
     self.assertTrue(process.isRunning() is False)
-    
+    process.report()
+  
     sleep(5)
     
     process.clean()
@@ -66,6 +69,7 @@ class ProcessIntegrationTest(unittest.TestCase):
     print "Started: "+process.getRunningPid()
     self.assertTrue(re.match("\d+",  process.getRunningPid()) is not None)
     self.assertTrue(process.isRunning() is True)
+    process.report()
     
     sleep(10)
     print "Killing"
@@ -73,15 +77,15 @@ class ProcessIntegrationTest(unittest.TestCase):
     print "Killed: "+process.getRunningPid()
     self.assertTrue(re.match("\d+",  process.getRunningPid()) is None)
     self.assertTrue(process.isRunning() is False)
-    
+    process.report()
     
   def test_NonRunningProcess(self):
     """
     Ensures a process that can't be running returns all the correct values
     """
-    x = NonRunningProcess("kafka-1")
-    self.assertTrue(re.match("\d+",  x.getRunningPid()) is None)
-    self.assertTrue(x.isRunning() is False)
+    nrp = NonRunningProcess("kafka-1")
+    self.assertTrue(re.match("\d+",  nrp.getRunningPid()) is None)
+    self.assertTrue(nrp.isRunning() is False)
 
 class NonRunningProcess(Process.Process):
   def __init__(self, hostname):
