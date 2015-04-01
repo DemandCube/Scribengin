@@ -4,8 +4,8 @@ import paramiko
 
 
 class Process(object):
-  def __init__(self, name, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
-    self.name = name ;
+  def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
+    self.role = role ;
     self.hostname = hostname;
     self.homeDir = homeDir;
     self.processIdentifier = processIdentifier;
@@ -29,13 +29,16 @@ class Process(object):
     return stdout,stderr
   
   def getReportDict(self):
+    running = "Running"
+    if not self.isRunning():
+      running = "None"
+      
     return  {
-            "name" : self.name,
-            "hostname": self.hostname,
-            "homeDir" : self.homeDir,
-            "processIdentifier" : self.processIdentifier,
-            "sshKeyPath" : self.sshKeyPath,
-            "isRunning" : str(self.isRunning()),
+            "Role" : self.role,
+            "Hostname": self.hostname,
+            "HomeDir" : self.homeDir,
+            "ProcessIdentifier" : self.processIdentifier,
+            "Status" : running,
             "processID" : self.getRunningPid()
             }
   
@@ -50,8 +53,8 @@ class Process(object):
   def isRunning(self):
     return len(self.getRunningPid()) > 0
   
-  def getName(self):
-    return self.name
+  def getRole(self):
+    return self.role
     
   def kill(self):
     self.sshExecute("kill -9 "+self.getRunningPid())
@@ -60,6 +63,15 @@ class Process(object):
     command = "ps ax | grep -i '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
     stdout,stderr = self.sshExecute(command)
     return stdout.strip()
+  
+  def start(self):
+    pass
+  
+  def shutdown(self):
+    pass
+  
+  def clean(self):
+    pass
   
 
 ############

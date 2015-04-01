@@ -1,7 +1,8 @@
 from tabulate import tabulate
+
 class ServerSet(object):
   def __init__(self, name):
-    self.name = name 
+    self.role = name 
     self.servers = []
     
   def clear(self):
@@ -9,30 +10,43 @@ class ServerSet(object):
      
   def addServer(self, server):
     self.servers.append(server)
-   
+  
+  def startProcessOnHost(self, processName, hostname):
+    for server in self.servers :
+      if server.getHostname() == hostname:
+        server.startProcess(processName)
+    
+  def cleanProcessOnHost(self, processName, hostname):
+    for server in self.servers :
+      if server.getHostname() == hostname:
+        server.cleanProcess(processName)
+  
+  def shutdownProcessOnHost(self, processName, hostname):
+    for server in self.servers :
+      if server.getHostname() == hostname:
+        server.shutdownProcess(processName)
+  
+  def killProcessOnHost(self, processName, hostname):
+    for server in self.servers :
+      if server.getHostname() == hostname:
+        server.killProcess(processName)
+  
+  
   def startProcess(self, processName):
     for server in self.servers :
-      process = server.getProcess(processName)
-      if process is not None:
-        process.start()
+      server.startProcess(processName)
     
   def cleanProcess(self, processName):
     for server in self.servers :
-      process = server.getProcess(processName)
-      if process is not None:
-        process.clean()
+      server.cleanProcess(processName)
   
   def shutdownProcess(self, processName):
     for server in self.servers :
-      process = server.getProcess(processName)
-      if process is not None:
-        process.shutdown()
+      server.shutdownProcess(processName)
   
   def killProcess(self, processName):
     for server in self.servers :
-      process = server.getProcess(processName)
-      if process is not None:
-        process.kill()
+      server.killProcess(processName)
     
   def isProcessRunning(self, processName):
     for server in self.servers :
@@ -41,6 +55,12 @@ class ServerSet(object):
         pass
       elif process.isRunning():
         return True
+    return False
+  
+  def isProcessRunningOnHost(self, processName, hostname):
+    for server in self.servers :
+      if server.getHostname() == hostname:
+        return server.getProcess(processName).isRunning()
     return False
         
   def getNumServers(self):
