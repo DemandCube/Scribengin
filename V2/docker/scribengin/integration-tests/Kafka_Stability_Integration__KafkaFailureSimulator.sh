@@ -32,7 +32,7 @@ sleep 10
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/results/FAILURE_TEST_failure_simulator.xml ./
 
 echo "du -a is now running:"
-du -a /
+du -a / | sort -nr
 
 #Clean up
 ./docker.sh container clean || true
