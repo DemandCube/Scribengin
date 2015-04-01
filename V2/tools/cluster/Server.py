@@ -17,7 +17,7 @@ class Server(object):
     return self.role ;
     
   def addProcess(self, process):
-    self.processes[process.getName()] =  process
+    self.processes[process.getRole()] =  process
     
   def getProcess(self, name):
     return self.processes.get(name, None)
@@ -25,17 +25,50 @@ class Server(object):
   def getProcesses(self):
     return self.processes
   
+  def startProcess(self, processName):
+    for key in self.processes:
+      if processName == self.processes[key].getRole():
+        self.processes[key].start()
+  
+  def shutdownProcess(self, processName):
+    for key in self.processes:
+      if processName == self.processes[key].getRole():
+        self.processes[key].shutdown()
+  
+  def cleanProcess(self, processName):
+    for key in self.processes:
+      if processName == self.processes[key].getRole():
+        self.processes[key].clean()
+  
+  def killProcess(self, processName):
+    for key in self.processes:
+      if processName == self.processes[key].getRole():
+        self.processes[key].kill()
+  
+  def startProcesses(self):
+    for key in self.processes:
+      self.processes[key].start()
+  
+  def shutdownProcesses(self):
+    for key in self.processes:
+      self.processes[key].shutdown()
+  
+  def killProcesses(self):
+    for key in self.processes:
+      self.processes[key].kill()
+  
   def getReportDict(self):
     procDict= {}
     
     for key in self.processes:
-      procDict["ProcName"]=self.processes[key].getName()  
-      procDict["isRunning"] = str(self.processes[key].isRunning())
+      running = "Running"
+      if not self.processes[key].isRunning():
+        running = "None"  
+      procDict["Status"] = running
       
     return dict({
-            "hostname" : self.hostname,
-            "sshKeyPath" : self.sshKeyPath,
-            "role"     : self.role,
+            "Hostname" : self.hostname,
+            "Role"     : self.role,
             "Num processess": len(self.processes.keys())}.items() + procDict.items())
                 
     
