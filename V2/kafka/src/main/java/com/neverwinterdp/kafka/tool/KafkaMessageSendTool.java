@@ -112,6 +112,7 @@ public class KafkaMessageSendTool implements Runnable {
         "--time", "-1",
     };
     System.out.println();
+    System.out.println("Offset counts.");
     System.out.println("Topic:Partition:Offset");
     kafka.tools.GetOffsetShell.main(args2);
   }
