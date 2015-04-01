@@ -81,7 +81,7 @@ public class MessageTracker {
       partitionTracker.dump(out, "Tracking message for the partition " + partition);
     }
     out.append("\nLog Count: " + getLogCount() + "\n");
-  }
+}
 
   //prefer using details for each partitionTracker for a thorough report
   public void junitReport(String junitReport) {
