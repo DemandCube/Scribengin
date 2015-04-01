@@ -85,12 +85,18 @@ public class KafkaDataflowUnitTest {
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        String command = 
-          "dataflow-test kafka " + 
-          "  --worker 3 --executor-per-worker 1 --duration 90000 --task-max-execute-time 1000" +
-          "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 10000" + 
-          "  --sink-name output "+
-          "  --junit-report build/tap.xml";
+        String command =
+            "dataflow-test kafka " +
+                "  --worker 3" +
+                " --executor-per-worker 1" +
+                " --duration 90000" +
+                " --task-max-execute-time 1000" +
+                "  --source-name input" +
+                " --source-num-of-stream 10" +
+                " --source-write-period 5" +
+                " --source-max-records-per-stream 10000" +
+                "  --sink-name output " +
+                "--junit-report build/junit-report.xml";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
