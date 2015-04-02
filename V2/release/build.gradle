@@ -103,7 +103,8 @@ dependencies {
   scribenginDeployJars group: 'org.scala-lang', name: 'scala-library', version: '2.10.4'
   scribenginDeployJars group: 'org.tap4j', name: 'tap4j', version: '4.1'
   scribenginDeployJars group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '3.2'
-
+  scribenginDeployJars group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.1.6'
+  
 
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
