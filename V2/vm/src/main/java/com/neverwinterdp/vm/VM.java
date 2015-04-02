@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.JCommander;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Stage;
+import com.mycila.guice.ext.closeable.CloseableInjector;
+import com.mycila.guice.ext.closeable.CloseableModule;
+import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -60,6 +64,8 @@ public class VM {
     init();
   }
   
+  public Injector getVMContainer() { return this.vmContainer ; }
+  
   private Injector createVMContainer(final VMConfig vmConfig) {
     logger.info("Start createVMContainer(...)");
     Map<String, String> props = new HashMap<String, String>();
@@ -67,10 +73,12 @@ public class VM {
     AppModule module = new AppModule(props) {
       @Override
       protected void configure(Map<String, String> props) {
-        bindInstance(VMConfig.class, vmConfig);
-        RegistryConfig rConfig = vmConfig.getRegistryConfig();
-        bindInstance(RegistryConfig.class, rConfig);
         try {
+          bindInstance(VMConfig.class, vmConfig);
+          //bindInstance(VMDescriptor.class, descriptor);
+          RegistryConfig rConfig = vmConfig.getRegistryConfig();
+          bindInstance(RegistryConfig.class, rConfig);
+
           bindType(Registry.class, rConfig.getRegistryImplementation());
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
@@ -78,7 +86,7 @@ public class VM {
       }
     };
     logger.info("Finish createVMContainer(...)");
-    return Guice.createInjector(module);
+    return Guice.createInjector(Stage.PRODUCTION, new CloseableModule(),new Jsr250Module(), module);
   }
   
   public VMStatus getVMStatus() { return this.vmStatus ; }
@@ -133,6 +141,8 @@ public class VM {
             vmApplicationRunner.interrupt();
           }
         } catch (InterruptedException e) {
+        } finally {
+          vmContainer.getInstance(CloseableInjector.class).close();
         }
       }
     };

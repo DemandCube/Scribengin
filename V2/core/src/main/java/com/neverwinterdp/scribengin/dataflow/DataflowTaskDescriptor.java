@@ -9,13 +9,13 @@ import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 public class DataflowTaskDescriptor {
   static public enum Status { INIT, PROCESSING, SUSPENDED, TERMINATED }
 
-  private int                               id;
-  private Status                            status = Status.INIT;
-  private String                            scribe;
-  private StreamDescriptor            streamDescriptor;
+  private int                           id;
+  private Status                        status = Status.INIT;
+  private String                        scribe;
+  private StreamDescriptor              streamDescriptor;
   private Map<String, StreamDescriptor> sinkStreamDescriptors;
-  private String                            storedPath;
-  
+  private String                        storedPath;
+
   public int getId() { return id; }
   public void setId(int id) { this.id = id; }
 

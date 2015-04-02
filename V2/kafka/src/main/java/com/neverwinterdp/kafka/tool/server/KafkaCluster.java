@@ -1,6 +1,7 @@
 package com.neverwinterdp.kafka.tool.server;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.neverwinterdp.tool.server.Server;
 import com.neverwinterdp.util.FileUtil;
@@ -17,7 +18,8 @@ public class KafkaCluster {
   public KafkaCluster(String serverDir, int numOfZkInstances, int numOfKafkaInstances) throws Exception {
     FileUtil.removeIfExist(serverDir, false);
     zkServers = new EmbededZKServerSet(serverDir + "/zookeeper", 2181, numOfZkInstances);
-    kafkaServers = new EmbededKafkaServerSet(serverDir + "/kafka", 9092, numOfKafkaInstances, new HashMap<String, String>());
+    Map<String, String> kafkaProps = new HashMap<String, String>() ;
+    kafkaServers = new EmbededKafkaServerSet(serverDir + "/kafka", 9092, numOfKafkaInstances, kafkaProps);
   }
 
   public KafkaCluster setVerbose(boolean b) {

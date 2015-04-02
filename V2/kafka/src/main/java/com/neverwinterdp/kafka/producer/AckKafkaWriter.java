@@ -13,6 +13,8 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.neverwinterdp.util.JSONSerializer;
+
 /**
  * @author Tuan Nguyen
  * @email tuan08@gmail.com

@@ -44,6 +44,7 @@ public class KafkaDataflowTest extends DataflowTest {
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     shell.console().println("Finish submitting the dataflow descriptor!!!");
     shell.console().println("Wait time to finish: " + duration + "ms");
+    
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     waitingEventListener.waitForEvents(duration);

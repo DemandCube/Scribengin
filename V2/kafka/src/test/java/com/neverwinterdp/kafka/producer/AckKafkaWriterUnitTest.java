@@ -30,6 +30,7 @@ public class AckKafkaWriterUnitTest {
       "--producer:topic.metadata.refresh.interval.ms=-1",
       "--producer:batch.num.messages=100",
       "--producer:acks=all",
+      "--producer:compression.type=gzip",
 
       "--consume-max-duration", "300000", "--consume-batch-fetch", "1000"
   };

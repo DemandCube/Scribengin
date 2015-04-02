@@ -5,16 +5,20 @@ import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
+import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskEvent;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowInitActivityBuilder;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowRunActivityBuilder;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskWorkerEvent;
 import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 @Singleton
 @JmxBean("role=dataflow-master, type=DataflowService, name=DataflowService")
@@ -34,9 +38,9 @@ public class DataflowService {
   @Inject
   private DataflowActivityService activityService;
   
-  private VMWaitingEventListener workerListener ;
+  private DataflowTaskMonitor dataflowTaskMonitor;
   
-  private AssignedDataflowTaskListener assignedDataflowTaskListener;
+  private DataflowTaskMasterEventListenter masterEventListener ;
   
   public VMConfig getVMConfig() { return this.vmConfig ; }
   
@@ -54,25 +58,65 @@ public class DataflowService {
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     dataflowRegistry.addWorker(vmDescriptor);
-    workerListener.waitHeartbeat("Wait for " + vmDescriptor.getId(), vmDescriptor.getId(), false);
   }
   
   public void run() throws Exception {
-    System.err.println("onInit.....................");
-    workerListener = new VMWaitingEventListener(dataflowRegistry.getRegistry());
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
-    
-    assignedDataflowTaskListener = new AssignedDataflowTaskListener(dataflowRegistry);
-    
+    masterEventListener = new DataflowTaskMasterEventListenter(dataflowRegistry);
     DataflowInitActivityBuilder dataflowInitActivityBuilder = new DataflowInitActivityBuilder(dataflowRegistry.getDataflowDescriptor());
     ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
     coordinator.waitForTermination(60000);
+    executeRunActivity();
+  }
+  
+  private void executeRunActivity() throws Exception {
+    System.err.println("execute RUN activity");
     
-    System.err.println("onRunning.....................");
+    dataflowTaskMonitor = new DataflowTaskMonitor(dataflowRegistry);
+    
+    DataflowRunActivityBuilder dataflowInitActivityBuilder = new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+    ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
+    coordinator.waitForTermination(60000);
+    
+    System.err.println("DataflowService: RUNNING");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
-    workerListener.waitForEvents(5 * 60 * 1000);
     
+    dataflowTaskMonitor.waitForAllTaskFinish();
     //finish
+    System.err.println("DataflowService: FINISH");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
+  }
+  
+  public void stopWorkers() throws Exception {
+    dataflowRegistry.setDataflowTaskWorkerEvent(DataflowTaskWorkerEvent.STOP);
+  }
+  
+  public void startWorkers() throws Exception {
+    DataflowRunActivityBuilder dataflowInitActivityBuilder = 
+      new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+    ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
+    //coordinator.waitForTermination(60000);
+  }
+  
+  public class DataflowTaskMasterEventListenter extends NodeEventWatcher {
+    public DataflowTaskMasterEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
+      super(dflRegistry.getRegistry(), true/*persistent*/);
+      watchModify(dflRegistry.getDataflowTasksMasterEventNode().getPath());
+    }
+
+    @Override
+    public void processNodeEvent(NodeEvent event) throws Exception {
+      if(event.getType() == NodeEvent.Type.MODIFY) {
+        DataflowTaskEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowTaskEvent.class);
+        if(taskEvent == DataflowTaskEvent.PAUSE) {
+          stopWorkers();
+        } else if(taskEvent == DataflowTaskEvent.STOP) {
+          stopWorkers();
+        } else if(taskEvent == DataflowTaskEvent.RESUME) {
+          startWorkers();
+        }
+      }
+      System.out.println("event = " + event.getType() + ", path = " + event.getPath());
+    }
   }
 }

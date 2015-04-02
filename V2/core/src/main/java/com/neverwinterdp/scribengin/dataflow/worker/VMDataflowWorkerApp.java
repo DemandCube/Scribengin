@@ -29,9 +29,7 @@ public class VMDataflowWorkerApp extends VMApp {
   private Logger logger = LoggerFactory.getLogger(VMDataflowWorkerApp.class) ;
   
   private DataflowContainer container;
-  private DataflowTaskExecutorManager dataflowTaskExecutorManager;
-  
-  public DataflowTaskExecutorManager getDataflowWorker() { return this.dataflowTaskExecutorManager; }
+  private DataflowTaskExecutorService dataflowTaskExecutorService;
   
   @Override
   public void run() throws Exception {
@@ -41,19 +39,17 @@ public class VMDataflowWorkerApp extends VMApp {
       protected void configure(Map<String, String> properties) {
         Registry registry = getVM().getVMRegistry().getRegistry();
         bindInstance(RegistryConfig.class, registry.getRegistryConfig());
+        bindType(Registry.class, registry.getClass());
         bindInstance(VMDescriptor.class, getVM().getDescriptor());
         try {
-          bindType(Registry.class, registry.getClass().getName());
-          FileSystem fs = null; 
           VMConfig.Environment env = vmConfig.getEnvironment();
           if(env == VMConfig.Environment.YARN || env == VMConfig.Environment.YARN_MINICLUSTER) {
             YarnConfiguration conf = new YarnConfiguration();
             vmConfig.overrideHadoopConfiguration(conf);
-            fs = FileSystem.get(conf) ;
+            bindInstance(FileSystem.class, FileSystem.get(conf));
           } else {
-            fs = FileSystem.getLocal(new Configuration());
+            bindInstance(FileSystem.class, FileSystem.getLocal(new Configuration()));
           }
-          bindInstance(FileSystem.class, fs);
         } catch (Exception e) {
           logger.error("Error:", e);;
         }
@@ -65,25 +61,26 @@ public class VMDataflowWorkerApp extends VMApp {
       module
     };
     Injector injector = Guice.createInjector(Stage.PRODUCTION, modules);
+    //Injector injector = getVM().getVMContainer().createChildInjector(module);
     container = injector.getInstance(DataflowContainer.class);
-    dataflowTaskExecutorManager = container.getDataflowTaskExecutorManager();
+    dataflowTaskExecutorService = container.getDataflowTaskExecutorManager();
     try {
       this.addListener(new VMApp.EventListener() {
         @Override
         public void onEvent(VMApp vmApp, Event event) {
           try {
             if(event == Event.Shutdown) {
-              dataflowTaskExecutorManager.shutdown();
+              dataflowTaskExecutorService.shutdown();
             }
           } catch (Exception e) {
             e.printStackTrace();
           }
         }
       });
-      dataflowTaskExecutorManager.waitForExecutorTermination(5000);
+      dataflowTaskExecutorService.waitForExecutorTermination(5000);
     } catch(InterruptedException ex) {
     } finally {
-      dataflowTaskExecutorManager.shutdown();
+      dataflowTaskExecutorService.shutdown();
       container.getInstance(CloseableInjector.class).close();
     }
   }

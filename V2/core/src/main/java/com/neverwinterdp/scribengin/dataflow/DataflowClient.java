@@ -8,25 +8,29 @@ import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowClient {
   private ScribenginClient scribenginClient ;
-  private DataflowRegistry dataflowRegistry ;
+  private DataflowRegistry dflRegistry ;
   
   public DataflowClient(ScribenginClient scribenginClient, String dataflowPath) throws Exception {
     this.scribenginClient = scribenginClient;
-    this.dataflowRegistry = new DataflowRegistry(scribenginClient.getRegistry(), dataflowPath) ;
+    this.dflRegistry = new DataflowRegistry(scribenginClient.getRegistry(), dataflowPath) ;
   }
   
   public ScribenginClient getScribenginClient() { return this.scribenginClient; }
   
   
   public VMDescriptor getDataflowMaster() throws RegistryException { 
-    return dataflowRegistry.getDataflowMaster() ;
+    return dflRegistry.getDataflowMaster() ;
   }
   
   public List<VMDescriptor> getDataflowMasters() throws RegistryException {
-    return dataflowRegistry.getDataflowMasters();
+    return dflRegistry.getDataflowMasters();
   }
   
   public List<VMDescriptor> getDataflowWorkers() throws RegistryException {
-    return dataflowRegistry.getWorkers();
+    return dflRegistry.getActiveWorkers();
+  }
+  
+  public void setDataflowTaskEvent(DataflowTaskEvent event) throws RegistryException {
+    dflRegistry.setDataflowTaskMasterEvent(event);
   }
 }

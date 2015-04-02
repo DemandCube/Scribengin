@@ -1,5 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 public enum DataflowLifecycleStatus { 
-  INIT, RUNNING, FINISH 
+  INIT, RUNNING, STOP, PAUSE, FINISH 
 }

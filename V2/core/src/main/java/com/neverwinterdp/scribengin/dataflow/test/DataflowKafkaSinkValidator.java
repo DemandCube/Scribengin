@@ -68,6 +68,7 @@ public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
       "--topic",                  sinkName, 
       "--num-partition",          Integer.toString(5),
       "--consume-max",            Long.toString(expectRecords),
+      "--consume-retries",        "5",
       "--zk-connect",             zkConnect
     };
     KafkaMessageCheckTool kafkaMessageCheckTool = new KafkaMessageCheckTool(args);

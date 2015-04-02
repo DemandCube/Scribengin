@@ -7,41 +7,37 @@ import java.util.Map;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.event.NodeEventListener;
-import com.neverwinterdp.registry.event.NodeChildrenListener;
+import com.neverwinterdp.registry.event.NodeChildrenWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
-import com.neverwinterdp.scribengin.event.ScribenginEvent;
 
-public class AssignedDataflowTaskListener extends NodeChildrenListener<ScribenginEvent> {
-  private Map<String, DataflowTaskHeartbeatListener> assignedTaskListeners = new HashMap<>();
+public class DataflowTaskMonitor extends NodeChildrenWatcher {
   private DataflowRegistry dataflowRegistry ;
+  private Map<String, DataflowTaskHeartbeatListener> assignedTaskListeners = new HashMap<>();
+  private int finishedTaskCount = 0 ;
+  private int numOfTasks = 0;
   
-  public AssignedDataflowTaskListener(DataflowRegistry dataflowRegistry) throws RegistryException {
-    super(dataflowRegistry.getRegistry(), true);
-    this.dataflowRegistry = dataflowRegistry;
-    watchChildren(dataflowRegistry.getTasksAssignedPath());
+  public DataflowTaskMonitor(DataflowRegistry dflRegistry) throws RegistryException {
+    super(dflRegistry.getRegistry(), true);
+    this.dataflowRegistry = dflRegistry;
+    finishedTaskCount = dflRegistry.getTasksFinishedNode().getChildren().size() ;
+    numOfTasks = dflRegistry.getTaskDescriptors().size();
+    watchChildren(dflRegistry.getTasksAssignedPath());
   }
 
   @Override
-  public ScribenginEvent toAppEvent(Registry registry, NodeEvent nodeEvent) throws Exception {
-    ScribenginEvent appEvent = new ScribenginEvent("assigned-tasks", nodeEvent);
-    return appEvent;
-  }
-
-  @Override
-  public void onEvent(ScribenginEvent event) throws Exception {
-    NodeEvent nodeEvent = event.getNodeEvent();
+  public void processNodeEvent(NodeEvent nodeEvent) throws Exception {
     if(nodeEvent.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
-      onChildrenChange(event) ;
+      onChildrenChange(nodeEvent) ;
     } else if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
     } else {
       System.err.println("unhandle assigned dataflow task event: " + nodeEvent.getPath() + " - " + nodeEvent.getType());
     }
   }
   
-  synchronized public void onChildrenChange(ScribenginEvent event) {
+  synchronized public void onChildrenChange(NodeEvent event) {
     try {
       Registry registry = getRegistry();
       List<String> assignedTaskNames = registry.getChildren(dataflowRegistry.getTasksAssignedPath());
@@ -66,12 +62,33 @@ public class AssignedDataflowTaskListener extends NodeChildrenListener<Scribengi
     DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(assignedTaskNode.getName());
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
     if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
-      dataflowRegistry.dataflowTaskSuspend(descriptor);
-      System.err.println("    detect unfinished task: " + assignedTaskNode.getName() + ", status = " + status);
+      onFailDataflowTask(descriptor);
+    } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+      onFinishDataflowTask(descriptor);
     }
   }
   
-  public class DataflowTaskHeartbeatListener extends NodeEventListener<ScribenginEvent> {
+  public void onFailDataflowTask(DataflowTaskDescriptor descriptor) throws RegistryException {
+    DataflowTaskDescriptor.Status status = descriptor.getStatus();
+    //Move the dataflow task to suspend so another worker can pickup the task
+    dataflowRegistry.dataflowTaskSuspend(descriptor);
+    System.err.println("    detect failed task: " + descriptor.getStoredPath() + ", status = " + status);
+  }
+  
+  synchronized public void onFinishDataflowTask(DataflowTaskDescriptor descriptor) throws RegistryException {
+    DataflowTaskDescriptor.Status status = descriptor.getStatus();
+    System.err.println("    detect finish task: " + descriptor.getStoredPath() + ", status = " + status);
+    finishedTaskCount++ ;
+    if(numOfTasks == finishedTaskCount) {
+      notifyAll() ;
+    }
+  }
+ 
+  synchronized public void waitForAllTaskFinish() throws InterruptedException {
+    wait() ;
+  }
+  
+  public class DataflowTaskHeartbeatListener extends NodeEventWatcher {
     public DataflowTaskHeartbeatListener(DataflowRegistry dataflowRegistry, String taskName) throws RegistryException {
       super(dataflowRegistry.getRegistry(), true);
       String heartbeatPath = dataflowRegistry.getTasksAssignedPath() + "/" + taskName + "/heartbeat";
@@ -79,14 +96,7 @@ public class AssignedDataflowTaskListener extends NodeChildrenListener<Scribengi
     }
     
     @Override
-    public ScribenginEvent toAppEvent(Registry registry, NodeEvent nodeEvent) throws Exception {
-      ScribenginEvent appEvent = new ScribenginEvent("assigned-task-heartbeat", nodeEvent);
-      return appEvent;
-    }
-
-    @Override
-    public void onEvent(ScribenginEvent event) throws Exception {
-      NodeEvent nodeEvent = event.getNodeEvent();
+    public void processNodeEvent(NodeEvent nodeEvent) throws Exception {
       if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
         removeHeartbeatListener(nodeEvent.getPath());
         setComplete();

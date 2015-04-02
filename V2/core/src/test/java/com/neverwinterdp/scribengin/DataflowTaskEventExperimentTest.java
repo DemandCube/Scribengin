@@ -11,12 +11,12 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskEvent;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class KafkaDataflowUnitTest {
+public class DataflowTaskEventExperimentTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
@@ -57,28 +57,28 @@ public class KafkaDataflowUnitTest {
       
       shell.execute("registry   dump");
       
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
-      Assert.assertEquals("hello-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
-      Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
+      DataflowClient dflClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
+      Assert.assertEquals("hello-kafka-dataflow-master-1", dflClient.getDataflowMaster().getId());
+      Assert.assertEquals(1, dflClient.getDataflowMasters().size());
       
-      VMClient vmClient = scribenginClient.getVMClient();
-      List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
+      List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
       Assert.assertEquals(3, dataflowWorkers.size());
-      vmClient.shutdown(dataflowWorkers.get(1));
-      Thread.sleep(2000);
-      shell.execute("registry   dump");
-      submitter.waitForTermination(300000);
+      
+      dflClient.setDataflowTaskEvent(DataflowTaskEvent.STOP);
+      Thread.sleep(5000);
+      shell.execute("registry dump");
+      dflClient.setDataflowTaskEvent(DataflowTaskEvent.RESUME);
+      Thread.sleep(5000);
+      shell.execute("registry dump");
+      submitter.waitForTermination(60000);
       
       Thread.sleep(3000);
-      shell.execute("vm         info");
-      shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-kafka-dataflow-0");
-      shell.execute("registry   dump");
+      shell.execute("vm info");
     } catch(Throwable err) {
       throw err;
     } finally {
+      shell.execute("registry dump");
       if(submitter.isAlive()) submitter.interrupt();
-      //Thread.sleep(100000000);
     }
   }
   
@@ -95,10 +95,6 @@ public class KafkaDataflowUnitTest {
       } catch(Exception ex) {
         ex.printStackTrace();
       }
-    }
-    
-    synchronized void notifyTermimation() {
-      notify();
     }
     
     synchronized void waitForTermination(long timeout) throws InterruptedException {

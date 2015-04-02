@@ -57,9 +57,9 @@ public class DataflowCommand extends Command {
       console.print(reportList.format("Report", "  "));
       
       console.println("Workers:\n");
-      List<String> workers = dRegistry.getWorkerNames();
+      List<String> workers = dRegistry.getActiveWorkerNames();
       for(String worker : workers) {
-        List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getExecutors(worker);
+        List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getActiveExecutors(worker);
         console.println("\n  Worker: " + worker + "\n");
         Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
         console.println(executorList.format("Executors", "    "));

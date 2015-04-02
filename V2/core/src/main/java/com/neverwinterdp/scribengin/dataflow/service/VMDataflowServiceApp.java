@@ -20,6 +20,7 @@ import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
+import com.neverwinterdp.vm.VMDescriptor;
 
 
 public class VMDataflowServiceApp extends VMApp {
@@ -56,9 +57,10 @@ public class VMDataflowServiceApp extends VMApp {
         AppModule module = new AppModule(vmConfig.getProperties()) {
           @Override
           protected void configure(Map<String, String> properties) {
-            bindInstance(VMConfig.class, vmConfig);
-            bindInstance(RegistryConfig.class, registry.getRegistryConfig());
             try {
+              bindInstance(VMConfig.class, vmConfig);
+              bindInstance(RegistryConfig.class, registry.getRegistryConfig());
+              bindInstance(VMDescriptor.class, getVM().getDescriptor());
               bindType(Registry.class, registry.getClass().getName());
               Configuration conf = new Configuration();
               vmConfig.overrideHadoopConfiguration(conf);
@@ -80,6 +82,7 @@ public class VMDataflowServiceApp extends VMApp {
         };
         appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
         dataflowService = appContainer.getInstance(DataflowService.class);
+        
         serviceRunnerThread = new ServiceRunnerThread(dataflowService);
         serviceRunnerThread.start();
       } catch(Exception e) {

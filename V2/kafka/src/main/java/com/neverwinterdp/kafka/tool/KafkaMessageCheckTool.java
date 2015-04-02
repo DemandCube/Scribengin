@@ -123,7 +123,7 @@ public class KafkaMessageCheckTool implements Runnable {
       } else {
         cannotReadCount = 0;
       }
-      if(cannotReadCount >= 5) interrupt = true;
+      if(cannotReadCount >= topicConfig.consumerConfig.consumeRetries) interrupt = true;
       lastCount = messageCounter.getTotal();
     }
     //Run the last fetch to find the duplicated messages if there are some

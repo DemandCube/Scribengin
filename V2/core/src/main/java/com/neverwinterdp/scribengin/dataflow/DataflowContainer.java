@@ -13,7 +13,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.module.AppModule;
-import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorManager;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorService;
 import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -46,8 +46,8 @@ public class DataflowContainer {
   
   public <T> T getInstance(Class<T> type) { return appContainer.getInstance(type); }
   
-  public DataflowTaskExecutorManager getDataflowTaskExecutorManager() {
-    return getInstance(DataflowTaskExecutorManager.class);
+  public DataflowTaskExecutorService getDataflowTaskExecutorManager() {
+    return getInstance(DataflowTaskExecutorService.class);
   }
   
   public VMDescriptor getVMDescriptor() { return appContainer.getInstance(VMDescriptor.class) ; }
