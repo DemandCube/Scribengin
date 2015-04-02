@@ -1,9 +1,7 @@
 package com.neverwinterdp.tool.message;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -83,10 +81,10 @@ public class MessageTracker {
       partitionTracker.dump(out, "Tracking message for the partition " + partition);
     }
     out.append("\nLog Count: " + getLogCount() + "\n");
-}
+  }
 
   //prefer using details for each partitionTracker for a thorough report
-  public void junitReport(String junitReport, boolean append) throws Exception {
+  public void junitReport(String fileName) throws IOException {
     TestSet testSet = new TestSet();
     int testNum = 0;
     optimize();
@@ -119,10 +117,8 @@ public class MessageTracker {
           "In sequence: " + partitionTracker.isInSequence(),
           partitionTracker.isInSequence()));
     }
-
-    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(junitReport);
-    Writer writer = new FileWriter(new File(junitReport), append);
-    tapProducer.dump(testSet, writer);
+    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
+    tapProducer.dump(testSet, new File(fileName));
   }
 
   private TestResult newTestResult(int testNum, String desc, boolean success) {

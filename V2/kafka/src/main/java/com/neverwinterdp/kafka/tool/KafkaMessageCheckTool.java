@@ -109,7 +109,7 @@ public class KafkaMessageCheckTool implements Runnable {
     int lastCount = 0, cannotReadCount = 0;
     int batchFetch = topicConfig.consumerConfig.consumeBatchFetch ;
     int fetchSize = batchFetch * (topicConfig.producerConfig.messageSize + 100) ;
-    while (messageCounter.getTotal() -messageTracker.getDuplicatedCount() < topicConfig.consumerConfig.consumeMax && !interrupt) {
+    while (messageCounter.getTotal() - messageTracker.getDuplicatedCount() < topicConfig.consumerConfig.consumeMax && !interrupt ) {
       for (int k = 0; k < partitionReader.length; k++) {
         List<byte[]> messages = partitionReader[k].fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
@@ -143,10 +143,6 @@ public class KafkaMessageCheckTool implements Runnable {
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
     messageTracker.optimize();
     readDuration.stop();
-    
-    if(topicConfig.junitReportFile != null && !topicConfig.junitReportFile.isEmpty()){
-      getReport().junitReport(topicConfig.junitReportFile);
-    }
   }
 
   public KafkaTopicReport getReport() {
@@ -157,8 +153,7 @@ public class KafkaMessageCheckTool implements Runnable {
     populate(report);
     return report ;
   }
-  
-  
+
   public void populate(KafkaTopicReport report) {
     ConsumerReport consumerReport = report.getConsumerReport();
     consumerReport.setMessagesRead(messageCounter.totalMessages);

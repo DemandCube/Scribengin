@@ -17,45 +17,58 @@ import com.beust.jcommander.ParametersDelegate;
 public class KafkaTopicCheckTool implements Runnable {
   @ParametersDelegate
   private KafkaTopicConfig kafkaTopicConfig = new KafkaTopicConfig();
-  
+
   private KafkaMessageSendTool sendTool;
   private KafkaMessageCheckTool checkTool;
   private KafkaTopicReport topicReport;
-  
+
   private Thread deamonThread;
   private boolean running = false;
 
   public KafkaTopicCheckTool(String[] args, boolean showUsage) throws Exception {
     JCommander jcommander = new JCommander(this, args);
-    if(showUsage) jcommander.usage();
+    if (showUsage)
+      jcommander.usage();
     sendTool = new KafkaMessageSendTool(kafkaTopicConfig);
     checkTool = new KafkaMessageCheckTool(kafkaTopicConfig);
   }
-  
+
   public KafkaTopicCheckTool(KafkaTopicConfig config) {
     kafkaTopicConfig = config;
     sendTool = new KafkaMessageSendTool(kafkaTopicConfig);
     checkTool = new KafkaMessageCheckTool(kafkaTopicConfig);
   }
-  
-  public KafkaTopicConfig getKafkaConfig() { return this.kafkaTopicConfig ; }
 
-  public KafkaTopicReport getKafkaTopicReport() { return topicReport; }
-  
-  public KafkaMessageSendTool getKafkaMessageSendTool() { return this.sendTool; }
-  
-  public KafkaMessageCheckTool getKafkaMessageCheckTool() { return this.checkTool ; }
-  
+  public KafkaTopicConfig getKafkaConfig() {
+    return this.kafkaTopicConfig;
+  }
+
+  public KafkaTopicReport getKafkaTopicReport() {
+    return topicReport;
+  }
+
+  public KafkaMessageSendTool getKafkaMessageSendTool() {
+    return this.sendTool;
+  }
+
+  public KafkaMessageCheckTool getKafkaMessageCheckTool() {
+    return this.checkTool;
+  }
+
   public void junitReport() throws Exception {
     System.out.println("kafkaTopicConfig.junitReportFile --> " + kafkaTopicConfig.junitReportFile);
-    if(kafkaTopicConfig.junitReportFile != null && ! kafkaTopicConfig.junitReportFile.isEmpty()) {
-      topicReport.junitReport(kafkaTopicConfig.junitReportFile);
-      checkTool.getMessageTracker().junitReport(kafkaTopicConfig.junitReportFile, true);
+    if (kafkaTopicConfig.junitReportFile != null && !kafkaTopicConfig.junitReportFile.isEmpty()) {
+      String topicReportFile = kafkaTopicConfig.junitReportFile.replace(".xml", "-0.xml");
+      String trackerReport  = kafkaTopicConfig.junitReportFile.replace(".xml", "-1.xml");
+  
+      topicReport.junitReport(topicReportFile);
+      checkTool.getMessageTracker().junitReport(trackerReport);
     }
   }
-  
+
   synchronized public boolean waitForTermination() throws InterruptedException {
-    if (!running) return !running;
+    if (!running)
+      return !running;
     checkTool.waitForTermination();
     Thread.sleep(500);
     return !running;
@@ -72,7 +85,7 @@ public class KafkaTopicCheckTool implements Runnable {
     deamonThread = new Thread(this);
     deamonThread.start();
   }
-  
+
   public void run() {
     running = true;
     try {
@@ -80,24 +93,24 @@ public class KafkaTopicCheckTool implements Runnable {
     } catch (Exception e) {
       e.printStackTrace();
     }
-    running = false ;
+    running = false;
   }
 
   private void doRun() throws Exception {
     sendTool.runAsDeamon();
-    
+
     //Make sure that messgages are sending before start the failure simulator
-    while(!sendTool.isSending()) {
+    while (!sendTool.isSending()) {
       Thread.sleep(100);
     }
     Thread.sleep(500);
-    
+
     checkTool.runAsDeamon();
-    
+
     Thread progressReporter = new Thread() {
       public void run() {
         try {
-          while(true) {
+          while (true) {
             Thread.sleep(10000);
             System.out.println("Progress: sent = " + sendTool.getSentCount() + ", consumed = " + checkTool.getMessageCounter().getTotal());
           }
@@ -108,12 +121,12 @@ public class KafkaTopicCheckTool implements Runnable {
     };
     progressReporter.start();
     sendTool.waitForTermination();
-    if(!checkTool.waitForTermination()) {
+    if (!checkTool.waitForTermination()) {
       checkTool.setInterrupt(true);
       Thread.sleep(3000);
     }
     progressReporter.interrupt();
-    
+
     topicReport = new KafkaTopicReport();
     topicReport.setTopic(kafkaTopicConfig.topic);
     topicReport.setNumOfPartitions(kafkaTopicConfig.numberOfPartition);
