@@ -12,7 +12,7 @@ import org.tap4j.util.StatusValues;
 import com.neverwinterdp.util.text.TabularFormater;
 
 public class KafkaTopicReport {
-  private String topic ;
+  private String topic;
   private int    numOfPartitions;
   private int    numOfReplications;
   private int    failureSimulation;
@@ -75,6 +75,7 @@ public class KafkaTopicReport {
     }
     out.append("\n");
     out.append(reportFormater.getFormatText());
+    
   }
   
   public void junitReport(String fileName) throws Exception {

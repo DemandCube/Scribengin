@@ -10,11 +10,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.RecordMetadata;
-
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
+
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParametersDelegate;
@@ -77,18 +77,44 @@ public class KafkaMessageSendTool implements Runnable {
     for (PartitionMessageWriter writer : writers.values()) {
       messageSent += writer.writeCount;
     }
-    
-    System.out.println("messages sent "+ sendCounter.get());
-    for (Entry<Integer, PartitionMessageWriter> writer : writers.entrySet()) {
-      System.out.println("Partition "+ writer.getKey()+ " count "+ writer.getValue().writeCount);
-    }
-    for (Entry<Integer, AtomicInteger> entry : messageGenerator.getMessageTrackers().entrySet()) {
-      System.out.println("Partition "+ entry.getKey()+ " count "+ entry.getValue().get());
-    }
-    
-   messageGenerator.getClass();
     producerReport.setMessageSent(messageSent);
-    producerReport.setMessageRetried(retried.get());;
+    producerReport.setMessageRetried(retried.get());
+    
+
+    try {
+      printDebugInfo();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void printDebugInfo() throws Exception {
+    System.out.println("SendCounter Total " + sendCounter.get());
+    System.out.println("Counts from the partition Writers.");
+    for (Entry<Integer, PartitionMessageWriter> writer : writers.entrySet()) {
+      System.out.println("Partition " + writer.getKey() + " count " + writer.getValue().writeCount);
+    }
+
+    System.out.println();
+    System.out.println("Counts from the messageGenerator.");
+    for (Entry<Integer, AtomicInteger> entry : messageGenerator.getMessageTrackers().entrySet()) {
+      System.out.println("Partition " + entry.getKey() + " count " + entry.getValue().get());
+    }
+    
+    KafkaTool kafkaTool = new KafkaTool("KafkaTool", topicConfig.zkConnect);
+    kafkaTool.connect();
+    String kafkaConnects = kafkaTool.getKafkaBrokerList();
+    kafkaTool.close();
+    
+    String[] args2 = {
+        "--broker-list", kafkaConnects,
+        "--topic", topicConfig.topic,
+        "--time", "-1",
+    };
+    System.out.println();
+    System.out.println("Offset counts.");
+    System.out.println("Topic:Partition:Offset");
+    kafka.tools.GetOffsetShell.main(args2);
   }
 
   

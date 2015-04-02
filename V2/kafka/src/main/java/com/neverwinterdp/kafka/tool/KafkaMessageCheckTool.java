@@ -47,7 +47,6 @@ public class KafkaMessageCheckTool implements Runnable {
   
   public MessageTracker getMessageTracker() { return messageTracker ; }
   
-  //TODO: replace by the KafkaTopicReport.ConsumerReport
   public MessageCounter getMessageCounter() { return messageCounter; }
 
   public Stopwatch getReadDuration() { return readDuration; }

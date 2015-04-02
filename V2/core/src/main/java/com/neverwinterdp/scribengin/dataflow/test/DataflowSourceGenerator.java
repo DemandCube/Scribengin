@@ -72,8 +72,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
 
     @Override
     public Map<Integer, AtomicInteger> getMessageTrackers() {
-      // TODO Auto-generated method stub
-      return null;
+      return defaultMessageGenerator.getMessageTrackers();
     }
   }
 }
