@@ -1,7 +1,9 @@
 package com.neverwinterdp.tool.message;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -84,7 +86,7 @@ public class MessageTracker {
 }
 
   //prefer using details for each partitionTracker for a thorough report
-  public void junitReport(String junitReport) {
+  public void junitReport(String junitReport, boolean append) throws Exception {
     TestSet testSet = new TestSet();
     int testNum = 0;
     optimize();
@@ -119,7 +121,8 @@ public class MessageTracker {
     }
 
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(junitReport);
-    tapProducer.dump(testSet, new File(junitReport));
+    Writer writer = new FileWriter(new File(junitReport), append);
+    tapProducer.dump(testSet, writer);
   }
 
   private TestResult newTestResult(int testNum, String desc, boolean success) {

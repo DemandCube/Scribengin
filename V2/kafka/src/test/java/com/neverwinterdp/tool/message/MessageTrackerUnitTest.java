@@ -266,7 +266,7 @@ public class MessageTrackerUnitTest {
     }
 
     messageTracker.optimize();
-    messageTracker.junitReport("build/messageTracker.xml");
+    messageTracker.junitReport("build/messageTracker.xml", false);
   }
   
   //partition 0 (probably) not in sequence, partition 1 in sequence
@@ -283,7 +283,7 @@ public class MessageTrackerUnitTest {
     }
 
     messageTracker.optimize();
-    messageTracker.junitReport("build/messageTrackerNotInSequence.xml");
+    messageTracker.junitReport("build/messageTrackerNotInSequence.xml", false);
   }
   
   //partition 0 contains all 0, partition 1 contains all 1
@@ -299,7 +299,7 @@ public class MessageTrackerUnitTest {
     }
 
     messageTracker.optimize();
-    messageTracker.junitReport("build/messageTrackerAllDuplicates.xml");
+    messageTracker.junitReport("build/messageTrackerAllDuplicates.xml", false);
   }
 
   private void log(PartitionMessageTracker tracker, int from, int to) {

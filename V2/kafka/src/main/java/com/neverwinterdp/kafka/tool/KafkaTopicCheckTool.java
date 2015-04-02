@@ -50,6 +50,7 @@ public class KafkaTopicCheckTool implements Runnable {
     System.out.println("kafkaTopicConfig.junitReportFile --> " + kafkaTopicConfig.junitReportFile);
     if(kafkaTopicConfig.junitReportFile != null && ! kafkaTopicConfig.junitReportFile.isEmpty()) {
       topicReport.junitReport(kafkaTopicConfig.junitReportFile);
+      checkTool.getMessageTracker().junitReport(kafkaTopicConfig.junitReportFile, true);
     }
   }
   
