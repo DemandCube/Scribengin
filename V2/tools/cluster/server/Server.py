@@ -1,6 +1,9 @@
-from Process import KafkaProcess,ZookeeperProcess,HadoopMasterProcess,HadoopWorkerProcess
-from os.path import expanduser, join
 from tabulate import tabulate
+from sys import path
+from os.path import join, dirname, abspath, expanduser
+#Make sure the cluster package is on the path correctly
+path.insert(0, dirname(dirname(abspath(__file__))))
+from process.Process import KafkaProcess,ZookeeperProcess,HadoopMasterProcess,HadoopWorkerProcess  #@UnresolvedImport
 
 
 class Server(object):

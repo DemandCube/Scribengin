@@ -1,5 +1,5 @@
-from Server import KafkaServer,ZookeeperServer,HadoopMasterServer,HadoopWorkerServer
-from ServerSet import ServerSet
+from server.Server import KafkaServer,ZookeeperServer,HadoopMasterServer,HadoopWorkerServer
+from server.ServerSet import ServerSet
 
 import re
 

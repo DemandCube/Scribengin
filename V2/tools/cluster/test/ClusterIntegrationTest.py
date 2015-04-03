@@ -1,11 +1,7 @@
 import unittest
 from time import sleep
 
-#Add the directory above to the python path
-import sys; import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import Cluster #@UnresolvedImport
+from cluster import Cluster
 
 
 class ClusterIntegrationTest(unittest.TestCase):
@@ -17,17 +13,10 @@ class ClusterIntegrationTest(unittest.TestCase):
     cluster = Cluster.Cluster()
     
     cluster.report()
-    print "\n"
-    cluster.reportProcess("kafka")
-    print "\n"
-    cluster.reportProcess("zookeeper")
-    print "\n"
-    
     
     print "Clean ZK and Kafka"
     cluster.cleanZookeeper()
     cluster.cleanKafka()
-    
     
     print "Start ZK"
     cluster.startZookeeper()
@@ -36,21 +25,11 @@ class ClusterIntegrationTest(unittest.TestCase):
     sleep(5)
     
     cluster.report()
-    print "\n"
-    cluster.reportProcess("kafka")
-    print "\n"
-    cluster.reportProcess("zookeeper")
-    print "\n"
     
     self.assertTrue(cluster.isProcessRunning("zookeeper"))
     self.assertTrue(cluster.isProcessRunning("kafka"))
     
     cluster.report()
-    print "\n"
-    cluster.reportProcess("kafka")
-    print "\n"
-    cluster.reportProcess("zookeeper")
-    print "\n"
     
     print "Shutdown ZK"
     cluster.shutdownZookeeper()
@@ -68,13 +47,6 @@ class ClusterIntegrationTest(unittest.TestCase):
     cluster.cleanKafka()
     
     cluster.report()
-    print "\n"
-    cluster.reportProcess("kafka")
-    print "\n"
-    cluster.reportProcess("zookeeper")
-    print "\n"
-    
-    
     
     print "Start ZK"
     cluster.startZookeeper()
