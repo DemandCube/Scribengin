@@ -94,27 +94,27 @@ public class MessageTracker {
       PartitionMessageTracker partitionTracker = entry.getValue();
      
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "Partition: " + partition,
+          testNum+ "Partition: " + partition,
           true));
 
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "From: " + partitionTracker.getMinMessageId(),
+          testNum+ "From: " + partitionTracker.getMinMessageId(),
           partitionTracker.getMinMessageId() <= partitionTracker.getMaxMessageId()));
 
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "To: " + partitionTracker.getMaxMessageId(),
+          testNum+ "To: " + partitionTracker.getMaxMessageId(),
           partitionTracker.getMaxMessageId() >= partitionTracker.getMinMessageId()));
 
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "Duplicates: " + partitionTracker.getDuplicatedCount(),
+          testNum+ "Duplicates: " + partitionTracker.getDuplicatedCount(),
           partitionTracker.getDuplicatedCount() >= 0));
 
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "Num messages: " + partitionTracker.getLogCount(),
+          testNum+ "Num messages: " + partitionTracker.getLogCount(),
           partitionTracker.getLogCount() > 0));
 
       testSet.addTestResult(newTestResult(++testNum,
-          partition+ "In sequence: " + partitionTracker.isInSequence(),
+          testNum+ "In sequence: " + partitionTracker.isInSequence(),
           partitionTracker.isInSequence()));
     }
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
