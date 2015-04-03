@@ -62,7 +62,6 @@ class Server(object):
   
   def getReportDict(self):
     procDict= {}
-    
     for key in self.processes:
       running = "Running"
       if not self.processes[key].isRunning():

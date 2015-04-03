@@ -27,6 +27,8 @@ cp -r /tmp/post-install/hadoop/*  /opt/hadoop/
 
 cp -r /tmp/post-install/release/*  /opt/scribengin/
 
+cp -r /tmp/post-install/cluster/*  /opt/cluster/
+
 
 h1 "Set up ssh for neverwinterdp user"
 sudo cat /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys

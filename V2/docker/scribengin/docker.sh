@@ -64,7 +64,7 @@ function build_image() {
   
   #Move release/build/release to ./tmp
   cp -R -f ../../release/build/release ./tmp/release
-  
+  cp -R -f ../../tools/cluster ./tmp/cluster
   
   
   #Use existing key if it already exists
