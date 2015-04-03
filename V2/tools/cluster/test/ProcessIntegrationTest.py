@@ -1,11 +1,7 @@
 import unittest,re
 from time import sleep
 
-#Add the directory above to the python path
-import sys; import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import Process #@UnresolvedImport
+from cluster.process import Process
 
 class ProcessIntegrationTest(unittest.TestCase):
   """
