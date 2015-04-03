@@ -8,11 +8,15 @@ http://pydev.org/manual_101_install.html
 ```sudo ./cluster/setup.sh```
 
 #Run unit tests#
-```./cluster/runTests.sh```
+```
+./cluster/runTests.sh
+```
 
 #Run Integration tests#
  You must bring up the Scribengin cluster first, directions found [here](https://github.com/DemandCube/Scribengin/tree/dev/master/V2/docker/scribengin)  
-.```/cluster/runIntegrationTests.sh```
+```
+./cluster/runIntegrationTests.sh
+```
 
 #Usage#
 ```
