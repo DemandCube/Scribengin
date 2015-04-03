@@ -87,34 +87,35 @@ public class MessageTracker {
   public void junitReport(String fileName) throws IOException {
     TestSet testSet = new TestSet();
     int testNum = 0;
+    int position=96;
     optimize();
-  
+  // a test per partition
     for (Map.Entry<Integer, PartitionMessageTracker> entry : partitions.entrySet()) {
       int partition = entry.getKey();
       PartitionMessageTracker partitionTracker = entry.getValue();
-     
+
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "Partition: " + partition,
+          (char)++position+ " Partition: " + partition,
           true));
 
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "From: " + partitionTracker.getMinMessageId(),
+          (char)++position+ " From: " + partitionTracker.getMinMessageId(),
           partitionTracker.getMinMessageId() <= partitionTracker.getMaxMessageId()));
 
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "To: " + partitionTracker.getMaxMessageId(),
+          (char) ++position+ " To: " + partitionTracker.getMaxMessageId(),
           partitionTracker.getMaxMessageId() >= partitionTracker.getMinMessageId()));
 
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "Duplicates: " + partitionTracker.getDuplicatedCount(),
+          (char) ++position+ " Duplicates: " + partitionTracker.getDuplicatedCount(),
           partitionTracker.getDuplicatedCount() >= 0));
 
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "Num messages: " + partitionTracker.getLogCount(),
+          (char) ++position+ " Num messages: " + partitionTracker.getLogCount(),
           partitionTracker.getLogCount() > 0));
 
       testSet.addTestResult(newTestResult(++testNum,
-          testNum+ "In sequence: " + partitionTracker.isInSequence(),
+          (char) ++position+ " In sequence: " + partitionTracker.isInSequence(),
           partitionTracker.isInSequence()));
     }
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
