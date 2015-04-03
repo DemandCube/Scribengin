@@ -5,13 +5,14 @@ For MacOS , dowload the latest python 2.7 from https://www.python.org/downloads/
 http://pydev.org/manual_101_install.html
 
 #Install dependencies#
-sudo ./cluster/setup.sh
+```sudo ./cluster/setup.sh```
 
 #Run unit tests#
-./cluster/runTests.sh
+```./cluster/runTests.sh```
 
-#Run Integration tests (You must bring up the Scribengin cluster first, directions found at https://github.com/DemandCube/Scribengin/tree/dev/master/V2/docker/scribengin) # 
-./cluster/runIntegrationTests.sh
+#Run Integration tests#
+ You must bring up the Scribengin cluster first, directions found [here](https://github.com/DemandCube/Scribengin/tree/dev/master/V2/docker/scribengin)  
+.```/cluster/runIntegrationTests.sh```
 
 #Usage#
 ```
