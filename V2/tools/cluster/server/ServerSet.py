@@ -69,7 +69,7 @@ class ServerSet(object):
   def getServersByHostname(self, hostnames):
     serverSet = ServerSet("subset")
     for server in self.servers :
-      if(server.getHostname() in hostnames) :
+      if(server.getHostname().strip() in hostnames) :
         serverSet.addServer(server)
     return serverSet
   
