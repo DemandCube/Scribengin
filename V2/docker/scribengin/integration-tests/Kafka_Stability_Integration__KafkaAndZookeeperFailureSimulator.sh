@@ -50,14 +50,15 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 
 #Get results
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/KafkaMessageCheckTool*.xml ./
+#Get results for failure simulator
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/cluster/kafkaFailureReport.xml ./
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/cluster/zkFailureReport.xml ./
 
 #Allow failure simulator to save test results
-sleep 10
+#sleep 10
 
 #Get results for failure simulator
-scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/results/FAILURE_TEST_failure_simulator.xml ./
+#scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/results/FAILURE_TEST_failure_simulator.xml ./
 
 #Clean up
 ./docker.sh container clean || true
