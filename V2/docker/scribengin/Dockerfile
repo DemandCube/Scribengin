@@ -79,6 +79,10 @@ RUN chmod -R 700    /tmp/post-install/ssh-config && chmod 644 /tmp/post-install/
 RUN mkdir -p  /opt/scribengin/
 ADD tmp/release /tmp/post-install/release/
 
+#Add the cluster python scripts
+RUN mkdir -p  /opt/cluster/
+ADD tmp/cluster /tmp/post-install/cluster/
+
 
 RUN /tmp/post-install/post-install.sh
 

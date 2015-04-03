@@ -57,12 +57,14 @@ class Process(object):
     return self.role
     
   def kill(self):
-    self.sshExecute("kill -9 "+self.getRunningPid())
+    pids = self.getRunningPid()
+    for pid in pids.split(","):
+      self.sshExecute("kill -9 "+pid)
     
   def getRunningPid(self):
     command = "ps ax | grep -i '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
     stdout,stderr = self.sshExecute(command)
-    return stdout.strip()
+    return stdout.strip().replace("\n",",")
   
   def start(self):
     pass
