@@ -127,8 +127,13 @@ public class MessageTracker {
               + " In Sequence: " + partitionTracker.isInSequence(),
           partitionTracker.isInSequence()));
     }
+    
+    File file = new File(fileName);
+    file.getParentFile().mkdirs();
+    file.createNewFile();
+
     TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(getClass().getSimpleName());
-    tapProducer.dump(testSet, new File(fileName));
+    tapProducer.dump(testSet, file);
   }
 
   private TestResult newTestResult(int testNum, String desc, boolean success) {
