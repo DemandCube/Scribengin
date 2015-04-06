@@ -17,7 +17,6 @@ public class HdfsDataflowTest extends DataflowTest {
   protected void doRun(ScribenginShell shell) throws Exception {
     long start = System.currentTimeMillis();
     
-    ScribenginShell scribenginShell = (ScribenginShell) shell;  
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     sourceGenerator.run();
@@ -39,11 +38,12 @@ public class HdfsDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
     
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
-    ScribenginWaitingEventListener waitingEventListener = scribenginShell.getScribenginClient().submit(dflDescriptor) ;
-   
+    ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor) ;
+    
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
+    
     waitingEventListener.waitForEvents(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();

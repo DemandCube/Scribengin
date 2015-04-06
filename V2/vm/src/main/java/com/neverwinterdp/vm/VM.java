@@ -141,8 +141,6 @@ public class VM {
             vmApplicationRunner.interrupt();
           }
         } catch (InterruptedException e) {
-        } finally {
-          vmContainer.getInstance(CloseableInjector.class).close();
         }
       }
     };
@@ -174,16 +172,11 @@ public class VM {
         logger.error("Error in vm application", e);
       } finally {
         try {
-          System.err.println("Set terminated status...........................");
           setVMStatus(VMStatus.TERMINATED);
+          vmContainer.getInstance(CloseableInjector.class).close();
         } catch (RegistryException e) {
           e.printStackTrace();
           logger.error("Error in vm registry", e);
-        }
-        try {
-          vmRegistry.getRegistry().disconnect();
-        } catch (RegistryException e) {
-          e.printStackTrace();
         }
         notifyComplete();
       }

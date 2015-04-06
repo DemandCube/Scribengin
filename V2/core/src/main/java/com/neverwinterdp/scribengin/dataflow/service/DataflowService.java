@@ -82,6 +82,7 @@ public class DataflowService {
     dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
     
     dataflowTaskMonitor.waitForAllTaskFinish();
+    stopWorkers();
     //finish
     System.err.println("DataflowService: FINISH");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);

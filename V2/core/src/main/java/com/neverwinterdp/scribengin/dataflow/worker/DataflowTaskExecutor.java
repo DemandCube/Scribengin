@@ -11,7 +11,8 @@ public class DataflowTaskExecutor {
   private DataflowTaskExecutorDescriptor executorDescriptor;
   private DataflowContainer dataflowContainer ;
   private ExecutorManagerThread executorManagerThread ;
-
+  private boolean interrupt = false;
+  
   public DataflowTaskExecutor(DataflowTaskExecutorDescriptor  descriptor, DataflowContainer container) throws RegistryException {
     executorDescriptor = descriptor;
     dataflowContainer = container;
@@ -28,7 +29,10 @@ public class DataflowTaskExecutor {
   }
   
   public void shutdown() throws Exception {
-    if(isAlive()) executorManagerThread.interrupt();
+    if(isAlive()) {
+      interrupt = true ;
+      //executorManagerThread.interrupt();
+    }
   }
   
   public boolean isAlive() {
@@ -44,8 +48,9 @@ public class DataflowTaskExecutor {
     try {
       while(true) {
         DataflowTaskDescriptor taskDescriptor = dataflowRegistry.assignDataflowTask(vmDescriptor);
+        if(interrupt) break ;
         if(taskDescriptor == null) return;
-
+        
         executorDescriptor.addAssignedTask(taskDescriptor);
         dataflowRegistry.updateTaskExecutor(vmDescriptor, executorDescriptor);
         dataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
@@ -55,6 +60,7 @@ public class DataflowTaskExecutor {
         executorThread.waitForTimeout(10000);
         if(dataflowTask.isComplete()) dataflowTask.finish();
         else dataflowTask.suspend();
+        if(interrupt) break ;
       }
     } catch (InterruptedException e) {
       System.err.println("detect shutdown interrupt for task " + dataflowTask.getDescriptor().getId());
