@@ -31,7 +31,7 @@ ssh -f -n -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/clust
                                           --servers kafka-1,kafka-2,kafka-3,kafka-4                                          \
                                           --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
                                           --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report junit-reports/kafkaFailureReport.xml                                \
+                                          --junit-report build/junit-reports/kafkaFailureReport.xml                          \
                                             monitor --update-interval 10"
 
 
@@ -45,11 +45,11 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                               --producer:topic.metadata.refresh.interval.ms=-1 --producer:batch.num.messages=100 \
                               --producer:acks=all --producer:compression.type=gzip --consume-max 100000000       \
                               --consume-max-duration 6000000                                                     \
-                              --junit-report junit-reports/KafkaMessageCheckTool.xml"
+                              --junit-report build/junit-reports/KafkaMessageCheckTool.xml"
 
 
 #Get results
-scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/junit-reports/*.xml ./
+scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/build/junit-reports/*.xml ./
 
 #Allow failure simulator to save test results
 #sleep 10

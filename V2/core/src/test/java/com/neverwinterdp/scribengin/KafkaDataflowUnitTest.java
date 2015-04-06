@@ -98,7 +98,7 @@ public class KafkaDataflowUnitTest {
                 " --source-max-records-per-stream 10000" +
                 " --sink-name output " +
                 " --print-dataflow-info -1" +
-                " --junit-report build/junit-report.xml";
+                " --junit-report junit-reports/junit-report.xml";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
