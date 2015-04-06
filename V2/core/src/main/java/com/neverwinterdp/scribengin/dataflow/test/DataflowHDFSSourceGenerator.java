@@ -12,12 +12,12 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   private FileSystem fs  ;
+  private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
   
   //TODO: replace those parameters by the source parameter in the DataflowSourceGenerator 
   private int numOfStream = 5;
   private int numOfBufferPerStream = 3;
   private int numOfRecordPerBuffer = 10;
-  
   
   @Override
   public StorageDescriptor getSourceDescriptor() {
@@ -59,15 +59,13 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
     }
   }
 
-  //TODO: need to generate the Record properly so it can be used with the check tool.
-  //Look into the kafka source generator to see how to make it 
   void generateStream(Sink sink) throws Exception {
     SinkStream stream = sink.newStream();
+    int partition = stream.getDescriptor().getId() ;
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < numOfBufferPerStream; i++) {
       for(int j = 0; j < numOfRecordPerBuffer; j ++) {
-        String key = "stream=" + stream.getDescriptor().getId() +",buffer=" + i + ",record=" + j;
-        writer.append(Record.create(key, key));
+        writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();
     }

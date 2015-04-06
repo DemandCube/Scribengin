@@ -2,13 +2,10 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 
 
 public class KafkaDataflowTest extends DataflowTest {
@@ -39,7 +36,9 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
 
     dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
+    
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
+    
     shell.console().println("Finish creating the dataflow descriptor!!!");
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     shell.console().println("Finish submitting the dataflow descriptor!!!");
@@ -63,19 +62,5 @@ public class KafkaDataflowTest extends DataflowTest {
     report.report(System.out);
 
     junitReport(report);
-  }
-
-  static public class TestCopyScribe extends ScribeAbstract {
-    private int count = 0;
-    
-    @Override
-    public void process(Record record, DataflowTaskContext ctx) throws Exception {
-      ctx.append(record);
-      count++ ;
-      if(count == 100) {
-        ctx.commit();
-        count = 0;
-      }
-    }
   }
 }

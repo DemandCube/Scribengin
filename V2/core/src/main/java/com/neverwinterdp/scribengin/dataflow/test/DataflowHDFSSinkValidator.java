@@ -1,113 +1,71 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import java.io.PrintStream;
+import org.apache.hadoop.fs.FileSystem;
 
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSinkValidatorReport;
-import com.neverwinterdp.scribengin.dataflow.test.hdfs.HDFSReport;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.scribengin.storage.hdfs.source.HDFSSource;
+import com.neverwinterdp.scribengin.storage.source.SourceStream;
+import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
+import com.neverwinterdp.tool.message.Message;
+import com.neverwinterdp.tool.message.MessageExtractor;
+import com.neverwinterdp.tool.message.MessageTracker;
 
 public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
-  //HDFS reader
-  private HDFSReader reader;
- 
+  private FileSystem     fs;
+  private MessageTracker messageTracker;
+  
   @Override
   public StorageDescriptor getSinkDescriptor() {
-    StorageDescriptor sink = new StorageDescriptor("HDFS");
-    sink.attribute("name", DataflowHDFSSinkValidator.class.getSimpleName());
-    //TODO Attributes for HDFS?
-    sink.attribute("topic", sinkName);
-    return sink;
+    String location = sinkLocation + "/" + sinkName;
+    StorageDescriptor storageDescriptor = new StorageDescriptor("HDFS", location) ;
+    return storageDescriptor;
   }
 
   @Override
-  public void init(ScribenginClient scribenginClient) {
-    }
+  public void init(ScribenginClient scribenginClient) throws Exception {
+    fs = scribenginClient.getVMClient().getFileSystem();
+  }
 
   @Override
   public void run() {
-    //TODO HDFS messagecheck tool? 
-    reader = createHDFSReader();
-    reader.read();
-  }
-
-  @Override
-  public void runInBackground() {
-    //Not possible, will run in main thread instead?
-    reader = createHDFSReader();
-    reader.runAsDeamon();
-  }
-
-  @Override
-  public boolean waitForTermination() throws InterruptedException {
-    //TODO wait until write is done
-    return reader.waitForTermination();
-  }
-
-  @Override
-  public boolean waitForTermination(long timeout) throws InterruptedException {
-    //TODO not possible for batch
-    return reader.waitForTermination(timeout);
-  }
-
-  @Override
-  public void populate(DataflowTestReport report) {
-    DataflowSinkValidatorReport sinkReport = report.getSinkValidatorReport();
-    sinkReport.setSinkName(reader.getReport().getName());
-    sinkReport.setNumberOfStreams(reader.getReport().getNumOfStreams());
-/*    sinkReport.setReadCount(reader.getReport().getReaderReport().getReadCount());
-    sinkReport.setDuration(reader.getReport().getReaderReport().getRunDuration());*/
+    messageTracker = new MessageTracker() ;
+    MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR ;
     try {
-      reader.dump(System.out);
+      HDFSSource source = new HDFSSource(fs, getSinkDescriptor()) ;
+      SourceStream[] streams = source.getStreams();
+      for(SourceStream selStream : streams) {
+        SourceStreamReader streamReader = selStream.getReader("DataflowHDFSSinkValidator") ;
+        Record record = null ;
+        while((record = streamReader.next()) != null) {
+          Message message = messageExtractor.extract(record.getData()) ;
+          messageTracker.log(message);
+        }
+        streamReader.close();
+      }
+      messageTracker.dump(System.out);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  HDFSReader createHDFSReader() {
-    String path = "/hdfs/path";
-    HDFSReader HDFSReader = new HDFSReader(path, 0, path);
-    return HDFSReader;
+  @Override
+  public void runInBackground() {
+    throw new RuntimeException("Due to the nature of hdfs storage, this method is not avaialable") ;
   }
 
-  class HDFSReader {
+  @Override
+  public boolean waitForTermination() throws InterruptedException {
+    throw new RuntimeException("Due to the nature of hdfs storage, this method is not avaialable") ;
+  }
 
-    private String path;
-    private String connect;
+  @Override
+  public boolean waitForTermination(long timeout) throws InterruptedException {
+    throw new RuntimeException("Due to the nature of hdfs storage, this method is not avaialable") ;
+  }
 
-    public HDFSReader(String host, int port, String path) {
-      this.connect = "hdfs://" + host + ":" + port;
-      this.path = path;
-    }
-
-    public void read() {
-      //TODO read the folder, read the files
-    }
-
-    public void dump(PrintStream out) {
-      // TODO dump report
-
-    }
-
-    public boolean waitForTermination(long timeout) {
-      // TODO Auto-generated method stub
-      return false;
-    }
-
-    public boolean waitForTermination() {
-      // TODO Auto-generated method stub
-      return false;
-    }
-
-    public void runAsDeamon() {
-      // TODO Auto-generated method stub
-
-    }
-
-    public HDFSReport getReport() {
-
-      return new HDFSReport();
-    }
-
+  @Override
+  public void populate(DataflowTestReport report) {
   }
 }

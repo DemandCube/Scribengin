@@ -11,10 +11,10 @@ import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.tool.message.MessageGenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
-//TODO: Update the parameter description
+//TODO: Review and update the parameter description
 abstract public class DataflowSourceGenerator implements Runnable {
   @Parameter(names = "--source-location", description = "The storage source name, usually the database name or dir name of the storage")
-  protected String sourceLocation = "build/hdfs";
+  protected String sourceLocation = "build/storage";
   
   @Parameter(names = "--source-name", description = "The storage source name, usually the database name or dir name of the storage")
   protected String sourceName = "hello";
@@ -69,9 +69,13 @@ abstract public class DataflowSourceGenerator implements Runnable {
     static public AtomicLong idTracker = new AtomicLong() ;
     
     public byte[] nextMessage(int partition, int messageSize) {
+      return JSONSerializer.INSTANCE.toBytes(nextRecord(partition, messageSize));
+    }
+    
+    public Record nextRecord(int partition, int messageSize) {
       byte[] messagePayload = defaultMessageGenerator.nextMessage(partition, messageSize);
       String key = "partition=" + partition + ",id=" + idTracker.getAndIncrement();
-      return JSONSerializer.INSTANCE.toString(new Record(key, messagePayload)).getBytes();
+      return new Record(key, messagePayload);
     }
 
     @Override

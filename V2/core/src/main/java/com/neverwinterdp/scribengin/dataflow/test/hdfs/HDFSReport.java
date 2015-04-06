@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow.test.hdfs;
 
+//TODO: what is this for????
 public class HDFSReport {
 
   private WriterReport writerReport;

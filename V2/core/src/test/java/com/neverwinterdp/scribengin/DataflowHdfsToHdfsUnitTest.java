@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin;
 
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -9,11 +7,8 @@ import org.junit.Test;
 
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class DataflowHdfsToHdfsUnitTest {
@@ -27,7 +22,7 @@ public class DataflowHdfsToHdfsUnitTest {
 
   @Before
   public void setup() throws Exception {
-    FileUtil.removeIfExist("build/hdfs", false);
+    FileUtil.removeIfExist("build/storage", false);
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
@@ -71,7 +66,6 @@ public class DataflowHdfsToHdfsUnitTest {
       shell.execute("vm         info");
       shell.execute("scribengin info");
       shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
-      
     } catch (Throwable err) {
       throw err;
     } finally {
@@ -83,9 +77,10 @@ public class DataflowHdfsToHdfsUnitTest {
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        //TODO: waiting bug, if --duration is set to a bigger number, the task should detect and exit properly
-        String command = "dataflow-test hdfs "
-            + "--worker 3 --executor-per-worker 1 --duration 10000 --task-max-execute-time 1000";
+        String command = 
+          "dataflow-test hdfs " + 
+          "  --worker 3 --executor-per-worker 1 --duration 10000 --task-max-execute-time 1000" +
+          "  --source-name hello-source --sink-name hello-sink";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();

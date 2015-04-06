@@ -4,15 +4,16 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 
 
 public class HdfsDataflowTest extends DataflowTest {
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new DataflowHDFSSourceGenerator();
+  
+  @ParametersDelegate
+  private DataflowSinkValidator   sinkValidator   = new DataflowHDFSSinkValidator();
   
   protected void doRun(ScribenginShell shell) throws Exception {
     long start = System.currentTimeMillis();
@@ -31,11 +32,7 @@ public class HdfsDataflowTest extends DataflowTest {
     //TODO: review this code
     dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
     
-    StorageDescriptor defaultSink = new StorageDescriptor("HDFS", getDataDir() + "/sink");
-    dflDescriptor.addSinkDescriptor("default", defaultSink);
-    
-    StorageDescriptor invalidSink = new StorageDescriptor("HDFS", getDataDir() + "/invalid-sink");
-    dflDescriptor.addSinkDescriptor("invalid", invalidSink);
+    dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
     ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor) ;
@@ -43,13 +40,12 @@ public class HdfsDataflowTest extends DataflowTest {
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-    
     waitingEventListener.waitForEvents(duration);
+
+    sinkValidator.init(scribenginClient);
+    sinkValidator.run();
+    
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
-  }
-
-  private String getDataDir() {
-    return "./build/hdfs";
   }
 }

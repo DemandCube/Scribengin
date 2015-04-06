@@ -10,10 +10,13 @@ import org.tap4j.producer.TapProducerFactory;
 import org.tap4j.util.StatusValues;
 
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSinkValidatorReport;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSourceGeneratorReport;
+import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 
 abstract public class DataflowTest {
   @Parameter(names = "--flow-name", description = "The flow name")
@@ -132,6 +135,20 @@ abstract public class DataflowTest {
           }
         }
       } catch (InterruptedException ex) {
+      }
+    }
+  }
+  
+  static public class TestCopyScribe extends ScribeAbstract {
+    private int count = 0;
+    
+    @Override
+    public void process(Record record, DataflowTaskContext ctx) throws Exception {
+      ctx.append(record);
+      count++ ;
+      if(count == 100) {
+        ctx.commit();
+        count = 0;
       }
     }
   }

@@ -8,7 +8,11 @@ import com.neverwinterdp.tool.message.Message;
 import com.neverwinterdp.tool.message.MessageExtractor;
 import com.neverwinterdp.util.JSONSerializer;
 
+//TODO: review and update the parameter description
 abstract public class DataflowSinkValidator implements Runnable {
+  @Parameter(names = "--sink-location", description = "The storage sink name, usually the database name or dir name of the storage")
+  protected String sinkLocation = "build/storage" ;
+  
   @Parameter(names = "--sink-name", required=true, description = "The storage sink name, usually the database name or dir name of the storage")
   protected String sinkName ;
   
@@ -19,7 +23,7 @@ abstract public class DataflowSinkValidator implements Runnable {
   
   abstract public StorageDescriptor getSinkDescriptor() ;
   
-  abstract public void init(ScribenginClient scribenginClient) ;
+  abstract public void init(ScribenginClient scribenginClient) throws Exception ;
   
   abstract public void run() ;
   
