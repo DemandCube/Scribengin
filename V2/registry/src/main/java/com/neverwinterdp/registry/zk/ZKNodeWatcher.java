@@ -18,7 +18,11 @@ public class ZKNodeWatcher implements Watcher {
   public void process(WatchedEvent event) {
     event.getState();
     NodeEvent nEvent = new NodeEvent(realPath(event.getPath()), eventType(event)) ;
-    nodeWatcher.onEvent(nEvent);
+    try {
+      nodeWatcher.onEvent(nEvent);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
   
   private String realPath(String path) {

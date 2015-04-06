@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
+import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -19,11 +20,17 @@ import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.event.VMWaitingEventListener;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.tool.VMZKClusterBuilder;
+import com.neverwinterdp.vm.util.VMNodeDebugger;
 
 public class VMManagerAppUnitTest  {
+  static {
+    System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
+  }
+  
   VMZKClusterBuilder  vmCluster ;
   Shell      shell;
   VMClient   vmClient;
+  private    RegistryDebugger debugger ;
   
   @Before
   public void setup() throws Exception {
@@ -31,6 +38,9 @@ public class VMManagerAppUnitTest  {
     vmCluster.clean();
     vmCluster.starZookeeper();
     Thread.sleep(5000);
+    
+    debugger = new RegistryDebugger(System.err, vmCluster.getVMClient().getRegistry().connect());
+    debugger.watch("/vm/allocated/vm-master-1", new VMNodeDebugger(), true);
   }
   
   @After
@@ -62,7 +72,7 @@ public class VMManagerAppUnitTest  {
 
       banner("Shutdown VM Master 1");
       //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
-      eventsListener.waitVMStatus("Expect vm-master-1 with running status", "vm-master-1", VMStatus.TERMINATED);
+      eventsListener.waitVMStatus("Expect vm-master-1 with terminated status", "vm-master-1", VMStatus.TERMINATED);
       eventsListener.waitHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
       eventsListener.waitVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
       vmClient.shutdown(vmClient.getMasterVMDescriptor());

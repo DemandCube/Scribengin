@@ -30,14 +30,10 @@ public class RegistryNodeEventListener {
     } else {
       registry.watchExists(listenPath, new NodeWatcher() {
         @Override
-        public void onEvent(NodeEvent event) {
+        public void onEvent(NodeEvent event) throws Exception {
           if(event.getType() == NodeEvent.Type.CREATE) {
-            try {
-              registry.watchModify(listenPath, nodeWatcher);
-              nodeWatcher.onEvent(event);
-            } catch (RegistryException e) {
-              logger.error("Cannot register the leader node watcher", e);
-            }
+            registry.watchModify(listenPath, nodeWatcher);
+            nodeWatcher.onEvent(event);
           }
         }
       });

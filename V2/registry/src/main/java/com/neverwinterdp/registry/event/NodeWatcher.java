@@ -6,5 +6,5 @@ abstract public class NodeWatcher {
   public boolean isComplete() { return complete; }
   public void setComplete() { complete = true; }
   
-  abstract public void onEvent(NodeEvent event) ;
+  abstract public void onEvent(NodeEvent event) throws Exception ;
 }

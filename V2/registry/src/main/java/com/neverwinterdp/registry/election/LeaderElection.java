@@ -84,7 +84,7 @@ public class LeaderElection {
     @Override
     public void onEvent(NodeEvent event) {
       try {
-        System.err.println("Election event: path = " + event.getType() + ", type" + event.getType());
+        System.err.println("Election event: Node = " + event.getPath() + ", Event = " + event.getType());
         watch() ;
       } catch(RegistryException ex) {
         throw new RuntimeException(ex) ;

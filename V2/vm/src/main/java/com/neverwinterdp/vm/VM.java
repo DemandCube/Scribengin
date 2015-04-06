@@ -174,8 +174,10 @@ public class VM {
         logger.error("Error in vm application", e);
       } finally {
         try {
+          System.err.println("Set terminated status...........................");
           setVMStatus(VMStatus.TERMINATED);
         } catch (RegistryException e) {
+          e.printStackTrace();
           logger.error("Error in vm registry", e);
         }
         try {

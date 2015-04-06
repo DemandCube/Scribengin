@@ -171,6 +171,18 @@ public class Node {
     }
   }
   
+  public void dump(Appendable out, String indentation) throws RegistryException, IOException  {
+    try {
+      out.append(indentation).append(path).append("\n");
+      List<String> childNodes = registry.getChildren(path);
+      Collections.sort(childNodes);
+      for(String node : childNodes) {
+        dump(out, path, node, registry, indentation + "  ");
+      }
+    } catch(RegistryException ex) {
+    }
+  }
+  
   private void dump(Appendable out, String parent, String node, Registry registry, String indentation) throws IOException, RegistryException {
     //During the recursive traverse, a node can be added or removed by the other process
     //So we can ignore all the No node exists exception
