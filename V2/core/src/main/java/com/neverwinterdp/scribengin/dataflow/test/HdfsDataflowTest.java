@@ -1,34 +1,36 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-
+import com.beust.jcommander.ParametersDelegate;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.test.HelloHDFSDataflowBuilder.TestCopyScribe;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
-import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
 
 public class HdfsDataflowTest extends DataflowTest {
-
+  @ParametersDelegate
+  private DataflowSourceGenerator sourceGenerator = new DataflowHDFSSourceGenerator();
+  
   protected void doRun(ScribenginShell shell) throws Exception {
     long start = System.currentTimeMillis();
-    ScribenginShell scribenginShell = (ScribenginShell) shell;  
-    FileSystem fs = FileSystem.getLocal(new Configuration());
-    new HDFSSourceGenerator().generateSource(fs, getDataDir() + "/source");
-    DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     
+    ScribenginShell scribenginShell = (ScribenginShell) shell;  
+    ScribenginClient scribenginClient = shell.getScribenginClient();
+    sourceGenerator.init(scribenginClient);
+    sourceGenerator.run();
+    
+    DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
-    
-    StorageDescriptor storageDescriptor = new StorageDescriptor("HDFS", getDataDir() + "/source") ;
-    dflDescriptor.setSourceDescriptor(storageDescriptor);
+
+    //TODO: review this code
+    dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
     
     StorageDescriptor defaultSink = new StorageDescriptor("HDFS", getDataDir() + "/sink");
     dflDescriptor.addSinkDescriptor("default", defaultSink);

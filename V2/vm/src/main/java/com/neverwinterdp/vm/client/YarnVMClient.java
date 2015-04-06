@@ -1,8 +1,10 @@
 package com.neverwinterdp.vm.client;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 
 import com.neverwinterdp.registry.Registry;
@@ -73,5 +75,9 @@ public class YarnVMClient extends VMClient {
     AppClient appClient = new AppClient(hadoopProperties) ;
     appClient.uploadApp(localAppHome, appHome);
     System.out.println("YarnVMClient: upload " + localAppHome  + " to " + appHome);
+  }
+  
+  public FileSystem getFileSystem() throws IOException {
+    return FileSystem.get(hadoopProperties.getConfiguration());
   }
 }

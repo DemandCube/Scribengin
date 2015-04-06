@@ -11,6 +11,7 @@ import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
+import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
@@ -26,6 +27,7 @@ public class DataflowHdfsToHdfsUnitTest {
 
   @Before
   public void setup() throws Exception {
+    FileUtil.removeIfExist("build/hdfs", false);
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
@@ -53,12 +55,13 @@ public class DataflowHdfsToHdfsUnitTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-hdfs-dataflow");
-      Assert.assertEquals("hello-hdfs-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
-      Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
+      shell.execute("registry dump");
+      DataflowClient dflClient = scribenginClient.getDataflowClient("hello-hdfs-dataflow");
+      Assert.assertEquals("hello-hdfs-dataflow-master-1", dflClient.getDataflowMaster().getId());
+      Assert.assertEquals(1, dflClient.getDataflowMasters().size());
 
       VMClient vmClient = scribenginClient.getVMClient();
-      List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
+      List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
       Assert.assertEquals(3, dataflowWorkers.size());
       vmClient.shutdown(dataflowWorkers.get(1));
       Thread.sleep(2000);

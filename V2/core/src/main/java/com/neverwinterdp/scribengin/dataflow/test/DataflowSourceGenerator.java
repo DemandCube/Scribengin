@@ -11,7 +11,11 @@ import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.tool.message.MessageGenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
+//TODO: Update the parameter description
 abstract public class DataflowSourceGenerator implements Runnable {
+  @Parameter(names = "--source-location", description = "The storage source name, usually the database name or dir name of the storage")
+  protected String sourceLocation = "build/hdfs";
+  
   @Parameter(names = "--source-name", description = "The storage source name, usually the database name or dir name of the storage")
   protected String sourceName = "hello";
   
@@ -52,7 +56,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
 
   abstract public StorageDescriptor getSourceDescriptor();
   
-  abstract public void init(ScribenginClient scribenginClient) ;
+  abstract public void init(ScribenginClient scribenginClient) throws Exception ;
   
   abstract public void run() ;
   

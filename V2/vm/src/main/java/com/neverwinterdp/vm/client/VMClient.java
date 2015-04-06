@@ -2,7 +2,11 @@ package com.neverwinterdp.vm.client;
 
 import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
@@ -82,6 +86,10 @@ public class VMClient {
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
     return result.getResultAs(Boolean.class);
+  }
+  
+  public FileSystem getFileSystem() throws IOException {
+    return FileSystem.get(new Configuration());
   }
   
   public void uploadApp(String localAppHome, String appHome) throws Exception {

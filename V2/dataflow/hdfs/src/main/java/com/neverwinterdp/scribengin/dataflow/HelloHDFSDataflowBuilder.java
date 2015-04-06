@@ -36,12 +36,16 @@ public class HelloHDFSDataflowBuilder {
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyDataProcessor.class.getName());
+    
     StorageDescriptor sourceDescriptor = new StorageDescriptor("HDFS", dataDir + "/source") ;
     dflDescriptor.setSourceDescriptor(sourceDescriptor);
+    
     StorageDescriptor defaultSink = new StorageDescriptor("HDFS", dataDir + "/sink");
     dflDescriptor.addSinkDescriptor("default", defaultSink);
+    
     StorageDescriptor invalidSink = new StorageDescriptor("HDFS", dataDir + "/invalid-sink");
     dflDescriptor.addSinkDescriptor("invalid", invalidSink);
+    
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
     return scribenginClient.submit(dflDescriptor) ;
   }
