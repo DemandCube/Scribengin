@@ -105,8 +105,6 @@ class FailureSimulator():
       
       if(not junit_report == "" ):
         logging.debug("Writing junit report to: "+junit_report)
-        if not os.path.exists(junit_report):
-          os.makedirs(junit_report)
         f = open(junit_report,'w')
         ts = TestSuite(self.roleName+" Test Suite", testCases)
         f.write(TestSuite.to_xml_string([ts]))
