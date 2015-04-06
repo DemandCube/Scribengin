@@ -4,13 +4,28 @@ import java.io.IOException;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.util.ExceptionUtil;
 
-public interface NodeFormater {
-  public String getFormattedText(Node node, String indent) ;
+abstract public class NodeFormater {
+  String indent = "" ;
   
-  static public class NodeDataFormater implements NodeFormater {
+  public NodeFormater setIndent(String indent) {
+    this.indent = indent ;
+    return this;
+  }
+  
+  abstract public String getFormattedText() ;
+  
+  static public class NodeDataFormater extends NodeFormater {
+    private Node node ;
+    
+    public NodeDataFormater(Node node, String indent) {
+      this.node = node ;
+      setIndent(indent);
+    }
+    
     @Override
-    public String getFormattedText(Node node, String indent) {
+    public String getFormattedText() {
       StringBuilder b = new StringBuilder() ;
       try {
         String text = new String(node.getData());
@@ -29,24 +44,21 @@ public interface NodeFormater {
     }
   }
   
-  static public class NodeDumpFormater implements NodeFormater {
+  static public class NodeDumpFormater extends NodeFormater {
     private Node nodeToDump = null;
       
-    public NodeDumpFormater() {
-    }
-    
-    public NodeDumpFormater(Node nodeToDump) {
+    public NodeDumpFormater(Node nodeToDump, String indent) {
       this.nodeToDump = nodeToDump ;
+      setIndent(indent);
     }
     
     @Override
-    public String getFormattedText(Node node, String indent) {
+    public String getFormattedText() {
       StringBuilder b = new StringBuilder() ;
       try {
-        if(nodeToDump != null) nodeToDump.dump(b, indent);
-        else node.dump(b, indent);
+        nodeToDump.dump(b, indent);
       } catch (RegistryException | IOException e) {
-        e.printStackTrace();
+        b.append(ExceptionUtil.getStackTrace(e));
       }
       return b.toString();
     }

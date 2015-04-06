@@ -52,7 +52,7 @@ public class RegistryDebugger extends RegistryListener {
     public void onEvent(NodeEvent event) {
       try {
         Node node = getRegistry().get(event.getPath());
-        String text = formater.getFormattedText(node, "    ");
+        String text = formater.getFormattedText();
         println("RegistryDebugger: Node = " + node.getPath() + ", event = " + event.getType()) ;
         println(text) ;
       } catch (Exception e) {

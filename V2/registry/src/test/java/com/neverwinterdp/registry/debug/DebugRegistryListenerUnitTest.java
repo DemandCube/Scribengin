@@ -90,7 +90,8 @@ public class DebugRegistryListenerUnitTest {
 
     @Override
     public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-      registryDebugger.watchChildren(node.getPath(), new NodeFormater.NodeDumpFormater(), true, true);
+      NodeFormater formater = new NodeFormater.NodeDumpFormater(node, "") ;
+      registryDebugger.watchChildren(node.getPath(), formater, true, true);
     }
 
     @Override
