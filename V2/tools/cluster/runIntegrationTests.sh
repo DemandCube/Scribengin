@@ -4,7 +4,7 @@ pushd `dirname $0` > /dev/null
 SCRIPTPATH=`pwd`
 
 XUNITFILE=$1
-TESTCOMMAND="nosetests -s $SCRIPTPATH/cluster/test/*IntegrationTest.py"
+TESTCOMMAND="nosetests -s $SCRIPTPATH/test/*IntegrationTest.py"
 if [ $XUNITFILE ] && [ $XUNITFILE != "" ]
 then
   TESTCOMMAND="$TESTCOMMAND --with-xunit --xunit-file=$XUNITFILE"

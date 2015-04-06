@@ -72,7 +72,7 @@ public class KafkaTopicConfig {
     public int   consumeBatchFetch = 500;
     
     @Parameter(names = "--consume-retries", description = "The number of retry when the consumer cannot read more messages")
-    public int   consumeRetries = 5;
+    public int   consumeRetries = 20;
     
     @DynamicParameter(names = "--consumer:", description = "The kafka consumer properties configuration according to the kafka consumer document")
     public Map<String, String> consumerProperties = new HashMap<String, String>();

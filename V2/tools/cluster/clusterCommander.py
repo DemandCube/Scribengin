@@ -1,10 +1,9 @@
 import click, logging, multiprocessing, signal
-from sys import path, stdout, exit
-from os.path import join, dirname, abspath
+from sys import stdout, exit
 from time import sleep
-path.insert(0, join(dirname(dirname(abspath(__file__))), "cluster"))
-from Cluster import Cluster  #@UnresolvedImport
-import kafkaFailureSimulator, zkFailureSimulator
+
+from failure.FailureSimulator import ZookeeperFailure,KafkaFailure
+from Cluster import Cluster
 
 
 _debug = False
@@ -13,7 +12,7 @@ _jobs = []
 
 @click.group(chain=True)
 @click.option('--debug/--no-debug', default=False, help="Turn debugging on")
-@click.option('--logfile', default='clusterCommander.log', help="Log file to write to")
+@click.option('--logfile', default='failure.log', help="Log file to write to")
 def mastercommand(debug, logfile):
   global _debug, _logfile
   _debug = debug
@@ -111,50 +110,53 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
   click.echo(cluster.getReport())
 
 @mastercommand.command("kafkafailure",help="Failure Simulation for Kafka")
-@click.option('--failure-interval',              default=180,  help="Time interval (in seconds) to fail server")
-@click.option('--wait-before-start',             default=180,  help="Time to wait (in seconds) before starting server")
-@click.option('--servers',                       default="",   help="Servers to effect.  Command separated list (i.e. --servers zk1,zk2,zk3)")
-@click.option('--min-servers',                   default=1,    help="Minimum number of servers that must stay up")
+@click.option('--failure-interval',               default=180,  help="Time interval (in seconds) to fail server")
+@click.option('--wait-before-start',              default=180,  help="Time to wait (in seconds) before starting server")
+@click.option('--servers',                        default="",   help="Servers to effect.  Command separated list (i.e. --servers zk1,zk2,zk3)")
+@click.option('--min-servers',                    default=1,    help="Minimum number of servers that must stay up")
 @click.option('--servers-to-fail-simultaneously', default=1,   help="Number of servers to kill simultaneously")
-@click.option('--kill-method',                   default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
-@click.option('--initial-clean',                 is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
-def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean):
+@click.option('--kill-method',                    default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
+@click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
+@click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
+def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
   global _jobs
   if len(servers) < 1:
     raise ValueError("--servers is not specified!")
     return
+  
+  kf = KafkaFailure()
   
   p = multiprocessing.Process(name="KafkaFailure",
-                              target=kafkaFailureSimulator.kafkaFailure, 
-                              args=(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean))
+                              target=kf.failureSimulation, 
+                              args=(failure_interval, wait_before_start, servers, min_servers, 
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, junit_report))
   _jobs.append(p)
   p.start()
   
-  for job in _jobs:
-    job.join()
 
 @mastercommand.command("zookeeperfailure",help="Failure Simulation for Zookeeper")
-@click.option('--failure-interval',              default=180,  help="Time interval (in seconds) to fail server")
-@click.option('--wait-before-start',             default=180,  help="Time to wait (in seconds) before starting server")
-@click.option('--servers',                       default="",   help="Servers to effect.  Command separated list (i.e. --servers zk1,zk2,zk3)")
-@click.option('--min-servers',                   default=1,    help="Minimum number of servers that must stay up")
-@click.option('--server-to-fail-simultaneously', default=1,    help="Number of servers to kill simultaneously")
-@click.option('--kill-method',                   default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
-@click.option('--initial-clean',                 is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
-def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean):
+@click.option('--failure-interval',               default=180,  help="Time interval (in seconds) to fail server")
+@click.option('--wait-before-start',              default=180,  help="Time to wait (in seconds) before starting server")
+@click.option('--servers',                        default="",   help="Servers to effect.  Command separated list (i.e. --servers zk1,zk2,zk3)")
+@click.option('--min-servers',                    default=1,    help="Minimum number of servers that must stay up")
+@click.option('--servers-to-fail-simultaneously', default=1,    help="Number of servers to kill simultaneously")
+@click.option('--kill-method',                    default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
+@click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
+@click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
+def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
   global _jobs
   if len(servers) < 1:
     raise ValueError("--servers is not specified!")
     return
   
+  zf = ZookeeperFailure()
   p = multiprocessing.Process(name="ZookeeperFailure",
-                              target=zkFailureSimulator.zkFailure, 
-                              args=(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean))
+                              target=zf.failureSimulation, 
+                              args=(failure_interval, wait_before_start, servers, min_servers, 
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, junit_report))
   _jobs.append(p)
   p.start()
   
-  for job in _jobs:
-    job.join()
 
 @mastercommand.command("monitor",help="Monitor Cluster status")
 @click.option('--update-interval', default=30, help="Time interval (in seconds) to wait between updating cluster status")
@@ -162,12 +164,20 @@ def monitor(update_interval):
   """
   Prints the cluster report
   """
+  global _jobs
+  p = multiprocessing.Process(name="Monitor",
+                              target=doMonitor, 
+                              args=(update_interval,))
+  _jobs.append(p)
+  p.start()
+
+def doMonitor(interval):
   cluster = Cluster()
   while True:
     click.echo(cluster.getReport())
     click.echo("\n\n")
-    sleep(update_interval)
-
+    sleep(interval)
+    
 def catchSignal(signal, frame):
   """
   Make sure we clean up when ctrl+c is hit
@@ -190,3 +200,6 @@ if __name__ == '__main__':
   signal.signal(signal.SIGINT, catchSignal)
   #Parse commands and run
   mastercommand()
+  
+  for job in _jobs:
+    job.join()

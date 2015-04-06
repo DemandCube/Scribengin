@@ -133,7 +133,7 @@ public class KafkaTopicReport {
         "Producer Message Size: " + producerReport.messageSize,
         producerReport.messageSize > 0));
 
-    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
+    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(getClass().getSimpleName());
     tapProducer.dump(testSet, new File(fileName));
   }
 

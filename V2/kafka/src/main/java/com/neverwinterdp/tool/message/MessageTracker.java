@@ -113,36 +113,21 @@ public class MessageTracker {
     TestSet testSet = new TestSet();
     int testNum = 0;
     optimize();
-
+    // a test per partition
     for (Map.Entry<Integer, PartitionMessageTracker> entry : partitions.entrySet()) {
       int partition = entry.getKey();
       PartitionMessageTracker partitionTracker = entry.getValue();
 
       testSet.addTestResult(newTestResult(++testNum,
-          "Partition: " + partition,
-          true));
-
-      testSet.addTestResult(newTestResult(++testNum,
-          "From: " + partitionTracker.getMinMessageId(),
-          partitionTracker.getMinMessageId() <= partitionTracker.getMaxMessageId()));
-
-      testSet.addTestResult(newTestResult(++testNum,
-          "To: " + partitionTracker.getMaxMessageId(),
-          partitionTracker.getMaxMessageId() >= partitionTracker.getMinMessageId()));
-
-      testSet.addTestResult(newTestResult(++testNum,
-          "Duplicates: " + partitionTracker.getDuplicatedCount(),
-          partitionTracker.getDuplicatedCount() >= 0));
-
-      testSet.addTestResult(newTestResult(++testNum,
-          "Num messages: " + partitionTracker.getLogCount(),
-          partitionTracker.getLogCount() > 0));
-
-      testSet.addTestResult(newTestResult(++testNum,
-          "In sequence: " + partitionTracker.isInSequence(),
+          "Partition: " + partition
+              + " From:" + partitionTracker.getMinMessageId()
+              + " To:" + partitionTracker.getMaxMessageId()
+              + " Duplicates:" + partitionTracker.getDuplicatedCount()
+              + " Num messages:" + partitionTracker.getLogCount()
+              + " In Sequence: " + partitionTracker.isInSequence(),
           partitionTracker.isInSequence()));
     }
-    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(fileName);
+    TapProducer tapProducer = TapProducerFactory.makeTapJunitProducer(getClass().getSimpleName());
     tapProducer.dump(testSet, new File(fileName));
   }
 

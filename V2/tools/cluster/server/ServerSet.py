@@ -69,7 +69,7 @@ class ServerSet(object):
   def getServersByHostname(self, hostnames):
     serverSet = ServerSet("subset")
     for server in self.servers :
-      if(server.getHostname() in hostnames) :
+      if(server.getHostname().strip() in hostnames) :
         serverSet.addServer(server)
     return serverSet
   
@@ -131,28 +131,20 @@ class ServerSet(object):
   def cleanHadoopWorker(self):
     return self.cleanProcess("hadoop-worker")
   
-  def getProcessReport(self, processName):
-    procReport = [] 
-    for server in self.servers :
-      process = server.getProcess(processName)
-      if process is not None:
-        procReport.append(process.getReportDict())
-    
-    return tabulate(procReport, headers="keys")
-  
-  def reportProcess(self, processName) :
-    print self.getProcessReport(processName)
 
   def getReport(self):
-    serverReport = [] 
+    serverReport = []
+    
     for server in self.servers :
-      serverReport.append(server.getReportDict())
-    headers = {"hostname":"hostname",
-               "ProcName":"Process Name",
-               "isRunning": "isProcessRunning",
-               "sshKeyPath": "sshKeyPath",
-               "role":"role",
-               "Num processes":"Num Processes"}
+      serverReport.append([server.hostname, server.role, "", "", "",""])
+      procs = server.getProcesses()
+      for process in procs:
+        procDict = server.getProcess(process).getReportDict()
+        
+        serverReport.append(["","",procDict["HomeDir"], procDict["ProcessIdentifier"], procDict["processID"], procDict["Status"]])
+      
+    headers = ["Hostname", "Role", "HomeDir", "ProcessIdentifier", "ProcessID", "Status"]
+    
     return tabulate(serverReport, headers=headers)
   
   def report(self) :

@@ -58,9 +58,9 @@ public class KafkaTopicCheckTool implements Runnable {
   public void junitReport() throws Exception {
     System.out.println("kafkaTopicConfig.junitReportFile --> " + kafkaTopicConfig.junitReportFile);
     if (kafkaTopicConfig.junitReportFile != null && !kafkaTopicConfig.junitReportFile.isEmpty()) {
-      String topicReportFile = kafkaTopicConfig.junitReportFile.replace(".xml", "-0.xml");
-      String trackerReport  = kafkaTopicConfig.junitReportFile.replace(".xml", "-1.xml");
-  
+      String topicReportFile = kafkaTopicConfig.junitReportFile.replace(".xml","").concat( "-topicReport.xml");
+      String trackerReport  = kafkaTopicConfig.junitReportFile.replace(".xml", "").concat("-messageTracker.xml");
+
       topicReport.junitReport(topicReportFile);
       checkTool.getMessageTracker().junitReport(trackerReport);
     }
