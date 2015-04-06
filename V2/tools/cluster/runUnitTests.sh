@@ -1,7 +1,6 @@
 #! /bin/sh
 
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
+SCRIPTPATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 XUNITFILE=$1
 TESTCOMMAND="nosetests -s $SCRIPTPATH/test/"
