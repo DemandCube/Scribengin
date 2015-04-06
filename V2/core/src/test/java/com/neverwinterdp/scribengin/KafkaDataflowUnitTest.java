@@ -87,7 +87,7 @@ public class KafkaDataflowUnitTest {
       try {
         String command =
             "dataflow-test kafka " +
-                "  --worker 3" +
+                " --worker 3" +
                 " --executor-per-worker 1" +
                 " --duration 90000" +
                 " --task-max-execute-time 1000" +
@@ -95,8 +95,9 @@ public class KafkaDataflowUnitTest {
                 " --source-num-of-stream 10" +
                 " --source-write-period 5" +
                 " --source-max-records-per-stream 10000" +
-                "  --sink-name output " +
-                "--junit-report build/junit-report.xml";
+                " --sink-name output " +
+                " --print-dataflow-info -1" +
+                " --junit-report build/junit-report.xml";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();

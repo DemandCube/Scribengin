@@ -2,6 +2,7 @@ package com.neverwinterdp.tool.message;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -10,6 +11,9 @@ import org.tap4j.model.TestSet;
 import org.tap4j.producer.TapProducer;
 import org.tap4j.producer.TapProducerFactory;
 import org.tap4j.util.StatusValues;
+
+import com.neverwinterdp.tool.message.PartitionMessageTracker.SequenceMap;
+import com.neverwinterdp.util.text.TabularFormater;
 
 public class MessageTracker {
   private TreeMap<Integer, PartitionMessageTracker> partitions = new TreeMap<>();
@@ -75,11 +79,32 @@ public class MessageTracker {
 
   public void dump(Appendable out) throws IOException {
     out.append("\nMessage Tracker: \n\n");
+    String[] header = {
+        "Partition", "From", "To", "In Sequence", "Duplication"
+    };
+    TabularFormater formater = new TabularFormater(header);
+    formater.setTitle("Message Tracker");
+    
     for (Map.Entry<Integer, PartitionMessageTracker> entry : partitions.entrySet()) {
       int partition = entry.getKey();
+      formater.addRow("    " + partition, "", "", "", "");
       PartitionMessageTracker partitionTracker = entry.getValue();
-      partitionTracker.dump(out, "Tracking message for the partition " + partition);
+      List<SequenceMap> map = partitionTracker.getSequenceMap() ;
+      SequenceMap prevSeqMap = null;
+      for (int i = 0; i < map.size(); i++) {
+        SequenceMap seqMap = map.get(i);
+        boolean inSequence = true;
+        if (prevSeqMap != null) {
+          inSequence = prevSeqMap.getCurrent() + 1 == seqMap.getFrom();
+        }
+        Object[] cells = {
+          "", seqMap.getFrom(), seqMap.getCurrent(), inSequence, seqMap.getDuplicatedDescription()
+        };
+        formater.addRow(cells);
+        prevSeqMap = seqMap;
+      }
     }
+    out.append(formater.getFormatText()).append("\n");
     out.append("\nLog Count: " + getLogCount() + "\n");
   }
 

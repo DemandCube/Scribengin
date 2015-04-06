@@ -237,6 +237,7 @@ public class MessageTrackerUnitTest {
     log(tracker, 100, 0);
     log(tracker, 200, 80);
     log(tracker, 1000, 200);
+    tracker.dump(System.out, "Sequence Number Tracker");
     tracker.optimize();
     tracker.dump(System.out, "Sequence Number Tracker");
   }  
@@ -269,7 +270,6 @@ public class MessageTrackerUnitTest {
     messageTracker.junitReport("build/messageTracker.xml");
   }
   
-  //partition 0 (probably) not in sequence, partition 1 in sequence
   @Test
   public void testJunitReportNotInSequence() throws Exception {
     MessageTracker messageTracker = new MessageTracker();
@@ -282,6 +282,7 @@ public class MessageTrackerUnitTest {
       messageTracker.log(1, i);
     }
 
+    messageTracker.dump(System.out);
     messageTracker.optimize();
     messageTracker.junitReport("build/messageTrackerNotInSequence.xml");
   }
@@ -300,6 +301,7 @@ public class MessageTrackerUnitTest {
 
     messageTracker.optimize();
     messageTracker.junitReport("build/messageTrackerAllDuplicates.xml");
+    messageTracker.dump(System.out);
   }
 
   private void log(PartitionMessageTracker tracker, int from, int to) {

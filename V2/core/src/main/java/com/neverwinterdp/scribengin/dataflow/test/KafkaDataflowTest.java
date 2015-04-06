@@ -47,8 +47,10 @@ public class KafkaDataflowTest extends DataflowTest {
     
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
+    
     waitingEventListener.waitForEvents(duration);
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
+    
     dataflowInfoThread.interrupt();
     
     

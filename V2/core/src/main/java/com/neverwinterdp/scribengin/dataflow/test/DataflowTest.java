@@ -120,10 +120,12 @@ abstract public class DataflowTest {
     }
 
     public void run() {
+      if(period < 1) return;
       try {
         while (true) {
           Thread.sleep(period);
           try {
+            shell.console().println("#Dataflow Print Thread period = " + period + "#"); ;
             shell.execute("dataflow info --running " + descriptor.getName());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());

@@ -87,7 +87,7 @@ public class DataflowTaskEventExperimentTest {
       try {
         String command = 
           "dataflow-test kafka " + 
-          "  --worker 3 --executor-per-worker 1 --duration 90000 --task-max-execute-time 1000" +
+          "  --worker 2 --executor-per-worker 2 --duration 90000 --task-max-execute-time 1000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 10000" + 
           "  --sink-name output "+
           "  --junit-report build/tap.xml";
