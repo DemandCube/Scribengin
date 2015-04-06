@@ -13,7 +13,7 @@ class Test_Cluster(unittest.TestCase):
     self.assertEqual(cluster.getServersByRole("hadoop-master").getNumServers(), 1)
     self.assertEqual(cluster.getServersByRole("hadoop-worker").getNumServers(), 3)
                 
-    cluster.report()
+    #cluster.report()
     
 
     
