@@ -28,6 +28,12 @@ public class TransactionImpl implements Transaction {
   }
 
   @Override
+  public <T> Transaction create(String path, T obj, NodeCreateMode mode) {
+    zkTransaction.create(registry.realPath(path), JSONSerializer.INSTANCE.toBytes(obj), RegistryImpl.DEFAULT_ACL, RegistryImpl.toCreateMode(mode));
+    return this;
+  }
+  
+  @Override
   public Transaction delete(String path) {
     zkTransaction.delete(registry.realPath(path), -1);
     return this;

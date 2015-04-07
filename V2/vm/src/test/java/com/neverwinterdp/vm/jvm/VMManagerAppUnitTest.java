@@ -90,6 +90,7 @@ public class VMManagerAppUnitTest  {
       Assert.assertTrue(shutdown(vmClient, vmDummy2));
       Assert.assertTrue(shutdown(vmClient, vmDummy1));
       eventsListener.waitForEvents(10000);
+      
       vmClient.shutdown();
     } finally {
       Thread.sleep(3000);

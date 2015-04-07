@@ -4,6 +4,8 @@ package com.neverwinterdp.registry;
 public interface Transaction {
   public Transaction create(final String path, byte data[], NodeCreateMode mode);
 
+  public <T> Transaction create(final String path, T obj, NodeCreateMode mode);
+  
   public Transaction delete(final String path) ;
   
   public void rcopy(String path, String toPath) throws RegistryException ;

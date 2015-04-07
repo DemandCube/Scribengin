@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
@@ -49,8 +50,9 @@ public class VMService {
     registryListener = new RegistryListener(registry);
   }
   
-  public void shutdown() { 
-    plugin.shutdown();
+  public void shutdown() {
+    plugin.shutdown(); 
+    registry = null ;
   }
   
   public boolean isClosed() { return registry == null ; }
@@ -96,28 +98,32 @@ public class VMService {
   }
   
   public void unregister(VMDescriptor descriptor) throws Exception {
-    //TODO: fix this check by removing the watcher
     if(isClosed()) return;
-    if(!registry.exists(descriptor.getStoredPath())) return;
-    //Copy the vm descriptor to the history path. This is not efficient, 
-    //but zookeeper does not provide the move method
-    Node vmNode = 
-        registry.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
-    vmNode.setData(descriptor);
-    
-    //Recursively delete the vm data in the allocated path
-    registry.rdelete(descriptor.getStoredPath());
+    if(!registry.exists(descriptor.getStoredPath())) {
+      //TODO: fix this check by removing the watcher
+      return;
+    }
+    try {
+      //Copy the vm descriptor to the history path. This is not efficient, 
+      //but zookeeper does not provide the move method
+      Transaction transaction = registry.getTransaction();
+      transaction.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName() + "-",descriptor, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+      transaction.rdelete(descriptor.getStoredPath());
+      transaction.commit();
+    } catch(Exception ex) {
+      System.err.println("Error when move the vm history, vm = " + descriptor.getId());
+      ex.printStackTrace();
+    }
   }
   
   public boolean isRunning(VMDescriptor descriptor) throws Exception {
     Node statusNode = registry.get(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
     if(!statusNode.exists()) return false;
     VMStatus status = statusNode.getDataAs(VMStatus.class);
-    if(status == VMStatus.ALLOCATED) {
-      return true;
-    } else {
-      return statusNode.hasChild("heartbeat");
-    }
+    if(statusNode.hasChild("heartbeat")) {
+      if(status != VMStatus.TERMINATED) return true;
+    } 
+    return false;
   }
   
   public void kill(VMDescriptor descriptor) throws Exception {
