@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import org.apache.hadoop.fs.FileSystem;
 
-import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.sink.Sink;

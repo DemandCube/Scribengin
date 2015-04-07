@@ -48,6 +48,12 @@ public class HdfsDataflowTest extends DataflowTest {
     sinkValidator.init(scribenginClient);
     sinkValidator.run();
     
+    //TODO: Implement this and test
+//    DataflowTestReport report = new DataflowTestReport() ;
+//    sourceGenerator.populate(report);
+//    sinkValidator.populate(report);
+//    report.report(System.out);
+    
     shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
   }
