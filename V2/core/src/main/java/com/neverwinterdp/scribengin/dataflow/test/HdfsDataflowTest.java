@@ -40,8 +40,11 @@ public class HdfsDataflowTest extends DataflowTest {
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-    waitingEventListener.waitForEvents(duration);
-
+    try { 
+      waitingEventListener.waitForEvents(duration);
+    } catch(Exception ex) {
+      ex.printStackTrace();
+    }
     sinkValidator.init(scribenginClient);
     sinkValidator.run();
     
