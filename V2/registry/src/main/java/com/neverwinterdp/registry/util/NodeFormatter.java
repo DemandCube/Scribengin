@@ -6,17 +6,17 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.ExceptionUtil;
 
-abstract public class NodeFormater {
+abstract public class NodeFormatter {
   String indent = "" ;
   
-  public NodeFormater setIndent(String indent) {
+  public NodeFormatter setIndent(String indent) {
     this.indent = indent ;
     return this;
   }
   
   abstract public String getFormattedText() ;
   
-  static public class NodeDataFormater extends NodeFormater {
+  static public class NodeDataFormater extends NodeFormatter {
     private Node node ;
     
     public NodeDataFormater(Node node, String indent) {
@@ -44,7 +44,7 @@ abstract public class NodeFormater {
     }
   }
   
-  static public class NodeDumpFormater extends NodeFormater {
+  static public class NodeDumpFormater extends NodeFormatter {
     private Node nodeToDump = null;
       
     public NodeDumpFormater(Node nodeToDump, String indent) {

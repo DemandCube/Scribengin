@@ -21,7 +21,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.util.NodeDebugger;
 import com.neverwinterdp.registry.util.RegistryDebugger;
-import com.neverwinterdp.registry.util.NodeFormater;
+import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.zk.tool.server.EmbededZKServer;
@@ -90,7 +90,7 @@ public class DebugRegistryListenerUnitTest {
 
     @Override
     public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-      NodeFormater formater = new NodeFormater.NodeDumpFormater(node, "") ;
+      NodeFormatter formater = new NodeFormatter.NodeDumpFormater(node, "") ;
       registryDebugger.watchChildren(node.getPath(), formater, true, true);
     }
 
