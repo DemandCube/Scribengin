@@ -6,40 +6,54 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.event.RegistryListener;
+import com.neverwinterdp.util.JSONSerializer;
 
 public class WaitingNodeEventListener {
   private RegistryListener registryListener ;
   private LinkedList<NodeWatcher> watcherQueue = new LinkedList<>();
+  private int waitingNodeEventCount = 0;
+  private int detectNodeEventCount = 0 ;
   
   public WaitingNodeEventListener(Registry registry) {
     registryListener = new RegistryListener(registry);
   }
   
-  public int getWaitingNodeEventCount() { return watcherQueue.size(); }
+  public int getWaitingNodeEventCount() { return waitingNodeEventCount; }
   
-  public void add(String path, NodeEvent.Type ... type) throws Exception {
-    registryListener.watch(path, new NodeEventTypeNodeWatcher(path, type));
+  public int getDetectNodeEventCount() { return detectNodeEventCount ; }
+  
+  synchronized public void add(String path, NodeEvent.Type type) throws Exception {
+    NodeWatcher watcher = new NodeEventTypeNodeWatcher(path, new NodeEvent.Type[] { type });
+    watcherQueue.addLast(watcher);
+    registryListener.watch(path, watcher);
+    waitingNodeEventCount++;
   }
   
-  public <T> void add(String path, T data) throws Exception {
-    registryListener.watch(path, new DataChangeNodeWatcher<T>((Class<T>)data.getClass(), data));
+  synchronized public void add(String path, NodeEvent.Type ... type) throws Exception {
+    NodeWatcher watcher = new NodeEventTypeNodeWatcher(path, type);
+    watcherQueue.addLast(watcher);
+    registryListener.watch(path, watcher, false);
+    waitingNodeEventCount++;
+  }
+  
+  synchronized public <T> void add(String path, T data) throws Exception {
+    NodeWatcher watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)data.getClass(), data);
+    watcherQueue.addLast(watcher);
+    registryListener.watch(path, watcher, true);
+    waitingNodeEventCount++;
   }
   
   synchronized public void waitForEvents(long timeout) throws Exception {
-    if(watcherQueue.size() == 0) return ;
+    if(detectNodeEventCount == waitingNodeEventCount) return ;
     long stopTime = System.currentTimeMillis() + timeout;
     try {
-      while(true) {
+      while(detectNodeEventCount < waitingNodeEventCount) {
         long waitTime = stopTime - System.currentTimeMillis();
         if(waitTime <= 0) return;
         wait(waitTime);
-        if(watcherQueue.size() == 0) return ;
       }
     } catch (InterruptedException e) {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
-    } finally {
-      if(watcherQueue.size() > 0) {
-      }
     }
   }
   
@@ -47,6 +61,8 @@ public class WaitingNodeEventListener {
     NodeWatcher waitingWatcher = watcherQueue.getFirst() ;
     if(waitingWatcher == watcher) {
       watcherQueue.removeFirst();
+      detectNodeEventCount++;
+      notifyAll();
     }
   }
   
@@ -85,7 +101,8 @@ public class WaitingNodeEventListener {
     private Class<T> dataType ;
     private T        expectData ;
     
-    DataChangeNodeWatcher(Class<T> dataType, T expectData) {
+    DataChangeNodeWatcher(String path, Class<T> dataType, T expectData) {
+      this.path = path ;
       this.dataType = dataType;
       this.expectData = expectData ;
     }
@@ -95,13 +112,13 @@ public class WaitingNodeEventListener {
       T data = registryListener.getRegistry().getDataAs(event.getPath(), dataType) ;
       if(expectData.equals(data)) {
         onDetectNodeEvent(this, event);
+        setComplete();
       }
     }
     
     public String toString() {
       StringBuilder b = new StringBuilder() ; 
-      b.append("Waiting for the data ");
-      b.append("], path = " + path);
+      b.append("Waiting for the data on path = " + path);
       return b.toString();
     }
   }

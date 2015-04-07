@@ -16,6 +16,7 @@ import com.mycila.guice.ext.closeable.CloseableInjector;
 import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.event.NodeEvent;
@@ -70,15 +71,22 @@ public class WaitingNodeEventListenerUnitTest {
   public void testListener() throws Exception {
     WaitingNodeEventListener listener = new WaitingNodeEventListener(registry);
     listener.add(EVENTS_PATH, NodeEvent.Type.CREATE);
+    listener.add(EVENTS_PATH + "/hello", NodeEvent.Type.CREATE, NodeEvent.Type.MODIFY);
+    listener.add(EVENTS_PATH + "/hello", new HelloBean("hello"));
     registry.createIfNotExist(EVENTS_PATH);
-    Thread.sleep(1000);
-    Assert.assertEquals(0, listener.getWaitingNodeEventCount());
+    Node hello = registry.createIfNotExist(EVENTS_PATH + "/hello");
+    hello.setData(new HelloBean("hello"));
+    //hello.setData(new HelloBean("hello(update)"));
+    listener.waitForEvents(1000);
+    Assert.assertEquals(listener.getDetectNodeEventCount(), listener.getWaitingNodeEventCount());
   }
   
   static public class HelloBean {
     private String hello ;
     
-    public HelloBean() {} 
+    public HelloBean() {
+      
+    }
     
     public HelloBean(String hello) {
       this.hello = hello ;
@@ -86,5 +94,12 @@ public class WaitingNodeEventListenerUnitTest {
 
     public String getHello() { return hello; }
     public void setHello(String hello) { this.hello = hello; }
+    
+    @Override
+    public boolean equals(Object obj) {
+      if(obj == null) return false ;
+      HelloBean other = (HelloBean) obj;
+      return hello.equals(other.hello) ;
+    }
   }
 }
