@@ -13,10 +13,9 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   private FileSystem fs  ;
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
   
-  //TODO: replace those parameters by the source parameter in the DataflowSourceGenerator 
-  private int numOfStream = 5;
-  private int numOfBufferPerStream = 3;
-  private int numOfRecordPerBuffer = 10;
+  private int numOfStream;
+  private int numOfBufferPerStream;
+  private int numOfRecordPerBuffer;
   
   @Override
   public StorageDescriptor getSourceDescriptor() {
@@ -28,6 +27,9 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
     fs = scribenginClient.getVMClient().getFileSystem();
+    numOfStream = numberOfStream;
+    numOfBufferPerStream=1;
+    numOfRecordPerBuffer = maxRecordsPerStream/numOfBufferPerStream;
   }
 
   @Override

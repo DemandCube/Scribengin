@@ -44,6 +44,7 @@ public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
         }
         streamReader.close();
       }
+      messageTracker.optimize();
       messageTracker.dump(System.out);
     } catch (Exception e) {
       e.printStackTrace();
