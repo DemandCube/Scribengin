@@ -2,8 +2,8 @@ package com.neverwinterdp.scribengin.event;
 
 import static com.neverwinterdp.scribengin.event.ScribenginEvent.*;
 
-import com.neverwinterdp.registry.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;

@@ -1,9 +1,10 @@
-package com.neverwinterdp.registry.debug;
+package com.neverwinterdp.registry.util;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,23 +16,19 @@ import com.mycila.guice.ext.closeable.CloseableInjector;
 import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
-import com.neverwinterdp.registry.Node;
-import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
-import com.neverwinterdp.registry.util.NodeDebugger;
-import com.neverwinterdp.registry.util.RegistryDebugger;
-import com.neverwinterdp.registry.util.NodeFormater;
+import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
-public class DebugRegistryListenerUnitTest {
+public class WaitingNodeEventListenerUnitTest {
   static {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;
   }
   
-  static public String TEST_DEBUG_PATH  = "/debug" ;
+  static public String EVENTS_PATH  = "/events" ;
   
   static private EmbededZKServer zkServerLauncher ;
   
@@ -70,38 +67,12 @@ public class DebugRegistryListenerUnitTest {
   }
 
   @Test
-  public void testRegistryDebugListener() throws Exception {
-    RegistryDebugger debugger = new RegistryDebugger(System.out, registry) ;
-    
-    debugger.watch(TEST_DEBUG_PATH, new HelloChildrenDebugger(), true);
-
-    Node debugNode = registry.createIfNotExist(TEST_DEBUG_PATH) ;
-    Node hello1 = debugNode.createChild("hello1", new HelloBean("hello - 1"), NodeCreateMode.PERSISTENT);
-    Thread.sleep(100);
-    Node hello2 = debugNode.createChild("hello2", new HelloBean("hello - 2"), NodeCreateMode.PERSISTENT);
-    
-    Thread.sleep(100);
-    hello1.delete();
-    debugNode.rdelete();
-    Thread.sleep(2000);
-  }
-  
-  static public class HelloChildrenDebugger implements NodeDebugger {
-
-    @Override
-    public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-      NodeFormater formater = new NodeFormater.NodeDumpFormater(node, "") ;
-      registryDebugger.watchChildren(node.getPath(), formater, true, true);
-    }
-
-    @Override
-    public void onModify(RegistryDebugger registryDebugger, Node node) throws Exception {
-    }
-
-    @Override
-    public void onDelete(RegistryDebugger registryDebugger, Node node) throws Exception {
-      System.out.println("Delete node " + node.getPath()) ;
-    }
+  public void testListener() throws Exception {
+    WaitingNodeEventListener listener = new WaitingNodeEventListener(registry);
+    listener.add(EVENTS_PATH, NodeEvent.Type.CREATE);
+    registry.createIfNotExist(EVENTS_PATH);
+    Thread.sleep(1000);
+    Assert.assertEquals(0, listener.getWaitingNodeEventCount());
   }
   
   static public class HelloBean {

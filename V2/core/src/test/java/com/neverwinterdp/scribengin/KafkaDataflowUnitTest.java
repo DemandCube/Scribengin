@@ -12,7 +12,6 @@ import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
-import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
@@ -98,7 +97,7 @@ public class KafkaDataflowUnitTest {
                 " --source-max-records-per-stream 10000" +
                 " --sink-name output " +
                 " --print-dataflow-info -1" +
-                " --junit-report junit-reports/junit-report.xml";
+                " --junit-report build/junit-report.xml";
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();

@@ -1,7 +1,6 @@
-package com.neverwinterdp.registry;
+package com.neverwinterdp.registry.event;
 
-import com.neverwinterdp.registry.event.NodeEvent;
-import com.neverwinterdp.registry.event.NodeWatcher;
+import com.neverwinterdp.registry.Registry;
 
 
 abstract public class DataChangeNodeWatcher<T> extends NodeWatcher {

@@ -9,32 +9,33 @@ import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.event.RegistryListener;
 
-public class RegistryDebugger extends RegistryListener {
+public class RegistryDebugger {
+  private RegistryListener registryListener ;
   private Appendable out ;
   
   public RegistryDebugger(Appendable out, Registry registry) {
-    super(registry);
+    registryListener = new RegistryListener(registry);
     this.out = out ;
   }
   
   public void watch(String path, NodeFormater formater, boolean persistent) throws RegistryException {
-    watch(path, new NodeFormatterWatcher(formater), persistent);
+    registryListener.watch(path, new NodeFormatterWatcher(formater), persistent);
   }
   
   public void watchModify(String path, NodeFormater formater, boolean persistent) throws RegistryException {
-    watchModify(path, new NodeFormatterWatcher(formater), persistent);
+    registryListener.watchModify(path, new NodeFormatterWatcher(formater), persistent);
   }
   
   public void watchChildren(String path, NodeFormater formater, boolean persistent) throws RegistryException {
-    watchChildren(path, new NodeFormatterWatcher(formater), persistent);
+    registryListener.watchChildren(path, new NodeFormatterWatcher(formater), persistent);
   }
   
   public void watchChildren(String path, NodeFormater formater, boolean persistent, boolean waitIfNotExist) throws RegistryException {
-    watchChildren(path, new NodeFormatterWatcher(formater), persistent, true);
+    registryListener.watchChildren(path, new NodeFormatterWatcher(formater), persistent, true);
   }
   
   public void watch(String path, NodeDebugger nodeDebugger, boolean persistent) throws RegistryException {
-    watch(path, new NodeDebuggerWatcher(nodeDebugger), persistent);
+    registryListener.watch(path, new NodeDebuggerWatcher(nodeDebugger), persistent);
   }
   
   public void println(String text) throws IOException {
@@ -51,7 +52,7 @@ public class RegistryDebugger extends RegistryListener {
     @Override
     public void onEvent(NodeEvent event) {
       try {
-        Node node = getRegistry().get(event.getPath());
+        Node node = registryListener.getRegistry().get(event.getPath());
         String text = formater.getFormattedText();
         println("RegistryDebugger: Node = " + node.getPath() + ", event = " + event.getType()) ;
         println(text) ;
@@ -70,7 +71,7 @@ public class RegistryDebugger extends RegistryListener {
     
     @Override
     public void onEvent(NodeEvent event) throws Exception {
-      Node node = getRegistry().get(event.getPath());
+      Node node = registryListener.getRegistry().get(event.getPath());
       if(event.getType() == NodeEvent.Type.CREATE) {
         nodeDebugger.onCreate(RegistryDebugger.this, node);
       } else if(event.getType() == NodeEvent.Type.MODIFY) {
