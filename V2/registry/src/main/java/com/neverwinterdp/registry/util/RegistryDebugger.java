@@ -18,19 +18,19 @@ public class RegistryDebugger {
     this.out = out ;
   }
   
-  public void watch(String path, NodeFormater formater, boolean persistent) throws RegistryException {
+  public void watch(String path, NodeFormatter formater, boolean persistent) throws RegistryException {
     registryListener.watch(path, new NodeFormatterWatcher(formater), persistent);
   }
   
-  public void watchModify(String path, NodeFormater formater, boolean persistent) throws RegistryException {
+  public void watchModify(String path, NodeFormatter formater, boolean persistent) throws RegistryException {
     registryListener.watchModify(path, new NodeFormatterWatcher(formater), persistent);
   }
   
-  public void watchChildren(String path, NodeFormater formater, boolean persistent) throws RegistryException {
+  public void watchChildren(String path, NodeFormatter formater, boolean persistent) throws RegistryException {
     registryListener.watchChildren(path, new NodeFormatterWatcher(formater), persistent);
   }
   
-  public void watchChildren(String path, NodeFormater formater, boolean persistent, boolean waitIfNotExist) throws RegistryException {
+  public void watchChildren(String path, NodeFormatter formater, boolean persistent, boolean waitIfNotExist) throws RegistryException {
     registryListener.watchChildren(path, new NodeFormatterWatcher(formater), persistent, true);
   }
   
@@ -43,9 +43,9 @@ public class RegistryDebugger {
   }
   
   public class NodeFormatterWatcher extends NodeWatcher {
-    private NodeFormater formater ;
+    private NodeFormatter formater ;
     
-    public NodeFormatterWatcher(NodeFormater formater) {
+    public NodeFormatterWatcher(NodeFormatter formater) {
       this.formater = formater ;
     }
     
