@@ -131,21 +131,20 @@ class ServerSet(object):
   def cleanHadoopWorker(self):
     return self.cleanProcess("hadoop-worker")
   
-
   def getReport(self):
     serverReport = []
-    
-    for server in self.servers :
+    sorted_servers = sorted(self.servers, key=lambda server: server.hostname)
+    for server in sorted_servers :
       serverReport.append([server.hostname, server.role, "", "", "",""])
       procs = server.getProcesses()
       for process in procs:
         procDict = server.getProcess(process).getReportDict()
-        
-        serverReport.append(["","",procDict["HomeDir"], procDict["ProcessIdentifier"], procDict["processID"], procDict["Status"]])
-      
-    headers = ["Hostname", "Role", "HomeDir", "ProcessIdentifier", "ProcessID", "Status"]
-    
+
+        serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+
+    headers = ["Hostname", "Role", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
+
     return tabulate(serverReport, headers=headers)
-  
+ 
   def report(self) :
     print self.getReport()
