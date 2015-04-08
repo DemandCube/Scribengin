@@ -110,6 +110,7 @@ public class WaitingNodeEventListener {
     @Override
     public void onEvent(NodeEvent event) throws Exception {
       T data = registryListener.getRegistry().getDataAs(event.getPath(), dataType) ;
+      System.out.println("Got data change event: " + JSONSerializer.INSTANCE.toString(data));
       if(expectData.equals(data)) {
         onDetectNodeEvent(this, event);
         setComplete();

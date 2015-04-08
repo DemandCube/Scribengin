@@ -43,7 +43,7 @@ public class RegistryListenerUnitTest {
   
   @After
   public void teardown() throws Exception {
-    registry.delete(TEST_PATH);
+    registry.rdelete(TEST_PATH);
     registry.disconnect();
   }
 
@@ -93,7 +93,74 @@ public class RegistryListenerUnitTest {
     listener.close();
   }
   
+  @Test
+  public void testChildrenWatch() throws Exception {
+    RegistryListener listener = new RegistryListener(registry);
+    ChildrenChangeEventCatcher childrenChangeEventCatcher = new ChildrenChangeEventCatcher();
+    listener.watchChildren(TEST_PATH, childrenChangeEventCatcher, true, true);
+    Node testNode = registry.createIfNotExist(TEST_PATH) ;
+    listener.dump(System.out);
+    Assert.assertEquals(1, listener.getWatchers().size());
+    
+    Node child1Node = registry.createIfNotExist(TEST_PATH + "/child-1") ;
+    Thread.sleep(100);
+    Assert.assertEquals(1, listener.getWatchers().size());
+    Assert.assertEquals(NodeEvent.Type.CHILDREN_CHANGED, childrenChangeEventCatcher.getNodeEvent().getType());
+    
+    Node child2Node = registry.createIfNotExist(TEST_PATH + "/child-2") ;
+    listener.dump(System.out);
+    listener.close();
+  }
+  
+  @Test
+  public void testChildWatch() throws Exception {
+    RegistryListener listener = new RegistryListener(registry);
+    ChildEventCatcher childEventCatcher = new ChildEventCatcher();
+    listener.watchChild(TEST_PATH, "hello-.*", childEventCatcher);
+    Node testNode = registry.createIfNotExist(TEST_PATH) ;
+    System.out.println("\ncreate " + TEST_PATH);
+    listener.dump(System.out);
+    Assert.assertEquals(1, listener.getWatchers().size());
+    
+    System.out.println("\ncreate " + (TEST_PATH + "/child-1"));
+    Node child1Node = registry.createIfNotExist(TEST_PATH + "/child-1") ;
+    Thread.sleep(100);
+    Assert.assertEquals(1, listener.getWatchers().size());
+    
+    System.out.println("\ncreate " + (TEST_PATH + "/hello-1"));
+    Node child2Node = registry.createIfNotExist(TEST_PATH + "/hello-1") ;
+    Thread.sleep(100);
+    Assert.assertEquals(2, listener.getWatchers().size());
+    Assert.assertEquals(NodeEvent.Type.CREATE, childEventCatcher.getNodeEvent().getType());
+    Assert.assertEquals(TEST_PATH + "/hello-1", childEventCatcher.getNodeEvent().getPath());
+    Thread.sleep(100);
+    listener.dump(System.out);
+    listener.close();
+  }
+  
   public class NodeEventCatcher extends NodeWatcher {
+    private NodeEvent nodeEvent ;
+    
+    public void onEvent(NodeEvent event) {
+      this.nodeEvent = event ;
+    }
+    
+    public NodeEvent getNodeEvent() { return this.nodeEvent ; }
+  }
+  
+  public class ChildrenChangeEventCatcher extends NodeWatcher {
+    private NodeEvent nodeEvent ;
+    
+    public void onEvent(NodeEvent event) {
+      if(event.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
+        this.nodeEvent = event ;
+      }
+    }
+    
+    public NodeEvent getNodeEvent() { return this.nodeEvent ; }
+  }
+  
+  public class ChildEventCatcher extends NodeWatcher {
     private NodeEvent nodeEvent ;
     
     public void onEvent(NodeEvent event) {

@@ -76,9 +76,12 @@ public class WaitingNodeEventListenerUnitTest {
     registry.createIfNotExist(EVENTS_PATH);
     Node hello = registry.createIfNotExist(EVENTS_PATH + "/hello");
     hello.setData(new HelloBean("hello"));
-    //hello.setData(new HelloBean("hello(update)"));
+    Thread.sleep(100);
+    hello.setData(new HelloBean("hello(update)"));
     listener.waitForEvents(1000);
     Assert.assertEquals(listener.getDetectNodeEventCount(), listener.getWaitingNodeEventCount());
+    Thread.sleep(100);
+    System.err.println("Done!!!!!!!!!!!!!!!!!!!!!!!!!") ;
   }
   
   static public class HelloBean {

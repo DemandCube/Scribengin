@@ -1,8 +1,13 @@
 package com.neverwinterdp.registry.event;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
@@ -21,6 +26,13 @@ public class RegistryListener {
   public Registry getRegistry() { return this.registry ; }
   
   public TreeMap<String, NodeWatcherWrapper> getWatchers() { return this.watchers; }
+  
+  public void clear() {
+    for(NodeWatcherWrapper sel : watchers.values()) {
+      sel.setComplete();
+    }
+    watchers.clear();
+  }
   
   public void watch(String path, NodeWatcher nodeWatcher, boolean persistent) throws RegistryException {
     if(registry.exists(path)) {
@@ -71,7 +83,7 @@ public class RegistryListener {
           }
         }
       };
-      watch(path, createWatcher) ;
+      watch(path, createWatcher, false) ;
       return;
     }
   }
@@ -86,6 +98,11 @@ public class RegistryListener {
     }
     registry.watchChildren(path, wrapper);
     watchers.put(key, wrapper) ;
+  }
+  
+  public void watchChild(String path, String childNameExp, NodeWatcher nodeWatcher) throws RegistryException {
+    SelectChildNodeWatcher selectChildNodeWatcher = new SelectChildNodeWatcher(path, childNameExp, nodeWatcher) ;
+    watchChildren(path, selectChildNodeWatcher, true, true);
   }
   
   public void watchHeartbeat(String path, NodeWatcher nodeWatcher) throws RegistryException {
@@ -159,6 +176,52 @@ public class RegistryListener {
     
     protected void doWatch(NodeEvent event) throws RegistryException {
       registry.watchChildren(event.getPath(), this);
+    }
+  }
+  
+  class SelectChildNodeWatcher extends NodeWatcher {
+    private String path = null;
+    private Pattern selectChildPattern = null;
+    private NodeWatcher watcher ;
+    private Set<String> watchedChildren = new HashSet<String>() ;
+    
+    public SelectChildNodeWatcher(String path, String selectChildExp, NodeWatcher watcher) {
+      this.path = path ;
+      this.selectChildPattern = Pattern.compile(selectChildExp);
+      this.watcher = watcher;
+    }
+    
+    @Override
+    public void onEvent(NodeEvent event) throws Exception {
+      if(event.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
+        updateChildrenWatch();
+      }
+    }
+    
+    synchronized void updateChildrenWatch() throws Exception {
+      List<String> childNames = registry.getChildren(path);
+      HashSet<String> childrenSet = new HashSet<String>() ;
+      for(String childName : childNames) {
+        childrenSet.add(childName) ;
+        if(selectChildPattern.matcher(childName).matches()) {
+          if(watchedChildren.contains(childName)) {
+            continue;
+          } else {
+            //Detect new created child node
+            String childPath = path + "/" + childName ;
+            watchedChildren.add(childName);
+            watchModify(childPath, watcher, true);
+            watcher.onEvent(new NodeEvent(childPath, NodeEvent.Type.CREATE));
+          }
+        }
+      }
+      Iterator<String> i = watchedChildren.iterator();
+      while(i.hasNext()) {
+        String childName = i.next();
+        if(!childrenSet.contains(childName)) {
+          i.remove();
+        }
+      }
     }
   }
   

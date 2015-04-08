@@ -18,6 +18,10 @@ public class RegistryDebugger {
     this.out = out ;
   }
   
+  public void clear() {
+    registryListener.clear();
+  }
+  
   public void watch(String path, NodeFormatter formater, boolean persistent) throws RegistryException {
     registryListener.watch(path, new NodeFormatterWatcher(formater), persistent);
   }
@@ -36,6 +40,10 @@ public class RegistryDebugger {
   
   public void watch(String path, NodeDebugger nodeDebugger, boolean persistent) throws RegistryException {
     registryListener.watch(path, new NodeDebuggerWatcher(nodeDebugger), persistent);
+  }
+  
+  public void watchChild(String path, String childExp, NodeDebugger nodeDebugger) throws RegistryException {
+    registryListener.watchChild(path, childExp, new NodeDebuggerWatcher(nodeDebugger));
   }
   
   public void println(String text) throws IOException {

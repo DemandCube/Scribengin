@@ -31,7 +31,7 @@ public class ZKNodeWatcher implements Watcher {
   }
   
   private NodeEvent.Type eventType(WatchedEvent event) {
-    if(event.getType() == Watcher.Event.EventType.NodeCreated) return NodeEvent.Type.CREATE ;
+    if(event.getType()      == Watcher.Event.EventType.NodeCreated) return NodeEvent.Type.CREATE ;
     else if(event.getType() == Watcher.Event.EventType.NodeDataChanged) return NodeEvent.Type.MODIFY ;
     else if(event.getType() == Watcher.Event.EventType.NodeDeleted) return NodeEvent.Type.DELETE ;
     else if(event.getType() == Watcher.Event.EventType.NodeChildrenChanged) return NodeEvent.Type.CHILDREN_CHANGED ;

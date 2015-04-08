@@ -65,12 +65,13 @@ public class DebugRegistryListenerUnitTest {
   
   @After
   public void teardown() throws Exception {
+    registry.rdelete(TEST_DEBUG_PATH);
     registry.disconnect();
     container.getInstance(CloseableInjector.class).close();
   }
 
   @Test
-  public void testRegistryDebugListener() throws Exception {
+  public void testHelloChildrenDebugger() throws Exception {
     RegistryDebugger debugger = new RegistryDebugger(System.out, registry) ;
     
     debugger.watch(TEST_DEBUG_PATH, new HelloChildrenDebugger(), true);
@@ -85,9 +86,27 @@ public class DebugRegistryListenerUnitTest {
     debugNode.rdelete();
     Thread.sleep(2000);
   }
-  
-  static public class HelloChildrenDebugger implements NodeDebugger {
 
+  @Test
+  public void testNodeInfoDebugger() throws Exception {
+    RegistryDebugger debugger = new RegistryDebugger(System.out, registry) ;
+    debugger.watch(TEST_DEBUG_PATH, new NodeInfoDebugger(), true);
+    debugger.watchChild(TEST_DEBUG_PATH, "hello-.*", new NodeInfoDebugger());
+    
+    Node debugNode = registry.createIfNotExist(TEST_DEBUG_PATH) ;
+    Node dummy1 = debugNode.createChild("dummy-1", new HelloBean("dummy-1"), NodeCreateMode.PERSISTENT);
+    Thread.sleep(100);
+    
+    Node hello1 = debugNode.createChild("hello-1", new HelloBean("hello-1"), NodeCreateMode.PERSISTENT);
+    Thread.sleep(100);
+
+    hello1.delete();
+    
+    Thread.sleep(1000);
+    debugger.clear();
+  }
+
+  static public class HelloChildrenDebugger implements NodeDebugger {
     @Override
     public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
       NodeFormatter formater = new NodeFormatter.NodeDumpFormater(node, "") ;
@@ -103,6 +122,24 @@ public class DebugRegistryListenerUnitTest {
       System.out.println("Delete node " + node.getPath()) ;
     }
   }
+
+  static public class NodeInfoDebugger implements NodeDebugger {
+    @Override
+    public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
+      System.out.println("create node " + node.getPath()) ;
+    }
+
+    @Override
+    public void onModify(RegistryDebugger registryDebugger, Node node) throws Exception {
+      System.out.println("modify node " + node.getPath()) ;
+    }
+
+    @Override
+    public void onDelete(RegistryDebugger registryDebugger, Node node) throws Exception {
+      System.out.println("Delete node " + node.getPath()) ;
+    }
+  }
+
   
   static public class HelloBean {
     private String hello ;
