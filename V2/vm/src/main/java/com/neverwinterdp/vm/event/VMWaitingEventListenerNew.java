@@ -10,12 +10,16 @@ import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.service.VMService;
 
 public class VMWaitingEventListenerNew {
-  private WaitingNodeEventListener waitingEventListeners ;
+  protected WaitingNodeEventListener waitingEventListeners ;
   
   public VMWaitingEventListenerNew(Registry registry) throws RegistryException {
     waitingEventListeners = new WaitingNodeEventListener(registry);
   }
 
+  public WaitingNodeEventListener getWaitingNodeEventListener() {
+    return this.waitingEventListeners ;
+  }
+  
   public void waitVMServiceStatus(String desc, VMService.Status status) throws Exception {
     waitingEventListeners.add(VMService.MASTER_PATH + "/status", status);
   }
@@ -35,20 +39,27 @@ public class VMWaitingEventListenerNew {
   }
   
   public void waitVMMaster(String desc, final String vmName) throws Exception {
-    NodeEventMatcher matcher = new NodeEventMatcher() {
-      @Override
-      public boolean matches(Node node, NodeEvent event) throws Exception {
-        if(event.getType() == NodeEvent.Type.MODIFY) {
-          Node refNode = node.getRegistry().getRef(node.getPath());
-          return refNode.getName().equals(vmName);
-        }
-        return false;
-      }
-    };
-    waitingEventListeners.add(VMService.LEADER_PATH, matcher);
+    waitingEventListeners.add(VMService.LEADER_PATH, new VMLeaderNodeEventMatcher(vmName));
   }
   
   public void waitForEvents(long timeout) throws Exception {
     waitingEventListeners.waitForEvents(timeout);
+  }
+  
+  static public class VMLeaderNodeEventMatcher implements NodeEventMatcher {
+    private String vmName  ;
+    
+    public VMLeaderNodeEventMatcher(String vmName) {
+      this.vmName = vmName ;
+    }
+    
+    @Override
+    public boolean matches(Node node, NodeEvent event) throws Exception {
+      if(event.getType() == NodeEvent.Type.MODIFY) {
+        Node refNode = node.getRegistry().getRef(node.getPath());
+        return refNode.getName().equals(vmName);
+      }
+      return false;
+    }
   }
 }

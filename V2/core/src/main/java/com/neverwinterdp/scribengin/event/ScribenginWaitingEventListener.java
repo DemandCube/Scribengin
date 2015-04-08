@@ -14,6 +14,7 @@ import com.neverwinterdp.vm.event.VMWaitingEventListener;
 
 
 public class ScribenginWaitingEventListener extends VMWaitingEventListener {
+  
   public ScribenginWaitingEventListener(Registry registry) throws RegistryException {
     super(registry);
     registryListener.watch(ScribenginService.LEADER_PATH, new VMLeaderElectedNodeWatcher(registry), true);
