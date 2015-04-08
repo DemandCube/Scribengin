@@ -26,7 +26,7 @@ public class VMRegistryFormatter extends NodeFormatter {
       
       String roles="";
       for(String role: vmDescriptor.getVmConfig().getRoles()){
-        roles.concat(role+",");
+        roles = roles.concat(role+",");
       }
       
       String hbeat="";
@@ -36,18 +36,16 @@ public class VMRegistryFormatter extends NodeFormatter {
         hbeat = "DISCONNECTED";
       }
       
-      TabularFormater formatter = new TabularFormater("Name", "Hostname", "Description", 
-          "Memory", "CPU Cores", "Stored Path", "Roles", "Status", "Heartbeat");
-      
-      formatter.addRow(vmDescriptor.getVmConfig().getName(),
-          vmDescriptor.getHostname(),
-          vmDescriptor.getVmConfig().getDescription(),
-          vmDescriptor.getMemory(),
-          vmDescriptor.getCpuCores(),
-          vmDescriptor.getStoredPath(),
-          roles,
-          vmStatus,
-          hbeat);
+      TabularFormater formatter = new TabularFormater("VMKey", "Value");
+      formatter.addRow("Name",        vmDescriptor.getVmConfig().getName());
+      formatter.addRow("Hostname",    vmDescriptor.getHostname());
+      formatter.addRow("Description", vmDescriptor.getVmConfig().getDescription());
+      formatter.addRow("Memory",      vmDescriptor.getMemory());
+      formatter.addRow("CPU Cores",   vmDescriptor.getCpuCores());
+      formatter.addRow("Stored Path", vmDescriptor.getStoredPath());
+      formatter.addRow("Roles",       roles);
+      formatter.addRow("Status",      vmStatus);
+      formatter.addRow("Heartbeat",   hbeat);
       
       b.append(formatter.getFormatText());
       
