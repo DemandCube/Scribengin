@@ -20,6 +20,8 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.event.NodeEventMatcher;
+import com.neverwinterdp.registry.event.WaitingNodeEventListener;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.zk.tool.server.EmbededZKServer;
@@ -73,16 +75,30 @@ public class WaitingNodeEventListenerUnitTest {
     listener.add(EVENTS_PATH, NodeEvent.Type.CREATE);
     listener.add(EVENTS_PATH + "/hello", NodeEvent.Type.CREATE, NodeEvent.Type.MODIFY);
     listener.add(EVENTS_PATH + "/hello", new HelloBean("hello"));
+    listener.add(EVENTS_PATH + "/dummy", new NodeEventMatcher() {
+      @Override
+      public boolean matches(Node node, NodeEvent event) throws Exception {
+        return NodeEvent.Type.CREATE == event.getType();
+      }
+      
+    });
     registry.createIfNotExist(EVENTS_PATH);
     Node hello = registry.createIfNotExist(EVENTS_PATH + "/hello");
     hello.setData(new HelloBean("hello"));
+    
     Thread.sleep(100);
     hello.setData(new HelloBean("hello(update)"));
+
+    Node dummy = registry.createIfNotExist(EVENTS_PATH + "/dummy");
+    
     listener.waitForEvents(1000);
+    
     Assert.assertEquals(listener.getDetectNodeEventCount(), listener.getWaitingNodeEventCount());
     Thread.sleep(100);
     System.err.println("Done!!!!!!!!!!!!!!!!!!!!!!!!!") ;
   }
+  
+  
   
   static public class HelloBean {
     private String hello ;

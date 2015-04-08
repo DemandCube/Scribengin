@@ -2,7 +2,6 @@ package com.neverwinterdp.registry.event;
 
 import com.neverwinterdp.registry.Registry;
 
-
 abstract public class DataChangeNodeWatcher<T> extends NodeWatcher {
   protected Registry registry ;
   protected Class<T> dataType;

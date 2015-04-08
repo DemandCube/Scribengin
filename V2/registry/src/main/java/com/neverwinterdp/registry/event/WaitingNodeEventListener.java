@@ -1,12 +1,9 @@
-package com.neverwinterdp.registry.util;
+package com.neverwinterdp.registry.event;
 
 import java.util.LinkedList;
 
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.event.NodeEvent;
-import com.neverwinterdp.registry.event.NodeWatcher;
-import com.neverwinterdp.registry.event.RegistryListener;
-import com.neverwinterdp.util.JSONSerializer;
 
 public class WaitingNodeEventListener {
   private RegistryListener registryListener ;
@@ -36,8 +33,21 @@ public class WaitingNodeEventListener {
     waitingNodeEventCount++;
   }
   
-  synchronized public <T> void add(String path, T data) throws Exception {
-    NodeWatcher watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)data.getClass(), data);
+  /**
+   * Add a data change node watcher to detect when the data in the node match with the expect data
+   * @param path
+   * @param expectData
+   * @throws Exception
+   */
+  synchronized public <T> void add(String path, T expectData) throws Exception {
+    NodeWatcher watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)expectData.getClass(), expectData);
+    watcherQueue.addLast(watcher);
+    registryListener.watch(path, watcher, true);
+    waitingNodeEventCount++;
+  }
+  
+  synchronized public <T> void add(String path, NodeEventMatcher matcher) throws Exception {
+    NodeWatcher watcher = new NodeEventMatcherWatcher(path, matcher);
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher, true);
     waitingNodeEventCount++;
@@ -110,7 +120,6 @@ public class WaitingNodeEventListener {
     @Override
     public void onEvent(NodeEvent event) throws Exception {
       T data = registryListener.getRegistry().getDataAs(event.getPath(), dataType) ;
-      System.out.println("Got data change event: " + JSONSerializer.INSTANCE.toString(data));
       if(expectData.equals(data)) {
         onDetectNodeEvent(this, event);
         setComplete();
@@ -120,6 +129,31 @@ public class WaitingNodeEventListener {
     public String toString() {
       StringBuilder b = new StringBuilder() ; 
       b.append("Waiting for the data on path = " + path);
+      return b.toString();
+    }
+  }
+  
+  public class NodeEventMatcherWatcher extends NodeWatcher {
+    private String path  ;
+    private NodeEventMatcher matcher;
+    
+    public NodeEventMatcherWatcher(String path, NodeEventMatcher matcher) {
+      this.path    = path;
+      this.matcher = matcher;
+    }
+    
+    @Override
+    public void onEvent(NodeEvent event) throws Exception {
+      Node node = registryListener.getRegistry().get(event.getPath()) ;
+      if(matcher.matches(node, event)) {
+        onDetectNodeEvent(this, event);
+        setComplete();
+      }
+    }
+    
+    public String toString() {
+      StringBuilder b = new StringBuilder() ; 
+      b.append("Waiting for the node event matcher on path = " + path);
       return b.toString();
     }
   }

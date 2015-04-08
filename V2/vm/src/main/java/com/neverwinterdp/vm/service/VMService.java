@@ -74,11 +74,18 @@ public class VMService {
   }
   
   public void register(VMDescriptor descriptor) throws Exception {
-    Node vmNode = registry.create(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName(), NodeCreateMode.PERSISTENT);
-    descriptor.setStoredPath(vmNode.getPath());
-    vmNode.setData(descriptor);
-    vmNode.createChild("status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
-    vmNode.createChild("commands", NodeCreateMode.PERSISTENT);
+    register(registry, descriptor);
+//    String vmPath  = ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName();
+//    descriptor.setStoredPath(vmPath);
+//    
+//    System.err.println("Before register vm " + vmPath);
+//    Transaction transaction = registry.getTransaction() ;
+//    transaction.create(vmPath, new byte[0], NodeCreateMode.PERSISTENT);
+//    transaction.setData(vmPath, descriptor) ;
+//    transaction.create(vmPath + "/status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
+//    transaction.create(vmPath + "/commands", new byte[0], NodeCreateMode.PERSISTENT) ;
+//    transaction.commit();
+//    System.err.println("After register vm " + vmPath);
     watch(descriptor);
   }
   
@@ -144,10 +151,15 @@ public class VMService {
   static public void register(Registry registry, VMDescriptor descriptor) throws Exception {
     registry.createIfNotExist(ALLOCATED_PATH) ;
     registry.createIfNotExist(LEADER_PATH) ;
-    Node vmNode = registry.create(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName(), NodeCreateMode.PERSISTENT);
-    descriptor.setStoredPath(vmNode.getPath());
-    vmNode.setData(descriptor);
-    vmNode.createChild("status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
-    vmNode.createChild("commands", NodeCreateMode.PERSISTENT);
+    
+    String vmPath  = ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName();
+    descriptor.setStoredPath(vmPath);
+    
+    Transaction transaction = registry.getTransaction() ;
+    transaction.create(vmPath, new byte[0], NodeCreateMode.PERSISTENT);
+    transaction.setData(vmPath, descriptor) ;
+    transaction.create(vmPath + "/status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
+    transaction.create(vmPath + "/commands", new byte[0], NodeCreateMode.PERSISTENT) ;
+    transaction.commit();
   }
 }
