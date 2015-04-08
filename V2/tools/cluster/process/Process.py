@@ -89,8 +89,6 @@ class KafkaProcess(Process):
    
   def setupClusterEnv(self, paramDict = {}):
     zkConnect = ":2181,".join(paramDict["zkList"]) + ":2181"
-    print zkConnect
-    print paramDict
     brokerID = int(re.search(r'\d+', self.hostname).group())
     fileStr = ""
     for line in open(paramDict["server_config"]).readlines():
