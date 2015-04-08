@@ -86,18 +86,21 @@ class Process(object):
 class KafkaProcess(Process):
   def __init__(self, hostname):
     Process.__init__(self, "kafka", hostname, "/opt/kafka", "kafka")
-    
+   
   def setupClusterEnv(self, paramDict = {}):
     zkConnect = ":2181,".join(paramDict["zkList"]) + ":2181"
+    print zkConnect
+    print paramDict
     brokerID = int(re.search(r'\d+', self.hostname).group())
     fileStr = ""
     for line in open(paramDict["server_config"]).readlines():
       if re.match(re.compile("broker.id=.*"), line):
-        line = re.sub("broker.id=.*", "broker.id="+`brokerID`, line.rstrip())
+        line = re.sub("broker.id=.*", "broker.id="+`brokerID`, line.rstrip()) + "\n"
       if re.match(re.compile("zookeeper.connect=.*"), line):
-        line = re.sub("zookeeper.connect=.*", "zookeeper.connect="+zkConnect, line.rstrip())
+        line = re.sub("zookeeper.connect=.*", "zookeeper.connect="+zkConnect, line.rstrip()) + "\n"
       fileStr = fileStr + line
-    return self.sshExecute("cat '" + fileStr + "' > " + join(self.homeDir, "config/server.properties"))
+    return self.sshExecute("echo \"" + fileStr + "\" > " + join(self.homeDir, "config/server.properties"))
+     
     
   def start(self):
     return self.sshExecute(join(self.homeDir, "bin/kafka-server-start.sh")+" -daemon "+ join(self.homeDir, "config/server.properties"))
