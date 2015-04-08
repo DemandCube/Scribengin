@@ -19,6 +19,9 @@ public class VMRegistryFormatter extends NodeFormatter {
     //TODO: use TabularFormater
     StringBuilder b = new StringBuilder() ;
     try {
+      if(!vmNode.exists()) {
+        return "VM node " + vmNode.getPath() + " is already deleted or moved to the history" ;
+      }
       VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class);
       VMStatus vmStatus = vmNode.getChild("status").getDataAs(VMStatus.class);
       boolean heartbeat = vmNode.getChild("status").getChild("heartbeat").exists();
