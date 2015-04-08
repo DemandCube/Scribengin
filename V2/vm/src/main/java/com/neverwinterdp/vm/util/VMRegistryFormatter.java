@@ -4,6 +4,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.util.ExceptionUtil;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 
@@ -16,69 +17,56 @@ public class VMRegistryFormatter extends NodeFormatter {
   
   @Override
   public String getFormattedText() {
-    //TODO: use TabularFormater
     StringBuilder b = new StringBuilder() ;
     try {
       if(!vmNode.exists()) {
         return "VM node " + vmNode.getPath() + " is already deleted or moved to the history" ;
       }
+      
       VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class);
-      VMStatus vmStatus = vmNode.getChild("status").getDataAs(VMStatus.class);
-      boolean heartbeat = vmNode.getChild("status").getChild("heartbeat").exists();
-      
-      b.append("------------------------------------------------------------------------\n");
-      b.append("Name         : ");
-      b.append(vmDescriptor.getVmConfig().getName());
-      b.append("\n");
-      
-      b.append("Hostname     : ");
-      b.append(vmDescriptor.getHostname());
-      b.append("\n");
-      
-      b.append("Description  : ");
-      b.append(vmDescriptor.getVmConfig().getDescription());
-      b.append("\n");
-      
-      b.append("Memory       : ");
-      b.append(vmDescriptor.getMemory());
-      b.append("\n");
-      
-      b.append("CPU Cores    : ");
-      b.append(vmDescriptor.getCpuCores());
-      b.append("\n");
-      
-      b.append("Stored Path  : ");
-      b.append(vmDescriptor.getStoredPath());
-      b.append("\n");
-      
-      
-      b.append("Roles        : ");
-      for(String role: vmDescriptor.getVmConfig().getRoles()){
-        b.append(role);
-        b.append(",");
-      }
-      b.append("\n");
-      
-      b.append("Status       : ");
-      b.append(vmStatus);
-      b.append("\n");
-      
-      b.append("Heartbeat    : ");
-      if(heartbeat){
-        b.append("CONNECTED");
+      VMStatus vmStatus = null;
+      boolean heartbeat = false;
+      if(vmNode.hasChild("status")){
+        vmStatus = vmNode.getChild("status").getDataAs(VMStatus.class);
       } else{
-        b.append("DISCONNECTED");
+        return "VM node " + vmNode.getPath() + " has no status child" ;
+      }
+       
+      if(vmNode.hasChild("status") && vmNode.getChild("status").hasChild("heartbeat")){
+        heartbeat = vmNode.getChild("status").getChild("heartbeat").exists();
       }
       
-      b.append("\n");
+      String roles="";
+      for(String role: vmDescriptor.getVmConfig().getRoles()){
+        roles = roles.concat(role+",");
+      }
       
+      String hbeat="";
+      if(heartbeat){
+        hbeat = "CONNECTED";
+      } else{
+        hbeat = "DISCONNECTED";
+      }
       
-      b.append("------------------------------------------------------------------------\n");
+      TabularFormater formatter = new TabularFormater("VMKey", "Value");
+      formatter.addRow("Name",        vmDescriptor.getVmConfig().getName());
+      formatter.addRow("Hostname",    vmDescriptor.getHostname());
+      formatter.addRow("Description", vmDescriptor.getVmConfig().getDescription());
+      formatter.addRow("Memory",      vmDescriptor.getMemory());
+      formatter.addRow("CPU Cores",   vmDescriptor.getCpuCores());
+      formatter.addRow("Stored Path", vmDescriptor.getStoredPath());
+      formatter.addRow("Roles",       roles);
+      if(vmStatus != null){
+        formatter.addRow("Status",      vmStatus);
+      } else{
+        formatter.addRow("Status",      "STATUS UNAVAILABLE!");
+      }
+      formatter.addRow("Heartbeat",   hbeat);
       
+      b.append(formatter.getFormatText());
       
       
     } catch (RegistryException e) {
-      e.printStackTrace();
       b.append(ExceptionUtil.getStackTrace(e));
     }
     return b.toString();

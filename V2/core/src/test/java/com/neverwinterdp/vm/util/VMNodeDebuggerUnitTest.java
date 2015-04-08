@@ -44,12 +44,10 @@ public class VMNodeDebuggerUnitTest {
     RegistryDebugger debugger = new RegistryDebugger(System.out, shell.getVMClient().getRegistry()) ;
     
     debugger.watch("/vm/allocated/vm-scribengin-master-1", new VMNodeDebugger(), true);
-    debugger.watch("/vm/allocated/vm-scribengin-master-2", new VMNodeDebugger(), true);
     
     clusterBuilder.startScribenginMasters();
     
     shell.execute("registry dump");
-    
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
