@@ -7,8 +7,8 @@ import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.vm.event.VMWaitingEventListenerNew;
 
-public class ScribenginWaitingEventListenerNew extends VMWaitingEventListenerNew {
-  public ScribenginWaitingEventListenerNew(Registry registry) throws RegistryException {
+public class ScribenginWaitingEventListener extends VMWaitingEventListenerNew {
+  public ScribenginWaitingEventListener(Registry registry) throws RegistryException {
     super(registry);
   }
   

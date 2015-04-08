@@ -25,7 +25,10 @@ import com.neverwinterdp.vm.service.VMServiceCommand;
 @JmxBean("role=scribengin-master, type=ScribenginService, name=ScribenginService")
 public class ScribenginService {
   final static public String SCRIBENGIN_PATH         = "/scribengin";
+  
   final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
+  final static public String SHUTDOWN_EVENT_PATH     = EVENTS_PATH + "/shutdown";
+
   final static public String LEADER_PATH             = SCRIBENGIN_PATH + "/master/leader";
   final static public String DATAFLOWS_HISTORY_PATH  = SCRIBENGIN_PATH + "/dataflows/history";
   final static public String DATAFLOWS_RUNNING_PATH  = SCRIBENGIN_PATH + "/dataflows/running";

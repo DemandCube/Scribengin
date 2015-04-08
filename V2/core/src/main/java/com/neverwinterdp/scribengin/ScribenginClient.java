@@ -15,7 +15,6 @@ import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
-import com.neverwinterdp.scribengin.event.ScribenginShutdownEventListener;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
@@ -138,7 +137,7 @@ public class ScribenginClient {
   public void shutdown() throws Exception {
     h1("Shutdow the scribengin");
     Registry registry = vmClient.getRegistry();
-    registry.create(ScribenginShutdownEventListener.EVENT_PATH, true, NodeCreateMode.PERSISTENT);
+    registry.create(ScribenginService.SHUTDOWN_EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
