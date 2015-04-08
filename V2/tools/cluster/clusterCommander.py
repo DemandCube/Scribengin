@@ -47,7 +47,8 @@ def status(role):
 @click.option('--brokers',           default="",   help="Which kafka brokers to effect (command separated list)")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting kafka server (seconds)")
 @click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing Kafka process (seconds)")
-def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, wait_before_kill):
+@click.option('--server-config',   default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties')
+def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, wait_before_kill, server_config):
   cluster = Cluster()
   
   if len(brokers) > 0 :
@@ -72,6 +73,7 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, w
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
     sleep(wait_before_start)
     logging.debug("Starting Kafka")
+    cluster.paramDict["server_config"] = server_config
     cluster.startKafka()
   click.echo(cluster.getReport())  
   
