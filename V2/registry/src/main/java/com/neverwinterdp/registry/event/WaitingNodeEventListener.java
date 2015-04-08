@@ -119,9 +119,13 @@ public class WaitingNodeEventListener {
     
     @Override
     public void onEvent(NodeEvent event) throws Exception {
-      T data = registryListener.getRegistry().getDataAs(event.getPath(), dataType) ;
-      if(expectData.equals(data)) {
-        onDetectNodeEvent(this, event);
+      if(event.getType() == NodeEvent.Type.CREATE || event.getType() == NodeEvent.Type.MODIFY) {
+        T data = registryListener.getRegistry().getDataAs(event.getPath(), dataType) ;
+        if(expectData.equals(data)) {
+          onDetectNodeEvent(this, event);
+          setComplete();
+        }
+      } else if(event.getType() == NodeEvent.Type.DELETE) {
         setComplete();
       }
     }

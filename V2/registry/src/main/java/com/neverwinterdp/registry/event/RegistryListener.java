@@ -141,7 +141,7 @@ public class RegistryListener {
     public void onEvent(NodeEvent event) throws Exception {
       if(closed) return;
       try {
-        if(isComplete()) {
+        if(isComplete() || nodeWatcher.isComplete()) {
           watchers.remove(key);
           return;
         }
@@ -236,6 +236,10 @@ public class RegistryListener {
     @Override
     public void onEvent(NodeEvent event) throws Exception {
       if(closed) return;
+      if(isComplete() || nodeWatcher.isComplete()) {
+        watchers.remove(key);
+        return;
+      }
       nodeWatcher.onEvent(event);
       watchers.remove(key);
     }
