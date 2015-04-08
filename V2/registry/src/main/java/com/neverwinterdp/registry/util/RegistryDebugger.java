@@ -18,6 +18,10 @@ public class RegistryDebugger {
     this.out = out ;
   }
   
+  public Registry getRegistry(){
+    return registryListener.getRegistry();
+  }
+  
   public void clear() {
     registryListener.clear();
   }
