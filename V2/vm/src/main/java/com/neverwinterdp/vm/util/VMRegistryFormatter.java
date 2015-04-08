@@ -17,6 +17,7 @@ public class VMRegistryFormatter extends NodeFormatter {
   
   @Override
   public String getFormattedText() {
+    //TODO: use TabularFormater
     StringBuilder b = new StringBuilder() ;
     try {
       VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class);
