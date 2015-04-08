@@ -1,19 +1,26 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
+import java.util.Map;
+
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeDebugger;
 import com.neverwinterdp.registry.util.RegistryDebugger;
+import com.neverwinterdp.vm.util.VMRegistryFormatter;
 
 public class DataflowWorkerNodeDebugger implements NodeDebugger{
+  
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-    
-    DataflowWorkerRegistryFormatter formatter = new DataflowWorkerRegistryFormatter(node);
+    //Grabs the path from the node passed in
+    //Adds a watch for the node in that path using VMNodeDebugger
     registryDebugger.println("RegistryDebugger: Node = " + node.getPath() + ", Event = CREATE");
-    registryDebugger.println(formatter.getFormattedText());
-
-    registryDebugger.watchModify(node.getPath(), formatter, true);
-    registryDebugger.watch(node.getPath() + "/executors", formatter, true);
+    Map<?,?> nodeData = node.getDataAs(Map.class);
+    
+    Node vmNode = new Node(registryDebugger.getRegistry(), (String)nodeData.get("path"));
+    VMRegistryFormatter vmformatter = new VMRegistryFormatter(vmNode);
+    
+    registryDebugger.watch((String)nodeData.get("path"), vmformatter, true);
+    
   }
 
   @Override

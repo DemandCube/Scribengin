@@ -39,12 +39,25 @@ public class DataflowTaskNodeDebuggerUnitTest {
   }
 
   @Test
-  public void testKafkaDataflowTest() throws Exception {
+  public void testDataflowTaskNodeDebugger() throws Exception {
     RegistryDebugger debugger = new RegistryDebugger(System.out, shell.getVMClient().getRegistry()) ;
     
-    debugger.watch("/scribengin/dataflows/running/hello-kafka-dataflow/tasks/descriptors/task-0000000001", new DataflowTaskNodeDebugger(), true);
-
+    new Thread(){
+      public void run() {
+        try {
+          Thread.sleep(5000);
+          shell.execute("registry dump");
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }.start();
+    
+    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned", 
+                          ".*", new DataflowTaskNodeDebugger());
+    
     shell.execute("dataflow-test kafka --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000 --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000 --sink-name output");
+    
     shell.execute("registry dump");
   }
 }

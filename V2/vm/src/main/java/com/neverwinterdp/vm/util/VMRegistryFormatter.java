@@ -17,15 +17,24 @@ public class VMRegistryFormatter extends NodeFormatter {
   
   @Override
   public String getFormattedText() {
-    //TODO: use TabularFormater
     StringBuilder b = new StringBuilder() ;
     try {
       if(!vmNode.exists()) {
         return "VM node " + vmNode.getPath() + " is already deleted or moved to the history" ;
       }
+      
       VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class);
-      VMStatus vmStatus = vmNode.getChild("status").getDataAs(VMStatus.class);
-      boolean heartbeat = vmNode.getChild("status").getChild("heartbeat").exists();
+      VMStatus vmStatus = null;
+      boolean heartbeat = false;
+      if(vmNode.hasChild("status")){
+        vmStatus = vmNode.getChild("status").getDataAs(VMStatus.class);
+      } else{
+        return "VM node " + vmNode.getPath() + " has no status child" ;
+      }
+       
+      if(vmNode.hasChild("status") && vmNode.getChild("status").hasChild("heartbeat")){
+        heartbeat = vmNode.getChild("status").getChild("heartbeat").exists();
+      }
       
       String roles="";
       for(String role: vmDescriptor.getVmConfig().getRoles()){
@@ -47,13 +56,17 @@ public class VMRegistryFormatter extends NodeFormatter {
       formatter.addRow("CPU Cores",   vmDescriptor.getCpuCores());
       formatter.addRow("Stored Path", vmDescriptor.getStoredPath());
       formatter.addRow("Roles",       roles);
-      formatter.addRow("Status",      vmStatus);
+      if(vmStatus != null){
+        formatter.addRow("Status",      vmStatus);
+      } else{
+        formatter.addRow("Status",      "STATUS UNAVAILABLE!");
+      }
       formatter.addRow("Heartbeat",   hbeat);
       
       b.append(formatter.getFormatText());
       
+      
     } catch (RegistryException e) {
-      e.printStackTrace();
       b.append(ExceptionUtil.getStackTrace(e));
     }
     return b.toString();
