@@ -210,7 +210,7 @@ public class AmazonS3Mock implements AmazonS3 {
    * @param exception the exception
    */
   private void throwException(ExceptionType exception) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     if (exception.equals(ExceptionType.AmazonClientException)) {
       throw new AmazonClientException("");
     }
@@ -277,7 +277,7 @@ public class AmazonS3Mock implements AmazonS3 {
     try {
       result.setContentMd5(new String(Md5Utils.md5AsBase64(file)));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
+      //  Auto-generated catch block
       e.printStackTrace();
     }
     return result;
@@ -337,7 +337,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void setEndpoint(String endpoint) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -346,7 +346,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void setRegion(Region region) throws IllegalArgumentException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -355,7 +355,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void setS3ClientOptions(S3ClientOptions clientOptions) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -365,7 +365,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void changeObjectStorageClass(String bucketName, String key, StorageClass newStorageClass)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -375,7 +375,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setObjectRedirectLocation(String bucketName, String key, String newRedirectLocation)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -384,7 +384,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public ObjectListing listObjects(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return listObjects(bucketName,"");
   }
 
@@ -394,7 +394,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectListing listObjects(ListObjectsRequest listObjectsRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -404,7 +404,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectListing listNextBatchOfObjects(ObjectListing previousObjectListing) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -414,7 +414,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public VersionListing listVersions(String bucketName, String prefix) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -424,7 +424,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public VersionListing listNextBatchOfVersions(VersionListing previousVersionListing) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -434,7 +434,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public VersionListing listVersions(String bucketName, String prefix, String keyMarker, String versionIdMarker,
       String delimiter, Integer maxResults) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -444,7 +444,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public VersionListing listVersions(ListVersionsRequest listVersionsRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -453,7 +453,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public Owner getS3AccountOwner() throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -462,7 +462,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -472,7 +472,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public List<Bucket> listBuckets(ListBucketsRequest listBucketsRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -481,7 +481,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public String getBucketLocation(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -491,7 +491,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public String getBucketLocation(GetBucketLocationRequest getBucketLocationRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -501,7 +501,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public Bucket createBucket(CreateBucketRequest createBucketRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -511,7 +511,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public Bucket createBucket(String bucketName, com.amazonaws.services.s3.model.Region region)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -520,7 +520,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public Bucket createBucket(String bucketName, String region) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -530,7 +530,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public AccessControlList getObjectAcl(String bucketName, String key) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -540,7 +540,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public AccessControlList getObjectAcl(String bucketName, String key, String versionId) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -550,7 +550,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setObjectAcl(String bucketName, String key, AccessControlList acl) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -560,7 +560,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setObjectAcl(String bucketName, String key, CannedAccessControlList acl) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -570,7 +570,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setObjectAcl(String bucketName, String key, String versionId, AccessControlList acl)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -580,7 +580,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setObjectAcl(String bucketName, String key, String versionId, CannedAccessControlList acl)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -590,7 +590,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketAcl(SetBucketAclRequest setBucketAclRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -600,7 +600,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public AccessControlList getBucketAcl(GetBucketAclRequest getBucketAclRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -610,7 +610,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketAcl(String bucketName, AccessControlList acl) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -620,7 +620,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketAcl(String bucketName, CannedAccessControlList acl) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -630,7 +630,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectMetadata getObjectMetadata(String bucketName, String key) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -640,7 +640,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectMetadata getObjectMetadata(GetObjectMetadataRequest getObjectMetadataRequest)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -649,7 +649,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public S3Object getObject(GetObjectRequest getObjectRequest) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -659,7 +659,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public ObjectMetadata getObject(GetObjectRequest getObjectRequest, File destinationFile)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -669,7 +669,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteBucket(DeleteBucketRequest deleteBucketRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -678,7 +678,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -688,7 +688,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public CopyObjectResult copyObject(String sourceBucketName, String sourceKey, String destinationBucketName,
       String destinationKey) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -698,7 +698,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public CopyObjectResult copyObject(CopyObjectRequest copyObjectRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -707,7 +707,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public CopyPartResult copyPart(CopyPartRequest copyPartRequest) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -717,7 +717,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteObject(DeleteObjectRequest deleteObjectRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -727,7 +727,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public DeleteObjectsResult deleteObjects(DeleteObjectsRequest deleteObjectsRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -737,7 +737,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteVersion(String bucketName, String key, String versionId) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -747,7 +747,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteVersion(DeleteVersionRequest deleteVersionRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -757,7 +757,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public BucketLoggingConfiguration getBucketLoggingConfiguration(String bucketName) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -767,7 +767,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketLoggingConfiguration(SetBucketLoggingConfigurationRequest setBucketLoggingConfigurationRequest)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -777,7 +777,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public BucketVersioningConfiguration getBucketVersioningConfiguration(String bucketName)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -788,7 +788,7 @@ public class AmazonS3Mock implements AmazonS3 {
   public void setBucketVersioningConfiguration(
       SetBucketVersioningConfigurationRequest setBucketVersioningConfigurationRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -797,7 +797,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public BucketLifecycleConfiguration getBucketLifecycleConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -807,7 +807,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketLifecycleConfiguration(String bucketName,
       BucketLifecycleConfiguration bucketLifecycleConfiguration) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -817,7 +817,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketLifecycleConfiguration(
       SetBucketLifecycleConfigurationRequest setBucketLifecycleConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -826,7 +826,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucketLifecycleConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -836,7 +836,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteBucketLifecycleConfiguration(
       DeleteBucketLifecycleConfigurationRequest deleteBucketLifecycleConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -845,7 +845,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public BucketCrossOriginConfiguration getBucketCrossOriginConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -855,7 +855,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketCrossOriginConfiguration(String bucketName,
       BucketCrossOriginConfiguration bucketCrossOriginConfiguration) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -865,7 +865,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketCrossOriginConfiguration(
       SetBucketCrossOriginConfigurationRequest setBucketCrossOriginConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -874,7 +874,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucketCrossOriginConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -884,7 +884,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteBucketCrossOriginConfiguration(
       DeleteBucketCrossOriginConfigurationRequest deleteBucketCrossOriginConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -893,7 +893,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public BucketTaggingConfiguration getBucketTaggingConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -902,7 +902,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void setBucketTaggingConfiguration(String bucketName, BucketTaggingConfiguration bucketTaggingConfiguration) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -911,7 +911,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void setBucketTaggingConfiguration(SetBucketTaggingConfigurationRequest setBucketTaggingConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -920,7 +920,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucketTaggingConfiguration(String bucketName) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -930,7 +930,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteBucketTaggingConfiguration(
       DeleteBucketTaggingConfigurationRequest deleteBucketTaggingConfigurationRequest) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -940,7 +940,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public BucketNotificationConfiguration getBucketNotificationConfiguration(String bucketName)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -951,7 +951,7 @@ public class AmazonS3Mock implements AmazonS3 {
   public void setBucketNotificationConfiguration(
       SetBucketNotificationConfigurationRequest setBucketNotificationConfigurationRequest)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -962,7 +962,7 @@ public class AmazonS3Mock implements AmazonS3 {
   public void setBucketNotificationConfiguration(String bucketName,
       BucketNotificationConfiguration bucketNotificationConfiguration) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -972,7 +972,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public BucketWebsiteConfiguration getBucketWebsiteConfiguration(String bucketName) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -983,7 +983,7 @@ public class AmazonS3Mock implements AmazonS3 {
   public BucketWebsiteConfiguration getBucketWebsiteConfiguration(
       GetBucketWebsiteConfigurationRequest getBucketWebsiteConfigurationRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -993,7 +993,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketWebsiteConfiguration(String bucketName, BucketWebsiteConfiguration configuration)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1003,7 +1003,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketWebsiteConfiguration(SetBucketWebsiteConfigurationRequest setBucketWebsiteConfigurationRequest)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1012,7 +1012,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucketWebsiteConfiguration(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1023,7 +1023,7 @@ public class AmazonS3Mock implements AmazonS3 {
   public void deleteBucketWebsiteConfiguration(
       DeleteBucketWebsiteConfigurationRequest deleteBucketWebsiteConfigurationRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1032,7 +1032,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public BucketPolicy getBucketPolicy(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1042,7 +1042,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public BucketPolicy getBucketPolicy(GetBucketPolicyRequest getBucketPolicyRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1052,7 +1052,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketPolicy(String bucketName, String policyText) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1062,7 +1062,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void setBucketPolicy(SetBucketPolicyRequest setBucketPolicyRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1071,7 +1071,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void deleteBucketPolicy(String bucketName) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1081,7 +1081,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void deleteBucketPolicy(DeleteBucketPolicyRequest deleteBucketPolicyRequest) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1090,7 +1090,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public URL generatePresignedUrl(String bucketName, String key, Date expiration) throws AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1100,7 +1100,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public URL generatePresignedUrl(String bucketName, String key, Date expiration, HttpMethod method)
       throws AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1109,7 +1109,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public URL generatePresignedUrl(GeneratePresignedUrlRequest generatePresignedUrlRequest) throws AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1119,7 +1119,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public InitiateMultipartUploadResult initiateMultipartUpload(InitiateMultipartUploadRequest request)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1128,7 +1128,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public UploadPartResult uploadPart(UploadPartRequest request) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1137,7 +1137,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public PartListing listParts(ListPartsRequest request) throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1147,7 +1147,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public void abortMultipartUpload(AbortMultipartUploadRequest request) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1157,7 +1157,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public CompleteMultipartUploadResult completeMultipartUpload(CompleteMultipartUploadRequest request)
       throws AmazonClientException, AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1167,7 +1167,7 @@ public class AmazonS3Mock implements AmazonS3 {
   @Override
   public MultipartUploadListing listMultipartUploads(ListMultipartUploadsRequest request) throws AmazonClientException,
       AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1176,7 +1176,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public S3ResponseMetadata getCachedResponseMetadata(AmazonWebServiceRequest request) {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return null;
   }
 
@@ -1185,7 +1185,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void restoreObject(RestoreObjectRequest request) throws AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1194,7 +1194,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void restoreObject(String bucketName, String key, int expirationInDays) throws AmazonServiceException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1203,7 +1203,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void enableRequesterPays(String bucketName) throws AmazonServiceException, AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
 
   }
 
@@ -1212,7 +1212,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public void disableRequesterPays(String bucketName) throws AmazonServiceException, AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
   }
 
   /* (non-Javadoc)
@@ -1220,7 +1220,7 @@ public class AmazonS3Mock implements AmazonS3 {
    */
   @Override
   public boolean isRequesterPaysEnabled(String bucketName) throws AmazonServiceException, AmazonClientException {
-    // TODO Auto-generated method stub
+    //  Auto-generated method stub
     return false;
   }
 

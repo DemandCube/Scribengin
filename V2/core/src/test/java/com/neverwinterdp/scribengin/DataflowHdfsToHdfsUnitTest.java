@@ -1,7 +1,8 @@
 package com.neverwinterdp.scribengin;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,7 +49,7 @@ public class DataflowHdfsToHdfsUnitTest {
 
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
-      Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
+      assertEquals(2, scribenginClient.getScribenginMasters().size());
 
 //      shell.execute("registry dump");
 //      DataflowClient dflClient = scribenginClient.getDataflowClient("hello-hdfs-dataflow");
@@ -86,7 +87,8 @@ public class DataflowHdfsToHdfsUnitTest {
                 " --source-num-of-stream 10" +
                 " --source-max-records-per-stream 1000" +
                 " --source-name hello-source" +
-                " --sink-name hello-sink";
+                " --sink-name hello-sink"+
+                " --junit-report build/junit-report.xml";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();
