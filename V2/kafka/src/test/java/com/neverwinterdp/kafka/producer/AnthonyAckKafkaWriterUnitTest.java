@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.beust.jcommander.JCommander;
 import com.neverwinterdp.kafka.tool.KafkaMessageCheckTool;
 
 /**

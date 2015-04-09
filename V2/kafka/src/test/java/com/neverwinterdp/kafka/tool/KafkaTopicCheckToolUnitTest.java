@@ -1,7 +1,7 @@
 package com.neverwinterdp.kafka.tool;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.neverwinterdp.kafka.tool.server.KafkaCluster;
@@ -12,18 +12,18 @@ public class KafkaTopicCheckToolUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
 
-  private KafkaCluster cluster;
+  static private KafkaCluster cluster;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  static public void setUp() throws Exception {
     FileUtil.removeIfExist("./build/cluster", false);
     cluster = new KafkaCluster("./build/cluster", 1, 2);
     cluster.start();
     Thread.sleep(5000);
   }
   
-  @After
-  public void tearDown() throws Exception {
+  @AfterClass
+  static public void tearDown() throws Exception {
     cluster.shutdown();
   }
 
@@ -33,7 +33,7 @@ public class KafkaTopicCheckToolUnitTest {
       "--zk-connect", cluster.getZKConnect(),
       "--num-partition", "3",
       "--replication", "1",
-      "--send-period", "10",
+      "--send-period", "0",
       "--send-message-size", "500",
       "--send-max-per-partition", "1000",
       "--send-max-duration", "60000",
