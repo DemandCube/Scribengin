@@ -77,10 +77,11 @@ public class VMDataflowWorkerApp extends VMApp {
           }
         }
       });
-      dataflowTaskExecutorService.waitForExecutorTermination(5000);
+      dataflowTaskExecutorService.waitForExecutorTermination(1000);
     } catch(InterruptedException ex) {
     } finally {
       dataflowTaskExecutorService.shutdown();
+      dataflowTaskExecutorService.waitForExecutorTermination(1000);
       container.getInstance(CloseableInjector.class).close();
     }
   }
