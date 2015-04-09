@@ -27,6 +27,7 @@ public class VMService {
   final static public String MASTER_PATH    = "/vm/master";
   final static public String LEADER_PATH    = MASTER_PATH + "/leader";
   final static public String EVENTS_PATH    = "/vm/events";
+  final static public String SHUTDOWN_EVENT_PATH = EVENTS_PATH + "/shutdown";
   
   static public enum Status { INIT, RUNNING, TERMINATED }
   

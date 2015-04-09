@@ -175,6 +175,7 @@ public class VM {
           setVMStatus(VMStatus.TERMINATED);
           vmContainer.getInstance(CloseableInjector.class).close();
         } catch (RegistryException e) {
+          System.err.println("Set terminated vm status for " + descriptor.getId() );
           e.printStackTrace();
           logger.error("Error in vm registry", e);
         }

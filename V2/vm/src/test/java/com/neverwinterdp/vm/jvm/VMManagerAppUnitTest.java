@@ -17,7 +17,7 @@ import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.event.VMWaitingEventListenerNew;
+import com.neverwinterdp.vm.event.VMWaitingEventListener;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.tool.VMZKClusterBuilder;
 import com.neverwinterdp.vm.util.VMNodeDebugger;
@@ -51,7 +51,7 @@ public class VMManagerAppUnitTest  {
   @Test
   public void testMaster() throws Exception {
     try {
-      VMWaitingEventListenerNew master1waitingListener = vmCluster.createVMMaster("vm-master-1");
+      VMWaitingEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
       master1waitingListener.waitForEvents(5000);
       
       vmCluster.createVMMaster("vm-master-2");
@@ -61,7 +61,7 @@ public class VMManagerAppUnitTest  {
       shell = new Shell(vmClient) ;
       shell.execute("registry dump");
       
-      VMWaitingEventListenerNew eventsListener = new VMWaitingEventListenerNew(shell.getVMClient().getRegistry());
+      VMWaitingEventListener eventsListener = new VMWaitingEventListener(shell.getVMClient().getRegistry());
       banner("Create VM Dummy 1");
       eventsListener.waitVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
       eventsListener.waitHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);

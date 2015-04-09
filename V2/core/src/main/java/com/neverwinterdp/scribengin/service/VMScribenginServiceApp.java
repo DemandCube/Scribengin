@@ -15,6 +15,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
+import com.neverwinterdp.scribengin.event.ScribenginShutdownEventListener;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.client.VMClient;
@@ -35,6 +36,11 @@ public class VMScribenginServiceApp extends VMApp {
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     
+    ScribenginShutdownEventListener shutdownListener = new ScribenginShutdownEventListener(registry) {
+      @Override
+      public void onShutdownEvent() { notifyShutdown(); }
+    };
+
     try {
       waitForShutdown();
     } catch(InterruptedException ex) {

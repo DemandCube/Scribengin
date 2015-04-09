@@ -34,7 +34,7 @@ public class VMNodeDebuggerUnitTest {
   @After
   public void teardown() throws Exception {
     clusterBuilder.shutdown();
-    Thread.sleep(15000);
+    Thread.sleep(5000);
   }
   
   @Test
@@ -42,12 +42,13 @@ public class VMNodeDebuggerUnitTest {
     shell.execute("registry dump");
     
     RegistryDebugger debugger = new RegistryDebugger(System.out, shell.getVMClient().getRegistry()) ;
-    
     debugger.watch("/vm/allocated/vm-scribengin-master-1", new VMNodeDebugger(), true);
     
     clusterBuilder.startScribenginMasters();
     
     shell.execute("registry dump");
+    
+    debugger.clear();
   }
 
   protected static VMClusterBuilder getVMClusterBuilder() throws Exception {

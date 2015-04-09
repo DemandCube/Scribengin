@@ -50,7 +50,7 @@ public class VMClient {
   
   public void shutdown() throws Exception {
     h1("Shutdow the vm masters");
-    registry.create(VMShutdownEventListener.EVENT_PATH, true, NodeCreateMode.PERSISTENT);
+    registry.create(VMService.SHUTDOWN_EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {

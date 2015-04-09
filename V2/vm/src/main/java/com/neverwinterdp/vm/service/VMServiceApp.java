@@ -34,6 +34,15 @@ public class VMServiceApp extends VMApp {
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), VMService.LEADER_PATH) ;
     election.setListener(new VMServiceLeaderElectionListener());
     election.start();
+    
+    Registry registry = getVM().getVMRegistry().getRegistry();
+    VMShutdownEventListener shutdownListener = new VMShutdownEventListener(registry) {
+      @Override
+      public void onShutdownEvent() throws Exception {
+        notifyShutdown();
+      }
+    };
+
     try {
       waitForShutdown();
     } catch(InterruptedException ex) {
