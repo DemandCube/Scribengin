@@ -31,6 +31,7 @@ class Cluster(ServerSet):
     Parses the file in path (/etc/hosts) and searches for pattern of [ip address]\s+[hostname]
     Uses serverRegexes for server name regexes
     """
+    zkList = []
     f = open(path, 'r')
     for line in f:
       if any(regex.match(line) for regex in self.serverRegexes):
@@ -38,8 +39,11 @@ class Cluster(ServerSet):
         if re.match("kafka.*", hostname, re.IGNORECASE) is not None:
           self.addServer(KafkaServer(hostname))
         if re.match("zookeeper.*", hostname, re.IGNORECASE) is not None:
+          zkList.append(hostname)
           self.addServer(ZookeeperServer(hostname)) 
         if re.match("hadoop-master.*", hostname, re.IGNORECASE) is not None:
           self.addServer(HadoopMasterServer(hostname)) 
         if re.match("hadoop-worker.*", hostname, re.IGNORECASE) is not None :
           self.addServer(HadoopWorkerServer(hostname))
+    self.paramDict["zkList"] = zkList
+    

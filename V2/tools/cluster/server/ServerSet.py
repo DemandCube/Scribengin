@@ -4,6 +4,7 @@ class ServerSet(object):
   def __init__(self, name):
     self.role = name 
     self.servers = []
+    self.paramDict = {}
     
   def clear(self):
     self.servers = []
@@ -31,10 +32,9 @@ class ServerSet(object):
       if server.getHostname() == hostname:
         server.killProcess(processName)
   
-  
   def startProcess(self, processName):
     for server in self.servers :
-      server.startProcess(processName)
+      server.startProcess(processName, self.paramDict)
     
   def cleanProcess(self, processName):
     for server in self.servers :
@@ -83,6 +83,15 @@ class ServerSet(object):
         serverSet.addServer(server)
     return serverSet
   
+  def getZookeeperConnect(self):
+    """
+    Returns zookeeper connect as a string
+    """
+    for server in self.servers :
+      if(server.role == "zookeeper"):
+        print server.hostname
+      
+    
   def startZookeeper(self):
     return self.startProcess("zookeeper")
   
