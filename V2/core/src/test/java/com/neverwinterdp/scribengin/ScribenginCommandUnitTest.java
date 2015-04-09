@@ -30,7 +30,6 @@ public class ScribenginCommandUnitTest {
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
-    Thread.sleep(3000);
     clusterBuilder.startScribenginMasters();
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }

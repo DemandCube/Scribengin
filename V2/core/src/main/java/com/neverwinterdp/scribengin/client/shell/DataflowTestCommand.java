@@ -81,7 +81,7 @@ public class DataflowTestCommand extends Command {
     Class<? extends DataflowTest> testClass ;
     
     public HdfsDataflowTestSubCommand() {
-      this.testClass = HdfsDataflowTest.class;
+      this.testClass = HDFSDataflowTest.class;
     }
     
     @Override
@@ -101,7 +101,7 @@ public class DataflowTestCommand extends Command {
     Class<? extends DataflowTest> testClass ;
     
     public HdfsToKafkaDataflowTestSubCommand() {
-      this.testClass = HdfsToKafkaDataflowTest.class;
+      this.testClass = HDFSToKafkaDataflowTest.class;
     }
     
     @Override

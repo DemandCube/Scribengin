@@ -102,6 +102,7 @@ public class Lock {
           return ;
         }
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
+        if(currentLockIds.size() == 0) return ;
         LockId ownerId = currentLockIds.first() ;
         if(ownerId.equals(lockId)) {
           synchronized(this) {
@@ -112,7 +113,7 @@ public class Lock {
         } else {
           watch(currentLockIds);
         }
-      } catch(RegistryException ex) {
+      } catch(Throwable ex) {
         throw new RuntimeException("Error lock " + lockDir, ex) ;
       }
     }

@@ -18,8 +18,8 @@ public class AckKafkaWriterUnitTest {
       "--send-writer-type", "ack",
       "--send-period", "0",
       "--send-message-size", "1024",
-      "--send-max-per-partition", "50000",
-      "--send-max-duration", "300000",
+      "--send-max-per-partition", "10000",
+      "--send-max-duration", "30000",
 
       "--producer:message.send.max.retries=5",
       "--producer:retry.backoff.ms=100",
@@ -32,7 +32,7 @@ public class AckKafkaWriterUnitTest {
       "--producer:acks=all",
       "--producer:compression.type=gzip",
 
-      "--consume-max-duration", "300000", "--consume-batch-fetch", "1000"
+      "--consume-max-duration", "30000", "--consume-batch-fetch", "1000"
   };
 
   @Test

@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin;
+package com.neverwinterdp.scribengin.dataflow;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
@@ -15,7 +16,7 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class DataflowHdfsToKafkaUnitTest {
+public class DataflowKafkaToHdfsExperimentTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -49,13 +50,13 @@ public class DataflowHdfsToKafkaUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
-    
-    try {
+     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-hdfs-kafka-dataflow");
-      Assert.assertEquals("hello-hdfs-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
+      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-hdfs-dataflow");
+  
+      Assert.assertEquals("hello-kafka-hdfs-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
       
       VMClient vmClient = scribenginClient.getVMClient();
@@ -83,10 +84,9 @@ public class DataflowHdfsToKafkaUnitTest {
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        String command = "dataflow-test hdfs-kafka " +
-            "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
-            "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
-            "  --sink-name output";
+        String command = "dataflow-test kafka-hdfs " +
+            "  --worker 3 --executor-per-worker 1 --duration 70000 --num-partition 2 --task-max-execute-time 1000" +
+            "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();

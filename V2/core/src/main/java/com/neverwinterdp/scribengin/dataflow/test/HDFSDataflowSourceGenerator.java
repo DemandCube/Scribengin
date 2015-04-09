@@ -13,7 +13,7 @@ import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
-public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
+public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
 
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
