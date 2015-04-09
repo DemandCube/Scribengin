@@ -8,14 +8,14 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSinkValidatorReport;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
-public class DataflowKafkaSinkValidator extends DataflowSinkValidator {
+public class KafkaDataflowSinkValidator extends DataflowSinkValidator {
   private KafkaMessageCheckTool kafkaMessageCheckTool;
   private String zkConnect ;
   
   @Override
   public StorageDescriptor getSinkDescriptor() {
     StorageDescriptor sink = new StorageDescriptor("KAFKA");
-    sink.attribute("name", "DataflowKafkaSinkValidator");
+    sink.attribute("name", "KafkaDataflowSinkValidator");
     sink.attribute("topic", sinkName);
     sink.attribute("zk.connect", zkConnect);
     return sink;

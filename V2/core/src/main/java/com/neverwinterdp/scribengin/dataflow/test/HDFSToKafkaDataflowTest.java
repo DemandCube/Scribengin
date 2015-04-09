@@ -5,22 +5,19 @@ import org.apache.hadoop.fs.FileSystem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.util.JSONSerializer;
 
 
-public class HdfsToKafkaDataflowTest extends DataflowTest {
+public class HDFSToKafkaDataflowTest extends DataflowTest {
 
   @ParametersDelegate
-  private DataflowSinkValidator   sinkValidator = new DataflowKafkaSinkValidator();
+  private DataflowSinkValidator   sinkValidator = new KafkaDataflowSinkValidator();
   
   @Parameter(names = "--sink-topic", description = "Default sink topic")
   public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
@@ -66,19 +63,5 @@ public class HdfsToKafkaDataflowTest extends DataflowTest {
 
   private String getDataDir() {
     return "./build/hdfs";
-  }
-  
-  static public class TestCopyScribe extends ScribeAbstract {
-    private int count = 0;
-    
-    @Override
-    public void process(Record record, DataflowTaskContext ctx) throws Exception {
-      ctx.append(record);
-      count++ ;
-      if(count == 100) {
-        ctx.commit();
-        count = 0;
-      }
-    }
   }
 }

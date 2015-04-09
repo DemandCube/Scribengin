@@ -16,7 +16,7 @@ import com.neverwinterdp.tool.message.Message;
 import com.neverwinterdp.tool.message.MessageExtractor;
 import com.neverwinterdp.tool.message.MessageTracker;
 
-public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
+public class HDFSDataflowSinkValidator extends DataflowSinkValidator {
   private FileSystem     fs;
   private MessageTracker messageTracker;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
@@ -42,7 +42,7 @@ public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
       HDFSSource source = new HDFSSource(fs, getSinkDescriptor()) ;
       SourceStream[] streams = source.getStreams();
       for(SourceStream selStream : streams) {
-        SourceStreamReader streamReader = selStream.getReader("DataflowHDFSSinkValidator") ;
+        SourceStreamReader streamReader = selStream.getReader("HDFSDataflowSinkValidator") ;
         Record record = null ;
         while((record = streamReader.next()) != null) {
           Message message = messageExtractor.extract(record.getData()) ;

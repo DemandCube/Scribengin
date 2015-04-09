@@ -10,10 +10,10 @@ import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 
 public class KafkaDataflowTest extends DataflowTest {
   @ParametersDelegate
-  private DataflowSourceGenerator sourceGenerator = new DataflowKafkaSourceGenerator();
+  private DataflowSourceGenerator sourceGenerator = new KafkaDataflowSourceGenerator();
   
   @ParametersDelegate
-  private DataflowSinkValidator   sinkValidator   = new DataflowKafkaSinkValidator();
+  private DataflowSinkValidator   sinkValidator   = new KafkaDataflowSinkValidator();
   
   @Parameter(names = "--sink-topic", description = "Default sink topic")
   public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
@@ -59,8 +59,7 @@ public class KafkaDataflowTest extends DataflowTest {
     DataflowTestReport report = new DataflowTestReport() ;
     sourceGenerator.populate(report);
     sinkValidator.populate(report);
-    report.report(System.out);
-
+    shell.console().println(report.getFormatedReport());
     junitReport(report);
   }
 }

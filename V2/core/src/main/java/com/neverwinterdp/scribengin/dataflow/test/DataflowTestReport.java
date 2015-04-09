@@ -30,6 +30,16 @@ public class DataflowTestReport {
     out.append(reportFormater.getFormatText());
   }
   
+  public String getFormatedReport() {
+    StringBuilder b = new StringBuilder() ;
+    try {
+      report(b);
+    } catch (IOException e) {
+      b.append(e.getMessage());
+    }
+    return b.toString() ;
+  }
+  
   static public class DataflowSourceGeneratorReport {
     private String sourceName;
     private int    numberOfStreams;

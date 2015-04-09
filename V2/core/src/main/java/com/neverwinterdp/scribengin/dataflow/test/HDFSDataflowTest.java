@@ -8,12 +8,12 @@ import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.util.JSONSerializer;
 
 
-public class HdfsDataflowTest extends DataflowTest {
+public class HDFSDataflowTest extends DataflowTest {
   @ParametersDelegate
-  private DataflowSourceGenerator sourceGenerator = new DataflowHDFSSourceGenerator();
+  private DataflowSourceGenerator sourceGenerator = new HDFSDataflowSourceGenerator();
   
   @ParametersDelegate
-  private DataflowSinkValidator   sinkValidator   = new DataflowHDFSSinkValidator();
+  private DataflowSinkValidator   sinkValidator   = new HDFSDataflowSinkValidator();
   
   protected void doRun(ScribenginShell shell) throws Exception {
     long start = System.currentTimeMillis();
@@ -51,10 +51,8 @@ public class HdfsDataflowTest extends DataflowTest {
     DataflowTestReport report = new DataflowTestReport() ;
     sourceGenerator.populate(report);
     sinkValidator.populate(report);
-    report.report(System.out);
-
+    shell.console().println(report.getFormatedReport());
     junitReport(report);
-    
     shell.console().println("Test execution time: " + (System.currentTimeMillis() - start) + "ms");
     dataflowInfoThread.interrupt();
   }

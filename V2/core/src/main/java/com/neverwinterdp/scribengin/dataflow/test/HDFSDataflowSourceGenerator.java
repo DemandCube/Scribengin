@@ -13,12 +13,13 @@ import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
-public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
+public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
 
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   private FileSystem fs  ;
   
+  //TODO: why do you need those parameters, why not taken directly from "--source-num-of-stream"...
   private int numOfStream;
   private int numOfBufferPerStream;
   private int numOfRecordPerBuffer;
@@ -34,6 +35,7 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   public void init(ScribenginClient scribenginClient) throws Exception {
     fs = scribenginClient.getVMClient().getFileSystem();
     numOfStream = numberOfStream;
+    //TODO: code convention
     numOfBufferPerStream=1;
     numOfRecordPerBuffer = maxRecordsPerStream/numOfBufferPerStream;
   }
