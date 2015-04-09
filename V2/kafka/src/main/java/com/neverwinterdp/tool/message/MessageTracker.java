@@ -51,6 +51,14 @@ public class MessageTracker {
     partitionTracker.log(trackId);
   }
 
+  public TreeMap<Integer, PartitionMessageTracker> getPartitionMessageTrackers() {
+    return partitions;
+  }
+
+  public void setPartitions(TreeMap<Integer, PartitionMessageTracker> partitions) {
+    this.partitions = partitions;
+  }
+
   public PartitionMessageTracker getPartitionMessageTracker(int partition) {
     return partitions.get(partition);
   }

@@ -1,8 +1,12 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.fs.FileSystem;
 
+import com.google.common.base.Stopwatch;
 import com.neverwinterdp.scribengin.ScribenginClient;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSourceGeneratorReport;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.sink.Sink;
 import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
@@ -10,14 +14,15 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
-  private FileSystem fs  ;
+
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
+  private Stopwatch stopwatch = Stopwatch.createUnstarted();
+  private FileSystem fs  ;
   
-  //TODO: replace those parameters by the source parameter in the DataflowSourceGenerator 
-  private int numOfStream = 5;
-  private int numOfBufferPerStream = 3;
-  private int numOfRecordPerBuffer = 10;
-  
+  private int numOfStream;
+  private int numOfBufferPerStream;
+  private int numOfRecordPerBuffer;
+
   @Override
   public StorageDescriptor getSourceDescriptor() {
     String location = sourceLocation + "/" + sourceName ;
@@ -28,13 +33,18 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
     fs = scribenginClient.getVMClient().getFileSystem();
+    numOfStream = numberOfStream;
+    numOfBufferPerStream=1;
+    numOfRecordPerBuffer = maxRecordsPerStream/numOfBufferPerStream;
   }
 
   @Override
   public void run() {
+    stopwatch.start();
     try {
-      String location = sourceLocation + "/" + sourceName ;
+      String location = sourceLocation + "/" + sourceName;
       generateSource(fs, location);
+      stopwatch.stop();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -47,6 +57,11 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
 
   @Override
   public void populate(DataflowTestReport report) {
+    DataflowSourceGeneratorReport sourceReport = report.getSourceGeneratorReport() ;
+    sourceReport.setSourceName(sourceName);
+    sourceReport.setNumberOfStreams(numOfStream);
+    sourceReport.setWriteCount(RecordMessageGenerator.idTracker.get());
+    sourceReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
   
   void generateSource(FileSystem fs, String sourceDir) throws Exception {

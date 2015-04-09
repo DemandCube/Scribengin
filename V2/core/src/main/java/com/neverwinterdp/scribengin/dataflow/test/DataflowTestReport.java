@@ -33,7 +33,7 @@ public class DataflowTestReport {
   static public class DataflowSourceGeneratorReport {
     private String sourceName;
     private int    numberOfStreams;
-    private int    writeCount ;
+    private long    writeCount ;
     private long   duration;
     
     public String getSourceName() { return sourceName; }
@@ -42,8 +42,8 @@ public class DataflowTestReport {
     public int getNumberOfStreams() { return numberOfStreams;}
     public void setNumberOfStreams(int numberOfStreams) { this.numberOfStreams = numberOfStreams;}
     
-    public int getWriteCount() { return writeCount; }
-    public void setWriteCount(int writeCount) { this.writeCount = writeCount; }
+    public long getWriteCount() { return writeCount; }
+    public void setWriteCount(long writeCount) { this.writeCount = writeCount; }
     
     public long getDuration() { return duration; }
     public void setDuration(long duration) { this.duration = duration; }

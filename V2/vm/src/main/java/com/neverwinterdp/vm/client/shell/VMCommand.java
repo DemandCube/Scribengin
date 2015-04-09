@@ -1,7 +1,12 @@
 package com.neverwinterdp.vm.client.shell;
 
+import java.util.Map;
+
+import com.neverwinterdp.util.text.TabularFormater;
+import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
+import com.neverwinterdp.vm.util.VMRegistryFormatter;
 
 public class VMCommand extends Command {
   public VMCommand() {
@@ -42,8 +47,33 @@ public class VMCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       VMClient vmClient = shell.getVMClient();
       shell.console().h1("VM Info");
-      shell.console().println(VMFormater.format("Running VM", vmClient.getRunningVMDescriptors()));
-      shell.console().println(VMFormater.format("History VM", vmClient.getHistoryVMDescriptors()));
+      VMRegistryFormatter regFormatter = new VMRegistryFormatter(null);
+      
+      TabularFormater tabFormatter = new TabularFormater("Name", "Hostname", "Description", "Memory",
+                                                         "CPU Cores", "Stored Path", "Roles");
+      
+      
+      shell.console().println("Running VM:");
+      for(VMDescriptor desc : vmClient.getRunningVMDescriptors()){
+        Map<String,String> data = regFormatter.getFormattedMap(desc);
+        tabFormatter.addRow(data.get("Name"), data.get("Hostname"),
+                            data.get("Description"), data.get("Memory"),
+                            data.get("CPU Cores"), data.get("Stored Path"),
+                            data.get("Roles"));
+      }
+      shell.console().println(tabFormatter.getFormatText());
+      
+      tabFormatter = new TabularFormater("Name", "Hostname", "Description", "Memory",
+          "CPU Cores", "Stored Path", "Roles");
+      shell.console().println("History VM:");
+      for(VMDescriptor desc : vmClient.getHistoryVMDescriptors()){
+        Map<String,String> data = regFormatter.getFormattedMap(desc);
+        tabFormatter.addRow(data.get("Name"), data.get("Hostname"),
+                            data.get("Description"), data.get("Memory"),
+                            data.get("CPU Cores"), data.get("Stored Path"),
+                            data.get("Roles"));
+      }
+      shell.console().println(tabFormatter.getFormatText());
     }
 
     @Override

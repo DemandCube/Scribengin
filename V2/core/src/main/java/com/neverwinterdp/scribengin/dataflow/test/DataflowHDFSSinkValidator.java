@@ -1,9 +1,13 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.fs.FileSystem;
 
+import com.google.common.base.Stopwatch;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSinkValidatorReport;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.hdfs.source.HDFSSource;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
@@ -15,6 +19,7 @@ import com.neverwinterdp.tool.message.MessageTracker;
 public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
   private FileSystem     fs;
   private MessageTracker messageTracker;
+  private Stopwatch stopwatch = Stopwatch.createUnstarted();
   
   @Override
   public StorageDescriptor getSinkDescriptor() {
@@ -30,6 +35,7 @@ public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
 
   @Override
   public void run() {
+    stopwatch.start();
     messageTracker = new MessageTracker() ;
     MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR ;
     try {
@@ -44,10 +50,12 @@ public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
         }
         streamReader.close();
       }
+      messageTracker.optimize();
       messageTracker.dump(System.out);
     } catch (Exception e) {
       e.printStackTrace();
     }
+    stopwatch.stop();
   }
 
   @Override
@@ -67,5 +75,10 @@ public class DataflowHDFSSinkValidator extends DataflowSinkValidator {
 
   @Override
   public void populate(DataflowTestReport report) {
+    DataflowSinkValidatorReport sinkReport = report.getSinkValidatorReport();
+    sinkReport.setSinkName(sinkName);
+    sinkReport.setNumberOfStreams(messageTracker.getPartitionMessageTrackers().size());
+    sinkReport.setReadCount(messageTracker.getLogCount());
+    sinkReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
 }
