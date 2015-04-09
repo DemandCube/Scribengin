@@ -19,6 +19,7 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   private FileSystem fs  ;
   
+  //TODO: why do you need those parameters, why not taken directly from "--source-num-of-stream"...
   private int numOfStream;
   private int numOfBufferPerStream;
   private int numOfRecordPerBuffer;
@@ -34,6 +35,7 @@ public class DataflowHDFSSourceGenerator extends DataflowSourceGenerator {
   public void init(ScribenginClient scribenginClient) throws Exception {
     fs = scribenginClient.getVMClient().getFileSystem();
     numOfStream = numberOfStream;
+    //TODO: code convention
     numOfBufferPerStream=1;
     numOfRecordPerBuffer = maxRecordsPerStream/numOfBufferPerStream;
   }

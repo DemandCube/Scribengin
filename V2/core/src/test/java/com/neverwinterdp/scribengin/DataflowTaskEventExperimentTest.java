@@ -62,7 +62,7 @@ public class DataflowTaskEventExperimentTest {
       Assert.assertEquals(1, dflClient.getDataflowMasters().size());
       
       List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
-      Assert.assertEquals(3, dataflowWorkers.size());
+      Assert.assertEquals(2, dataflowWorkers.size());
       
       dflClient.setDataflowTaskEvent(DataflowTaskEvent.STOP);
       Thread.sleep(5000);

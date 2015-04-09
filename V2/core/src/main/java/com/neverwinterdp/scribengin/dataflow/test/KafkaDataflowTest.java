@@ -59,8 +59,7 @@ public class KafkaDataflowTest extends DataflowTest {
     DataflowTestReport report = new DataflowTestReport() ;
     sourceGenerator.populate(report);
     sinkValidator.populate(report);
-    report.report(System.out);
-
+    shell.console().println(report.getFormatedReport());
     junitReport(report);
   }
 }
