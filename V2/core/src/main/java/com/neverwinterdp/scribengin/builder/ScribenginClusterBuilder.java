@@ -17,7 +17,7 @@ public class ScribenginClusterBuilder {
     this.vmClusterBuilder = vmClusterBuilder ;
   }
   
-  public VMClusterBuilder getVMClusterBuilder() { return this.vmClusterBuilder ; }
+  public VMClusterBuilder getVMClusterBuilder() { return vmClusterBuilder ; }
   
   public ScribenginClient getScribenginClient() { 
     if(scribenginClient == null) {
@@ -60,6 +60,8 @@ public class ScribenginClusterBuilder {
   }
 
   public void shutdown() throws Exception {
+    scribenginClient.shutdown(); 
+    Thread.sleep(2000);
     vmClusterBuilder.shutdown();
   }
 }

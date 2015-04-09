@@ -76,17 +76,6 @@ public class VMService {
   
   public void register(VMDescriptor descriptor) throws Exception {
     register(registry, descriptor);
-//    String vmPath  = ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName();
-//    descriptor.setStoredPath(vmPath);
-//    
-//    System.err.println("Before register vm " + vmPath);
-//    Transaction transaction = registry.getTransaction() ;
-//    transaction.create(vmPath, new byte[0], NodeCreateMode.PERSISTENT);
-//    transaction.setData(vmPath, descriptor) ;
-//    transaction.create(vmPath + "/status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
-//    transaction.create(vmPath + "/commands", new byte[0], NodeCreateMode.PERSISTENT) ;
-//    transaction.commit();
-//    System.err.println("After register vm " + vmPath);
     watch(descriptor);
   }
   

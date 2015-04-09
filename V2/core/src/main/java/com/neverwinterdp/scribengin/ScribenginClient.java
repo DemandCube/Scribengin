@@ -136,8 +136,18 @@ public class ScribenginClient {
   
   public void shutdown() throws Exception {
     h1("Shutdow the scribengin");
-    Registry registry = vmClient.getRegistry();
-    registry.create(ScribenginService.SHUTDOWN_EVENT_PATH, true, NodeCreateMode.PERSISTENT);
+    List<VMDescriptor> masters = getScribenginMasters() ;
+    VMDescriptor activeMaster = getScribenginMaster() ;
+    for(int i = 0; i < masters.size(); i++) {
+      VMDescriptor master = masters.get(i) ;
+      if(!master.getId().equals(activeMaster.getId())) {
+        vmClient.shutdown(master) ;
+      }
+    }
+    Thread.sleep(1000);
+    vmClient.shutdown(activeMaster) ;
+    //Registry registry = vmClient.getRegistry();
+    //registry.create(ScribenginService.SHUTDOWN_EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {

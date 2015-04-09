@@ -8,7 +8,6 @@ import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class VMNodeDebuggerUnitTest {
   static {
@@ -21,20 +20,17 @@ public class VMNodeDebuggerUnitTest {
 
   @Before
   public void setup() throws Exception {
-    clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
+    clusterBuilder = new ScribenginClusterBuilder(new EmbededVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
     Thread.sleep(3000);
     
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
-
-   
   }
 
   @After
   public void teardown() throws Exception {
     clusterBuilder.shutdown();
-    Thread.sleep(5000);
   }
   
   @Test
@@ -49,9 +45,5 @@ public class VMNodeDebuggerUnitTest {
     shell.execute("registry dump");
     
     debugger.clear();
-  }
-
-  protected static VMClusterBuilder getVMClusterBuilder() throws Exception {
-    return new EmbededVMClusterBuilder();
   }
 }

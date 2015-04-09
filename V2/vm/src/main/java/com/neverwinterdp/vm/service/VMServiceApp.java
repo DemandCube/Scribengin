@@ -26,6 +26,7 @@ public class VMServiceApp extends VMApp {
   
   private Injector  appContainer ;
   private VMService vmService;
+  private VMShutdownEventListener shutdownListener;
   
   public VMService getVMService() { return this.vmService; }
  
@@ -36,7 +37,8 @@ public class VMServiceApp extends VMApp {
     election.start();
     
     Registry registry = getVM().getVMRegistry().getRegistry();
-    VMShutdownEventListener shutdownListener = new VMShutdownEventListener(registry) {
+    
+    shutdownListener = new VMShutdownEventListener(registry) {
       @Override
       public void onShutdownEvent() throws Exception {
         notifyShutdown();
@@ -59,43 +61,49 @@ public class VMServiceApp extends VMApp {
     }
   }
   
-  class VMServiceLeaderElectionListener implements LeaderElectionListener {
-    @Override
-    public void onElected() {
-      try {
-        final Registry registry = getVM().getVMRegistry().getRegistry();
-        RefNode refNode = new RefNode();
-        refNode.setPath(getVM().getDescriptor().getStoredPath());
-        registry.setData(VMService.LEADER_PATH, refNode);
-        AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
-          @Override
-          protected void configure(Map<String, String> properties) {
-            bindInstance(VMConfig.class, getVM().getDescriptor().getVmConfig());
-            bindInstance(RegistryConfig.class, registry.getRegistryConfig());
-            try {
-              bindType(Registry.class, registry.getClass().getName());
-            } catch (Throwable e) {
-              //TODO: use logger
-              e.printStackTrace();
-            }
-          };
+  public void startVMService() {
+    try {
+      final Registry registry = getVM().getVMRegistry().getRegistry();
+      RefNode refNode = new RefNode();
+      refNode.setPath(getVM().getDescriptor().getStoredPath());
+      registry.setData(VMService.LEADER_PATH, refNode);
+      AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
+        @Override
+        protected void configure(Map<String, String> properties) {
+          bindInstance(VMConfig.class, getVM().getDescriptor().getVmConfig());
+          bindInstance(RegistryConfig.class, registry.getRegistryConfig());
+          try {
+            bindType(Registry.class, registry.getClass().getName());
+          } catch (Throwable e) {
+            //TODO: use logger
+            e.printStackTrace();
+          }
         };
-        Module[] modules = {
+      };
+      Module[] modules = {
           new CloseableModule(),new Jsr250Module(), 
           new MycilaJmxModuleExt(getVM().getDescriptor().getVmConfig().getName()), 
           module
-        };
-        appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
-        vmService = appContainer.getInstance(VMService.class);
-        vmService.setStatus(VMService.Status.RUNNING);
-        VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
-        for(VMDescriptor sel : vmDescriptor) {
-          if(vmService.isRunning(sel)) vmService.watch(sel);
-          else vmService.unregister(sel);
-        }
-      } catch(Throwable e) {
-        e.printStackTrace();
+      };
+      appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
+      vmService = appContainer.getInstance(VMService.class);
+      vmService.setStatus(VMService.Status.RUNNING);
+      VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
+      for(VMDescriptor sel : vmDescriptor) {
+        if(vmService.isRunning(sel)) vmService.watch(sel);
+        else vmService.unregister(sel);
       }
+    } catch(Throwable e) {
+      e.printStackTrace();
     }
   }
+  
+  class VMServiceLeaderElectionListener implements LeaderElectionListener {
+    @Override
+    public void onElected() {
+      startVMService();
+    }
+  }
+  
+ 
 }

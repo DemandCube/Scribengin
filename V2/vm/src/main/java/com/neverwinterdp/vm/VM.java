@@ -168,7 +168,9 @@ public class VM {
       try {
         vmApplication.run();
       } catch (InterruptedException e) {
+        e.printStackTrace();
       } catch (Exception e) {
+        e.printStackTrace();
         logger.error("Error in vm application", e);
       } finally {
         try {
