@@ -113,7 +113,7 @@ public class Lock {
           watch(currentLockIds);
         }
       } catch(RegistryException ex) {
-        throw new RuntimeException(ex) ;
+        throw new RuntimeException("Error lock " + lockDir, ex) ;
       }
     }
     

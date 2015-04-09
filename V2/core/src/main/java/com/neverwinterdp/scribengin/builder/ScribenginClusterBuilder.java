@@ -5,6 +5,7 @@ import static com.neverwinterdp.vm.tool.VMClusterBuilder.h2;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
@@ -45,18 +46,21 @@ public class ScribenginClusterBuilder {
       vmClient.getRegistry().connect() ;
     }
     scribenginClient = new ScribenginClient(vmClient);
-    ScribenginWaitingEventListener sribenginAssert = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
+    ScribenginWaitingEventListener sribenginWaitingEvents = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     h1("Create Scribengin Master 1");
-    sribenginAssert.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
+    sribenginWaitingEvents.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
-    sribenginAssert.waitForEvents(60000);
-    h2("Finish creating Scribengin Master 1") ;
+    TabularFormater info = sribenginWaitingEvents.waitForEventsWithInfo(60000);
+    info.setTitle("Wait for scribengin master 1 events to make sure it is launched properly");
+    System.out.println(info.getFormatText());
     
     h1("Create Scribengin Master 2");
-    sribenginAssert.waitVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
+    sribenginWaitingEvents.waitVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
-    sribenginAssert.waitForEvents(60000);
-    h2("Finish creating Scribengin Master 2") ;
+    sribenginWaitingEvents.waitForEvents(60000);
+    info = sribenginWaitingEvents.waitForEventsWithInfo(60000);
+    info.setTitle("Wait for scribengin master 2 events to make sure it is launched properly");
+    System.out.println(info.getFormatText());
   }
 
   public void shutdown() throws Exception {

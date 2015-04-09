@@ -6,6 +6,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventMatcher;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.service.VMService;
 
@@ -44,6 +45,10 @@ public class VMWaitingEventListener {
   
   public void waitForEvents(long timeout) throws Exception {
     waitingEventListeners.waitForEvents(timeout);
+  }
+  
+  public TabularFormater waitForEventsWithInfo(long timeout) throws Exception {
+    return waitingEventListeners.waitForEventsWithInfo(timeout);
   }
   
   static public class VMLeaderNodeEventMatcher implements NodeEventMatcher {

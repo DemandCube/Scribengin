@@ -4,13 +4,17 @@ import java.util.LinkedList;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.util.JSONSerializer;
+import com.neverwinterdp.util.text.TabularFormater;
 
 public class WaitingNodeEventListener {
-  private RegistryListener registryListener ;
-  private LinkedList<NodeWatcher> watcherQueue = new LinkedList<>();
-  private int waitingNodeEventCount = 0;
-  private int detectNodeEventCount = 0 ;
-  
+  private RegistryListener        registryListener;
+  private LinkedList<NodeWatcher> watcherQueue          = new LinkedList<>();
+  private int                     waitingNodeEventCount = 0;
+  private int                     detectNodeEventCount  = 0;
+  private NodeEvent               lastDetectNodeEvent;
+  private NodeWatcher             lastHandledNodeWatcher;
+
   public WaitingNodeEventListener(Registry registry) {
     registryListener = new RegistryListener(registry);
   }
@@ -58,13 +62,44 @@ public class WaitingNodeEventListener {
     long stopTime = System.currentTimeMillis() + timeout;
     try {
       while(detectNodeEventCount < waitingNodeEventCount) {
-        long waitTime = stopTime - System.currentTimeMillis();
-        if(waitTime <= 0) return;
-        wait(waitTime);
+        long maxWaitTime = stopTime - System.currentTimeMillis();
+        if(maxWaitTime <= 0) return;
+        wait(maxWaitTime);
       }
     } catch (InterruptedException e) {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
-    }
+    } 
+  }
+  
+  synchronized public TabularFormater waitForEventsWithInfo(long timeout) throws Exception {
+    String[] header = {"Event", "Path", "Wait Time", "Watcher"} ;
+    TabularFormater infoFormater = new TabularFormater(header);
+    if(detectNodeEventCount == waitingNodeEventCount) return infoFormater ;
+    long stopTime = System.currentTimeMillis() + timeout;
+    try {
+      while(detectNodeEventCount < waitingNodeEventCount) {
+        long maxWaitTime = stopTime - System.currentTimeMillis();
+        if(maxWaitTime <= 0) return infoFormater ;
+        long startWait = System.currentTimeMillis() ;
+        wait(maxWaitTime);
+        long waitTime = System.currentTimeMillis() - startWait;
+        NodeWatcher watcher = lastHandledNodeWatcher ;
+        if(watcher == null) watcher = watcherQueue.getFirst();
+        Object[] cell = {
+          lastDetectNodeEvent != null ? lastDetectNodeEvent.getType() : "unknown",
+          lastDetectNodeEvent != null ? lastDetectNodeEvent.getPath() : "unknown",
+          waitTime,
+          watcher.toString()
+        };
+        infoFormater.addRow(cell);
+      }
+    } catch (InterruptedException e) {
+      StringBuilder b = new StringBuilder() ;
+      b.append("Cannot wait for the events in " + timeout + "ms\n") ;
+      b.append(infoFormater.getFormatText());
+      throw new Exception(b.toString()) ;
+    } 
+    return infoFormater;
   }
   
   synchronized void onDetectNodeEvent(NodeWatcher watcher, NodeEvent event) {
@@ -72,6 +107,8 @@ public class WaitingNodeEventListener {
     if(waitingWatcher == watcher) {
       watcherQueue.removeFirst();
       detectNodeEventCount++;
+      lastDetectNodeEvent = event;
+      lastHandledNodeWatcher = watcher;
       notifyAll();
     }
   }
@@ -81,6 +118,7 @@ public class WaitingNodeEventListener {
     NodeEvent.Type[] type;
     
     NodeEventTypeNodeWatcher(String path, NodeEvent.Type[] type) {
+      this.path = path;
       this.type = type;
     }
     
@@ -132,7 +170,7 @@ public class WaitingNodeEventListener {
     
     public String toString() {
       StringBuilder b = new StringBuilder() ; 
-      b.append("Waiting for the data on path = " + path);
+      b.append("Waiting for the data on path = " + path + " data = " + JSONSerializer.INSTANCE.toString(expectData));
       return b.toString();
     }
   }

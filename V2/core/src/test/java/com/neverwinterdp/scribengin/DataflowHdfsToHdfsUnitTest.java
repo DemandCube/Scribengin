@@ -27,7 +27,6 @@ public class DataflowHdfsToHdfsUnitTest {
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
-    Thread.sleep(3000);
     clusterBuilder.startScribenginMasters();
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }
@@ -51,16 +50,6 @@ public class DataflowHdfsToHdfsUnitTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-//      shell.execute("registry dump");
-//      DataflowClient dflClient = scribenginClient.getDataflowClient("hello-hdfs-dataflow");
-//      Assert.assertEquals("hello-hdfs-dataflow-master-1", dflClient.getDataflowMaster().getId());
-//      Assert.assertEquals(1, dflClient.getDataflowMasters().size());
-//
-//      VMClient vmClient = scribenginClient.getVMClient();
-//      List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
-//      Assert.assertEquals(3, dataflowWorkers.size());
-//      vmClient.shutdown(dataflowWorkers.get(1));
-//      Thread.sleep(2000);
       shell.execute("registry   dump");
 
       Thread.sleep(3000);
