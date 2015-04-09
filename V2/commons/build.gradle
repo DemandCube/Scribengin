@@ -16,11 +16,8 @@ dependencies {
 
   compile group: 'com.google.inject', name: 'guice', version: '3.0'
 
+  compile group: 'org.tap4j', name: 'tap4j', version: '4.1'
   compile group: 'com.google.inject.extensions', name: 'guice-jmx', version: '3.0'
   compile group: 'com.mycila.guice', name: 'mycila-guice-all', version: '3.6.ga'
   compile group: 'com.mycila', name: 'mycila-jmx', version: '1.1.ga'
-}
-
-test {
-  exclude '**'
 }

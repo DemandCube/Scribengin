@@ -83,8 +83,8 @@ public class DebugRegistryListenerUnitTest {
     
     Thread.sleep(100);
     hello1.delete();
-    debugNode.rdelete();
-    Thread.sleep(2000);
+    Thread.sleep(1000);
+    debugger.clear();
   }
 
   @Test

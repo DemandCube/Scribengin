@@ -64,11 +64,11 @@ public class MessageTrackerUnitTest {
   public void testJunitReportNotInSequence() throws Exception {
     MessageTracker messageTracker = new MessageTracker();
     Random random = new Random();
-    for (int i = 0; i < 1000; i++) {
-      messageTracker.log(0, random.nextInt(2000));
+    for (int i = 0; i < 100; i++) {
+      messageTracker.log(0, random.nextInt(100));
     }
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
       messageTracker.log(1, i);
     }
 

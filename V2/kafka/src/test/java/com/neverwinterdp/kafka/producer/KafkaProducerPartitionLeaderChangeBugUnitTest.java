@@ -23,6 +23,9 @@ import com.neverwinterdp.util.text.TabularFormater;
  */
 
 public class KafkaProducerPartitionLeaderChangeBugUnitTest  {
+  static {
+    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties");
+  }
   private KafkaCluster cluster ;
   
   @Before
@@ -35,7 +38,6 @@ public class KafkaProducerPartitionLeaderChangeBugUnitTest  {
   @After
   public void teardown() throws Exception {
     cluster.shutdown();
-    Thread.sleep(3000);
   }
   
   @Test
@@ -53,7 +55,7 @@ public class KafkaProducerPartitionLeaderChangeBugUnitTest  {
 
     String[] sendArgs = {
       "--topic" , TOPIC, "--num-partition", "3", "--replication", "2", 
-      "--send-writer-type", "default", "--send-period", "0", "--send-max-per-partition", "20000","--send-max-duration", "60000"
+      "--send-writer-type", "default", "--send-period", "0", "--send-max-per-partition", "10000","--send-max-duration", "60000"
     };
     KafkaMessageSendTool sendTool = new KafkaMessageSendTool(sendArgs);
     sendTool.runAsDeamon();
@@ -62,12 +64,10 @@ public class KafkaProducerPartitionLeaderChangeBugUnitTest  {
     kafkaTool.reassignPartitionReplicas(TOPIC, 0, 4, 3, 2);
     //It seems that we do not instruct to change the leader, we loose more messages ?
     kafkaTool.moveLeaderToPreferredReplica(TOPIC, 0);
-    Thread.sleep(1000);
+    Thread.sleep(500);
     info(kafkaTool.findTopicMetadata(TOPIC).partitionsMetadata());
     
     sendTool.waitForTermination();
-    
-    Thread.sleep(1000);
     
     String[] checkArgs = { 
       "--topic", TOPIC,

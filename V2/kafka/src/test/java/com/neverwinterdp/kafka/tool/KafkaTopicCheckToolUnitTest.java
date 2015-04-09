@@ -9,7 +9,7 @@ import com.neverwinterdp.util.FileUtil;
 
 public class KafkaTopicCheckToolUnitTest {
   static {
-    System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
+    System.setProperty("log4j.configuration", "file:src/test/resources/log4j.properties");
   }
 
   static private KafkaCluster cluster;
