@@ -3,6 +3,7 @@ from time import sleep,time
 from random import randint, sample
 from junit_xml import TestSuite, TestCase
 import logging
+import os
 
 from Cluster import Cluster  #@UnresolvedImport
 
@@ -105,6 +106,7 @@ class FailureSimulator():
       
       if(not junit_report == "" ):
         logging.debug("Writing junit report to: "+junit_report)
+        os.makedirs(os.path.dirname(junit_report))
         f = open(junit_report,'w')
         ts = TestSuite(self.roleName+" Test Suite", testCases)
         f.write(TestSuite.to_xml_string([ts]))
