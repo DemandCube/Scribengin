@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
@@ -53,10 +54,13 @@ public class DataflowWorkerNodeDebuggerUnitTest {
       }
     }.start();
     
-    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/workers/active", 
-                    ".*", new DataflowWorkerNodeDebugger());
-
-    shell.execute("dataflow-test kafka --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000 --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000 --sink-name output");
+    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/workers/active",  ".*", new DataflowWorkerNodeDebugger());
+    String command = 
+        "dataflow-test " + KafkaDataflowTest.TEST_NAME + 
+        "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
+        "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
+        "  --sink-name output";
+    shell.execute(command);
     shell.execute("registry dump");
   }
 }

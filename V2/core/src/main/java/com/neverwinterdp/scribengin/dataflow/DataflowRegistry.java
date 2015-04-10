@@ -15,7 +15,9 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
+import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -272,5 +274,11 @@ public class DataflowRegistry {
   public List<DataflowTaskExecutorDescriptor> getActiveExecutors(String worker) throws RegistryException {
     Node executors = activeWorkers.getDescendant(worker + "/executors") ;
     return executors.getChildrenAs(DataflowTaskExecutorDescriptor.class);
+  }
+  
+  public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {
+    RegistryDebugger debugger = new RegistryDebugger(out, registry) ;
+    debugger.watchChild(tasksAssigned.getPath(), ".*", new DataflowTaskNodeDebugger());
+    return debugger ;
   }
 }
