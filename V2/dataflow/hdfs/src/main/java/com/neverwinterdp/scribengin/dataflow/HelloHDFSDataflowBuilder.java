@@ -3,7 +3,7 @@ package com.neverwinterdp.scribengin.dataflow;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
 import com.neverwinterdp.util.JSONSerializer;
@@ -30,7 +30,7 @@ public class HelloHDFSDataflowBuilder {
     this.numOfExecutorPerWorker = numOfExecutorPerWorker;
   }
 
-  public ScribenginWaitingEventListener submit() throws Exception {
+  public DataflowWaitingEventListener submit() throws Exception {
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
     dflDescriptor.setName("hello-hdfs-dataflow");
     dflDescriptor.setNumberOfWorkers(numOfWorkers);

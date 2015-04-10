@@ -13,6 +13,7 @@ import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
@@ -105,7 +106,7 @@ public class KafkaToS3DataflowTest extends DataflowTest {
     invalidSink.attribute("s3.storage.path", INVALID_STORAGE_PATH);
     dflDescriptor.addSinkDescriptor("invalid", defaultSink);
 
-    ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
 
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);

@@ -12,6 +12,7 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
+import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -56,8 +57,6 @@ public class DataflowKafkaToKafkaUnitTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
       
-      shell.execute("registry   dump");
-      
       DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
       Assert.assertEquals("hello-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
@@ -66,20 +65,11 @@ public class DataflowKafkaToKafkaUnitTest {
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
       Assert.assertEquals(3, dataflowWorkers.size());
       vmClient.shutdown(dataflowWorkers.get(1));
-      Thread.sleep(2000);
-      shell.execute("registry   dump");
       submitter.waitForTermination(300000);
-      
-      Thread.sleep(3000);
-      shell.execute("vm         info");
-      shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-kafka-dataflow-0");
-      shell.execute("registry   dump");
     } catch(Throwable err) {
       throw err;
     } finally {
       if(submitter.isAlive()) submitter.interrupt();
-      //Thread.sleep(100000000);
     }
   }
   
@@ -87,7 +77,7 @@ public class DataflowKafkaToKafkaUnitTest {
     public void run() {
       try {
         String command =
-            "dataflow-test kafka " +
+            "dataflow-test " + KafkaDataflowTest.TEST_NAME +
             " --worker 3" +
             " --executor-per-worker 1" +
             " --duration 90000" +
@@ -102,6 +92,8 @@ public class DataflowKafkaToKafkaUnitTest {
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
+      } finally {
+        notifyTermimation() ;
       }
     }
     

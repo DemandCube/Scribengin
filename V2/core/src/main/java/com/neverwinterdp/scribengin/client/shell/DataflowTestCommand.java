@@ -10,7 +10,7 @@ import com.neverwinterdp.vm.client.shell.SubCommand;
 public class DataflowTestCommand extends Command {
   
   public DataflowTestCommand() {
-    add("kafka", KafkaDataflowTestSubCommand.class);
+    add(KafkaDataflowTest.TEST_NAME, KafkaDataflowTestSubCommand.class);
     add("hdfs", HdfsDataflowTestSubCommand.class);
     add("hdfs-kafka", HdfsToKafkaDataflowTestSubCommand.class);
     add("kafka-hdfs", KafkaToHdfsDataflowTestSubCommand.class);

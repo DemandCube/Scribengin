@@ -15,6 +15,7 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
@@ -69,7 +70,7 @@ public class DataflowSubmitIntegrationTest {
       hdfDataflowBuilder.createSource(15, 3, 5);
       ScribenginClient scribenginClient = clusterBuilder.getScribenginClient();
       String dataflowJson = IOUtil.getFileContentAsString("src/dataflows/hdfs/dataflow.json") ;
-      ScribenginWaitingEventListener eventListener =
+      DataflowWaitingEventListener eventListener =
         scribenginClient.submit("build/release/dataflows/hdfs", dataflowJson);
       eventListener.waitForEvents(60000); 
     } catch(Exception ex) {

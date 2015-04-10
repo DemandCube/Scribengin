@@ -4,6 +4,7 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.util.JSONSerializer;
 
@@ -35,7 +36,7 @@ public class HDFSDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
     System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
-    ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor) ;
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor) ;
     
     shell.console().println("Wait time to finish: " + duration + "ms");
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);

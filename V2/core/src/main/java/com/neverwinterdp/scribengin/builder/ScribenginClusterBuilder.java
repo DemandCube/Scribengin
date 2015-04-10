@@ -1,7 +1,6 @@
 package com.neverwinterdp.scribengin.builder;
 
 import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
-import static com.neverwinterdp.vm.tool.VMClusterBuilder.h2;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
@@ -46,7 +45,8 @@ public class ScribenginClusterBuilder {
       vmClient.getRegistry().connect() ;
     }
     scribenginClient = new ScribenginClient(vmClient);
-    ScribenginWaitingEventListener sribenginWaitingEvents = new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
+    ScribenginWaitingEventListener sribenginWaitingEvents = 
+        new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     h1("Create Scribengin Master 1");
     sribenginWaitingEvents.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
@@ -56,9 +56,10 @@ public class ScribenginClusterBuilder {
     System.out.println(info.getFormatText());
     
     h1("Create Scribengin Master 2");
+    sribenginWaitingEvents = 
+        new ScribenginWaitingEventListener(vmClusterBuilder.getVMClient().getRegistry());
     sribenginWaitingEvents.waitVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
-    sribenginWaitingEvents.waitForEvents(60000);
     sribenginWaitingEvents.waitForEvents(60000);
     info = sribenginWaitingEvents.getTabularFormaterEventLogInfo();
     info.setTitle("Wait for scribengin master 2 events to make sure it is launched properly");

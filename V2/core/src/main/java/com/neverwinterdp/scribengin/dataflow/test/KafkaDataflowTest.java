@@ -5,10 +5,11 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 
 public class KafkaDataflowTest extends DataflowTest {
+  final static public String TEST_NAME = "kafka-to-kakfa" ;
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new KafkaDataflowSourceGenerator();
   
@@ -19,12 +20,9 @@ public class KafkaDataflowTest extends DataflowTest {
   public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
   
   protected void doRun(ScribenginShell shell) throws Exception {
-    shell.console().println("KafkaDataflowTest: Prepare to launch the KafkaDataflowTest!!");
-    long start = System.currentTimeMillis();
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     sourceGenerator.runInBackground();
-    shell.console().println("KafkaDataflowTest: Finish launching the source generator in the background!!");
     
     sinkValidator.init(scribenginClient);
     
@@ -39,27 +37,20 @@ public class KafkaDataflowTest extends DataflowTest {
     
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
-    shell.console().println("Finish creating the dataflow descriptor!!!");
-    ScribenginWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-    shell.console().println("Finish submitting the dataflow descriptor!!!");
-    shell.console().println("Wait time to finish: " + duration + "ms");
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
     
     waitingEventListener.waitForEvents(duration);
-    shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
-    
     dataflowInfoThread.interrupt();
-    
+
+    report(shell, waitingEventListener) ;
     
     sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
     sinkValidator.run();
     sinkValidator.waitForTermination();
-    DataflowTestReport report = new DataflowTestReport() ;
-    sourceGenerator.populate(report);
-    sinkValidator.populate(report);
-    shell.console().println(report.getFormatedReport());
-    junitReport(report);
+    
+    report(shell, sourceGenerator, sinkValidator) ;
   }
 }

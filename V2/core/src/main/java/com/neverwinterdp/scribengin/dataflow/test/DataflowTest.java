@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.tap4j.model.TestResult;
@@ -14,9 +15,11 @@ import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSinkValidatorReport;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSourceGeneratorReport;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
+import com.neverwinterdp.util.text.TabularFormater;
 
 abstract public class DataflowTest {
   @Parameter(names = "--flow-name", description = "The flow name")
@@ -50,6 +53,20 @@ abstract public class DataflowTest {
 
   abstract protected void doRun(ScribenginShell shell) throws Exception;
 
+  protected void report(ScribenginShell shell, DataflowSourceGenerator generator, DataflowSinkValidator validator) throws Exception {
+    DataflowTestReport report = new DataflowTestReport() ;
+    generator.populate(report);
+    validator.populate(report);
+    shell.console().println(report.getFormatedReport());
+    junitReport(report);
+  }
+  
+  protected void report(ScribenginShell shell, DataflowWaitingEventListener waitingEventListener) throws IOException {
+    TabularFormater dataflowEventInfo = waitingEventListener.getTabularFormaterEventLogInfo() ;
+    dataflowEventInfo.setTitle("Dataflow event log info");
+    shell.console().println(dataflowEventInfo.getFormatText()) ;
+  }
+  
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
     if (junitReport == null) {
       return;

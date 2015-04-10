@@ -17,30 +17,28 @@ public class VMWaitingEventListener {
     waitingEventListeners = new WaitingNodeEventListener(registry);
   }
 
-  public WaitingNodeEventListener getWaitingNodeEventListener() {
-    return this.waitingEventListeners ;
-  }
+  public WaitingNodeEventListener getWaitingNodeEventListener() { return waitingEventListeners; }
   
   public void waitVMServiceStatus(String desc, VMService.Status status) throws Exception {
-    waitingEventListeners.add(VMService.MASTER_PATH + "/status", status);
+    waitingEventListeners.add(VMService.MASTER_PATH + "/status", status, desc);
   }
   
   public void waitVMStatus(String desc, String vmName, VMStatus vmStatus) throws Exception {
     String path = VMService.getVMStatusPath(vmName);
-    waitingEventListeners.add(path, vmStatus);
+    waitingEventListeners.add(path, vmStatus, desc);
   }
   
   public void waitHeartbeat(String desc, String vmName, boolean connected) throws Exception {
     String path = VMService.getVMHeartbeatPath(vmName);
     if(connected) {
-      waitingEventListeners.add(path, NodeEvent.Type.CREATE);
+      waitingEventListeners.add(path, NodeEvent.Type.CREATE, desc);
     } else {
-      waitingEventListeners.add(path, NodeEvent.Type.DELETE);
+      waitingEventListeners.add(path, NodeEvent.Type.DELETE, desc);
     }
   }
   
   public void waitVMMaster(String desc, final String vmName) throws Exception {
-    waitingEventListeners.add(VMService.LEADER_PATH, new VMLeaderNodeEventMatcher(vmName));
+    waitingEventListeners.add(VMService.LEADER_PATH, new VMLeaderNodeEventMatcher(vmName), desc);
   }
   
   public void waitForEvents(long timeout) throws Exception {

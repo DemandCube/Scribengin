@@ -7,6 +7,7 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.util.IOUtil;
@@ -87,7 +88,7 @@ public class DataflowCommand extends Command {
         String dataflowJson = IOUtil.getFileContentAsString(descriptor) ;
         System.out.println("Dataflow JSON:");
         System.out.println(dataflowJson);
-        ScribenginWaitingEventListener eventListener = scribenginClient.submit(dataflowPath, dataflowJson);
+        DataflowWaitingEventListener eventListener = scribenginClient.submit(dataflowPath, dataflowJson);
         System.out.println("Submited.................");
         eventListener.waitForEvents(60000); 
         System.out.println("Finish wait for event..........");
@@ -127,7 +128,7 @@ public class DataflowCommand extends Command {
       }
       
       if(submit) {
-        ScribenginWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
+        DataflowWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
         sribenginAssert.waitForEvents(60000);
       }
     }
@@ -163,7 +164,7 @@ public class DataflowCommand extends Command {
         new HDFSSourceGenerator().generateSource(fs, dataDir + "/source");
       }
       if(submit) {
-        ScribenginWaitingEventListener sribenginAssert = dataflowBuilder.submit();
+        DataflowWaitingEventListener sribenginAssert = dataflowBuilder.submit();
         sribenginAssert.waitForEvents(90000);
       }
     }
