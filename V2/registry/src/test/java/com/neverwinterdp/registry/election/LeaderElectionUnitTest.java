@@ -4,7 +4,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -27,12 +26,10 @@ public class LeaderElectionUnitTest {
   final static String ELECTION_PATH = "/election" ;
   
   private EmbededZKServer zkServerLauncher ;
-  private AtomicLong lockOrder ;
   
   @Before
   public void setup() throws Exception {
     FileUtil.removeIfExist("./build/data", false);
-    lockOrder = new AtomicLong() ;
     zkServerLauncher = new EmbededZKServer("./build/data/zookeeper") ;
     zkServerLauncher.start();
   }
@@ -49,7 +46,7 @@ public class LeaderElectionUnitTest {
   @Test
   public void testElection() throws Exception {
     Registry registry = newRegistry().connect(); 
-    Node electionNode = registry.createIfNotExist(ELECTION_PATH) ;
+    registry.createIfNotExist(ELECTION_PATH) ;
     
     Leader[] leader = new Leader[3];
     ExecutorService executorService = Executors.newFixedThreadPool(leader.length);

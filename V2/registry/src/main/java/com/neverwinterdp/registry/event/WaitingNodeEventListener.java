@@ -1,6 +1,8 @@
 package com.neverwinterdp.registry.event;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
@@ -12,9 +14,9 @@ public class WaitingNodeEventListener {
   private LinkedList<NodeWatcher> watcherQueue          = new LinkedList<>();
   private int                     waitingNodeEventCount = 0;
   private int                     detectNodeEventCount  = 0;
-  private NodeEvent               lastDetectNodeEvent;
-  private NodeWatcher             lastHandledNodeWatcher;
-
+  private List<NodeEventLog>      eventLogs = new ArrayList<NodeEventLog>() ; 
+  private long                    estimateLastDetectEventTime = 0 ;
+  
   public WaitingNodeEventListener(Registry registry) {
     registryListener = new RegistryListener(registry);
   }
@@ -28,6 +30,7 @@ public class WaitingNodeEventListener {
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher);
     waitingNodeEventCount++;
+    if(detectNodeEventCount == 0) estimateLastDetectEventTime = System.currentTimeMillis();
   }
   
   synchronized public void add(String path, NodeEvent.Type ... type) throws Exception {
@@ -48,6 +51,7 @@ public class WaitingNodeEventListener {
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher, true);
     waitingNodeEventCount++;
+    if(detectNodeEventCount == 0) estimateLastDetectEventTime = System.currentTimeMillis() ;
   }
   
   synchronized public <T> void add(String path, NodeEventMatcher matcher) throws Exception {
@@ -55,6 +59,7 @@ public class WaitingNodeEventListener {
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher, true);
     waitingNodeEventCount++;
+    if(detectNodeEventCount == 0) estimateLastDetectEventTime = System.currentTimeMillis() ;
   }
   
   synchronized public void waitForEvents(long timeout) throws Exception {
@@ -71,44 +76,23 @@ public class WaitingNodeEventListener {
     } 
   }
   
-  synchronized public TabularFormater waitForEventsWithInfo(long timeout) throws Exception {
+  public TabularFormater getTabularFormaterEventLogInfo() {
     String[] header = {"Event", "Path", "Wait Time", "Watcher"} ;
     TabularFormater infoFormater = new TabularFormater(header);
-    if(detectNodeEventCount == waitingNodeEventCount) return infoFormater ;
-    long stopTime = System.currentTimeMillis() + timeout;
-    try {
-      while(detectNodeEventCount < waitingNodeEventCount) {
-        long maxWaitTime = stopTime - System.currentTimeMillis();
-        if(maxWaitTime <= 0) return infoFormater ;
-        long startWait = System.currentTimeMillis() ;
-        wait(maxWaitTime);
-        long waitTime = System.currentTimeMillis() - startWait;
-        NodeWatcher watcher = lastHandledNodeWatcher ;
-        if(watcher == null) watcher = watcherQueue.getFirst();
-        Object[] cell = {
-          lastDetectNodeEvent != null ? lastDetectNodeEvent.getType() : "unknown",
-          lastDetectNodeEvent != null ? lastDetectNodeEvent.getPath() : "unknown",
-          waitTime,
-          watcher.toString()
-        };
-        infoFormater.addRow(cell);
-      }
-    } catch (InterruptedException e) {
-      StringBuilder b = new StringBuilder() ;
-      b.append("Cannot wait for the events in " + timeout + "ms\n") ;
-      b.append(infoFormater.getFormatText());
-      throw new Exception(b.toString()) ;
-    } 
-    return infoFormater;
+    for(NodeEventLog sel : eventLogs) {
+      infoFormater.addRow(sel.getEvent(), sel.getPath(), sel.getWaitTime(), sel.getWatcherDescription());
+    }
+    return infoFormater ;
   }
   
   synchronized void onDetectNodeEvent(NodeWatcher watcher, NodeEvent event) {
     NodeWatcher waitingWatcher = watcherQueue.getFirst() ;
     if(waitingWatcher == watcher) {
+      long time = System.currentTimeMillis() ;
       watcherQueue.removeFirst();
       detectNodeEventCount++;
-      lastDetectNodeEvent = event;
-      lastHandledNodeWatcher = watcher;
+      eventLogs.add(new NodeEventLog(time - estimateLastDetectEventTime, event, watcher)) ;
+      estimateLastDetectEventTime = time ;
       notifyAll();
     }
   }
@@ -198,5 +182,27 @@ public class WaitingNodeEventListener {
       b.append("Waiting for the node event matcher on path = " + path);
       return b.toString();
     }
+  }
+  
+  static public class NodeEventLog {
+    private long   waitTime ;
+    private String event ;
+    private String path ;
+    private String watcherDescription ;
+    
+    public NodeEventLog(long waitTime, NodeEvent event, NodeWatcher watcher) {
+      this.waitTime = waitTime ;
+      this.event = event.getType().toString();
+      this.path  = event.getPath() ;
+      this.watcherDescription = watcher.toString() ;
+    }
+
+    public long getWaitTime() { return waitTime; }
+
+    public String getEvent() { return event; }
+
+    public String getPath() { return path; }
+
+    public String getWatcherDescription() { return watcherDescription; }
   }
 }

@@ -42,7 +42,8 @@ public class VMClusterBuilder {
       vmClient.getRegistry().connect() ;
     }
     VMWaitingEventListener waitingListener = createVMMaster("vm-master-1");
-    TabularFormater info = waitingListener.waitForEventsWithInfo(60000);
+    waitingListener.waitForEvents(60000);
+    TabularFormater info = waitingListener.getTabularFormaterEventLogInfo();
     info.setTitle("Waiting for vm-master events to make sure it is launched properly");
     System.out.println(info.getFormatText()); 
   }

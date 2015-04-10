@@ -50,7 +50,8 @@ public class ScribenginClusterBuilder {
     h1("Create Scribengin Master 1");
     sribenginWaitingEvents.waitScribenginMaster("Expect vm-scribengin-master-1 as the leader", "vm-scribengin-master-1");
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-1") ;
-    TabularFormater info = sribenginWaitingEvents.waitForEventsWithInfo(60000);
+    sribenginWaitingEvents.waitForEvents(60000);
+    TabularFormater info = sribenginWaitingEvents.getTabularFormaterEventLogInfo();
     info.setTitle("Wait for scribengin master 1 events to make sure it is launched properly");
     System.out.println(info.getFormatText());
     
@@ -58,7 +59,8 @@ public class ScribenginClusterBuilder {
     sribenginWaitingEvents.waitVMStatus("vm-scribengin-master-2 running", "vm-scribengin-master-2", VMStatus.RUNNING);
     scribenginClient.createVMScribenginMaster(vmClient, "vm-scribengin-master-2") ;
     sribenginWaitingEvents.waitForEvents(60000);
-    info = sribenginWaitingEvents.waitForEventsWithInfo(60000);
+    sribenginWaitingEvents.waitForEvents(60000);
+    info = sribenginWaitingEvents.getTabularFormaterEventLogInfo();
     info.setTitle("Wait for scribengin master 2 events to make sure it is launched properly");
     System.out.println(info.getFormatText());
   }

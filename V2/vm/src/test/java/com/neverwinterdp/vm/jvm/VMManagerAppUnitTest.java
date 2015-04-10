@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.beust.jcommander.JCommander;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.registry.zk.RegistryImpl;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMDummyApp;
@@ -53,6 +54,9 @@ public class VMManagerAppUnitTest  {
     try {
       VMWaitingEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
       master1waitingListener.waitForEvents(5000);
+      TabularFormater info = master1waitingListener.getTabularFormaterEventLogInfo();
+      info.setTitle("Waiting for vm-master events to make sure it is launched properly");
+      System.out.println(info.getFormatText()); 
       
       vmCluster.createVMMaster("vm-master-2");
       Thread.sleep(2000);
@@ -93,7 +97,7 @@ public class VMManagerAppUnitTest  {
       
       vmClient.shutdown();
     } finally {
-      Thread.sleep(3000);
+      Thread.sleep(1000);
       shell.execute("registry dump");
       shell.execute("help");
     }

@@ -47,8 +47,8 @@ public class VMWaitingEventListener {
     waitingEventListeners.waitForEvents(timeout);
   }
   
-  public TabularFormater waitForEventsWithInfo(long timeout) throws Exception {
-    return waitingEventListeners.waitForEventsWithInfo(timeout);
+  public TabularFormater getTabularFormaterEventLogInfo()  {
+    return waitingEventListeners.getTabularFormaterEventLogInfo();
   }
   
   static public class VMLeaderNodeEventMatcher implements NodeEventMatcher {
