@@ -86,8 +86,8 @@ public class DataflowHdfsToKafkaExperimentTest {
       try {
         String command = "dataflow-test hdfs-kafka " +
             "  --worker 3 --executor-per-worker 1 --duration 70000 --task-max-execute-time 1000" +
-            "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
-            "  --sink-name output";
+            "  --source-dataflowName input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 3000" + 
+            "  --sink-dataflowName output";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();

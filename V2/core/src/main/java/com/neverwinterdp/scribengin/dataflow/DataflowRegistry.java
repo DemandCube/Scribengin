@@ -98,16 +98,16 @@ public class DataflowRegistry {
   @Inject
   public void onInit() throws Exception {
     registry.createIfNotExist(dataflowPath + "/" + MASTER_LEADER_PATH);
-    status         = registry.createIfNotExist(dataflowPath + "/status");
+    status = registry.createIfNotExist(dataflowPath + "/status");
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     tasksWorkerEvent = registry.createIfNotExist(dataflowPath + "/" + TASKS_WORKER_EVENT_PATH);
     tasksMasterEvent = registry.createIfNotExist(dataflowPath + "/" + TASKS_MASTER_EVENT_PATH);
-    tasksAvailableQueue = new DistributedQueue(registry, dataflowPath   + "/" + TASKS_AVAILABLE_PATH) ;
-    tasksAssigned  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_ASSIGNED_PATH);
-    tasksFinished  = registry.createIfNotExist(dataflowPath   + "/" + TASKS_FINISHED_PATH);
-    tasksLock      = registry.createIfNotExist(dataflowPath   + "/" + TASKS_LOCK_PATH);
+    tasksAvailableQueue = new DistributedQueue(registry, dataflowPath + "/" + TASKS_AVAILABLE_PATH);
+    tasksAssigned = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
+    tasksFinished = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
+    tasksLock = registry.createIfNotExist(dataflowPath + "/" + TASKS_LOCK_PATH);
     activities = registry.createIfNotExist(dataflowPath + "/" + ACTIVITIES_PATH);
-    activeWorkers  = registry.createIfNotExist(dataflowPath + "/" + ACTIVE_WORKERS_PATH);
+    activeWorkers = registry.createIfNotExist(dataflowPath + "/" + ACTIVE_WORKERS_PATH);
     historyWorkers = registry.createIfNotExist(dataflowPath + "/" + HISTORY_WORKERS_PATH);
   }
   
@@ -186,7 +186,7 @@ public class DataflowRegistry {
         Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
         String name = descriptorNode.getName();
         tasksAvailableQueue.offer(name.getBytes());
-        //tasksAssigned.getChild(name).rdelete();
+        //tasksAssigned.getChild(dataflowName).rdelete();
         Transaction transaction = registry.getTransaction();
         transaction.rdelete(tasksAssigned.getPath() + "/" + name);
         transaction.commit();
@@ -210,8 +210,8 @@ public class DataflowRegistry {
         transaction.setData(descriptor.getStoredPath(), descriptor);
         transaction.createChild(tasksFinished, name, NodeCreateMode.PERSISTENT);
         transaction.rdelete(tasksAssigned.getPath() + "/" + name);
-        //tasksFinished.createChild(transaction, name, NodeCreateMode.PERSISTENT);
-        //tasksAssigned.getChild(name).rdelete(transaction);
+        //tasksFinished.createChild(transaction, dataflowName, NodeCreateMode.PERSISTENT);
+        //tasksAssigned.getChild(dataflowName).rdelete(transaction);
         transaction.commit();
         return true;
       }
@@ -278,6 +278,9 @@ public class DataflowRegistry {
   
   public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {
     RegistryDebugger debugger = new RegistryDebugger(out, registry) ;
+    System.out.println("dataflow task debug path:");
+    System.out.println("  " + tasksAssigned.getPath());
+    System.out.println("  /scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned");
     debugger.watchChild(tasksAssigned.getPath(), ".*", new DataflowTaskNodeDebugger());
     return debugger ;
   }

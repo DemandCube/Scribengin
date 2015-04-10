@@ -22,8 +22,8 @@ import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.util.text.TabularFormater;
 
 abstract public class DataflowTest {
-  @Parameter(names = "--flow-name", description = "The flow name")
-  protected String name = "hello";
+  @Parameter(names = "--dataflow-name", description = "The flow dataflow name")
+  protected String dataflowName = "hello";
 
   @Parameter(names = "--worker", description = "Number of the workers")
   protected int numOfWorkers = 3;
@@ -40,6 +40,13 @@ abstract public class DataflowTest {
   @Parameter(names = "--print-dataflow-info", description = "Max duration for the test")
   protected long printDataflowInfo = 5000;
 
+  @Parameter(names = "--debug-dataflow-task", description = "Enable the debug dataflow task")
+  protected boolean debugDataflowTask = false;
+  
+  @Parameter(names = "--debug-dataflow-worker", description = "Enable the debug dataflow worker")
+  protected boolean debugDataflowWorker = false;
+  
+  
   @Parameter(names = "--junit-report", description = "The junit report output file")
   protected String junitReport;
 

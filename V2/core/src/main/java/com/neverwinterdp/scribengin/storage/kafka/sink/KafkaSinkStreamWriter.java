@@ -13,7 +13,7 @@ public class KafkaSinkStreamWriter implements SinkStreamWriter {
   
   public KafkaSinkStreamWriter(StreamDescriptor descriptor) {
     this.descriptor = descriptor;
-    this.defaultKafkaWriter = new DefaultKafkaWriter(descriptor.attribute("name"), descriptor.attribute("broker.list")) ;
+    this.defaultKafkaWriter = new DefaultKafkaWriter(descriptor.attribute("dataflowName"), descriptor.attribute("broker.list")) ;
     this.topic = descriptor.attribute("topic");
   }
   

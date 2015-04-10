@@ -57,8 +57,8 @@ public class DataflowKafkaToKafkaUnitTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
       
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-dataflow");
-      Assert.assertEquals("hello-kafka-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
+      DataflowClient dataflowClient = scribenginClient.getDataflowClient("kafka-to-kafka");
+      Assert.assertEquals("kafka-to-kafka-master-1", dataflowClient.getDataflowMaster().getId());
       Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
       
       VMClient vmClient = scribenginClient.getVMClient();
@@ -78,16 +78,19 @@ public class DataflowKafkaToKafkaUnitTest {
       try {
         String command =
             "dataflow-test " + KafkaDataflowTest.TEST_NAME +
+            " --dataflow-name  kafka-to-kafka" +
             " --worker 3" +
             " --executor-per-worker 1" +
             " --duration 90000" +
             " --task-max-execute-time 1000" +
-            "  --source-name input" +
+            "  --source-dataflowName input" +
             " --source-num-of-stream 10" +
             " --source-write-period 5" +
             " --source-max-records-per-stream 10000" +
-            " --sink-name output " +
+            " --sink-dataflowName output " +
             " --print-dataflow-info -1" +
+            " --debug-dataflow-task true" +
+            " --debug-dataflow-worker true" +
             " --junit-report build/junit-report.xml";
         shell.execute(command);
       } catch(Exception ex) {

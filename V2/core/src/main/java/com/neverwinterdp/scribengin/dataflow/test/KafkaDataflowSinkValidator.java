@@ -15,7 +15,7 @@ public class KafkaDataflowSinkValidator extends DataflowSinkValidator {
   @Override
   public StorageDescriptor getSinkDescriptor() {
     StorageDescriptor sink = new StorageDescriptor("KAFKA");
-    sink.attribute("name", "KafkaDataflowSinkValidator");
+    sink.attribute("dataflowName", "KafkaDataflowSinkValidator");
     sink.attribute("topic", sinkName);
     sink.attribute("zk.connect", zkConnect);
     return sink;

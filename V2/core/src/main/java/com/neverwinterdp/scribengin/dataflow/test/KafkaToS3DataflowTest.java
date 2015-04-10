@@ -24,7 +24,7 @@ public class KafkaToS3DataflowTest extends DataflowTest {
   @Parameter(names = "--source-topic", description = "Source topic")
   public String SOURCE_TOPIC = "hello.source";
 
-  @Parameter(names = "--flow-name", description = "Invalid sink topic")
+  @Parameter(names = "--flow-dataflowName", description = "Invalid sink topic")
   private String name = "hello";
 
   @Parameter(names = "--kafka-write-period", description = "The write period for each partition in ms")
@@ -88,7 +88,7 @@ public class KafkaToS3DataflowTest extends DataflowTest {
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
 
     StorageDescriptor storageDescriptor = new StorageDescriptor("KAFKA");
-    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("dataflowName", name);
     storageDescriptor.attribute("topic", SOURCE_TOPIC);
     storageDescriptor.attribute("zk.connect", zkConnect);
     storageDescriptor.attribute("broker.list", brokerList);

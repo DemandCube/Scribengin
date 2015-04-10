@@ -19,7 +19,7 @@ import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.vm.VMDescriptor;
 
 @Singleton
-@JmxBean("role=dataflow, type=DataflowContainer, name=DataflowContainer")
+@JmxBean("role=dataflow, type=DataflowContainer, dataflowName=DataflowContainer")
 public class DataflowContainer {
   private Logger logger = LoggerFactory.getLogger(DataflowContainer.class);
   

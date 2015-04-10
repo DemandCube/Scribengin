@@ -20,7 +20,7 @@ public class OffsetPartitioner implements SinkPartitioner {
    * 
    * @param offsetPerPartition the offset per partition
    * @param localTmpDir the local tmp dir
-   * @param bucketName the bucket name
+   * @param bucketName the bucket dataflowName
    * @param topic the topic
    * @param kafkaPartition the kafka partition
    */
@@ -41,7 +41,7 @@ public class OffsetPartitioner implements SinkPartitioner {
   }
 
   /**
-   * Gets the log file base name.
+   * Gets the log file base dataflowName.
    * 
    * @param startOffset the start offset
    * @param endOffset the end offset

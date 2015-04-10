@@ -11,11 +11,14 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
+import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowWorkerNodeDebugger;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
@@ -134,6 +137,22 @@ public class ScribenginClient {
     DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
     return dataflowClient ;
   }
+  
+  public RegistryDebugger getDataflowTaskDebugger(Appendable out, String dataflowName) throws RegistryException {
+    String taskAssignedPath = ScribenginService.getDataflowPath(dataflowName) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
+    RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
+    debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger());
+    return debugger ;
+  }
+  
+  public RegistryDebugger getDataflowWorkerDebugger(Appendable out, String dataflowName) throws RegistryException {
+    String workerActivePath = ScribenginService.getDataflowPath(dataflowName) + "/workers/active";
+    RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
+    debugger.watchChild(workerActivePath,  ".*", new DataflowWorkerNodeDebugger());
+    return debugger ;
+  }
+  
+  
   
   public void shutdown() throws Exception {
     h1("Shutdow the scribengin");

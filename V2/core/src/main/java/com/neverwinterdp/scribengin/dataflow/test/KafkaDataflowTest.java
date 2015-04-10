@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
+import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
@@ -27,7 +28,7 @@ public class KafkaDataflowTest extends DataflowTest {
     sinkValidator.init(scribenginClient);
     
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
-    dflDescriptor.setName("hello-kafka-dataflow");
+    dflDescriptor.setName(dataflowName);
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
@@ -37,6 +38,12 @@ public class KafkaDataflowTest extends DataflowTest {
     
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
+    if(debugDataflowTask) {
+      RegistryDebugger taskDebugger = shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName) ;
+    }
+    if(debugDataflowWorker) {
+      RegistryDebugger workerDebugger = shell.getScribenginClient().getDataflowWorkerDebugger(System.out, dataflowName) ;
+    }
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);

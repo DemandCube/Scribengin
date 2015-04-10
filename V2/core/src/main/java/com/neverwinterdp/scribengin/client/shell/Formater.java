@@ -56,7 +56,7 @@ public class Formater {
 
     public String format(String title, String ident) {
       TabularFormater formater = 
-        new TabularFormater("name", "CPU Cores", "Memory", "Path", "is Leader");
+        new TabularFormater("dataflowName", "CPU Cores", "Memory", "Path", "is Leader");
       formater.setIndent("  ");
       for (VMDescriptor descriptor : descriptors) {
         formater.addRow(descriptor.getVmConfig().getName(),

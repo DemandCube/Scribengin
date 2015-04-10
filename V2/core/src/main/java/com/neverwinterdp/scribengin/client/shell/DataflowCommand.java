@@ -31,7 +31,7 @@ public class DataflowCommand extends Command {
   }
   
   static public class Info extends SubCommand {
-    @Parameter(names = "--running", description = "The running dataflow name")
+    @Parameter(names = "--running", description = "The running dataflow dataflowName")
     private String running ;
     
     @Parameter(names = "--history", description = "The history dataflow id")

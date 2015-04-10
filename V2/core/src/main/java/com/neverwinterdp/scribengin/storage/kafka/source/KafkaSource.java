@@ -19,7 +19,7 @@ public class KafkaSource implements Source {
   
   public KafkaSource(String name, String zkConnect, String topic) throws Exception {
     StorageDescriptor descriptor = new StorageDescriptor("kafka");
-    descriptor.attribute("name", name);
+    descriptor.attribute("dataflowName", name);
     descriptor.attribute("topic", topic);
     descriptor.attribute("zk.connect", zkConnect);
     init(descriptor);
@@ -31,7 +31,7 @@ public class KafkaSource implements Source {
 
   void init(StorageDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
-    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("name"), descriptor.attribute("zk.connect"));
+    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("dataflowName"), descriptor.attribute("zk.connect"));
     kafkaTool.connect();
     TopicMetadata topicMetdadata = kafkaTool.findTopicMetadata(descriptor.attribute("topic"));
     List<PartitionMetadata> partitionMetadatas = topicMetdadata.partitionsMetadata();

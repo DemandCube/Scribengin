@@ -20,14 +20,14 @@ public class KafkaSink implements Sink {
   
   public KafkaSink(String name, String zkConnect, String topic) throws Exception {
     StorageDescriptor descriptor = new StorageDescriptor("kafka");
-    descriptor.attribute("name", name);
+    descriptor.attribute("dataflowName", name);
     descriptor.attribute("topic", topic);
     descriptor.attribute("zk.connect", zkConnect);
     init(descriptor);
   }
   
   private void init(StorageDescriptor descriptor) throws Exception {
-    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("name"), descriptor.attribute("zk.connect")) ;
+    KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("dataflowName"), descriptor.attribute("zk.connect")) ;
     kafkaTool.connect();
     descriptor.attribute("broker.list", kafkaTool.getKafkaBrokerList());
     this.descriptor  = descriptor ;

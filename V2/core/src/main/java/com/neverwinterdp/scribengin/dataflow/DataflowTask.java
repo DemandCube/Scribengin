@@ -37,7 +37,6 @@ public class DataflowTask {
   
   public void run() throws Exception {
     DataflowTaskReport report = context.getReport();
-    System.err.println("begin task " + descriptor.getId() + ": " +  " last commit count = " + report.getCommitProcessCount() + ", hash code = " + hashCode()) ;
     SourceStreamReader reader = context.getSourceStreamReader() ;
     Record record = null ;
     while(!interrupt && (record = reader.next()) != null) {
@@ -46,11 +45,6 @@ public class DataflowTask {
     }
     if(!interrupt) {
       complete = true;
-      System.err.println("end task " + descriptor.getId() + " complete: " +  
-                         " last commit count = " + report.getCommitProcessCount() + ", process count " + report.getProcessCount() + ", hash code = " + hashCode());
-    } else {
-      System.err.println("end task " + descriptor.getId() + " interrupted: " +  
-                         " last commit count = " + report.getCommitProcessCount() + ", process count " + report.getProcessCount() + ", hash code = " + hashCode());
     }
   }
   

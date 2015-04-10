@@ -269,7 +269,7 @@ public final class S3SinkBuffer {
    * 
    * @return the file
    */
-  // TODO name suggests that we actually read from disk?
+  // TODO dataflowName suggests that we actually read from disk?
   public File pollFromDisk() {
     return new File(files.poll());
   }

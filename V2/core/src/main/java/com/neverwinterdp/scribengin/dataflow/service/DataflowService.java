@@ -21,7 +21,7 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 
 @Singleton
-@JmxBean("role=dataflow-master, type=DataflowService, name=DataflowService")
+@JmxBean("role=dataflow-master, type=DataflowService, dataflowName=DataflowService")
 public class DataflowService {
   @Inject
   private VMConfig vmConfig;

@@ -18,7 +18,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskEvent;
 
 @Singleton
-@JmxBean("role=dataflow-worker, type=DataflowTaskExecutorService, name=DataflowTaskExecutorService")
+@JmxBean("role=dataflow-worker, type=DataflowTaskExecutorService, dataflowName=DataflowTaskExecutorService")
 public class DataflowTaskExecutorService {
   private Logger logger = LoggerFactory.getLogger(DataflowTaskExecutorService.class);
 

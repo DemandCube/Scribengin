@@ -22,7 +22,7 @@ import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
-@JmxBean("role=scribengin-master, type=ScribenginService, name=ScribenginService")
+@JmxBean("role=scribengin-master, type=ScribenginService, dataflowName=ScribenginService")
 public class ScribenginService {
   final static public String SCRIBENGIN_PATH         = "/scribengin";
   

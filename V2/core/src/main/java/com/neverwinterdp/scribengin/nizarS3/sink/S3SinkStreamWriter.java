@@ -31,7 +31,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   /** The s3. */
   private AmazonS3 s3Client;
 
-  /** The bucket name. */
+  /** The bucket dataflowName. */
   private String bucketName;
   
   private String prefix;
@@ -48,13 +48,13 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   /** The logger. */
   private static Logger logger;
 
-  /** The region name. */
+  /** The region dataflowName. */
   private Regions regionName;
 
   /** The valid s3 sink. */
   private boolean validS3Sink = false;
 
-  /** A map holding file-path name and it corresponding MD5 hash */
+  /** A map holding file-path dataflowName and it corresponding MD5 hash */
   private Map<String, String> uploadedFilesPath = new HashMap<>();
 
 
@@ -140,7 +140,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
     File file;
     while (buffer.getFilesCount() > 0) {
       // the file path on local is similar to its path on s3, just change
-      // tmp folder by bucket name
+      // tmp folder by bucket dataflowName
       file = buffer.pollFromDisk();
       if(!file.exists())
         throw new FileNotFoundException();

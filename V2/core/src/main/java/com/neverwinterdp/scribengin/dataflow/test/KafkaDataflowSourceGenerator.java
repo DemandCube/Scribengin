@@ -50,7 +50,7 @@ public class KafkaDataflowSourceGenerator extends DataflowSourceGenerator {
   @Override
   public StorageDescriptor getSourceDescriptor() {
     StorageDescriptor sourceDescriptor = new StorageDescriptor("kafka") ;
-    sourceDescriptor.attribute("name", "KafkaDataflowSourceGenerator");
+    sourceDescriptor.attribute("dataflowName", "KafkaDataflowSourceGenerator");
     sourceDescriptor.attribute("topic", sourceName);
     sourceDescriptor.attribute("zk.connect", zkConnect);
     return sourceDescriptor;

@@ -69,7 +69,7 @@ public class KafkaSourceGenerator {
     createTopic(topic, numOfReplication, numPartitions);
     SinkFactory  sinkFactory = new SinkFactory(null);
     StorageDescriptor storageDescriptor = new StorageDescriptor("kafka");
-    storageDescriptor.attribute("name", name);
+    storageDescriptor.attribute("dataflowName", name);
     storageDescriptor.attribute("topic", topic);
     storageDescriptor.attribute("zk.connect", zkConnect);
     KafkaTool client = new KafkaTool(name, zkConnect) ;

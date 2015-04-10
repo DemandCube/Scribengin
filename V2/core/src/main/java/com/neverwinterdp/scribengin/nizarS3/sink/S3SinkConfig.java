@@ -23,9 +23,9 @@ public class S3SinkConfig {
     return getString("prefix");
   }
   /**
-   * Gets the bucket name.
+   * Gets the bucket dataflowName.
    * 
-   * @return the bucket name
+   * @return the bucket dataflowName
    */
   public String getBucketName() {
     return getString("bucketName");
@@ -41,9 +41,9 @@ public class S3SinkConfig {
   }
 
   /**
-   * Gets the region name.
+   * Gets the region dataflowName.
    * 
-   * @return the region name
+   * @return the region dataflowName
    */
   public String getRegionName() {
     return getString("regionName");
@@ -142,8 +142,8 @@ public class S3SinkConfig {
   /**
    * Check property.
    * 
-   * @param name
-   *          the name
+   * @param dataflowName
+   *          the dataflowName
    */
   private void checkProperty(String name) {
     if (!props.containsKey(name)) {
@@ -154,8 +154,8 @@ public class S3SinkConfig {
   /**
    * Gets the string.
    * 
-   * @param name
-   *          the name
+   * @param dataflowName
+   *          the dataflowName
    * @return the string
    */
   private String getString(String name) {
@@ -166,8 +166,8 @@ public class S3SinkConfig {
   /**
    * Gets the int.
    * 
-   * @param name
-   *          the name
+   * @param dataflowName
+   *          the dataflowName
    * @return the int
    */
   private int getInt(String name) {
@@ -179,8 +179,8 @@ public class S3SinkConfig {
   /**
    * Gets the boolean.
    * 
-   * @param name
-   *          the name
+   * @param dataflowName
+   *          the dataflowName
    * @return the boolean
    */
   private boolean getBoolean(String name) {
