@@ -28,10 +28,11 @@ class Server(object):
   def getProcesses(self):
     return self.processes
   
-  def startProcess(self, processName, paramDict = {}):
+  def startProcess(self, processName, paramDict = {}, setupClusterEnv = True):
     for key in self.processes:
       if processName == self.processes[key].getRole():
-        self.processes[key].setupClusterEnv(paramDict)
+        if setupClusterEnv:
+          self.processes[key].setupClusterEnv(paramDict)
         self.processes[key].start()
   
   def shutdownProcess(self, processName):
