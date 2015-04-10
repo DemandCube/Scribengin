@@ -17,6 +17,7 @@ public class LeaderElection {
   private Registry  registry ;
   private String    electionPath ;
   private LeaderId  leaderId ;
+  private LeaderWatcher currentLeaderWatcher ;
   private LeaderElectionListener listener ;
   private boolean elected = false ;
   private Node node ;
@@ -55,14 +56,14 @@ public class LeaderElection {
     if(leaderId != null) {
       throw new RegistryException(ErrorCode.Unknown, "This leader election is already started") ;
     }
-    String lockPath = electionPath + "/leader-" ;
-    node = registry.create(lockPath , info, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
+    node = registry.create( electionPath + "/leader-", info, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
     leaderId = new LeaderId(node.getPath()) ;
-    LeaderWatcher watcher = new LeaderWatcher() ;
-    watcher.watch();
+    currentLeaderWatcher = new LeaderWatcher() ;
+    currentLeaderWatcher.watch();
   }
   
   public void stop() throws RegistryException {
+    currentLeaderWatcher.setComplete();
     registry.delete(leaderId.getPath());
     elected = false ;
     leaderId = null ;
@@ -83,6 +84,7 @@ public class LeaderElection {
   class LeaderWatcher extends NodeWatcher {
     @Override
     public void onEvent(NodeEvent event) {
+      if(isComplete()) return ;
       try {
         System.err.println("Election event: Node = " + event.getPath() + ", Event = " + event.getType());
         watch() ;
@@ -99,9 +101,15 @@ public class LeaderElection {
         elected = true ;
         return ;
       }
-      SortedSet<LeaderId> lessThanMe = leaderIds.headSet(leaderId);
-      LeaderId previousLock = lessThanMe.last();
-      registry.watchExists(previousLock.getPath(), this);
+      try {
+        SortedSet<LeaderId> lessThanMe = leaderIds.headSet(leaderId);
+        LeaderId previousLock = lessThanMe.last();
+        registry.watchExists(previousLock.getPath(), this);
+      } catch(Throwable t) {
+        System.err.println("leaderId == " + leaderId);
+        System.err.println("leaderIds.size() == " + leaderIds.size());
+        throw t;
+      }
     }
   }
 }
