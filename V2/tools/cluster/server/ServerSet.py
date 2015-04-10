@@ -15,7 +15,7 @@ class ServerSet(object):
   def startProcessOnHost(self, processName, hostname):
     for server in self.servers :
       if server.getHostname() == hostname:
-        server.startProcess(processName)
+        server.startProcess(processName, self.paramDict, setupClusterEnv = False)
     
   def cleanProcessOnHost(self, processName, hostname):
     for server in self.servers :
@@ -68,6 +68,7 @@ class ServerSet(object):
   
   def getServersByHostname(self, hostnames):
     serverSet = ServerSet("subset")
+    serverSet.paramDict = self.paramDict
     for server in self.servers :
       if(server.getHostname().strip() in hostnames) :
         serverSet.addServer(server)
@@ -83,15 +84,6 @@ class ServerSet(object):
         serverSet.addServer(server)
     return serverSet
   
-  def getZookeeperConnect(self):
-    """
-    Returns zookeeper connect as a string
-    """
-    for server in self.servers :
-      if(server.role == "zookeeper"):
-        print server.hostname
-      
-    
   def startZookeeper(self):
     return self.startProcess("zookeeper")
   
