@@ -5,7 +5,7 @@ import java.util.List;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.ScribenginClient;
-import com.neverwinterdp.scribengin.dataflow.util.AssignedDataflowTaskNodeDebugger;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowClient {
@@ -38,7 +38,7 @@ public class DataflowClient {
   
   public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {
     RegistryDebugger debugger = new RegistryDebugger(out, scribenginClient.getVMClient().getRegistry()) ;
-    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned", ".*", new AssignedDataflowTaskNodeDebugger());
+    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned", ".*", new DataflowTaskNodeDebugger());
     //return debugger ;
     return dflRegistry.getDataflowTaskDebugger(out) ;
   }

@@ -4,7 +4,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeDebugger;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 
-public class AssignedDataflowTaskNodeDebugger implements NodeDebugger{
+public class DataflowTaskNodeDebugger implements NodeDebugger{
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node assignedTaskNode) throws Exception {

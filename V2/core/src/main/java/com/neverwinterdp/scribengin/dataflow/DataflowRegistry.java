@@ -17,7 +17,7 @@ import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
-import com.neverwinterdp.scribengin.dataflow.util.AssignedDataflowTaskNodeDebugger;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -281,7 +281,7 @@ public class DataflowRegistry {
     System.out.println("dataflow task debug path:");
     System.out.println("  " + tasksAssigned.getPath());
     System.out.println("  /scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned");
-    debugger.watchChild(tasksAssigned.getPath(), ".*", new AssignedDataflowTaskNodeDebugger());
+    debugger.watchChild(tasksAssigned.getPath(), ".*", new DataflowTaskNodeDebugger());
     return debugger ;
   }
 }
