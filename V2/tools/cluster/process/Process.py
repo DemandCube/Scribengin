@@ -62,7 +62,7 @@ class Process(object):
       self.sshExecute("kill -9 "+pid)
     
   def getRunningPid(self):
-    command = "ps ax | grep -i '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
+    command = "ps ax | grep -w '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
     stdout,stderr = self.sshExecute(command)
     return stdout.strip().replace("\n",",")
   
@@ -80,12 +80,15 @@ class Process(object):
   
   def replaceString(self, pattern, replaceStr, line):
     return re.sub(pattern, replaceStr, line.rstrip())
+  
+  def printProgress(self, printStr):
+    print printStr + self.getRole() + " on " + self.hostname
     
 ############
 
 class KafkaProcess(Process):
   def __init__(self, hostname):
-    Process.__init__(self, "kafka", hostname, "/opt/kafka", "kafka")
+    Process.__init__(self, "kafka", hostname, "/opt/kafka", "Kafka")
    
   def setupClusterEnv(self, paramDict = {}):
     zkConnect = ":2181,".join(paramDict["zkList"]) + ":2181"
@@ -101,9 +104,11 @@ class KafkaProcess(Process):
      
     
   def start(self):
+    self.printProgress("Starting ")
     return self.sshExecute(join(self.homeDir, "bin/kafka-server-start.sh")+" -daemon "+ join(self.homeDir, "config/server.properties"))
         
   def shutdown(self):
+    self.printProgress("Stopping ")
     return self.sshExecute( join(self.homeDir, "bin/kafka-server-stop.sh") )
   
   def clean(self):
@@ -133,9 +138,11 @@ class ZookeeperProcess(Process):
     return self.sshExecute("echo '" + fileStr + "' > " + join(self.homeDir, "conf/zoo.cfg"))
     
   def start(self):
+    self.printProgress("Starting ")
     return self.sshExecute("ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR="+join(self.homeDir,"logs")+" "+join(self.homeDir, "bin/zkServer.sh")+ " start")
     
   def shutdown(self):
+    self.printProgress("Stopping ")
     return self.sshExecute( join(self.homeDir,"bin/zkServer.sh")+ " stop")
   
   def clean(self):
@@ -143,33 +150,31 @@ class ZookeeperProcess(Process):
 
 ############
 
-class HadoopWorkerProcess(Process):
-  def __init__(self, hostname):
-    Process.__init__(self, 'hadoop-worker',hostname, "/opt/hadoop", 'Hadoop Worker Identifier')
-
+class HadoopDaemonProcess(Process):
+  def __init__(self, role, hostname, processIdentifier, hadoopDaemonScriptPath = "unknown"):
+    Process.__init__(self, role, hostname, "/opt/hadoop", processIdentifier)
+    self.hadoopDaemonScriptPath = hadoopDaemonScriptPath
+  
   def setupClusterEnv(self, paramDict = {}):
-    print "TODO setupClusterEnv"
+    slaveStr = ""
+    for hWorkers in paramDict["hadoopWorkers"]:
+      slaveStr = slaveStr + hWorkers + "\n"
+    slavesOut = self.sshExecute("echo \"" + slaveStr + "\" > " + join(self.homeDir, "etc/hadoop/slaves"))
     
+    masterStr = ""
+    for hWorkers in paramDict["hadoopMasters"]:
+      masterStr = masterStr + hWorkers + "\n"
+    mastersOut = self.sshExecute("echo \"" + masterStr + "\" > " + join(self.homeDir, "etc/hadoop/masters"))
+    
+    return slavesOut + mastersOut
+  
   def start(self):
-    print "TODO: start worker"
+    self.printProgress("Starting ")
+    return self.sshExecute(join(self.homeDir, self.hadoopDaemonScriptPath) + " start " + self.getRole())
     
   def shutdown(self):
-    print("TODO: call $homeDir/bin/shutdown.sh");
+    self.printProgress("Stopping ")
+    return self.sshExecute(join(self.homeDir, self.hadoopDaemonScriptPath) + " stop " + self.getRole())
   
   def clean(self):
-    print "TODO: clean hdfs"
-
-############
-
-class HadoopMasterProcess(Process):
-  def __init__(self, hostname):
-    Process.__init__(self, 'hadoop-master',hostname, "/opt/hadoop", 'Hadoop Master Identifier')
-
-  def start(self):
-    print "TODO start master"
-    
-  def shutdown(self):
-    print("TODO: call $homeDir/bin/shutdown.sh");
-    
-  def clean(self):
-    print "TODO: clean"
+    return self.sshExecute("rm -rf "+ join(self.homeDir, "data") +" && rm -rf " + join(self.homeDir, "logs") +" && "+ join(self.homeDir, "bin/hdfs") + " namenode -format") 

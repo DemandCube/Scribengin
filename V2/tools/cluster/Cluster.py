@@ -32,6 +32,8 @@ class Cluster(ServerSet):
     Uses serverRegexes for server name regexes
     """
     zkList = []
+    hadoopWorkers = []
+    hadoopMasters = []
     f = open(path, 'r')
     for line in f:
       if any(regex.match(line) for regex in self.serverRegexes):
@@ -42,8 +44,13 @@ class Cluster(ServerSet):
           zkList.append(hostname)
           self.addServer(ZookeeperServer(hostname)) 
         if re.match("hadoop-master.*", hostname, re.IGNORECASE) is not None:
+          hadoopMasters.append(hostname)
           self.addServer(HadoopMasterServer(hostname)) 
         if re.match("hadoop-worker.*", hostname, re.IGNORECASE) is not None :
+          hadoopWorkers.append(hostname)
           self.addServer(HadoopWorkerServer(hostname))
     self.paramDict["zkList"] = zkList
+    self.paramDict["hadoopWorkers"] = hadoopWorkers
+    self.paramDict["hadoopMasters"] = hadoopMasters
+    
     
