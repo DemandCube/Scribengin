@@ -70,14 +70,11 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
   
   public void onFailDataflowTask(DataflowTaskDescriptor descriptor) throws RegistryException {
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
-    //Move the dataflow task to suspend so another worker can pickup the task
     dataflowRegistry.dataflowTaskSuspend(descriptor);
-    System.err.println("    detect failed task: " + descriptor.getStoredPath() + ", status = " + status);
   }
   
   synchronized public void onFinishDataflowTask(DataflowTaskDescriptor descriptor) throws RegistryException {
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
-    System.err.println("    detect finish task: " + descriptor.getStoredPath() + ", status = " + status);
     finishedTaskCount++ ;
     if(numOfTasks == finishedTaskCount) {
       notifyAll() ;

@@ -10,10 +10,10 @@ import com.neverwinterdp.util.text.TabularFormater;
 /**
  * @author Tuan
  */
-public class DataflowTaskRegistryFormatter extends NodeFormatter {
+public class DataflowTaskRegistryFormater extends NodeFormatter {
   private Node taskDescriptorNode ;
   
-  public DataflowTaskRegistryFormatter(Node taskNode) {
+  public DataflowTaskRegistryFormater(Node taskNode) {
     this.taskDescriptorNode = taskNode;
   }
   

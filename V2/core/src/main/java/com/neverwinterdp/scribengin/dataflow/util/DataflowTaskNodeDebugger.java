@@ -23,7 +23,7 @@ public class DataflowTaskNodeDebugger implements NodeDebugger{
     Node tasksDescriptorsNode = tasksNode.getChild("descriptors");
     Node taskDescriptorNode = tasksDescriptorsNode.getChild(assignedTaskName); 
     
-    DataflowTaskRegistryDetailFormatter formatter = new DataflowTaskRegistryDetailFormatter(taskDescriptorNode);
+    DataflowTaskRegistryDetailFormater formatter = new DataflowTaskRegistryDetailFormater(taskDescriptorNode);
     registryDebugger.println(formatter.getFormattedText());
     registryDebugger.watchModify(assignedTaskNode.getChild("heartbeat").getPath(), formatter, true);
   }

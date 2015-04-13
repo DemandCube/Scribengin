@@ -16,10 +16,10 @@ import com.neverwinterdp.vm.VMDescriptor;
  * of the other tasks
  * @author Tuan
  */
-public class DataflowTaskRegistryDetailFormatter extends NodeFormatter {
+public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
   private Node taskDescriptorNode ;
   
-  public DataflowTaskRegistryDetailFormatter(Node taskNode) {
+  public DataflowTaskRegistryDetailFormater(Node taskNode) {
     this.taskDescriptorNode = taskNode;
   }
   
@@ -42,6 +42,15 @@ public class DataflowTaskRegistryDetailFormatter extends NodeFormatter {
       if(workerHeartbeatNode.exists()) {
         workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
       }
+
+//TODO: This code show how to detect a failed and finished task when the heartbeat is not available. Include the fail task info 
+//      in the debug info
+//      DataflowTaskDescriptor.Status status = descriptor.getStatus();
+//      if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
+//        onFailDataflowTask(descriptor);
+//      } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+//        onFinishDataflowTask(descriptor);
+//      }
       
       TabularFormater taskFt = new TabularFormater("Property", "Value");
       taskFt.addRow("Dataflow Task Descriptor", "");
