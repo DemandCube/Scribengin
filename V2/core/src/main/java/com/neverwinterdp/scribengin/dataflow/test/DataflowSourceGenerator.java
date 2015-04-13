@@ -16,7 +16,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
   @Parameter(names = "--source-location", description = "The storage source dataflowName, usually the database dataflowName or dir dataflowName of the storage")
   protected String sourceLocation = "build/storage";
   
-  @Parameter(names = "--source-dataflowName", description = "The storage source dataflowName, usually the database dataflowName or dir dataflowName of the storage")
+  @Parameter(names = "--source-name", description = "The storage source dataflowName, usually the database dataflowName or dir dataflowName of the storage")
   protected String sourceName = "hello";
   
   @Parameter(names = "--source-drop-if-exists", description = "The maximum number of record per stream")

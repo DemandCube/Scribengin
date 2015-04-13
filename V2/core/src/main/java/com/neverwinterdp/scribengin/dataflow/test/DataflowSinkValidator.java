@@ -13,7 +13,7 @@ abstract public class DataflowSinkValidator implements Runnable {
   @Parameter(names = "--sink-location", description = "The storage sink dataflowName, usually the database dataflowName or dir dataflowName of the storage")
   protected String sinkLocation = "build/storage" ;
   
-  @Parameter(names = "--sink-dataflowName", required=true, description = "The storage sink dataflowName, usually the database dataflowName or dir dataflowName of the storage")
+  @Parameter(names = "--sink-name", required=true, description = "The storage sink dataflowName, usually the database dataflowName or dir dataflowName of the storage")
   protected String sinkName ;
   
   @Parameter(names = "--sink-expect-records", description = "The expect number of records in the sink")
