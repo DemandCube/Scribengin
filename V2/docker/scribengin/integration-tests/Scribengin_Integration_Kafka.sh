@@ -35,5 +35,5 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/KafkaIntegrationTest.xml ./
 
 #Clean up
-#./docker.sh container clean || true
-#./docker.sh image clean || true
+./docker.sh container clean || true
+./docker.sh image clean || true
