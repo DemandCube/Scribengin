@@ -111,6 +111,43 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
   
   click.echo(cluster.getReport())
 
+@mastercommand.command("hadoop",help="Hadoop commands")
+@click.option('--restart',           is_flag=True, help="restart hadoop nodes")
+@click.option('--start',             is_flag=True, help="start hadoop nodes")
+@click.option('--stop',              is_flag=True, help="stop hadoop nodes")
+@click.option('--force-stop',        is_flag=True, help="kill -9 hadoop on brokers")
+@click.option('--clean',             is_flag=True, help="Clean old hadoop data")
+@click.option('--hadoop-nodes',        is_flag=True, help="Which hadoop nodes to effect (command separated list)")
+@click.option('--wait-before-start', default=0,     help="Time to wait before starting ZK server (seconds)")
+@click.option('--wait-before-kill',  default=0,     help="Time to wait before force killing ZK process (seconds)")
+def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_start, wait_before_kill):
+  cluster = Cluster()
+  if(restart or stop):
+    logging.debug("Shutting down Hadoop")
+    cluster.shutdownHadoopWorker()
+    cluster.shutdownHadoopMaster()
+  
+  if(force_stop):
+    logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
+    sleep(wait_before_kill)
+    logging.debug("Force Killing Hadoop")
+    cluster.killHadoopWorker()
+    cluster.killHadoopMaster()
+  
+  if(clean):
+    logging.debug("Cleaning Hadoop")
+    cluster.cleanHadoopWorker()
+    cluster.cleanHadoopMaster()
+  
+  if(restart or start):
+    logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    sleep(wait_before_start)
+    logging.debug("Starting Hadoop")
+    cluster.startHadoopMaster()
+    cluster.startHadoopWorker()
+  
+  click.echo(cluster.getReport())
+
 @mastercommand.command("kafkafailure",help="Failure Simulation for Kafka")
 @click.option('--failure-interval',               default=180,  help="Time interval (in seconds) to fail server")
 @click.option('--wait-before-start',              default=180,  help="Time to wait (in seconds) before starting server")

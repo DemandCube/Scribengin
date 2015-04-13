@@ -3,7 +3,7 @@ from sys import path
 from os.path import join, dirname, abspath, expanduser
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
-from process.Process import KafkaProcess,ZookeeperProcess,HadoopMasterProcess,HadoopWorkerProcess  #@UnresolvedImport
+from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess  #@UnresolvedImport
 
 
 class Server(object):
@@ -97,11 +97,15 @@ class HadoopWorkerServer(Server):
   def __init__(self, hostname):
     Server.__init__(self, hostname)
     self.role = 'hadoop-worker' 
-    Server.addProcess(self, HadoopWorkerProcess(hostname))
+    Server.addProcess(self, HadoopDaemonProcess('datanode',hostname, 'DataNode', "sbin/hadoop-daemon.sh"))
+    Server.addProcess(self, HadoopDaemonProcess('nodemanager',hostname, 'NodeManager', "sbin/yarn-daemon.sh"))
 
 class HadoopMasterServer(Server):
   def __init__(self, hostname):
     Server.__init__(self, hostname)
     self.role = 'hadoop-master'
-    Server.addProcess(self, HadoopMasterProcess(hostname))
+    Server.addProcess(self, HadoopDaemonProcess('namenode',hostname, 'NameNode', "sbin/hadoop-daemon.sh"))
+    Server.addProcess(self, HadoopDaemonProcess('secondarynamenode',hostname, 'SecondaryNameNode', "sbin/hadoop-daemon.sh"))
+    Server.addProcess(self, HadoopDaemonProcess('resourcemanager',hostname, 'ResourceManager', "sbin/yarn-daemon.sh"))
+    
     

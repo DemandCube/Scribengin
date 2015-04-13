@@ -32,21 +32,25 @@ class ServerSet(object):
       if server.getHostname() == hostname:
         server.killProcess(processName)
   
-  def startProcess(self, processName):
-    for server in self.servers :
-      server.startProcess(processName, self.paramDict)
+  def startProcess(self, processNames, setupClusterEnv = True):
+    for processName in processNames.split(","):
+      for server in self.servers :
+        server.startProcess(processName, self.paramDict, setupClusterEnv)
     
-  def cleanProcess(self, processName):
-    for server in self.servers :
-      server.cleanProcess(processName)
+  def cleanProcess(self, processNames):
+    for processName in processNames.split(","):
+      for server in self.servers : 
+        server.cleanProcess(processName)
   
-  def shutdownProcess(self, processName):
-    for server in self.servers :
-      server.shutdownProcess(processName)
+  def shutdownProcess(self, processNames):
+    for processName in processNames.split(","):
+      for server in self.servers :
+        server.shutdownProcess(processName)
   
-  def killProcess(self, processName):
-    for server in self.servers :
-      server.killProcess(processName)
+  def killProcess(self, processNames):
+    for processName in processNames.split(","):
+      for server in self.servers :
+        server.killProcess(processName)
     
   def isProcessRunning(self, processName):
     for server in self.servers :
@@ -90,11 +94,26 @@ class ServerSet(object):
   def startKafka(self):
     return self.startProcess("kafka")
   
+  def startNameNode(self):
+    return self.startProcess("namenode", setupClusterEnv = True)
+  
+  def startSecondaryNameNode(self):
+    return self.startProcess("secondarynamenode", setupClusterEnv = False)
+  
+  def startResourceManager(self):
+    return self.startProcess("resourcemanager", setupClusterEnv = False)
+  
+  def startDataNode(self):
+    return self.startProcess("datanode", setupClusterEnv = True)
+  
+  def startNodeManager(self):
+    return self.startProcess("nodemanager", setupClusterEnv = False)
+  
   def startHadoopMaster(self):
-    return self.startProcess("hadoop-master")
+    return self.startProcess("namenode,secondarynamenode,resourcemanager")
   
   def startHadoopWorker(self):
-    return self.startProcess("hadoop-worker")
+    return self.startProcess("datanode,nodemanager")
   
   def shutdownZookeeper(self):
     return self.shutdownProcess("zookeeper")
@@ -102,23 +121,53 @@ class ServerSet(object):
   def shutdownKafka(self):
     return self.shutdownProcess("kafka")
   
+  def shutdownNameNode(self):
+    return self.shutdownProcess("namenode")
+  
+  def shutdownSecondaryNameNode(self):
+    return self.shutdownProcess("secondarynamenode")
+  
+  def shutdownResourceManager(self):
+    return self.shutdownProcess("resourcemanager")
+  
+  def shutdownDataNode(self):
+    return self.shutdownProcess("datanode")
+  
+  def shutdownNodeManager(self):
+    return self.shutdownProcess("nodemanager")
+  
   def shutdownHadoopMaster(self):
-    return self.shutdownProcess("hadoop-master")
+    return self.shutdownProcess("namenode,secondarynamenode,resourcemanager")
   
   def shutdownHadoopWorker(self):
-    return self.shutdownProcess("hadoop-worker")
-    
+    return self.shutdownProcess("datanode,nodemanager")
+  
   def killZookeeper(self):
     return self.killProcess("zookeeper")
   
   def killKafka(self):
     return self.killProcess("kafka")
   
+  def killNameNode(self):
+    return self.killProcess("namenode")
+  
+  def killSecondaryNameNode(self):
+    return self.killProcess("secondarynamenode")
+  
+  def killResourceManager(self):
+    return self.killProcess("resourcemanager")
+  
+  def killDataNode(self):
+    return self.killProcess("datanode")
+  
+  def killNodeManager(self):
+    return self.killProcess("nodemanager")
+  
   def killHadoopMaster(self):
-    return self.killProcess("hadoop-master")
+    return self.killProcess("namenode,secondarynamenode,resourcemanager")
   
   def killHadoopWorker(self):
-    return self.killProcess("hadoop-worker")  
+    return self.killProcess("datanode,nodemanager")  
   
   def cleanKafka(self):
     return self.cleanProcess("kafka")
@@ -127,10 +176,10 @@ class ServerSet(object):
     return self.cleanProcess("zookeeper")
   
   def cleanHadoopMaster(self):
-    return self.cleanProcess("hadoop-master")
+    return self.cleanProcess("namenode")
   
   def cleanHadoopWorker(self):
-    return self.cleanProcess("hadoop-worker")
+    return self.cleanProcess("datanode")
   
   def getReport(self):
     serverReport = []
