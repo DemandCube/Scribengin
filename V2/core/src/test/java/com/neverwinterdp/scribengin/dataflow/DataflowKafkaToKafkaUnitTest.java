@@ -91,9 +91,9 @@ public class DataflowKafkaToKafkaUnitTest {
             " --print-dataflow-info -1" +
             " --debug-dataflow-task true" +
             " --debug-dataflow-worker true" +
-            " --junit-report build/junit-report.xml";
+            " --junit-report build/junit-report.xml" + 
+            " --dump-registry";
         shell.execute(command);
-        shell.execute("registry dump");
       } catch(Exception ex) {
         ex.printStackTrace();
       } finally {

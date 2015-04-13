@@ -46,6 +46,8 @@ abstract public class DataflowTest {
   @Parameter(names = "--debug-dataflow-worker", description = "Enable the debug dataflow worker")
   protected boolean debugDataflowWorker = false;
   
+  @Parameter(names = "--dump-registry", description = "Enable to dump the registry at the end")
+  protected boolean dumpRegistry = false;
   
   @Parameter(names = "--junit-report", description = "The junit report output file")
   protected String junitReport;

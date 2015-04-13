@@ -9,6 +9,8 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 
+//TODO: use this class as the sample class, make the hdfs test look similar. 
+//Some code may need to move to the DataflowTest to reuse
 public class KafkaDataflowTest extends DataflowTest {
   final static public String TEST_NAME = "kafka-to-kakfa" ;
   @ParametersDelegate
@@ -17,6 +19,7 @@ public class KafkaDataflowTest extends DataflowTest {
   @ParametersDelegate
   private DataflowSinkValidator   sinkValidator   = new KafkaDataflowSinkValidator();
   
+  //TODO: check and remove this parameter , look like this is the junk code.
   @Parameter(names = "--sink-topic", description = "Default sink topic")
   public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
   
@@ -59,5 +62,8 @@ public class KafkaDataflowTest extends DataflowTest {
     sinkValidator.waitForTermination();
     
     report(shell, sourceGenerator, sinkValidator) ;
+    if(dumpRegistry) {
+      shell.execute("dump registry");
+    }
   }
 }
