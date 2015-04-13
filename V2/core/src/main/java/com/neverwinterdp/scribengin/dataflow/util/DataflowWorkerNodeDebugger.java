@@ -13,7 +13,7 @@ public class DataflowWorkerNodeDebugger implements NodeDebugger{
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
     //Grabs the path from the node passed in
     //Adds a watch for the node in that path using VMNodeDebugger
-    registryDebugger.println("RegistryDebugger: Node = " + node.getPath() + ", Event = CREATE");
+    registryDebugger.println("DataflowWorkerNodeDebugger: Node = " + node.getPath() + ", Event = CREATE");
     Map<?,?> nodeData = node.getDataAs(Map.class);
     
     Node vmNode = new Node(registryDebugger.getRegistry(), (String)nodeData.get("path"));

@@ -9,11 +9,15 @@ import com.neverwinterdp.registry.util.RegistryDebugger;
 //recustomize the formater to allow indent setting. The print out should have the format:
 //RegistryDebugger: Node = /scribengin/dataflows/running/kafka-to-kafka/tasks/executors/assigned/task-0000000000, Event = CREATE
 //  (indent) table of info or other info 
+//Add:
+//
+// --debug-dataflow-task and --debug-dataflow-task-detail
+// --debug-dataflow-worker and --debug-dataflow-task-detail
 public class DataflowTaskNodeDebugger implements NodeDebugger{
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node assignedTaskNode) throws Exception {
-    registryDebugger.println("RegistryDebugger: Node = " + assignedTaskNode.getPath() + ", Event = CREATE");
+    registryDebugger.println("DataflowTaskNodeDebugge: Node = " + assignedTaskNode.getPath() + ", Event = CREATE");
     String assignedTaskName = assignedTaskNode.getName();
     Node tasksNode = assignedTaskNode.getParentNode().getParentNode().getParentNode();
     Node tasksDescriptorsNode = tasksNode.getChild("descriptors");
