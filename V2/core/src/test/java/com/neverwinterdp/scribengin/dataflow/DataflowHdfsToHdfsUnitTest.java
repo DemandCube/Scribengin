@@ -71,13 +71,13 @@ public class DataflowHdfsToHdfsUnitTest {
         String command =
             "dataflow-test hdfs " +
             "  --worker 3 " + 
-            " --executor-per-worker 1 " + 
+            " --executor-per-worker 1 " +
             " --duration 10000" + 
             " --task-max-execute-time 1000" +
             " --source-num-of-stream 10" +
             " --source-max-records-per-stream 1000" +
             " --source-dataflowName hello-source" +
-            " --sink-dataflowName hello-sink"+
+            " --sink-dataflowName hello-source"+
             " --junit-report build/junit-report.xml";
         shell.execute(command);
       } catch (Exception ex) {
