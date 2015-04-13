@@ -22,7 +22,6 @@ import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescript
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
-//TODO: Nizar
 @Singleton
 public class DataflowRegistry {
   final static public String TASKS_PATH = "tasks";

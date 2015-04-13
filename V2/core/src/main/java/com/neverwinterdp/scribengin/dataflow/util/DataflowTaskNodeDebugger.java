@@ -4,6 +4,11 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeDebugger;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 
+//TODO: Implement DataflowTaskNodeDebugger and DataflowTaskNodeDetailDebugger which print out the data 
+//in simple(in 1 or 2 lines) format or in detail format
+//recustomize the formater to allow indent setting. The print out should have the format:
+//RegistryDebugger: Node = /scribengin/dataflows/running/kafka-to-kafka/tasks/executors/assigned/task-0000000000, Event = CREATE
+//  (indent) table of info or other info 
 public class DataflowTaskNodeDebugger implements NodeDebugger{
   
   @Override
@@ -14,7 +19,7 @@ public class DataflowTaskNodeDebugger implements NodeDebugger{
     Node tasksDescriptorsNode = tasksNode.getChild("descriptors");
     Node taskDescriptorNode = tasksDescriptorsNode.getChild(assignedTaskName); 
     
-    DataflowTaskRegistryFormatter formatter = new DataflowTaskRegistryFormatter(taskDescriptorNode);
+    DataflowTaskRegistryDetailFormatter formatter = new DataflowTaskRegistryDetailFormatter(taskDescriptorNode);
     registryDebugger.println(formatter.getFormattedText());
     registryDebugger.watchModify(assignedTaskNode.getChild("heartbeat").getPath(), formatter, true);
   }

@@ -44,7 +44,7 @@ public class DataflowTaskDescriptor {
   
   @JsonIgnore
   public String getStoredPath() { return storedPath; }
-  public void setStoredPath(String storedPath) { this.storedPath = storedPath; }
+  public void   setStoredPath(String storedPath) { this.storedPath = storedPath; }
   
   public String storedName() {
     if(this.storedPath == null) {

@@ -1,19 +1,25 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
+import java.util.List;
+
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeFormatter;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.util.text.DateUtil;
 import com.neverwinterdp.util.text.TabularFormater;
+import com.neverwinterdp.vm.VMDescriptor;
 
 /**
+ * The goal of this class is to print out all and in detail of the information of the trgiggered task and the status 
+ * of the other tasks
  * @author Tuan
  */
-public class DataflowTaskRegistryFormatter extends NodeFormatter {
+public class DataflowTaskRegistryDetailFormatter extends NodeFormatter {
   private Node taskDescriptorNode ;
   
-  public DataflowTaskRegistryFormatter(Node taskNode) {
+  public DataflowTaskRegistryDetailFormatter(Node taskNode) {
     this.taskDescriptorNode = taskNode;
   }
   
@@ -28,7 +34,15 @@ public class DataflowTaskRegistryFormatter extends NodeFormatter {
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);
       DataflowTaskReport     dflTaskReport = taskDescriptorNode.getChild("report").getDataAs(DataflowTaskReport.class);
       
-      //TODO: try to make the print out in one line with the format property = value, property = value.... 
+      VMDescriptor workerDescriptor = null ;
+      
+      Node workerHeartbeatNode = 
+        taskDescriptorNode.getParentNode().
+        getParentNode().getDescendant("executors/assigned/" + taskDescriptorNode.getName() + "/heartbeat");
+      if(workerHeartbeatNode.exists()) {
+        workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
+      }
+      
       TabularFormater taskFt = new TabularFormater("Property", "Value");
       taskFt.addRow("Dataflow Task Descriptor", "");
       taskFt.addRow("  Dataflow Task Id", dflDescriptor.getId());
@@ -40,7 +54,24 @@ public class DataflowTaskRegistryFormatter extends NodeFormatter {
       taskFt.addRow("  Finish Time", DateUtil.asCompactDateTime(dflTaskReport.getFinishTime()));
       taskFt.addRow("  Process Count", dflTaskReport.getProcessCount());
       taskFt.addRow("  Commit Process Count", dflTaskReport.getCommitProcessCount());
+      taskFt.addRow("Worker", "");
+      if(workerDescriptor != null) { 
+        taskFt.addRow("  Id", workerDescriptor.getId());
+        taskFt.addRow("  Registry Path", workerDescriptor.getStoredPath());
+      }
       b.append(taskFt.getFormatText());
+      
+      Node taskDescriptorsNode = taskDescriptorNode.getParentNode();
+      List<DataflowTaskDescriptor> taskDescriptors = 
+        taskDescriptorsNode.getChildrenAs(DataflowTaskDescriptor.class, DataflowRegistry.TASK_DESCRIPTOR_DATA_MAPPER);
+      TabularFormater tasksFt = new TabularFormater("Id", "Status", "Registry Path");
+      tasksFt.setTitle("Dataflow Tasks");
+      for(int i = 0; i < taskDescriptors.size(); i++) {
+        DataflowTaskDescriptor descriptor = taskDescriptors.get(i) ;
+        tasksFt.addRow(descriptor.getId(), descriptor.getStatus(), descriptor.getStoredPath());
+      }
+      b.append("\n");
+      b.append(tasksFt.getFormatText());
     } catch (Exception e) {
       e.printStackTrace();
       b.append(e.getMessage());
