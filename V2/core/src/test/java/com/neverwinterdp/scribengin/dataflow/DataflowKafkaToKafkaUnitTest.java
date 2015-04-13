@@ -64,7 +64,7 @@ public class DataflowKafkaToKafkaUnitTest {
       VMClient vmClient = scribenginClient.getVMClient();
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
       Assert.assertEquals(3, dataflowWorkers.size());
-      vmClient.shutdown(dataflowWorkers.get(1));
+      vmClient.shutdown(dataflowWorkers.get(0));
       submitter.waitForTermination(300000);
     } catch(Throwable err) {
       throw err;

@@ -63,7 +63,7 @@ public class KafkaDataflowTest extends DataflowTest {
     
     report(shell, sourceGenerator, sinkValidator) ;
     if(dumpRegistry) {
-      shell.execute("dump registry");
+      shell.execute("registry dump");
     }
   }
 }
