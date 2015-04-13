@@ -17,7 +17,7 @@ public class DataflowTaskNodeDebugger implements NodeDebugger{
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node assignedTaskNode) throws Exception {
-    registryDebugger.println("DataflowTaskNodeDebugge: Node = " + assignedTaskNode.getPath() + ", Event = CREATE");
+    registryDebugger.println("DataflowTaskNodeDebugger: Node = " + assignedTaskNode.getPath() + ", Event = CREATE");
     String assignedTaskName = assignedTaskNode.getName();
     Node tasksNode = assignedTaskNode.getParentNode().getParentNode().getParentNode();
     Node tasksDescriptorsNode = tasksNode.getChild("descriptors");
