@@ -1,7 +1,10 @@
-from os.path import expanduser, join
+from os.path import expanduser, join, abspath, dirname
+from sys import path
 from tabulate import tabulate
-import paramiko, re,  os
-from click.core import Command
+import paramiko, re
+#Make sure the cluster package is on the path correctly
+path.insert(0, dirname(dirname(abspath(__file__))))
+from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Process(object):
   def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
@@ -182,3 +185,82 @@ class HadoopDaemonProcess(Process):
   def clean(self):
     self.printProgress("Cleaning data of ")
     return self.sshExecute("rm -rf "+ join(self.homeDir, "data") +" && rm -rf " + join(self.homeDir, "logs") +" && "+ join(self.homeDir, "bin/hdfs") + " namenode -format") 
+
+############
+class VmMasterProcess(Process):
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "ApplicationMaster")
+    
+  def setupClusterEnv(self, paramDict = {}):
+    pass
+  
+  def start(self):
+    self.printProgress("Starting ")
+    self.sshExecute(join(self.homeDir, "shell.sh")+" vm start")
+    
+  def shutdown(self):
+    self.printProgress("Stopping ")
+    self.sshExecute(join(self.homeDir, "shell.sh")+" vm shutdown")
+  
+  def clean(self):
+    pass 
+  
+  def isRunning(self):
+    yarnConnection = YarnRestApi(self.hostname)
+    if yarnConnection.getRunningApplicationMasterIds():
+      return True
+    else:
+      return False
+  
+    
+  def kill(self):
+    return self.shutdown()
+    
+  def getRunningPid(self):
+    yarnConnection = YarnRestApi(self.hostname)
+    return ",".join(yarnConnection.getRunningApplicationMasterIds())
+    
+  
+############
+class ScribenginProcess(Process):
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "YarnContainer")
+    self.hostname = hostname
+    
+  def setupClusterEnv(self, paramDict = {}):
+    pass
+  
+  def start(self):
+    self.printProgress("Starting ")
+    self.sshExecute(join(self.homeDir, "shell.sh")+" scribengin start")
+    
+  def shutdown(self):
+    self.printProgress("Stopping ")
+    self.sshExecute(join(self.homeDir, "shell.sh")+" scribengin shutdown")
+  
+  def clean(self):
+    pass 
+  
+  
+  def isRunning(self):
+    yarnConnection = YarnRestApi(self.hostname)
+    result = False
+    for appMasterId in yarnConnection.getRunningApplicationMasterIds():
+      if yarnConnection.getNumContainersForApplicationMaster(appMasterId) > 1:
+        result = True
+    return result
+    
+  def kill(self):
+    return self.shutdown()
+    
+  def getRunningPid(self):
+    yarnConnection = YarnRestApi(self.hostname)
+    result = []
+    for appMasterId in yarnConnection.getRunningApplicationMasterIds():
+      result.append(str(yarnConnection.getNumContainersForApplicationMaster(appMasterId)))
+    
+    if result:
+      return "NumContainers: "+",".join(result)
+    else:
+      return "NumContainers: 0"
+  

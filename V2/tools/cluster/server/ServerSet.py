@@ -88,6 +88,12 @@ class ServerSet(object):
         serverSet.addServer(server)
     return serverSet
   
+  def startVmMaster(self):
+    return self.startProcess("vmmaster")
+  
+  def startScribengin(self):
+    return self.startProcess("scribengin")
+  
   def startZookeeper(self):
     return self.startProcess("zookeeper")
   
@@ -114,6 +120,12 @@ class ServerSet(object):
   
   def startHadoopWorker(self):
     return self.startProcess("datanode,nodemanager")
+  
+  def shutdownVmMaster(self):
+    return self.shutdownProcess("vmmaster")
+  
+  def shutdownScribengin(self):
+    return self.shutdownProcess("scribengin")
   
   def shutdownZookeeper(self):
     return self.shutdownProcess("zookeeper")
@@ -183,16 +195,17 @@ class ServerSet(object):
   
   def getReport(self):
     serverReport = []
-    sorted_servers = sorted(self.servers, key=lambda server: server.hostname)
+    sorted_servers = sorted(self.servers, key=lambda server: server.role)
     for server in sorted_servers :
-      serverReport.append([server.hostname, server.role, "", "", "",""])
+      serverReportDict = server.getReportDict()
+      serverReport.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
       procs = server.getProcesses()
       for process in procs:
         procDict = server.getProcess(process).getReportDict()
 
         serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
 
-    headers = ["Hostname", "Role", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
+    headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
 
     return tabulate(serverReport, headers=headers)
  

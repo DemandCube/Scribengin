@@ -43,6 +43,52 @@ def status(role):
   
   click.echo(cluster.getReport())
 
+@mastercommand.command("vmmaster", help="VmMaster commands")
+@click.option('--restart',           is_flag=True, help="restart VmMaster")
+@click.option('--start',             is_flag=True, help="start VmMaster")
+@click.option('--stop',              is_flag=True, help="stop VmMaster")
+@click.option('--wait-before-start', default=0,    help="Time to wait before restarting VmMaster (seconds)")
+@click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
+def vmmaster(restart, start, stop, wait_before_start, wait_before_report):
+  cluster = Cluster()
+  
+  if(restart or stop):
+    logging.debug("Shutting down VmMaster")
+    cluster.shutdownVmMaster()
+  
+  if(restart or start):
+    logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    sleep(wait_before_start)
+    logging.debug("Starting VmMaster")
+    cluster.startVmMaster()
+  
+  logging.debug("Waiting for "+str(wait_before_report)+" seconds")
+  sleep(wait_before_report)
+  #click.echo(cluster.getReport())  
+
+@mastercommand.command("scribengin", help="Scribengin commands")
+@click.option('--restart',           is_flag=True, help="restart Scribengin")
+@click.option('--start',             is_flag=True, help="start Scribengin")
+@click.option('--stop',              is_flag=True, help="stop Scribengin")
+@click.option('--wait-before-start', default=0,    help="Time to wait before restarting Scribengin (seconds)")
+@click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
+def scribengin(restart, start, stop, wait_before_start, wait_before_report):
+  cluster = Cluster()
+  
+  if(restart or stop):
+    logging.debug("Shutting down Scribengin")
+    cluster.shutdownScribengin()
+  
+  if(restart or start):
+    logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    sleep(wait_before_start)
+    logging.debug("Starting Scribengin")
+    cluster.startScribengin()
+  
+  logging.debug("Waiting for "+str(wait_before_report)+" seconds")
+  sleep(wait_before_report)
+  #click.echo(cluster.getReport())  
+
 @mastercommand.command("cluster", help="Cluster commands")
 @click.option('--restart',           is_flag=True, help="restart cluster")
 @click.option('--start',             is_flag=True, help="start cluster")
@@ -88,7 +134,7 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     cluster.startHadoopMaster()
     cluster.startHadoopWorker()
     
-  click.echo(cluster.getReport())  
+  #click.echo(cluster.getReport())  
   
 @mastercommand.command("kafka", help="Kafka commands")
 @click.option('--restart',           is_flag=True, help="restart kafka brokers")
@@ -127,7 +173,7 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, w
     logging.debug("Starting Kafka")
     cluster.paramDict["server_config"] = server_config
     cluster.startKafka()
-  click.echo(cluster.getReport())  
+  #click.echo(cluster.getReport())  
   
 
 @mastercommand.command("zookeeper",help="Zookeeper commands")
@@ -161,7 +207,7 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
     logging.debug("Starting Zookeeper")
     cluster.startZookeeper()
   
-  click.echo(cluster.getReport())
+  #click.echo(cluster.getReport())
 
 @mastercommand.command("hadoop",help="Hadoop commands")
 @click.option('--restart',           is_flag=True, help="restart hadoop nodes")
@@ -198,7 +244,7 @@ def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_st
     cluster.startHadoopMaster()
     cluster.startHadoopWorker()
   
-  click.echo(cluster.getReport())
+  #click.echo(cluster.getReport())
 
 @mastercommand.command("kafkafailure",help="Failure Simulation for Kafka")
 @click.option('--failure-interval',               default=180,  help="Time interval (in seconds) to fail server")
