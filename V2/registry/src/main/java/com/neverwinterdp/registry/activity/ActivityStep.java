@@ -16,7 +16,7 @@ public class ActivityStep {
   private int                 maxRetries = 1;
   private Map<String, Object> attributes;
   private List<String>        logs;
-  private ActivityStepResult result;
+  private ActivityStepResult  result;
   
   public String getDescription() { return description; }
   public void setDescription(String description) { this.description = description; }

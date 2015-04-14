@@ -38,8 +38,8 @@ public class DataflowWorkerNodeDebugger implements NodeDebugger{
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-    //Grabs the path from the node passed in
-    //Adds a watch for the node in that path using VMNodeDebugger
+    //Grabs the path from the activityNode passed in
+    //Adds a watch for the activityNode in that path using VMNodeDebugger
     registryDebugger.println("DataflowWorkerNodeDebugger: Node = " + node.getPath() + ", Event = CREATE");
     Map<?,?> nodeData = node.getDataAs(Map.class);
     

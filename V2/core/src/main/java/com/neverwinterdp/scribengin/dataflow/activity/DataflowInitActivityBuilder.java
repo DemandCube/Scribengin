@@ -22,6 +22,7 @@ import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 
 public class DataflowInitActivityBuilder extends ActivityBuilder {
+  
   public DataflowInitActivityBuilder( DataflowDescriptor dflDescriptor) {
     getActivity().setDescription("Init Dataflow Activity");
     getActivity().setType("init-dataflow");

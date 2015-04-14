@@ -47,6 +47,10 @@ public class KafkaDataflowTest extends DataflowTest {
     if(debugDataflowWorker) {
       RegistryDebugger workerDebugger = shell.getScribenginClient().getDataflowWorkerDebugger(System.out, dataflowName) ;
     }
+    
+    if(debugDataflowActivity) {
+      RegistryDebugger activityDebugger = shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName);
+    }
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);

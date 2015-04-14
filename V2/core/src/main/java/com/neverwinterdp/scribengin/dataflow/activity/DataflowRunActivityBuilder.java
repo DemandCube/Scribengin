@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
-import java.util.Random;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Registry;
@@ -26,7 +24,7 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
   public DataflowRunActivityBuilder( DataflowDescriptor dflDescriptor) {
     getActivity().setDescription("Run Dataflow Activity");
     getActivity().setType("run-dataflow");
-    getActivity().withCoordinator(InitActivityCoordinator.class);
+    getActivity().withCoordinator(RunActivityCoordinator.class);
     for(int i = 0; i < dflDescriptor.getNumberOfWorkers(); i++) {
       add(new ActivityStep().
           withType("create-dataflow-worker").
@@ -36,7 +34,7 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class InitActivityCoordinator extends ActivityCoordinator {
+  static public class RunActivityCoordinator extends ActivityCoordinator {
     @Inject
     DataflowActivityStepWorkerService activityStepWorkerService;
    

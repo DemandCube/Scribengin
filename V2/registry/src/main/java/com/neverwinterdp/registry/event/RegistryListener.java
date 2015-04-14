@@ -73,13 +73,9 @@ public class RegistryListener {
     } else {
       NodeWatcher createWatcher = new NodeWatcher() {
         @Override
-        public void onEvent(NodeEvent event) {
+        public void onEvent(NodeEvent event) throws Exception {
           if(event.getType() == NodeEvent.Type.CREATE) {
-            try {
-              watchChildren(path, nodeWatcher, persistent);
-            } catch (RegistryException e) {
-              e.printStackTrace();
-            }
+            watchChildren(path, nodeWatcher, persistent);
           }
         }
       };
@@ -154,6 +150,9 @@ public class RegistryListener {
         }
       }
       nodeWatcher.onEvent(event);
+      if(event.getType() == NodeEvent.Type.DELETE) {
+        setComplete() ;
+      }
     }
     
     abstract protected void doWatch(NodeEvent event) throws RegistryException ;
@@ -193,13 +192,25 @@ public class RegistryListener {
     
     @Override
     public void onEvent(NodeEvent event) throws Exception {
+      System.err.println("SelectChildNodeWatcher " + event.getPath() + ", EVENT = " + event.getType());
       if(event.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
         updateChildrenWatch();
       }
     }
     
     synchronized void updateChildrenWatch() throws Exception {
-      List<String> childNames = registry.getChildren(path);
+      List<String> childNames = null;
+      try {
+        childNames = registry.getChildren(path);
+      } catch(RegistryException ex) {
+        if(ex.getErrorCode() == ErrorCode.NoNode) {
+          setComplete() ;
+          return ;
+        } else {
+          throw ex ;
+        }
+      }
+      System.err.println("UPDATE CHILDREN WATCH " + path);
       HashSet<String> childrenSet = new HashSet<String>() ;
       for(String childName : childNames) {
         childrenSet.add(childName) ;
@@ -212,6 +223,7 @@ public class RegistryListener {
             watchedChildren.add(childName);
             watchModify(childPath, watcher, true);
             watcher.onEvent(new NodeEvent(childPath, NodeEvent.Type.CREATE));
+            System.err.println("DETECT NEW CHILD " + childPath + ", watcher = " + watcher);
           }
         }
       }

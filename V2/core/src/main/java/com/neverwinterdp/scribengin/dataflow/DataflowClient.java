@@ -5,6 +5,7 @@ import java.util.List;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.ScribenginClient;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.vm.VMDescriptor;
 
@@ -32,8 +33,8 @@ public class DataflowClient {
     return dflRegistry.getActiveWorkers();
   }
   
-  public void setDataflowTaskEvent(DataflowTaskEvent event) throws RegistryException {
-    dflRegistry.setDataflowTaskMasterEvent(event);
+  public void setDataflowTaskEvent(DataflowEvent event) throws RegistryException {
+    dflRegistry.broadcastDataflowEvent(event);
   }
   
   public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {

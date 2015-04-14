@@ -16,6 +16,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.activity.util.ActiveActivityNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowWorkerNodeDebugger;
@@ -142,6 +143,13 @@ public class ScribenginClient {
     String taskAssignedPath = ScribenginService.getDataflowPath(dataflowName) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
     debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger());
+    return debugger ;
+  }
+  
+  public RegistryDebugger getDataflowActivityDebugger(Appendable out, String dataflowName) throws RegistryException {
+    String activeActivitiesPath = ScribenginService.getDataflowPath(dataflowName) + "/activities/active" ;
+    RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
+    debugger.watchChild(activeActivitiesPath, ".*", new ActiveActivityNodeDebugger());
     return debugger ;
   }
   

@@ -28,7 +28,7 @@ public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
     StringBuilder b = new StringBuilder() ;
     try {
       if(!taskDescriptorNode.exists()){
-        return "Dataflow task node is already deleted or moved to the history";
+        return "Dataflow task activityNode is already deleted or moved to the history";
       }
       
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);

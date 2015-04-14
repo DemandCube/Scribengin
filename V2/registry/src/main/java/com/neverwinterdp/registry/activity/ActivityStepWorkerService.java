@@ -66,9 +66,11 @@ public class ActivityStepWorkerService<T> {
             service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
             ActivityStepExecutor executor = 
                 service.getActivityStepExecutor(activityStepWorkUnit.getActivityStep().getExecutor());
-            executor.execute(activityStepWorkUnit.getActivity(), activityStepWorkUnit.getActivityStep());
+            executor.execute(activity, activityStep);
           } catch (Exception e) {
+            activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
             e.printStackTrace();
+            return;
           } finally {
             service.updateActivityStepFinished(activity, activityStep);
           }

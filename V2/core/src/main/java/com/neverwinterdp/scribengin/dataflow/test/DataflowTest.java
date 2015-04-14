@@ -46,6 +46,9 @@ abstract public class DataflowTest {
   @Parameter(names = "--debug-dataflow-worker", description = "Enable the debug dataflow worker")
   protected boolean debugDataflowWorker = false;
   
+  @Parameter(names = "--debug-dataflow-activity", description = "Enable the debug dataflow worker")
+  protected boolean debugDataflowActivity = false;
+  
   @Parameter(names = "--dump-registry", description = "Enable to dump the registry at the end")
   protected boolean dumpRegistry = false;
   
