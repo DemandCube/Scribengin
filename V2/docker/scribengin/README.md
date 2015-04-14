@@ -150,11 +150,26 @@ The cluster.sh contains several command and sub commands to launch and manage th
 
 #####To run scribengin and the required components **(while logged into hadoop-master)**
 
-We need to go to the /opt directory and run the ./cluster start --clean command
+We need to go to the /opt/cluster directory and run the ```python ./clusterCommander.py``` command with required options
 
 ````
-$cd /opt
-$./cluster.sh start --clean
+$cd /opt/cluster
+#To start zookeeper
+$python ./clusterCommander.py zookeeper --clean --start
+#To start zookeeper, kafka
+$python ./clusterCommander.py zookeeper --clean --start kafka --clean --start
+#To start zookeeper, kafka, hadoop
+$python ./clusterCommander.py zookeeper --clean --start kafka --clean --start hadoop --clean --start
+````
+Examples to print usage of clusterCommander.py:
+
+````
+$python ./clusterCommander.py --help
+#For subcommand help
+$python ./clusterCommander.py zookeeper --help
+$python ./clusterCommander.py kafka --help
+$python ./clusterCommander.py hadoop --help
+
 ````
 
 #####To access the webui:
@@ -165,13 +180,15 @@ $./cluster.sh start --clean
 #####To stop the cluster
 
 ````
-  ./cluster.sh stop
+ $python ./clusterCommander.py kafka --stop zookeeper --stop hadoop --stop
 ````
 
 But I think currently there is a bug with zookeeper or kafka shutdown script. You better use the command
+
 ````
-  ./cluster.sh exec "pkill -9 java"
+ $python ./clusterCommander.py exec "pkill -9 java"
 ````
+
 This command will kill all the java processes on all the  machines
 
 
