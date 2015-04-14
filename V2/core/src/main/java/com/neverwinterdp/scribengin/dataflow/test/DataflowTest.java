@@ -11,7 +11,9 @@ import org.tap4j.producer.TapProducerFactory;
 import org.tap4j.util.StatusValues;
 
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.Record;
+import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskContext;
@@ -77,6 +79,30 @@ abstract public class DataflowTest {
     TabularFormater dataflowEventInfo = waitingEventListener.getTabularFormaterEventLogInfo() ;
     dataflowEventInfo.setTitle("Dataflow event log info");
     shell.console().println(dataflowEventInfo.getFormatText()) ;
+  }
+  
+  //TODO implement correctlly
+  protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
+    if(debugDataflowTask) {
+      RegistryDebugger taskDebugger = shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName);
+    }
+    if(debugDataflowWorker) {
+      RegistryDebugger workerDebugger = shell.getScribenginClient().getDataflowWorkerDebugger(System.out, dataflowName);
+    }
+
+    if(debugDataflowActivity) {
+      RegistryDebugger activityDebugger = shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName);
+    }
+
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+
+    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
+    dataflowInfoThread.start();
+
+    waitingEventListener.waitForEvents(duration);
+    dataflowInfoThread.interrupt();
+
+    report(shell, waitingEventListener) ;
   }
   
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {

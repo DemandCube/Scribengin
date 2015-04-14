@@ -1,17 +1,17 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -54,15 +54,15 @@ public class DataflowKafkaToKafkaUnitTest {
 
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
-      Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
+      assertEquals(2, scribenginClient.getScribenginMasters().size());
       
       DataflowClient dataflowClient = scribenginClient.getDataflowClient("kafka-to-kafka");
-      Assert.assertEquals("kafka-to-kafka-master-1", dataflowClient.getDataflowMaster().getId());
-      Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
+      assertEquals("kafka-to-kafka-master-1", dataflowClient.getDataflowMaster().getId());
+      assertEquals(1, dataflowClient.getDataflowMasters().size());
       
       VMClient vmClient = scribenginClient.getVMClient();
       List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
-      Assert.assertEquals(3, dataflowWorkers.size());
+      assertEquals(3, dataflowWorkers.size());
       vmClient.shutdown(dataflowWorkers.get(0));
       submitter.waitForTermination(300000);
     } catch(Throwable err) {

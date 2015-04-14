@@ -62,6 +62,9 @@ class Server(object):
     for key in self.processes:
       self.processes[key].kill()
   
+  def sshExecute(self, command):
+      self.processes.values()[0].sshExecute(command)
+      
   def getReportDict(self):
     procDict= {}
     for key in self.processes:

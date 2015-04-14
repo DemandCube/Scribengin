@@ -1,3 +1,8 @@
+#! /bin/sh
+""":"
+exec python $0 ${1+"$@"}
+"""
+
 import click, logging, multiprocessing, signal
 from sys import stdout, exit
 from time import sleep
@@ -37,6 +42,57 @@ def status(role):
     cluster = cluster.getServersByRole(role)
   
   click.echo(cluster.getReport())
+
+@mastercommand.command("cluster", help="Cluster commands")
+@click.option('--restart',           is_flag=True, help="restart cluster")
+@click.option('--start',             is_flag=True, help="start cluster")
+@click.option('--stop',              is_flag=True, help="stop cluster")
+@click.option('--force-stop',        is_flag=True, help="kill cluster")
+@click.option('--clean',             is_flag=True, help="Clean old cluster data")
+@click.option('--wait-before-start', default=0,    help="Time to wait before restarting cluster (seconds)")
+@click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing cluster (seconds)")
+@click.option('--kafka-server-config',   default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties')
+@click.option('--execute',                        help='execute given command on all nodes')
+def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_before_kill, kafka_server_config, execute):
+  cluster = Cluster()
+  
+  if(execute is not None):
+    cluster.sshExecute(execute)
+    
+  if(restart or stop):
+    logging.debug("Shutting down Cluster")
+    cluster.shutdownKafka()
+    cluster.shutdownZookeeper()
+    cluster.shutdownHadoopWorker()
+    cluster.shutdownHadoopMaster()
+  
+  if(force_stop):
+    logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
+    sleep(wait_before_kill)
+    logging.debug("Force Killing Cluster")
+    cluster.killKafka()
+    cluster.killZookeeper()
+    cluster.killHadoopWorker()
+    cluster.killHadoopMaster()
+  
+  if(clean):
+    logging.debug("Cleaning Kafka")
+    cluster.cleanKafka()
+    cluster.cleanZookeeper()
+    cluster.cleanHadoopWorker()
+    cluster.cleanHadoopMaster()
+  
+  if(restart or start):
+    logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    sleep(wait_before_start)
+    logging.debug("Starting Cluster")
+    cluster.paramDict["server_config"] = kafka_server_config
+    cluster.startZookeeper()
+    cluster.startKafka()
+    cluster.startHadoopMaster()
+    cluster.startHadoopWorker()
+    
+  click.echo(cluster.getReport())  
   
 @mastercommand.command("kafka", help="Kafka commands")
 @click.option('--restart',           is_flag=True, help="restart kafka brokers")
