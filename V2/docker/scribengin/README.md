@@ -43,19 +43,26 @@ The post-install.sh script run the commands to:
 #####The docker.sh file
 
 ````
-The cluster.sh script options: 
-Command image consists of the sub commands: 
-build                 : To build the ubuntu os image with the required components
-clean                 : To remove the image
-Command container consists of the sub commands: 
-run                   : To run the containers(hadoop, zookeeper, kafka...)
-  clean                 : To remove and destroy all the running containers
-  login                 : To login the given containeri name or id  with the root user
-  update-hosts          : To update the /etc/hosts in all the running containers
+###################################################################################
+docker.sh usage
+###################################################################################
+Cluster command options: 
+  Command image consists of the sub commands: 
+    build                 : To build the ubuntu os image with the required components
+    clean                 : To remove the image
+  Command container consists of the sub commands: 
+    run                   : To run the containers(hadoop, zookeeper, kafka...)
+    run --spare-zookeeper : Number of spare zookeeper servers to launch
+    run --spare-kafka     : Number of spare kafka servers to launch
+    run --spare-hadoop    : Number of spare hadoop-worker servers to launch
+    clean                 : To remove and destroy all the running containers
+    login                 : To login the given containeri name or id  with the root user
+    update-hosts          : To update the /etc/hosts in all the running containers
   Other commands:
-  ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command
-  scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container
-  update-hosts		: The update-hosts use to update /etc/hosts file of the host machine with docker containers details
+    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command
+    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container
+    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC
+    host-sync             : Run this to run "./scribengin.sh build" and then sync the release folder and post-install with your cluster.
 ````
 
 #To build the Docker cluster and run Scribengin#
@@ -144,13 +151,9 @@ $./docker.sh ssh neverwinterdp@hadoop-master
 #Password is 'neverwinterdp'
 ````
 
-#####The bootstrap/post-install/cluster.sh file
-
-The cluster.sh contains several command and sub commands to launch and manage the different components of the cluster
-
 #####To run scribengin and the required components **(while logged into hadoop-master)**
 
-We need to go to the /opt/cluster directory and run the ```python ./clusterCommander.py``` command with required options
+We need to go to the /opt/cluster directory and run the ```./clusterCommander.py``` command with required options. The clusterCommander.py contains several command and sub commands to launch and manage the different components of the cluster
 
 ````
 $cd /opt/cluster
@@ -159,23 +162,31 @@ $cd /opt/cluster
 $./setup.sh
 
 #To start zookeeper
-$python ./clusterCommander.py zookeeper --clean --start
+$./clusterCommander.py zookeeper --clean --start
 
-#To start zookeeper, kafka
-$python ./clusterCommander.py zookeeper --clean --start kafka --clean --start
+#To start kafka
+$./clusterCommander.py kafka --clean --start
 
-#To start zookeeper, kafka, hadoop
-$python ./clusterCommander.py zookeeper --clean --start kafka --clean --start hadoop --clean --start
+#To start hadoop
+$./clusterCommander.py hadoop --clean --start
+
+#To start kafka along with zookeeper
+$./clusterCommander.py zookeeper --clean --start kafka --clean --start
+
+#To start all at once
+$./clusterCommander.py cluster --clean --start
 ````
 Examples to print usage of clusterCommander.py:
 
 ````
-$python ./clusterCommander.py --help
+$./clusterCommander.py --help
 
 #For subcommand help
-$python ./clusterCommander.py zookeeper --help
-$python ./clusterCommander.py kafka --help
-$python ./clusterCommander.py hadoop --help
+$./clusterCommander.py zookeeper --help
+$./clusterCommander.py kafka --help
+$./clusterCommander.py hadoop --help
+$./clusterCommander.py cluster --help
+$./clusterCommander.py monitor --help
 
 ````
 
@@ -187,17 +198,17 @@ $python ./clusterCommander.py hadoop --help
 #####To stop the cluster
 
 ````
- $python ./clusterCommander.py kafka --stop zookeeper --stop hadoop --stop
+ $./clusterCommander.py cluster --stop
 ````
-
-But I think currently there is a bug with zookeeper or kafka shutdown script. You better use the command
+#####To run specific command on all nodes in the cluster
+````
+ $./clusterCommander.py cluster --execute "<command>"
+````
+If zookeeper, kafka or hadoop failed to shutdown due to any bug in shutdown script. You can force kill all process using 
 
 ````
- $python ./clusterCommander.py exec="pkill -9 java"
+ $./clusterCommander.py cluster --force-stop
 ````
-
-This command will kill all the java processes on all the  machines
-
 
 #Build and run Scribengin#
 
@@ -217,11 +228,19 @@ To package the scribengin code
 
 *To run the scribengin we will need:*
 
-Launch the dependencies such zookeeper , kafka, hadoop. The script
+Launch the dependencies such zookeeper , kafka, hadoop. 
+You may login to any containers with the neverwinterdp user. The password of the neverwinterdp user is **'neverwinterdp'**
 
 ````
-  cd path-to/Scribengin/V2/docker/scribengin/bootstrap/post-install/
-  ./cluster.sh start --clean
+$./docker.sh ssh neverwinterdp@hadoop-master
+#Password is 'neverwinterdp'
+````
+Then run the script
+
+````
+  $cd /opt/cluster/
+  $./setup.sh
+  $./clusterCommander.py cluster --clean --start
 ````
 
 will help to launch the zookeeper , kafka and hadoop.

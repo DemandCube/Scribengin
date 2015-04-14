@@ -48,6 +48,9 @@ abstract public class DataflowTest {
   @Parameter(names = "--debug-dataflow-worker", description = "Enable the debug dataflow worker")
   protected boolean debugDataflowWorker = false;
   
+  @Parameter(names = "--debug-dataflow-activity", description = "Enable the debug dataflow worker")
+  protected boolean debugDataflowActivity = false;
+  
   @Parameter(names = "--dump-registry", description = "Enable to dump the registry at the end")
   protected boolean dumpRegistry = false;
   
@@ -78,21 +81,27 @@ abstract public class DataflowTest {
     shell.console().println(dataflowEventInfo.getFormatText()) ;
   }
   
- protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
+  //TODO implement correctlly
+  protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
     if(debugDataflowTask) {
       RegistryDebugger taskDebugger = shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName);
     }
     if(debugDataflowWorker) {
       RegistryDebugger workerDebugger = shell.getScribenginClient().getDataflowWorkerDebugger(System.out, dataflowName);
     }
+
+    if(debugDataflowActivity) {
+      RegistryDebugger activityDebugger = shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName);
+    }
+
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-    
+
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
 
     waitingEventListener.waitForEvents(duration);
     dataflowInfoThread.interrupt();
-  
+
     report(shell, waitingEventListener) ;
   }
   

@@ -29,6 +29,7 @@ abstract public class NodeEventWatcher extends NodeWatcher {
       throw new RegistryException(ErrorCode.Unknown, "Already watched " + watchedPath) ;
     }
     registry.watchModify(path, this);
+    watchedPath = path;
   }
   
   public void watchExists(String path) throws RegistryException {
@@ -36,6 +37,7 @@ abstract public class NodeEventWatcher extends NodeWatcher {
       throw new RegistryException(ErrorCode.Unknown, "Already watched " + watchedPath) ;
     }
     registry.watchExists(path, this);
+    watchedPath = path;
   }
   
   @Override

@@ -22,6 +22,7 @@ import com.neverwinterdp.scribengin.storage.source.SourceFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 
 public class DataflowInitActivityBuilder extends ActivityBuilder {
+  
   public DataflowInitActivityBuilder( DataflowDescriptor dflDescriptor) {
     getActivity().setDescription("Init Dataflow Activity");
     getActivity().setType("init-dataflow");
@@ -49,32 +50,28 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
 
     @Override
-    public void execute(Activity activity, ActivityStep step) {
-      try {
-        DataflowDescriptor dataflowDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
-        SourceFactory sourceFactory = service.getSourceFactory();
-        SinkFactory sinkFactory = service.getSinkFactory() ;
+    public void execute(Activity activity, ActivityStep step) throws Exception {
+      DataflowDescriptor dataflowDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
+      SourceFactory sourceFactory = service.getSourceFactory();
+      SinkFactory sinkFactory = service.getSinkFactory() ;
 
-        Source source    = sourceFactory.create(dataflowDescriptor.getSourceDescriptor()) ;
-        Map<String, Sink> sinks = new HashMap<String, Sink>();
-        for(Map.Entry<String, StorageDescriptor> entry : dataflowDescriptor.getSinkDescriptors().entrySet()) {
-          Sink sink = sinkFactory.create(entry.getValue());
-          sinks.put(entry.getKey(), sink);
-        }
+      Source source    = sourceFactory.create(dataflowDescriptor.getSourceDescriptor()) ;
+      Map<String, Sink> sinks = new HashMap<String, Sink>();
+      for(Map.Entry<String, StorageDescriptor> entry : dataflowDescriptor.getSinkDescriptors().entrySet()) {
+        Sink sink = sinkFactory.create(entry.getValue());
+        sinks.put(entry.getKey(), sink);
+      }
 
-        SourceStream[] sourceStream = source.getStreams();
-        for(int i = 0; i < sourceStream.length; i++) {
-          DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
-          descriptor.setId(i);
-          descriptor.setScribe(dataflowDescriptor.getScribe());
-          descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
-          for(Map.Entry<String, Sink> entry : sinks.entrySet()) {
-            descriptor.add(entry.getKey(), entry.getValue().newStream().getDescriptor());
-          }
-          service.addAvailableTask(descriptor);
+      SourceStream[] sourceStream = source.getStreams();
+      for(int i = 0; i < sourceStream.length; i++) {
+        DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
+        descriptor.setId(i);
+        descriptor.setScribe(dataflowDescriptor.getScribe());
+        descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
+        for(Map.Entry<String, Sink> entry : sinks.entrySet()) {
+          descriptor.add(entry.getKey(), entry.getValue().newStream().getDescriptor());
         }
-      } catch (Exception e) {
-        e.printStackTrace();
+        service.addAvailableTask(descriptor);
       }
     }
   }

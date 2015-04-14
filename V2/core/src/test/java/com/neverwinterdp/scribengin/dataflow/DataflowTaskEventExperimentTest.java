@@ -12,7 +12,7 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskEvent;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -65,10 +65,10 @@ public class DataflowTaskEventExperimentTest {
       List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
       Assert.assertEquals(2, dataflowWorkers.size());
       
-      dflClient.setDataflowTaskEvent(DataflowTaskEvent.STOP);
+      dflClient.setDataflowTaskEvent(DataflowEvent.STOP);
       Thread.sleep(5000);
       shell.execute("registry dump");
-      dflClient.setDataflowTaskEvent(DataflowTaskEvent.RESUME);
+      dflClient.setDataflowTaskEvent(DataflowEvent.RESUME);
       Thread.sleep(5000);
       shell.execute("registry dump");
       submitter.waitForTermination(60000);

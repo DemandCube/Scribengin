@@ -15,7 +15,7 @@ import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskEvent;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 
 @Singleton
 @JmxBean("role=dataflow-worker, type=DataflowTaskExecutorService, dataflowName=DataflowTaskExecutorService")
@@ -87,10 +87,10 @@ public class DataflowTaskExecutorService {
     @Override
     public void processNodeEvent(NodeEvent event) throws Exception {
       if(event.getType() == NodeEvent.Type.MODIFY) {
-        DataflowTaskEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowTaskEvent.class);
-        if(taskEvent == DataflowTaskEvent.PAUSE) {
+        DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
+        if(taskEvent == DataflowEvent.PAUSE) {
           if(isAlive()) shutdown() ;
-        } else if(taskEvent == DataflowTaskEvent.STOP) {
+        } else if(taskEvent == DataflowEvent.STOP) {
           if(isAlive()) shutdown() ;
         }
       }

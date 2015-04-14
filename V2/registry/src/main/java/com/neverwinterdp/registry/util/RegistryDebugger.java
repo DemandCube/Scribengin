@@ -50,6 +50,10 @@ public class RegistryDebugger {
     registryListener.watchChild(path, childExp, new NodeDebuggerWatcher(nodeDebugger));
   }
   
+  public void watchChild(String path, String childExp, NodeFormatter formater) throws RegistryException {
+    registryListener.watchChild(path, childExp, new NodeFormatterWatcher(formater));
+  }
+  
   public void println(String text) throws IOException {
     out.append(text).append("\n") ;
   }
@@ -62,15 +66,11 @@ public class RegistryDebugger {
     }
     
     @Override
-    public void onEvent(NodeEvent event) {
-      try {
-        Node node = registryListener.getRegistry().get(event.getPath());
-        String text = formater.getFormattedText();
-        println("RegistryDebugger: Node = " + node.getPath() + ", event = " + event.getType()) ;
-        println(text) ;
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    public void onEvent(NodeEvent event) throws Exception {
+      Node node = registryListener.getRegistry().get(event.getPath());
+      String text = formater.getFormattedText();
+      println("RegistryDebugger: Node = " + node.getPath() + ", event = " + event.getType()) ;
+      println(text) ;
     }
   }
   

@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
-import java.util.Random;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Registry;
@@ -26,7 +24,7 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
   public DataflowRunActivityBuilder( DataflowDescriptor dflDescriptor) {
     getActivity().setDescription("Run Dataflow Activity");
     getActivity().setType("run-dataflow");
-    getActivity().withCoordinator(InitActivityCoordinator.class);
+    getActivity().withCoordinator(RunActivityCoordinator.class);
     for(int i = 0; i < dflDescriptor.getNumberOfWorkers(); i++) {
       add(new ActivityStep().
           withType("create-dataflow-worker").
@@ -36,7 +34,7 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class InitActivityCoordinator extends ActivityCoordinator {
+  static public class RunActivityCoordinator extends ActivityCoordinator {
     @Inject
     DataflowActivityStepWorkerService activityStepWorkerService;
    
@@ -52,36 +50,32 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
     
     @Override
-    public void execute(Activity activity, ActivityStep step) {
-      try {
-        DataflowDescriptor dflDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
-    
-        DataflowRegistry dataflowRegistry = service.getDataflowRegistry();
-        Registry registry = dataflowRegistry.getRegistry();
-        RegistryConfig registryConfig = registry.getRegistryConfig();
-    
-        VMConfig vmConfig = new VMConfig();
-        vmConfig.
-          setEnvironment(service.getVMConfig().getEnvironment()).
-          setName(dflDescriptor.getName() + "-worker-" + step.attribute("worker.id")).
-          addRoles("dataflow-worker").
-          setRegistryConfig(registryConfig).
-          setVmApplication(VMDataflowWorkerApp.class.getName()).
-          addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath()).
-          setHadoopProperties(service.getVMConfig().getHadoopProperties());
-    
-        String dataflowAppHome = dflDescriptor.getDataflowAppHome();
-        if(dataflowAppHome != null) {
-          vmConfig.setAppHome(dataflowAppHome);
-          vmConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
-        }
+    public void execute(Activity activity, ActivityStep step) throws Exception {
+      DataflowDescriptor dflDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
 
-        VMClient vmClient = new VMClient(registry);
-        VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
-        service.addWorker(vmDescriptor);
-      } catch (Exception e) {
-        e.printStackTrace();
+      DataflowRegistry dataflowRegistry = service.getDataflowRegistry();
+      Registry registry = dataflowRegistry.getRegistry();
+      RegistryConfig registryConfig = registry.getRegistryConfig();
+
+      VMConfig vmConfig = new VMConfig();
+      vmConfig.
+      setEnvironment(service.getVMConfig().getEnvironment()).
+      setName(dflDescriptor.getName() + "-worker-" + step.attribute("worker.id")).
+      addRoles("dataflow-worker").
+      setRegistryConfig(registryConfig).
+      setVmApplication(VMDataflowWorkerApp.class.getName()).
+      addProperty("dataflow.registry.path", dataflowRegistry.getDataflowPath()).
+      setHadoopProperties(service.getVMConfig().getHadoopProperties());
+
+      String dataflowAppHome = dflDescriptor.getDataflowAppHome();
+      if(dataflowAppHome != null) {
+        vmConfig.setAppHome(dataflowAppHome);
+        vmConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
       }
+
+      VMClient vmClient = new VMClient(registry);
+      VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
+      service.addWorker(vmDescriptor);
     }
   }
 }

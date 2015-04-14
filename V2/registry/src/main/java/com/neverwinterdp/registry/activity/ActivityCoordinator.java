@@ -24,14 +24,14 @@ abstract public class ActivityCoordinator {
   
   public void onStart(ActivityService service, Activity activity) throws RegistryException {
     Node activityNode = service.getActivityNode(activity);
-    registryListener.watch(activityNode.getPath(), new ActivityNodeWatcher());
+    //registryListener.watch(activityNode.getPath(), new ActivityNodeWatcher());
     List<ActivityStep> nextSteps = findNextActivitySteps(service, activity);
     for(int i = 0; i < nextSteps.size(); i++) {
       ActivityStep nextStep = nextSteps.get(i);
       nextStep.setStatus(ActivityStep.Status.ASSIGNED);
       schedule(service, activity, nextStep);
     }
-    System.err.println("ActivityCoordinator: onStart  " + activity.getDescription());
+    //System.err.println("ActivityCoordinator: onStart  " + activity.getDescription());
   }
   
   public void onResume(ActivityService service, Activity activity) {
@@ -42,7 +42,6 @@ abstract public class ActivityCoordinator {
   }
   
   public void onBroken(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
-    //reexecute the step
     schedule(service, activity, step);
   }
   
@@ -65,7 +64,7 @@ abstract public class ActivityCoordinator {
     synchronized(this) {
       notifyAll();
     }
-    System.err.println("ActivityCoordinator: onFinish  " + activity.getDescription());
+    //System.err.println("ActivityCoordinator: onFinish  " + activity.getDescription());
   }
   
   synchronized public void waitForTermination(long timeout) throws InterruptedException {
@@ -114,7 +113,7 @@ abstract public class ActivityCoordinator {
     
     @Override
     public void onEvent(NodeEvent event) {
-      System.err.println("ActivityStepNodeWatcher: event = " + event.getType() + ", path = " + event.getPath());
+      //System.err.println("ActivityStepNodeWatcher: event = " + event.getType() + ", path = " + event.getPath());
       Activity activity = null ;
       ActivityStep activityStep = null ;
       try {

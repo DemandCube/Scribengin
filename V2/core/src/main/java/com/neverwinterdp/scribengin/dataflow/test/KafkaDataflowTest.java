@@ -42,6 +42,4 @@ public class KafkaDataflowTest extends DataflowTest {
       shell.execute("registry dump");
     }
   }
-
-
 }

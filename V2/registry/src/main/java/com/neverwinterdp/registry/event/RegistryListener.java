@@ -73,13 +73,9 @@ public class RegistryListener {
     } else {
       NodeWatcher createWatcher = new NodeWatcher() {
         @Override
-        public void onEvent(NodeEvent event) {
+        public void onEvent(NodeEvent event) throws Exception {
           if(event.getType() == NodeEvent.Type.CREATE) {
-            try {
-              watchChildren(path, nodeWatcher, persistent);
-            } catch (RegistryException e) {
-              e.printStackTrace();
-            }
+            watchChildren(path, nodeWatcher, persistent);
           }
         }
       };
@@ -154,6 +150,9 @@ public class RegistryListener {
         }
       }
       nodeWatcher.onEvent(event);
+      if(event.getType() == NodeEvent.Type.DELETE) {
+        setComplete() ;
+      }
     }
     
     abstract protected void doWatch(NodeEvent event) throws RegistryException ;
@@ -199,7 +198,17 @@ public class RegistryListener {
     }
     
     synchronized void updateChildrenWatch() throws Exception {
-      List<String> childNames = registry.getChildren(path);
+      List<String> childNames = null;
+      try {
+        childNames = registry.getChildren(path);
+      } catch(RegistryException ex) {
+        if(ex.getErrorCode() == ErrorCode.NoNode) {
+          setComplete() ;
+          return ;
+        } else {
+          throw ex ;
+        }
+      }
       HashSet<String> childrenSet = new HashSet<String>() ;
       for(String childName : childNames) {
         childrenSet.add(childName) ;
