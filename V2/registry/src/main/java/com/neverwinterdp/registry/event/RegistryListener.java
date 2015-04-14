@@ -192,7 +192,6 @@ public class RegistryListener {
     
     @Override
     public void onEvent(NodeEvent event) throws Exception {
-      System.err.println("SelectChildNodeWatcher " + event.getPath() + ", EVENT = " + event.getType());
       if(event.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
         updateChildrenWatch();
       }
@@ -210,7 +209,6 @@ public class RegistryListener {
           throw ex ;
         }
       }
-      System.err.println("UPDATE CHILDREN WATCH " + path);
       HashSet<String> childrenSet = new HashSet<String>() ;
       for(String childName : childNames) {
         childrenSet.add(childName) ;
@@ -223,7 +221,6 @@ public class RegistryListener {
             watchedChildren.add(childName);
             watchModify(childPath, watcher, true);
             watcher.onEvent(new NodeEvent(childPath, NodeEvent.Type.CREATE));
-            System.err.println("DETECT NEW CHILD " + childPath + ", watcher = " + watcher);
           }
         }
       }
