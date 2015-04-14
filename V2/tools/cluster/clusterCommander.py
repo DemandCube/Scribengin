@@ -1,3 +1,8 @@
+#! /bin/sh
+""":"
+exec python $0 ${1+"$@"}
+"""
+
 import click, logging, multiprocessing, signal
 from sys import stdout, exit
 from time import sleep
