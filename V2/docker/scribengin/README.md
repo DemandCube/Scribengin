@@ -154,10 +154,16 @@ We need to go to the /opt/cluster directory and run the ```python ./clusterComma
 
 ````
 $cd /opt/cluster
+
+#Install required libraries for python
+$./setup.sh
+
 #To start zookeeper
 $python ./clusterCommander.py zookeeper --clean --start
+
 #To start zookeeper, kafka
 $python ./clusterCommander.py zookeeper --clean --start kafka --clean --start
+
 #To start zookeeper, kafka, hadoop
 $python ./clusterCommander.py zookeeper --clean --start kafka --clean --start hadoop --clean --start
 ````
@@ -165,6 +171,7 @@ Examples to print usage of clusterCommander.py:
 
 ````
 $python ./clusterCommander.py --help
+
 #For subcommand help
 $python ./clusterCommander.py zookeeper --help
 $python ./clusterCommander.py kafka --help
@@ -186,7 +193,7 @@ $python ./clusterCommander.py hadoop --help
 But I think currently there is a bug with zookeeper or kafka shutdown script. You better use the command
 
 ````
- $python ./clusterCommander.py exec "pkill -9 java"
+ $python ./clusterCommander.py exec="pkill -9 java"
 ````
 
 This command will kill all the java processes on all the  machines
