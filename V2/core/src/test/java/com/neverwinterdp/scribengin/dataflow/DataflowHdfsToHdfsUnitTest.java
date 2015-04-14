@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
@@ -34,7 +35,7 @@ public class DataflowHdfsToHdfsUnitTest {
 
   @After
   public void teardown() throws Exception {
-      clusterBuilder.shutdown();
+    clusterBuilder.shutdown();
   }
 
   protected VMClusterBuilder getVMClusterBuilder() throws Exception {
@@ -50,8 +51,6 @@ public class DataflowHdfsToHdfsUnitTest {
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
-
-      shell.execute("registry   dump");
 
       Thread.sleep(3000);
       shell.execute("vm         info");
@@ -69,16 +68,22 @@ public class DataflowHdfsToHdfsUnitTest {
     public void run() {
       try {
         String command =
-            "dataflow-test hdfs " +
-            " --worker 3 " + 
-            " --executor-per-worker 1 " +
-            " --duration 10000" + 
-            " --task-max-execute-time 1000" +
-            " --source-num-of-stream 10" +
-            " --source-max-records-per-stream 1000" +
-            " --source-name hello-source" +
-            " --sink-name   hello-source"+
-            " --junit-report build/junit-report.xml";
+            "dataflow-test " + HDFSDataflowTest.TEST_NAME +
+                " --dataflow-name  hdfs-to-hdfs" +
+                " --worker 3" +
+                " --executor-per-worker 1" +
+                " --duration 90000" +
+                " --task-max-execute-time 1000" +
+                " --source-name output" +
+                " --source-num-of-stream 10" +
+                " --source-write-period 5" +
+                " --source-max-records-per-stream 1000" +
+                " --sink-name output" +
+                " --print-dataflow-info -1" +
+                " --debug-dataflow-task true" +
+                " --debug-dataflow-worker true" +
+                " --junit-report build/junit-report.xml" +
+                " --dump-registry";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();
