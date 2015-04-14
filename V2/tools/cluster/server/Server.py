@@ -3,8 +3,8 @@ from sys import path
 from os.path import join, dirname, abspath, expanduser
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
-from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess  #@UnresolvedImport
-
+from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginProcess  #@UnresolvedImport
+from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Server(object):
   def __init__(self, hostname, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
@@ -111,4 +111,29 @@ class HadoopMasterServer(Server):
     Server.addProcess(self, HadoopDaemonProcess('secondarynamenode',hostname, 'SecondaryNameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('resourcemanager',hostname, 'ResourceManager', "sbin/yarn-daemon.sh"))
     
+class VmMasterServer(Server):
+  def __init__(self, hostname):
+    Server.__init__(self, hostname)
+    self.role = 'vmMaster'
+    Server.addProcess(self, VmMasterProcess('vmmaster',hostname))
+  
+  def getReportDict(self):
+    runningOn = ""
+    yarnConnection = YarnRestApi(self.hostname)
+    for appMaster in yarnConnection.getRunningApplicationMasters()["apps"]["app"]:
+        if "amHostHttpAddress" in appMaster:
+          runningOn = appMaster["amHostHttpAddress"]
     
+    runningOn = runningOn.split(":")[0]
+    procDict = super(VmMasterServer, self).getReportDict()
+    procDict["Hostname"] = runningOn
+    return procDict
+  
+class ScribenginServer(Server):
+  def __init__(self, hostname):
+    Server.__init__(self, hostname)
+    self.hostname = hostname
+    self.role = 'scribengin'
+    Server.addProcess(self, ScribenginProcess('scribengin',hostname))
+  
+  
