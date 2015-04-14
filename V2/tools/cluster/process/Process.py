@@ -57,6 +57,7 @@ class Process(object):
     return self.role
     
   def kill(self):
+    self.printProgress("Killing ")
     pids = self.getRunningPid()
     for pid in pids.split(","):
       self.sshExecute("kill -9 "+pid)
@@ -112,6 +113,7 @@ class KafkaProcess(Process):
     return self.sshExecute( join(self.homeDir, "bin/kafka-server-stop.sh") )
   
   def clean(self):
+    self.printProgress("Cleaning data of ")
     return self.sshExecute("rm -rf "+join(self.homeDir, "data")+ " && rm -rf "+join(self.homeDir, "logs"))
     
 ############
@@ -146,6 +148,7 @@ class ZookeeperProcess(Process):
     return self.sshExecute( join(self.homeDir,"bin/zkServer.sh")+ " stop")
   
   def clean(self):
+    self.printProgress("Cleaning data of ")
     return self.sshExecute("rm -rf "+join(self.homeDir, "data")+ " && rm -rf "+join(self.homeDir, "logs")+" && rm -rf "+ join(self.homeDir, "zookeeper.out"))
 
 ############
@@ -177,4 +180,5 @@ class HadoopDaemonProcess(Process):
     return self.sshExecute(join(self.homeDir, self.hadoopDaemonScriptPath) + " stop " + self.getRole())
   
   def clean(self):
+    self.printProgress("Cleaning data of ")
     return self.sshExecute("rm -rf "+ join(self.homeDir, "data") +" && rm -rf " + join(self.homeDir, "logs") +" && "+ join(self.homeDir, "bin/hdfs") + " namenode -format") 
