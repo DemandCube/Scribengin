@@ -52,7 +52,7 @@ def status(role):
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing cluster (seconds)")
 @click.option('--kafka-server-config',   default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties')
-@click.option('--execute',                        help='execute given command in all nodes in the cluster')
+@click.option('--execute',                        help='execute given command on all nodes')
 def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_before_kill, kafka_server_config, execute):
   cluster = Cluster()
   
