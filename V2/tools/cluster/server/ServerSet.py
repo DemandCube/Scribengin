@@ -8,10 +8,14 @@ class ServerSet(object):
     
   def clear(self):
     self.servers = []
-     
+ 
   def addServer(self, server):
     self.servers.append(server)
   
+  def sshExecute(self, command):
+    for server in self.servers :
+      server.sshExecute(command)
+      
   def startProcessOnHost(self, processName, hostname):
     for server in self.servers :
       if server.getHostname() == hostname:
