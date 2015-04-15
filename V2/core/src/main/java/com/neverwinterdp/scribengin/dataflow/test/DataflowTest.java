@@ -11,7 +11,6 @@ import org.tap4j.producer.TapProducerFactory;
 import org.tap4j.util.StatusValues;
 
 import com.beust.jcommander.Parameter;
-import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -45,11 +44,21 @@ abstract public class DataflowTest {
   @Parameter(names = "--debug-dataflow-task", description = "Enable the debug dataflow task")
   protected boolean debugDataflowTask = false;
   
-  @Parameter(names = "--debug-dataflow-worker", description = "Enable the debug dataflow worker")
-  protected boolean debugDataflowWorker = false;
+  @Parameter(names = "--debug-dataflow-task-detail", description = "Enable detailed debugger")
+  protected boolean detailedDebugDataflowTask = false;
+  
+  @Parameter(names = "--debug-dataflow-vm", description = "Enable the debug dataflow worker")
+  protected boolean debugDataflowVM = false;
+  
+  @Parameter(names = "--debug-dataflow-vm-detail", description = "Enable detailed debugger")
+  protected boolean detailedDebugDataflowVM = false;
   
   @Parameter(names = "--debug-dataflow-activity", description = "Enable the debug dataflow worker")
   protected boolean debugDataflowActivity = false;
+  
+  @Parameter(names = "--debug-dataflow-activity-detail", description = "Enable detailed debugger")
+  protected boolean detailedDebugDataflowActivity = false;
+  
   
   @Parameter(names = "--dump-registry", description = "Enable to dump the registry at the end")
   protected boolean dumpRegistry = false;
@@ -83,15 +92,25 @@ abstract public class DataflowTest {
   
   //TODO implement correctlly
   protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
-    if(debugDataflowTask) {
-      RegistryDebugger taskDebugger = shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName);
+    if(detailedDebugDataflowTask){
+      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName, true);
     }
-    if(debugDataflowWorker) {
-      RegistryDebugger workerDebugger = shell.getScribenginClient().getDataflowWorkerDebugger(System.out, dataflowName);
+    else if(debugDataflowTask) {
+      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName, false);
     }
-
-    if(debugDataflowActivity) {
-      RegistryDebugger activityDebugger = shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName);
+    
+    if(detailedDebugDataflowVM){
+      shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, true);
+    }
+    else if(debugDataflowVM) {
+      shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, false);
+    }
+    
+    if(detailedDebugDataflowActivity){
+      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, true);
+    }
+    else if(debugDataflowActivity) {
+      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, false);
     }
 
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);

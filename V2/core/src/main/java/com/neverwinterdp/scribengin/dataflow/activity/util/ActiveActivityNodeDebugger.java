@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin.dataflow.activity.util;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeDebugger;
+import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 
 /**
@@ -12,20 +13,41 @@ import com.neverwinterdp.registry.util.RegistryDebugger;
  * @author Tuan
  */
 public class ActiveActivityNodeDebugger implements NodeDebugger {
+  boolean detailedDebugger;
 
+  public ActiveActivityNodeDebugger(boolean detailedDebugger){
+    this.detailedDebugger = detailedDebugger;
+  }
+
+  public ActiveActivityNodeDebugger(){
+    this(false);
+  }
+  
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
     registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = CREATE");
-    ActivityNodeFormatter formater = new ActivityNodeFormatter(activityNode);
-    registryDebugger.println(formater.getFormattedText());
-    registryDebugger.watchChild(activityNode.getPath() + "/activity-steps", ".*", formater);
+    NodeFormatter formatter = null;
+    if(this.detailedDebugger){
+      formatter = new ActivityNodeDetailedFormatter(activityNode);
+    }
+    else{
+      formatter = new ActivityNodeSimpleFormatter(activityNode);
+    }
+    registryDebugger.println(formatter.getFormattedText());
+    registryDebugger.watchChild(activityNode.getPath() + "/activity-steps", ".*", formatter);
   }
 
   @Override
   public void onModify(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
     registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = MODIFY");
-    ActivityNodeFormatter formater = new ActivityNodeFormatter(activityNode);
-    registryDebugger.println(formater.getFormattedText());
+    NodeFormatter formatter = null;
+    if(this.detailedDebugger){
+      formatter = new ActivityNodeDetailedFormatter(activityNode);
+    }
+    else{
+      formatter = new ActivityNodeSimpleFormatter(activityNode);
+    }
+    registryDebugger.println(formatter.getFormattedText());
   }
 
   @Override
@@ -34,8 +56,16 @@ public class ActiveActivityNodeDebugger implements NodeDebugger {
     String path = activityNode.getPath();
     path = path.replace("/active/", "/history/");
     Node historyNode = activityNode.getRegistry().get(path);
-    ActivityNodeFormatter formater = new ActivityNodeFormatter(historyNode);
-    registryDebugger.println(formater.getFormattedText());
+    
+    NodeFormatter formatter = null;
+    if(this.detailedDebugger){
+      formatter = new ActivityNodeDetailedFormatter(historyNode);
+    }
+    else{
+      formatter = new ActivityNodeSimpleFormatter(historyNode);
+    }
+    
+    registryDebugger.println(formatter.getFormattedText());
   }
 
 }

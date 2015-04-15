@@ -1,16 +1,14 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
-import java.util.Map;
-
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeDebugger;
+import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.registry.util.RegistryDebugger;
-import com.neverwinterdp.vm.util.VMRegistryFormatter;
 
 
 /**
  * TODO: Here is how the dataflow vm hierachy look like:
- *  workers
+  workers
       history
       active
         kafka-to-kafka-worker-1 - {"path":"/vm/allocated/kafka-to-kafka-worker-1"}
@@ -22,9 +20,9 @@ import com.neverwinterdp.vm.util.VMRegistryFormatter;
         kafka-to-kafka-worker-3 - {"path":"/vm/allocated/kafka-to-kafka-worker-3"}
           executors
             executor-0 - {"id":"executor-0","status":"TERMINATED","assignedTaskIds":[2,4,6,8,1,2,3,5,8
-    status - "FINISH"
-    master
-      leader - {"path":"/vm/allocated/kafka-to-kafka-master-1"}
+  status - "FINISH"
+  master
+    leader - {"path":"/vm/allocated/kafka-to-kafka-master-1"}
  * 
  * 1. rename DataflowWorkerNodeDebugger to DataflowVMDebugger to reflect the role of the class
  * 2. Create a formater that print out the information of the dataflow master and dataflow worker
@@ -34,24 +32,45 @@ import com.neverwinterdp.vm.util.VMRegistryFormatter;
  * Note that we do not need to watch the real vm status or reuse the VMNodeDebugger.
  *
  */
-public class DataflowWorkerNodeDebugger implements NodeDebugger{
+public class DataflowVMDebugger implements NodeDebugger{
+  private boolean detailedDebugger;
+  
+  public DataflowVMDebugger(){
+    this(false);
+  }
+  
+  public DataflowVMDebugger(boolean detailedDebugger){
+    this.detailedDebugger = detailedDebugger;
+  }
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-    //Grabs the path from the activityNode passed in
-    //Adds a watch for the activityNode in that path using VMNodeDebugger
-    registryDebugger.println("DataflowWorkerNodeDebugger: Node = " + node.getPath() + ", Event = CREATE");
-    Map<?,?> nodeData = node.getDataAs(Map.class);
+    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", Event = CREATE");
     
-    Node vmNode = new Node(registryDebugger.getRegistry(), (String)nodeData.get("path"));
-    VMRegistryFormatter vmformatter = new VMRegistryFormatter(vmNode);
+    NodeFormatter formatter = null;
+    if(this.detailedDebugger){
+      formatter = new DataflowVMDetailedFormatter(node);
+      registryDebugger.watchChild(node.getPath()+"/executors", ".*", new DataflowVMDebugger(detailedDebugger));
+    }
+    else{
+      formatter = new DataflowVMSimpleFormatter(node);
+    }
     
-    registryDebugger.watch((String)nodeData.get("path"), vmformatter, true);
-    
+    registryDebugger.println(formatter.getFormattedText());
+    registryDebugger.watchChild(node.getParentNode().getParentPath()+"/master", ".*", new DataflowVMDebugger(detailedDebugger));
   }
 
   @Override
   public void onModify(RegistryDebugger registryDebugger, Node node) throws Exception {
+    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", Event = MODIFY");
+    NodeFormatter formatter = null;
+    if(this.detailedDebugger){
+      formatter = new DataflowVMDetailedFormatter(node);
+    }
+    else{
+      formatter = new DataflowVMSimpleFormatter(node);
+    }
+    registryDebugger.println(formatter.getFormattedText());
   }
 
   @Override

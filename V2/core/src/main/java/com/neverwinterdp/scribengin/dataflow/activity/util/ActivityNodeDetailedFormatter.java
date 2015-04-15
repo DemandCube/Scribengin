@@ -9,17 +9,17 @@ import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.util.text.TabularFormater;
 
-public class ActivityNodeFormatter extends NodeFormatter {
+public class ActivityNodeDetailedFormatter extends NodeFormatter {
   private Node activityNode;
   
-  public ActivityNodeFormatter(Node activityNode){
+  public ActivityNodeDetailedFormatter(Node activityNode){
     this.activityNode = activityNode;
   }
   
   @Override
   public String getFormattedText() {
     StringBuilder b = new StringBuilder() ;
-    b.append("Activity Node: ");
+    b.append("  Activity: ");
     try {
       Activity activity = activityNode.getDataAs(Activity.class);
       if(activity == null) {
@@ -32,14 +32,19 @@ public class ActivityNodeFormatter extends NodeFormatter {
       activityFormater.addRow("Description", activity.getDescription());
       activityFormater.addRow("Type", activity.getType());
       activityFormater.addRow("Coordinator", activity.getCoordinator());
+      activityFormater.setIndent("  ");
       b.append(activityFormater.getFormatText());
       
       List<ActivityStep> steps = activityNode.getChild("activity-steps").getChildrenAs(ActivityStep.class);
-      TabularFormater stepFormater = new TabularFormater("Id", "Type", "Status", "Description");
+      TabularFormater stepFormater = new TabularFormater("Step ID", "Type", "Status", "Description");
+      stepFormater.setIndent("  ");
       for(ActivityStep step : steps) {
         stepFormater.addRow(step.getId(), step.getType(), step.getStatus(), step.getDescription());
       }
+      
+      b.append("\n");
       b.append(stepFormater.getFormatText());
+      
     } catch (RegistryException e) {
       b.append(e.getMessage());
     }
