@@ -120,14 +120,18 @@ class VmMasterServer(Server):
   def getReportDict(self):
     runningOn = ""
     yarnConnection = YarnRestApi(self.hostname)
-    for appMaster in yarnConnection.getRunningApplicationMasters()["apps"]["app"]:
+    runningAppMasters = yarnConnection.getRunningApplicationMasters()
+    if runningAppMasters is not None and "apps" in runningAppMasters and "app" in runningAppMasters["apps"]:
+      for appMaster in runningAppMasters["apps"]["app"]:
         if "amHostHttpAddress" in appMaster:
           runningOn = appMaster["amHostHttpAddress"]
     
-    runningOn = runningOn.split(":")[0]
-    procDict = super(VmMasterServer, self).getReportDict()
-    procDict["Hostname"] = runningOn
-    return procDict
+      runningOn = runningOn.split(":")[0]
+      procDict = super(VmMasterServer, self).getReportDict()
+      procDict["Hostname"] = runningOn
+      return procDict
+    else:
+      return None
   
 class ScribenginServer(Server):
   def __init__(self, hostname):
@@ -136,4 +140,8 @@ class ScribenginServer(Server):
     self.role = 'scribengin'
     Server.addProcess(self, ScribenginProcess('scribengin',hostname))
   
-  
+  def getReportDict(self):
+    for key in self.processes:
+      if not self.processes[key].isRunning():
+        return None
+    return super(ScribenginServer, self).getReportDict()

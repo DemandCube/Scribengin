@@ -11,7 +11,10 @@ class YarnRestApi():
   def getRequest(self, path, payload={}):
     url = "http://"+self.hostname+":"+str(self.port)+"/"+path
     logging.debug("Requesting url: "+url)
-    return json.loads(requests.get(url, params=payload).text)
+    try:
+      return json.loads(requests.get(url, params=payload).text)
+    except:
+      return ""
   
   def getApplicationMasters(self):
     return self.getRequest("ws/v1/cluster/apps")
@@ -26,11 +29,13 @@ class YarnRestApi():
   def getRunningApplicationMasterIds(self):
     ids = ""
     try:
-      for appMaster in self.getRunningApplicationMasters()["apps"]["app"]:
-        if "id" in appMaster:
-          ids = appMaster["id"]+","+ids
+      runningAppMaster = self.getRunningApplicationMasters()
+      if runningAppMaster is not None:
+        for appMaster in runningAppMaster["apps"]["app"]:
+          if "id" in appMaster:
+            ids = appMaster["id"]+","+ids
     except:
-      pass
+      return []
     #Remove last element if its empty
     ids = ids.split(",")
     if ids[-1] == "":
