@@ -107,6 +107,8 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     
   if(restart or stop):
     logging.debug("Shutting down Cluster")
+    cluster.shutdownScribengin()
+    cluster.shutdownVmMaster()
     cluster.shutdownKafka()
     cluster.shutdownZookeeper()
     cluster.shutdownHadoopWorker()
@@ -116,6 +118,8 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
     sleep(wait_before_kill)
     logging.debug("Force Killing Cluster")
+    cluster.shutdownScribengin()
+    cluster.shutdownVmMaster()
     cluster.killKafka()
     cluster.killZookeeper()
     cluster.killHadoopWorker()
@@ -137,6 +141,8 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     cluster.startKafka()
     cluster.startHadoopMaster()
     cluster.startHadoopWorker()
+    cluster.startVmMaster()
+    cluster.startScribengin()
     
   #click.echo(cluster.getReport())  
   

@@ -202,12 +202,13 @@ class ServerSet(object):
     sorted_servers = sorted(self.servers, key=lambda server: server.role)
     for server in sorted_servers :
       serverReportDict = server.getReportDict()
-      serverReport.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
-      procs = server.getProcesses()
-      for process in procs:
-        procDict = server.getProcess(process).getReportDict()
-
-        serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+      if serverReportDict is not None and serverReportDict["Hostname"] :
+        serverReport.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
+        procs = server.getProcesses()
+        for process in procs:
+          procDict = server.getProcess(process).getReportDict()
+  
+          serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
 
     headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
 
