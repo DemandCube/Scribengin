@@ -28,7 +28,7 @@ public class VMRegistryFormatter extends NodeFormatter {
     result.put("Description", vmDescriptor.getVmConfig().getDescription());
     result.put("Memory", Integer.toString(vmDescriptor.getMemory()));
     result.put("CPU Cores", Integer.toString(vmDescriptor.getCpuCores()));
-    result.put("Stored Path", vmDescriptor.getStoredPath());
+    result.put("Stored Path", vmDescriptor.getRegistryPath());
     result.put("Roles", roles);
     
     return result;

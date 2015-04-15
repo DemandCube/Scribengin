@@ -27,12 +27,14 @@ public class DataflowTaskExecutorService {
   private DataflowTaskWorkerEventListenter dataflowTaskEventListener ;
   private DataflowDescriptor dataflowDescriptor;
   private List<DataflowTaskExecutor> taskExecutors;
+  private DataflowWorkerStatus workerStatus = DataflowWorkerStatus.INIT;
   
   @Inject
   public void onInit(DataflowRegistry dflRegistry) throws Exception {
     logger.info("Start onInit()");
     dataflowTaskEventListener = new DataflowTaskWorkerEventListenter(dflRegistry);
     dataflowDescriptor = dflRegistry.getDataflowDescriptor();
+    
     int numOfExecutors = dataflowDescriptor.getNumberOfExecutorsPerWorker();
     taskExecutors = new ArrayList<DataflowTaskExecutor>();
     for(int i = 0; i < numOfExecutors; i++) {
@@ -40,11 +42,12 @@ public class DataflowTaskExecutorService {
       DataflowTaskExecutor executor = new DataflowTaskExecutor(descriptor, container);
       taskExecutors.add(executor);
     }
-    start();
     logger.info("Finish onInit()");
   }
   
   public void start() throws Exception {
+    workerStatus = DataflowWorkerStatus.RUNNING;
+    container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     logger.info("Start start()");
     for(int i = 0; i < taskExecutors.size(); i++) {
       DataflowTaskExecutor executor = taskExecutors.get(i);
@@ -54,11 +57,27 @@ public class DataflowTaskExecutorService {
   }
   
   
+  void interrupt() throws Exception {
+    System.err.println("Interrupt dataflow worker executor");
+    for(DataflowTaskExecutor sel : taskExecutors) {
+      if(sel.isAlive()) sel.interrupt();
+    }
+    waitForExecutorTermination(500);
+    System.err.println("Interrupt dataflow worker executor done!!!!!!!!!!!!!");
+  }
+  
+  public void pause() throws Exception {
+    interrupt();
+    workerStatus = DataflowWorkerStatus.PAUSE;
+    container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+  }
   
   public void shutdown() throws Exception {
     logger.info("Start shutdown()");
-    for(DataflowTaskExecutor sel : taskExecutors) {
-      if(sel.isAlive()) sel.shutdown();
+    if(workerStatus != DataflowWorkerStatus.TERMINATED) {
+      interrupt() ;
+      workerStatus = DataflowWorkerStatus.TERMINATED;
+      container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     }
     logger.info("Finish shutdown()");
   }
@@ -76,7 +95,15 @@ public class DataflowTaskExecutorService {
     }
   }
   
-  public List<DataflowTaskExecutor> getExecutors() { return taskExecutors; }
+  synchronized public void waitForFinish(long checkPeriod) throws InterruptedException, RegistryException {
+    while(workerStatus != DataflowWorkerStatus.TERMINATED) {
+      waitForExecutorTermination(checkPeriod);
+      if(workerStatus == DataflowWorkerStatus.RUNNING) {
+        workerStatus = DataflowWorkerStatus.TERMINATED;
+        container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+      }
+    }
+  }
   
   public class DataflowTaskWorkerEventListenter extends NodeEventWatcher {
     public DataflowTaskWorkerEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
@@ -89,12 +116,15 @@ public class DataflowTaskExecutorService {
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
-          if(isAlive()) shutdown() ;
+          System.err.println("Dataflow worker detect pause event...................");
+          pause() ;
         } else if(taskEvent == DataflowEvent.STOP) {
-          if(isAlive()) shutdown() ;
+          shutdown() ;
+        } else if(taskEvent == DataflowEvent.RESUME) {
+          System.err.println("Dataflow worker detect resume event...................");
+          start() ;
         }
       }
-      System.out.println("event = " + event.getType() + ", path = " + event.getPath());
     }
   }
 }

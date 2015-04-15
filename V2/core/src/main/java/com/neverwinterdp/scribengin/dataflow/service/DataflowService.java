@@ -12,6 +12,8 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowInitActivityBuilder;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowPauseActivityBuilder;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowResumeActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowRunActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowStopActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
@@ -82,7 +84,6 @@ public class DataflowService {
     ActivityCoordinator coordinator = activityService.start(dataflowRunActivityBuilder);
     coordinator.waitForTermination(60000);
     
-    System.err.println("DataflowService: RUNNING");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
     
     dataflowTaskMonitor.waitForAllTaskFinish();
@@ -108,15 +109,28 @@ public class DataflowService {
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
-          //stopWorkers();
+          DataflowPauseActivityBuilder dataflowPauseActivityBuilder = 
+              new DataflowPauseActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+          ActivityCoordinator pauseCoordinator = activityService.start(dataflowPauseActivityBuilder);
         } else if(taskEvent == DataflowEvent.STOP) {
           DataflowStopActivityBuilder dataflowStopActivityBuilder = 
               new DataflowStopActivityBuilder(dataflowRegistry.getDataflowDescriptor());
           ActivityCoordinator stopCoordinator = activityService.start(dataflowStopActivityBuilder);
         } else if(taskEvent == DataflowEvent.RESUME) {
-          DataflowRunActivityBuilder dataflowRunActivityBuilder = 
-              new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-          ActivityCoordinator startCoordinator = activityService.start(dataflowRunActivityBuilder);
+          DataflowLifecycleStatus currentStatus = dataflowRegistry.getStatus();
+          System.err.println("Detect the resume event, current status = " + currentStatus);
+          if(currentStatus == DataflowLifecycleStatus.PAUSE) {
+            System.err.println("  Run resume activity");
+            DataflowResumeActivityBuilder dataflowResumeActivityBuilder = 
+                new DataflowResumeActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+            ActivityCoordinator startCoordinator = activityService.start(dataflowResumeActivityBuilder);
+          } else if(currentStatus == DataflowLifecycleStatus.STOP) {
+            System.err.println("  Run run activity...");
+            DataflowRunActivityBuilder dataflowRunActivityBuilder = 
+                new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
+            ActivityCoordinator startCoordinator = activityService.start(dataflowRunActivityBuilder);
+          }
+          
         }
       }
       System.out.println("event = " + event.getType() + ", path = " + event.getPath());

@@ -73,7 +73,7 @@ public class VMDataflowServiceApp extends VMApp {
           };
         };
         RefNode leaderRefNode = new RefNode();
-        leaderRefNode.setPath(getVM().getDescriptor().getStoredPath());
+        leaderRefNode.setPath(getVM().getDescriptor().getRegistryPath());
         registry.setData(dataflowRegistryPath + "/master/leader", leaderRefNode);
         Module[] modules = {
           new CloseableModule(),new Jsr250Module(), 

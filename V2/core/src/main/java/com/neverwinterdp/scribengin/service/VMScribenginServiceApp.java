@@ -31,7 +31,7 @@ public class VMScribenginServiceApp extends VMApp {
   public void run() throws Exception {
     Registry registry = getVM().getVMRegistry().getRegistry();
     getVM().getVMRegistry().getRegistry().createIfNotExist(ScribenginService.LEADER_PATH) ;
-    RefNode masterVMRef = new RefNode(getVM().getDescriptor().getStoredPath()) ;
+    RefNode masterVMRef = new RefNode(getVM().getDescriptor().getRegistryPath()) ;
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), ScribenginService.LEADER_PATH, masterVMRef) ;
     election.setListener(new MasterLeaderElectionListener());
     election.start();
@@ -78,7 +78,7 @@ public class VMScribenginServiceApp extends VMApp {
         appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
         scribenginService = appContainer.getInstance(ScribenginService.class);
         RefNode refNode = new RefNode() ;
-        refNode.setPath(getVM().getDescriptor().getStoredPath());
+        refNode.setPath(getVM().getDescriptor().getRegistryPath());
         registry.setData(ScribenginService.LEADER_PATH, refNode);
       } catch(Exception e) {
         e.printStackTrace();

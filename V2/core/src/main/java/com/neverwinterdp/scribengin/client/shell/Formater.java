@@ -62,8 +62,8 @@ public class Formater {
         formater.addRow(descriptor.getVmConfig().getName(),
             descriptor.getCpuCores(),
             descriptor.getMemory(),
-            descriptor.getStoredPath(),
-            descriptor.getStoredPath().equals(leaderPath));
+            descriptor.getRegistryPath(),
+            descriptor.getRegistryPath().equals(leaderPath));
       }
       formater.setTitle(title);
       return formater.getFormatText();

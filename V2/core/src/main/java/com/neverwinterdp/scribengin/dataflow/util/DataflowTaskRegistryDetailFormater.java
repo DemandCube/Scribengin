@@ -66,7 +66,7 @@ public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
       taskFt.addRow("Worker", "");
       if(workerDescriptor != null) { 
         taskFt.addRow("  Id", workerDescriptor.getId());
-        taskFt.addRow("  Registry Path", workerDescriptor.getStoredPath());
+        taskFt.addRow("  Registry Path", workerDescriptor.getRegistryPath());
       }
       b.append(taskFt.getFormatText());
       

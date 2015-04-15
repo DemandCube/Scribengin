@@ -65,7 +65,7 @@ public class VMServiceApp extends VMApp {
     try {
       final Registry registry = getVM().getVMRegistry().getRegistry();
       RefNode refNode = new RefNode();
-      refNode.setPath(getVM().getDescriptor().getStoredPath());
+      refNode.setPath(getVM().getDescriptor().getRegistryPath());
       registry.setData(VMService.LEADER_PATH, refNode);
       AppModule module = new AppModule(getVM().getDescriptor().getVmConfig().getProperties()) {
         @Override

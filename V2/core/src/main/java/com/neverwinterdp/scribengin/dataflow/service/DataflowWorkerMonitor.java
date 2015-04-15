@@ -20,7 +20,7 @@ public class DataflowWorkerMonitor {
 
   synchronized public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     DataflowWorkerHeartbeatListener listener = new DataflowWorkerHeartbeatListener (vmDescriptor) ;
-    workerHeartbeatListeners.put(vmDescriptor.getStoredPath(), listener);
+    workerHeartbeatListeners.put(vmDescriptor.getRegistryPath(), listener);
   }
   
   synchronized void removeWorkerListener(String heartbeatPath) throws RegistryException {
@@ -34,7 +34,7 @@ public class DataflowWorkerMonitor {
   public class DataflowWorkerHeartbeatListener extends NodeEventWatcher {
     public DataflowWorkerHeartbeatListener(VMDescriptor vmDescriptor) throws RegistryException {
       super(dataflowRegistry.getRegistry(), true);
-      watchExists(vmDescriptor.getStoredPath() + "/status/heartbeat");
+      watchExists(vmDescriptor.getRegistryPath() + "/status/heartbeat");
     }
     
     @Override
