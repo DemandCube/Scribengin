@@ -12,14 +12,14 @@ import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
 
 /**
- * The goal of this class is to print out all and in detail of the information of the trgiggered task and the status 
+ * The goal of this class is to print out all and in detail of the information of the triggered task and the status 
  * of the other tasks
  * @author Tuan
  */
-public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
+public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
   private Node taskDescriptorNode ;
   
-  public DataflowTaskRegistryDetailFormater(Node taskNode) {
+  public DataflowTaskRegistryDetailedFormater(Node taskNode) {
     this.taskDescriptorNode = taskNode;
   }
   
@@ -42,15 +42,10 @@ public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
       if(workerHeartbeatNode.exists()) {
         workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
       }
+      else{
+        
+      }
 
-//TODO: This code show how to detect a failed and finished task when the heartbeat is not available. Include the fail task info 
-//      in the debug info
-//      DataflowTaskDescriptor.Status status = descriptor.getStatus();
-//      if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
-//        onFailDataflowTask(descriptor);
-//      } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
-//        onFinishDataflowTask(descriptor);
-//      }
       
       TabularFormater taskFt = new TabularFormater("Property", "Value");
       taskFt.addRow("Dataflow Task Descriptor", "");
@@ -67,6 +62,15 @@ public class DataflowTaskRegistryDetailFormater extends NodeFormatter {
       if(workerDescriptor != null) { 
         taskFt.addRow("  Id", workerDescriptor.getId());
         taskFt.addRow("  Registry Path", workerDescriptor.getStoredPath());
+      } else{
+        DataflowTaskDescriptor.Status status = dflDescriptor.getStatus();
+        if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
+          taskFt.addRow("  Status", "FAILED");
+        } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+          taskFt.addRow("  Status", "FINISHED");
+        } else{
+          taskFt.addRow("  Status", status);
+        }
       }
       b.append(taskFt.getFormatText());
       

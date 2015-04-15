@@ -88,9 +88,13 @@ public class DataflowKafkaToKafkaUnitTest {
             " --source-max-records-per-stream 10000" +
             " --sink-name output " +
             " --print-dataflow-info -1" +
-            " --debug-dataflow-task true" +
-            " --debug-dataflow-worker true" +
-            " --debug-dataflow-activity true" +
+            " --debug-dataflow-task " +
+            " --debug-dataflow-vm " +
+            " --debug-dataflow-activity " +
+            //" --debug-dataflow-task-detail " +
+            //" --debug-dataflow-vm-detail " +
+            //" --debug-dataflow-activity-detail " +
+            " --detailed-debug " +
             " --junit-report build/junit-report.xml" + 
             " --dump-registry";
         shell.execute(command);

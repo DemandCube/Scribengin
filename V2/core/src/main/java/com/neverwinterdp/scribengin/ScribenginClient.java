@@ -19,7 +19,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.activity.util.ActiveActivityNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
-import com.neverwinterdp.scribengin.dataflow.util.DataflowWorkerNodeDebugger;
+import com.neverwinterdp.scribengin.dataflow.util.DataflowVMDebugger;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceApp;
 import com.neverwinterdp.scribengin.service.VMScribenginServiceCommand;
@@ -139,24 +139,24 @@ public class ScribenginClient {
     return dataflowClient ;
   }
   
-  public RegistryDebugger getDataflowTaskDebugger(Appendable out, String dataflowName) throws RegistryException {
+  public RegistryDebugger getDataflowTaskDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
     String taskAssignedPath = ScribenginService.getDataflowPath(dataflowName) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
-    debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger());
+    debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger(detailedDebugger));
     return debugger ;
   }
   
-  public RegistryDebugger getDataflowActivityDebugger(Appendable out, String dataflowName) throws RegistryException {
+  public RegistryDebugger getDataflowActivityDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
     String activeActivitiesPath = ScribenginService.getDataflowPath(dataflowName) + "/activities/active" ;
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
-    debugger.watchChild(activeActivitiesPath, ".*", new ActiveActivityNodeDebugger());
+    debugger.watchChild(activeActivitiesPath, ".*", new ActiveActivityNodeDebugger(detailedDebugger));
     return debugger ;
   }
   
-  public RegistryDebugger getDataflowWorkerDebugger(Appendable out, String dataflowName) throws RegistryException {
+  public RegistryDebugger getDataflowVMDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
     String workerActivePath = ScribenginService.getDataflowPath(dataflowName) + "/workers/active";
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
-    debugger.watchChild(workerActivePath,  ".*", new DataflowWorkerNodeDebugger());
+    debugger.watchChild(workerActivePath,  ".*", new DataflowVMDebugger(detailedDebugger));
     return debugger ;
   }
   
