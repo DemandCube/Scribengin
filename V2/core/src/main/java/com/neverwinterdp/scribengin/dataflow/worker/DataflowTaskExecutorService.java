@@ -46,13 +46,14 @@ public class DataflowTaskExecutorService {
   }
   
   public void start() throws Exception {
-    workerStatus = DataflowWorkerStatus.RUNNING;
-    container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     logger.info("Start start()");
     for(int i = 0; i < taskExecutors.size(); i++) {
       DataflowTaskExecutor executor = taskExecutors.get(i);
       executor.start();
     }
+    workerStatus = DataflowWorkerStatus.RUNNING;
+    container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+    System.err.println("Start dataflow worker executor done, status = RUNNING!!!!!!!!!!!!!");
     logger.info("Finish start()");
   }
   

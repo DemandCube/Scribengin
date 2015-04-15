@@ -21,7 +21,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventMatcher;
-import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.zk.tool.server.EmbededZKServer;
@@ -71,7 +71,7 @@ public class WaitingNodeEventListenerUnitTest {
 
   @Test
   public void testListener() throws Exception {
-    WaitingNodeEventListener listener = new WaitingNodeEventListener(registry);
+    WaitingOrderNodeEventListener listener = new WaitingOrderNodeEventListener(registry);
     listener.add(EVENTS_PATH, NodeEvent.Type.CREATE);
     listener.add(EVENTS_PATH + "/hello", new NodeEvent.Type[] {NodeEvent.Type.CREATE, NodeEvent.Type.MODIFY});
     listener.add(EVENTS_PATH + "/hello", new HelloBean("hello"));

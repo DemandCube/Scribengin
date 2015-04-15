@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -58,7 +58,7 @@ public class DataflowTaskEventExperimentTest {
     Assert.assertEquals(2, dataflowWorkers.size());
 
     
-    WaitingNodeEventListener stopWaitingListener = new WaitingNodeEventListener(scribenginClient.getRegistry());
+    WaitingOrderNodeEventListener stopWaitingListener = new WaitingOrderNodeEventListener(scribenginClient.getRegistry());
     stopWaitingListener.add("/scribengin/dataflows/running/kafka-to-kafka/status", DataflowLifecycleStatus.PAUSE);
     dflClient.setDataflowTaskEvent(DataflowEvent.PAUSE);
     stopWaitingListener.waitForEvents(15000);

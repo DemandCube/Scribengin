@@ -12,6 +12,8 @@ import com.neverwinterdp.registry.activity.ActivityService;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -56,7 +58,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       Node workerNodes = dflRegistry.getActiveWorkersNode() ;
       List<String> workers = workerNodes.getChildren();
-      WaitingNodeEventListener waitingListener = new WaitingNodeEventListener(dflRegistry.getRegistry()) ;
+      WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
         String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
         waitingListener.add(path, DataflowWorkerStatus.PAUSE);

@@ -9,13 +9,13 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.util.text.TabularFormater;
 
-public class WaitingNodeEventListener {
-  private RegistryListener        registryListener;
-  private LinkedList<WaitingNodeEventWatcher> watcherQueue  = new LinkedList<>();
-  private int                     waitingNodeEventCount = 0;
-  private int                     detectNodeEventCount  = 0;
-  private List<NodeEventLog>      eventLogs = new ArrayList<NodeEventLog>() ; 
-  private long                    estimateLastDetectEventTime = 0 ;
+abstract public class WaitingNodeEventListener {
+  protected RegistryListener        registryListener;
+  protected LinkedList<WaitingNodeEventWatcher> watcherQueue  = new LinkedList<>();
+  protected int                     waitingNodeEventCount = 0;
+  protected int                     detectNodeEventCount  = 0;
+  protected List<NodeEventLog>      eventLogs = new ArrayList<NodeEventLog>() ; 
+  protected long                    estimateLastDetectEventTime = 0 ;
   
   public WaitingNodeEventListener(Registry registry) {
     registryListener = new RegistryListener(registry);
@@ -106,17 +106,7 @@ public class WaitingNodeEventListener {
     return infoFormater ;
   }
   
-  synchronized void onDetectNodeEvent(NodeWatcher watcher, NodeEvent event) {
-    NodeWatcher waitingWatcher = watcherQueue.getFirst() ;
-    if(waitingWatcher == watcher) {
-      long time = System.currentTimeMillis() ;
-      watcherQueue.removeFirst();
-      detectNodeEventCount++;
-      eventLogs.add(new NodeEventLog(time - estimateLastDetectEventTime, event, watcher)) ;
-      estimateLastDetectEventTime = time ;
-      notifyAll();
-    }
-  }
+  abstract protected void onDetectNodeEvent(NodeWatcher watcher, NodeEvent event) ;
   
   abstract static public class WaitingNodeEventWatcher extends NodeWatcher {
     String path ;

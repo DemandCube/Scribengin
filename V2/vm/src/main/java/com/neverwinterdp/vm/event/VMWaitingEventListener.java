@@ -5,19 +5,19 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventMatcher;
-import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.service.VMService;
 
 public class VMWaitingEventListener {
-  protected WaitingNodeEventListener waitingEventListeners ;
+  protected WaitingOrderNodeEventListener waitingEventListeners ;
   
   public VMWaitingEventListener(Registry registry) throws RegistryException {
-    waitingEventListeners = new WaitingNodeEventListener(registry);
+    waitingEventListeners = new WaitingOrderNodeEventListener(registry);
   }
 
-  public WaitingNodeEventListener getWaitingNodeEventListener() { return waitingEventListeners; }
+  public WaitingOrderNodeEventListener getWaitingNodeEventListener() { return waitingEventListeners; }
   
   public void waitVMServiceStatus(String desc, VMService.Status status) throws Exception {
     waitingEventListeners.add(VMService.MASTER_PATH + "/status", status, desc);
