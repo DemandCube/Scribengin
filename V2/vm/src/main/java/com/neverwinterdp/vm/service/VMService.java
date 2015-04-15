@@ -96,7 +96,7 @@ public class VMService {
   
   public void unregister(VMDescriptor descriptor) throws Exception {
     if(isClosed()) return;
-    if(!registry.exists(descriptor.getStoredPath())) {
+    if(!registry.exists(descriptor.getRegistryPath())) {
       //TODO: fix this check by removing the watcher
       return;
     }
@@ -105,7 +105,7 @@ public class VMService {
       //but zookeeper does not provide the move method
       Transaction transaction = registry.getTransaction();
       transaction.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName() + "-",descriptor, NodeCreateMode.PERSISTENT_SEQUENTIAL);
-      transaction.rdelete(descriptor.getStoredPath());
+      transaction.rdelete(descriptor.getRegistryPath());
       transaction.commit();
     } catch(Exception ex) {
       System.err.println("Error when move the vm history, vm = " + descriptor.getId());
@@ -143,7 +143,7 @@ public class VMService {
     registry.createIfNotExist(LEADER_PATH) ;
     
     String vmPath  = ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName();
-    descriptor.setStoredPath(vmPath);
+    descriptor.setRegistryPath(vmPath);
     
     Transaction transaction = registry.getTransaction() ;
     transaction.create(vmPath, new byte[0], NodeCreateMode.PERSISTENT);

@@ -25,6 +25,8 @@ public class WaitingNodeEventListener {
   
   public int getDetectNodeEventCount() { return detectNodeEventCount ; }
   
+  public int getUndetectNodeEventCount() { return watcherQueue.size() ; }
+  
   public void add(String path, NodeEvent.Type type) throws Exception {
     add(path, type, null);
   }

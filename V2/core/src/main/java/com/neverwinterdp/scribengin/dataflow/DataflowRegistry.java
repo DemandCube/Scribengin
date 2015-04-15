@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
@@ -20,6 +21,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
@@ -126,7 +128,17 @@ public class DataflowRegistry {
    }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
-    activeWorkers.createChildRef(vmDescriptor.getId(), vmDescriptor.getStoredPath(), NodeCreateMode.PERSISTENT);
+    Transaction transaction = registry.getTransaction() ;
+    RefNode refNode = new RefNode(vmDescriptor.getRegistryPath()) ;
+    transaction.createChild(activeWorkers, vmDescriptor.getId(), refNode, NodeCreateMode.PERSISTENT) ;
+    transaction.createDescendant(activeWorkers, vmDescriptor.getId() + "/status", DataflowWorkerStatus.INIT, NodeCreateMode.PERSISTENT) ;
+    transaction.commit();
+  }
+  
+  public void setWorkerStatus(VMDescriptor vmDescriptor, DataflowWorkerStatus status) throws RegistryException {
+    Node workerNode = activeWorkers.getChild(vmDescriptor.getId());
+    Node statusNode = workerNode.getChild("status");
+    statusNode.setData(status);
   }
   
   public void historyWorker(VMDescriptor vmDescriptor) throws RegistryException {
@@ -136,6 +148,22 @@ public class DataflowRegistry {
     transaction.rcopy(fromPath, toPath);
     transaction.rdelete(fromPath);
     transaction.commit();
+  }
+  
+  public void createWorkerTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
+    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
+    Node executors = worker.createDescendantIfNotExists("executors");
+    executors.createChild(descriptor.getId(), descriptor, NodeCreateMode.PERSISTENT);
+  }
+  
+  public void updateWorkerTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
+    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
+    Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
+    executor.setData(descriptor);
+  }
+  
+  public DataflowLifecycleStatus getStatus() throws RegistryException {
+    return status.getDataAs(DataflowLifecycleStatus.class) ;
   }
   
   public void setStatus(DataflowLifecycleStatus event) throws RegistryException {
@@ -173,18 +201,6 @@ public class DataflowRegistry {
   }
   
   
-  public void createTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
-    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
-    Node executors = worker.createDescendantIfNotExists("executors");
-    executors.createChild(descriptor.getId(), descriptor, NodeCreateMode.PERSISTENT);
-  }
-  
-  public void updateTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
-    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
-    Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
-    executor.setData(descriptor);
-  }
-
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
     Lock lock = tasksLock.getLock("write") ;
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {

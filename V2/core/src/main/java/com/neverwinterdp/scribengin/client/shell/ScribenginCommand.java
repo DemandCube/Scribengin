@@ -73,7 +73,7 @@ public class ScribenginCommand extends Command {
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
-      String leaderPath = client.getScribenginMaster().getStoredPath();
+      String leaderPath = client.getScribenginMaster().getRegistryPath();
 
       if (list) {
         shell.console().h1("Listing Scribengin Masters");
@@ -83,7 +83,7 @@ public class ScribenginCommand extends Command {
         // shell.console().h1("Shutting down current Scribengin Master");
         VMClient vmClient = shell.getVMClient();
         for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
-          if (desc.getStoredPath().equals(leaderPath)) {
+          if (desc.getRegistryPath().equals(leaderPath)) {
             shell.console().h1("Shutting down leader " + desc.getId());
             vmClient.shutdown(desc);
             Thread.sleep(20000);

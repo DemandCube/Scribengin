@@ -16,7 +16,6 @@ import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
-import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class DataflowKafkaToKafkaUnitTest {
   static {
@@ -29,7 +28,7 @@ public class DataflowKafkaToKafkaUnitTest {
   
   @Before
   public void setup() throws Exception {
-    clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder()) ;
+    clusterBuilder = new ScribenginClusterBuilder(new EmbededVMClusterBuilder()) ;
     clusterBuilder.clean(); 
     clusterBuilder.startVMMasters();
     clusterBuilder.startScribenginMasters();
@@ -39,10 +38,6 @@ public class DataflowKafkaToKafkaUnitTest {
   @After
   public void teardown() throws Exception {
     clusterBuilder.shutdown();
-  }
-  
-  protected VMClusterBuilder getVMClusterBuilder() throws Exception {
-    return new EmbededVMClusterBuilder();
   }
   
   @Test
@@ -91,10 +86,9 @@ public class DataflowKafkaToKafkaUnitTest {
             " --debug-dataflow-task " +
             " --debug-dataflow-vm " +
             " --debug-dataflow-activity " +
-            //" --debug-dataflow-task-detail " +
-            //" --debug-dataflow-vm-detail " +
-            //" --debug-dataflow-activity-detail " +
-            " --detailed-debug " +
+            " --debug-dataflow-task-detail " +
+            " --debug-dataflow-vm-detail " +
+            " --debug-dataflow-activity-detail " +
             " --junit-report build/junit-report.xml" + 
             " --dump-registry";
         shell.execute(command);

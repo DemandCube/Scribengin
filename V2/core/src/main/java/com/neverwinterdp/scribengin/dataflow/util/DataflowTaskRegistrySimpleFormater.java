@@ -39,7 +39,7 @@ public class DataflowTaskRegistrySimpleFormater extends NodeFormatter {
       
       if(workerHeartbeatNode.exists()) {
         workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
-        b.append("  WorkerDescriptor: ID = "+workerDescriptor.getId()+", Path: "+workerDescriptor.getStoredPath()+"\n");
+        b.append("  WorkerDescriptor: ID = "+workerDescriptor.getId()+", Path: "+workerDescriptor.getRegistryPath()+"\n");
       }
       
     } catch (Exception e) {

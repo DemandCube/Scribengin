@@ -61,28 +61,28 @@ public class VMDataflowWorkerApp extends VMApp {
       module
     };
     Injector injector = Guice.createInjector(Stage.PRODUCTION, modules);
-    //Injector injector = getVM().getVMContainer().createChildInjector(module);
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorService = container.getDataflowTaskExecutorManager();
-    try {
-      this.addListener(new VMApp.EventListener() {
-        @Override
-        public void onEvent(VMApp vmApp, Event event) {
-          try {
-            if(event == Event.Shutdown) {
-              dataflowTaskExecutorService.shutdown();
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
+    addListener(new VMApp.EventListener() {
+      @Override
+      public void onEvent(VMApp vmApp, Event event) {
+        try {
+          if(event == Event.Shutdown) {
+            dataflowTaskExecutorService.shutdown();
           }
+        } catch (Exception e) {
+          e.printStackTrace();
         }
-      });
-      dataflowTaskExecutorService.waitForExecutorTermination(1000);
+      }
+    });
+    try {
+      dataflowTaskExecutorService.start();
+      dataflowTaskExecutorService.waitForFinish(1000);
     } catch(InterruptedException ex) {
     } finally {
       dataflowTaskExecutorService.shutdown();
-      dataflowTaskExecutorService.waitForExecutorTermination(1000);
       container.getInstance(CloseableInjector.class).close();
+      System.err.println("Shutdown dataflow worker....................");
     }
   }
 }

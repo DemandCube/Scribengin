@@ -16,8 +16,8 @@ import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
-import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskWorkerEvent;
 
 public class DataflowStopActivityBuilder extends ActivityBuilder {
   static int idTracker = 1 ;
@@ -55,8 +55,8 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     public void execute(Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       ActiveDataflowWorkerWatcher workerWatcher = new ActiveDataflowWorkerWatcher(dflRegistry, true) ;
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowTaskWorkerEvent.STOP);
-      System.err.println("broadcast DataflowTaskWorkerEvent.STOP");
+      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.STOP);
+      System.err.println("broadcast DataflowWorkerEvent.STOP");
       workerWatcher.waitForNoMoreWorker(1 * 60 * 1000);
     }
   }

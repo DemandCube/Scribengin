@@ -61,7 +61,8 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       taskFt.addRow("Worker", "");
       if(workerDescriptor != null) { 
         taskFt.addRow("  Id", workerDescriptor.getId());
-        taskFt.addRow("  Registry Path", workerDescriptor.getRegistryPath());
+<<<<<<< HEAD:V2/core/src/main/java/com/neverwinterdp/scribengin/dataflow/util/DataflowTaskRegistryDetailedFormater.java
+        taskFt.addRow("  Registry Path", workerDescriptor.getStoredPath());
       } else{
         DataflowTaskDescriptor.Status status = dflDescriptor.getStatus();
         if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
@@ -71,6 +72,9 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
         } else{
           taskFt.addRow("  Status", status);
         }
+=======
+        taskFt.addRow("  Registry Path", workerDescriptor.getRegistryPath());
+>>>>>>> 87f97b9451374b9403f405896becac3c2a113d4b:V2/core/src/main/java/com/neverwinterdp/scribengin/dataflow/util/DataflowTaskRegistryDetailFormater.java
       }
       b.append(taskFt.getFormatText());
       

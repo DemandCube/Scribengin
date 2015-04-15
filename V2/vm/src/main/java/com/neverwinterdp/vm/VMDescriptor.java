@@ -3,7 +3,7 @@ package com.neverwinterdp.vm;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class VMDescriptor {
-  private String   storedPath;
+  private String   registryPath;
   private int      memory;
   private int      cpuCores;
   private String   hostname;
@@ -20,8 +20,8 @@ public class VMDescriptor {
   @JsonIgnore
   public String getId() { return vmConfig.getName(); }
   
-  public String getStoredPath() { return storedPath; }
-  public void setStoredPath(String storedPath) { this.storedPath = storedPath; }
+  public String getRegistryPath() { return registryPath; }
+  public void setRegistryPath(String path) { this.registryPath = path; }
   
   public int getMemory() { return memory; }
   public void setMemory(int memory) { this.memory = memory; }
