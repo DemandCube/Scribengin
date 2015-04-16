@@ -25,6 +25,22 @@ class YarnRestApi():
   def getRunningApplicationMasters(self):
     return self.getRequest("ws/v1/cluster/apps", {"state":"RUNNING"}) 
   
+  def getNodesInfo(self):
+    return self.getRequest("ws/v1/cluster/nodes")
+  
+  def getNodesRunningContainers(self):
+    nodes = self.getNodesInfo()
+    workers = []
+    if nodes and nodes["nodes"] and nodes["nodes"]["node"]:
+      for node in nodes["nodes"]["node"] :
+        #API to talk to nodemanager talks to node itself
+        y = YarnRestApi(node["nodeHTTPAddress"].split(":")[0], node["nodeHTTPAddress"].split(":")[1])
+        nodeInfo = y.getRequest("ws/v1/node/apps")
+        if nodeInfo and nodeInfo["apps"] and nodeInfo["apps"]["app"] and nodeInfo["apps"]["app"][0]:
+          if "containerids" in nodeInfo["apps"]["app"][0]:
+            workers.append( node["nodeHTTPAddress"].split(":")[0] )
+    return workers
+  
   #Returns an array of applicationIds
   def getRunningApplicationMasterIds(self):
     ids = ""
