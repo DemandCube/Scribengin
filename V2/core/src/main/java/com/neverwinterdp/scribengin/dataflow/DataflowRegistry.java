@@ -141,10 +141,19 @@ public class DataflowRegistry {
     statusNode.setData(status);
   }
   
-  public void historyWorker(VMDescriptor vmDescriptor) throws RegistryException {
+//  public void historyWorker(VMDescriptor vmDescriptor) throws RegistryException {
+//    Transaction transaction = registry.getTransaction() ;
+//    String fromPath = activeWorkers.getChild(vmDescriptor.getId()).getPath() ;
+//    String toPath   = historyWorkers.getChild(vmDescriptor.getId()).getPath();
+//    transaction.rcopy(fromPath, toPath);
+//    transaction.rdelete(fromPath);
+//    transaction.commit();
+//  }
+  
+  public void historyWorker(String vmId) throws RegistryException {
     Transaction transaction = registry.getTransaction() ;
-    String fromPath = activeWorkers.getChild(vmDescriptor.getId()).getPath() ;
-    String toPath   = historyWorkers.getChild(vmDescriptor.getId()).getPath();
+    String fromPath = activeWorkers.getChild(vmId).getPath() ;
+    String toPath   = historyWorkers.getChild(vmId).getPath();
     transaction.rcopy(fromPath, toPath);
     transaction.rdelete(fromPath);
     transaction.commit();
@@ -161,6 +170,8 @@ public class DataflowRegistry {
     Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
     executor.setData(descriptor);
   }
+  
+  public Node getStatusNode() { return this.status ; }
   
   public DataflowLifecycleStatus getStatus() throws RegistryException {
     return status.getDataAs(DataflowLifecycleStatus.class) ;

@@ -86,6 +86,7 @@ public class DataflowTestCommand extends Command {
     
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      System.err.println("how abut here.");
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       DataflowTest test = testClass.newInstance() ;
       cmdInput.mapRemainArgs(test);

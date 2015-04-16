@@ -44,7 +44,9 @@ public class ScribenginClient {
 
   public Registry getRegistry() { return this.vmClient.getRegistry(); }
   
-  public VMClient getVMClient() { return this.vmClient ; }
+  public VMClient getVMClient() { 
+ //   System.err.println("vmclient "+ vmClient);
+    return this.vmClient ; }
   
   public VMDescriptor getScribenginMaster() throws RegistryException {
     Node node = vmClient.getRegistry().getRef(ScribenginService.LEADER_PATH);

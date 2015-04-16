@@ -1,22 +1,19 @@
 package com.neverwinterdp.scribengin.dataflow;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowClient;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSToKafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class DataflowKafkaToHdfsExperimentTest {
+public class DataflowHdfsToKafkaUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -31,7 +28,6 @@ public class DataflowKafkaToHdfsExperimentTest {
     clusterBuilder = new ScribenginClusterBuilder(getVMClusterBuilder());
     clusterBuilder.clean();
     clusterBuilder.startVMMasters();
-    Thread.sleep(3000);
     clusterBuilder.startScribenginMasters();
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
   }
@@ -50,43 +46,40 @@ public class DataflowKafkaToHdfsExperimentTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
-     try {
+    
+    try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
-      Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
+      assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      DataflowClient dataflowClient = scribenginClient.getDataflowClient("hello-kafka-hdfs-dataflow");
-  
-      Assert.assertEquals("hello-kafka-hdfs-dataflow-master-1", dataflowClient.getDataflowMaster().getId());
-      Assert.assertEquals(1, dataflowClient.getDataflowMasters().size());
-      
-      VMClient vmClient = scribenginClient.getVMClient();
-      List<VMDescriptor> dataflowWorkers = dataflowClient.getDataflowWorkers();
-      Assert.assertEquals(3, dataflowWorkers.size());
-      vmClient.shutdown(dataflowWorkers.get(1));
-      Thread.sleep(2000);
-      shell.execute("registry   dump");
-      submitter.waitForTermination(300000);
-      
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-kafka-dataflow-0");
-      shell.execute("registry   dump");
-    } catch(Throwable err) {
+      shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
+    } catch (Throwable err) {
       throw err;
     } finally {
-      if(submitter.isAlive()) submitter.interrupt();
-      //Thread.sleep(100000000);
+      if (submitter.isAlive())
+        submitter.interrupt();
     }
-
   }
 
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        String command = "dataflow-test kafka-hdfs " +
-            "  --worker 3 --executor-per-worker 1 --duration 70000 --num-partition 2 --task-max-execute-time 1000" +
-            "  --kafka-num-partition 10 --kafka-write-period 5 --kafka-max-message-per-partition 3000";
+        String command = 
+            "dataflow-test " + HDFSToKafkaDataflowTest.TEST_NAME +
+            " --dataflow-name  hdfs-to-kafka" +
+            " --worker 3" +
+            " --executor-per-worker 1" +
+            " --duration 90000" +
+            " --task-max-execute-time 10000" +
+            " --source-name output" +
+            " --source-num-of-stream 10" +
+            " --source-write-period 5" +
+            " --source-max-records-per-stream 1000" +
+            " --sink-name output" +
+            " --junit-report build/junit-report.xml" +
+            " --dump-registry";
         shell.execute(command);
       } catch (Exception ex) {
         ex.printStackTrace();

@@ -14,10 +14,11 @@ public class HDFSDataflowTest extends DataflowTest {
   private DataflowSinkValidator sinkValidator = new HDFSDataflowSinkValidator();
 
   protected void doRun(ScribenginShell shell) throws Exception {
+    System.err.println("do we ever get here.1");
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     sourceGenerator.run();
-
+    System.err.println("do we ever get here.");
     sinkValidator.init(scribenginClient);
 
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();

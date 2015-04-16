@@ -57,27 +57,59 @@ public class DataflowTaskEventExperimentTest {
     List<VMDescriptor> dataflowWorkers = dflClient.getDataflowWorkers();
     Assert.assertEquals(2, dataflowWorkers.size());
 
-    
-    WaitingOrderNodeEventListener stopWaitingListener = new WaitingOrderNodeEventListener(scribenginClient.getRegistry());
-    stopWaitingListener.add("/scribengin/dataflows/running/kafka-to-kafka/status", DataflowLifecycleStatus.PAUSE);
-    dflClient.setDataflowTaskEvent(DataflowEvent.PAUSE);
-    stopWaitingListener.waitForEvents(15000);
-    if(stopWaitingListener.getUndetectNodeEventCount() > 0) {
-      shell.execute("registry dump");
-      return;
+    int stopCount = 0; 
+    int stopCompleteCount = 0; 
+    int resumeCount = 0 ;
+    int resumeCompleteCount = 0; 
+    while(stopCount < 10) {
+      long startStopTime =  System.currentTimeMillis();
+      stopCount++ ;
+      DataflowEvent event = DataflowEvent.PAUSE ;
+      DataflowLifecycleStatus expectStatus = DataflowLifecycleStatus.PAUSE;
+      if(stopCount % 2 == 0) {
+        event = DataflowEvent.STOP ;
+        expectStatus = DataflowLifecycleStatus.STOP;
+      }
+      WaitingOrderNodeEventListener stopWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
+      stopWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), expectStatus);
+      dflClient.setDataflowEvent(event);
+      stopWaitingListener.waitForEvents(20000);
+      if(stopWaitingListener.getUndetectNodeEventCount() > 0) {
+        break;
+      }
+      stopCompleteCount++ ;
+      System.err.println("Stop in " + (System.currentTimeMillis() - startStopTime) + "ms");
+      
+      
+      long startResumeTime =  System.currentTimeMillis();
+      WaitingOrderNodeEventListener resumeWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
+      resumeWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), DataflowLifecycleStatus.RUNNING);
+      dflClient.setDataflowEvent(DataflowEvent.RESUME);
+      resumeCount++ ;
+      resumeWaitingListener.waitForEvents(20000);
+      if(resumeWaitingListener.getUndetectNodeEventCount() > 0) {
+        break;
+      }
+      resumeCompleteCount++ ;
+      System.err.println("Resume in " + (System.currentTimeMillis() - startResumeTime) + "ms");
     }
-    dflClient.setDataflowTaskEvent(DataflowEvent.RESUME);
-    submitter.waitForTermination(90000);
+    submitter.waitForTermination(300000);
+    System.out.println("stop count  = " + stopCount + ", stop complete count = " + stopCompleteCount);
+    System.out.println("resume count  = " + resumeCount + ", resume complete count = " + resumeCompleteCount);
   }
   
+  
+  
   public class DataflowSubmitter extends Thread {
+    private boolean running = false;
     public void run() {
+      running = true;
       try {
         String command = 
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
           "  --dataflow-name  kafka-to-kafka" +
-          "  --worker 2 --executor-per-worker 2 --duration 90000 --task-max-execute-time 1000" +
-          "  --source-name input --source-num-of-stream 10 --source-write-period 5 --source-max-records-per-stream 10000" + 
+          "  --worker 2 --executor-per-worker 2 --duration 300000 --task-max-execute-time 5000" +
+          "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 200000" + 
           "  --sink-name output "+
           "  --debug-dataflow-activity" +
           "  --debug-dataflow-task" +
@@ -86,10 +118,18 @@ public class DataflowTaskEventExperimentTest {
         shell.execute(command);
       } catch(Exception ex) {
         ex.printStackTrace();
+      } finally {
+        notifyTermimation();
+        running = false;
       }
     }
     
+    synchronized void notifyTermimation() {
+      notify();
+    }
+    
     synchronized void waitForTermination(long timeout) throws InterruptedException {
+      if(!running) return ;
       wait(timeout);
     }
   }

@@ -2,11 +2,10 @@ package com.neverwinterdp.scribengin.dataflow;
 
 import java.util.List;
 
+import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
-import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowClient {
@@ -17,6 +16,10 @@ public class DataflowClient {
     this.scribenginClient = scribenginClient;
     dflRegistry = new DataflowRegistry(scribenginClient.getRegistry(), dataflowPath) ;
   }
+  
+  public Registry getRegistry() { return scribenginClient.getRegistry(); }
+  
+  public DataflowRegistry getDataflowRegistry() { return this.dflRegistry ; }
   
   public ScribenginClient getScribenginClient() { return this.scribenginClient; }
   
@@ -33,14 +36,11 @@ public class DataflowClient {
     return dflRegistry.getActiveWorkers();
   }
   
-  public void setDataflowTaskEvent(DataflowEvent event) throws RegistryException {
+  public void setDataflowEvent(DataflowEvent event) throws RegistryException {
     dflRegistry.broadcastDataflowEvent(event);
   }
   
-  public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {
-    RegistryDebugger debugger = new RegistryDebugger(out, scribenginClient.getVMClient().getRegistry()) ;
-    debugger.watchChild("/scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned", ".*", new DataflowTaskNodeDebugger());
-    //return debugger ;
-    return dflRegistry.getDataflowTaskDebugger(out) ;
+  public DataflowLifecycleStatus getStatus() throws RegistryException {
+    return dflRegistry.getStatus() ;
   }
 }

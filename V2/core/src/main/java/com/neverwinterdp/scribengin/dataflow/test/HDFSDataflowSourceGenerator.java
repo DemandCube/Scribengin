@@ -19,10 +19,8 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   private FileSystem fs  ;
   
-  //TODO: why do you need those parameters, why not taken directly from "--source-num-of-stream"...
-  private int numOfStream;
-  private int numOfBufferPerStream;
-  private int numOfRecordPerBuffer;
+  private int numOfFilesPerFolder;
+  private int numOfRecordsPerFile;
 
   @Override
   public StorageDescriptor getSourceDescriptor() {
@@ -33,11 +31,12 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
 
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
+    System.err.println("start init");
     fs = scribenginClient.getVMClient().getFileSystem();
-    numOfStream = numberOfStream;
-    //TODO: code convention
-    numOfBufferPerStream=1;
-    numOfRecordPerBuffer = maxRecordsPerStream/numOfBufferPerStream;
+    System.err.println("fs "+ fs);
+    numOfFilesPerFolder=1;
+    numOfRecordsPerFile = maxRecordsPerStream/numOfFilesPerFolder;
+    System.err.println("end init");
   }
 
   @Override
@@ -61,7 +60,7 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
   public void populate(DataflowTestReport report) {
     DataflowSourceGeneratorReport sourceReport = report.getSourceGeneratorReport() ;
     sourceReport.setSourceName(sourceName);
-    sourceReport.setNumberOfStreams(numOfStream);
+    sourceReport.setNumberOfStreams(numberOfStream);
     sourceReport.setWriteCount(RecordMessageGenerator.idTracker.get());
     sourceReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
@@ -70,7 +69,7 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
     SinkFactory sinkFactory = new SinkFactory(fs);
     StorageDescriptor sinkDescriptor = new StorageDescriptor("hdfs", sourceDir);
     Sink sink = sinkFactory.create(sinkDescriptor);;
-    for(int i = 0; i < numOfStream; i++) {
+    for(int i = 0; i < numberOfStream; i++) {
       generateStream(sink);
     }
   }
@@ -79,8 +78,8 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
     SinkStream stream = sink.newStream();
     int partition = stream.getDescriptor().getId() ;
     SinkStreamWriter writer = stream.getWriter();
-    for(int i = 0; i < numOfBufferPerStream; i++) {
-      for(int j = 0; j < numOfRecordPerBuffer; j ++) {
+    for(int i = 0; i < numOfFilesPerFolder; i++) {
+      for(int j = 0; j < numOfRecordsPerFile; j ++) {
         writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();
