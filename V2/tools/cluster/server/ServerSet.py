@@ -109,6 +109,12 @@ class ServerSet(object):
       print "Error: Invalid value for \"--server-config\": Path \"" + self.paramDict["server_config"] + "\" does not exist."
       print "Please make sure kafka's \"<server_template_name>.properties\" file is available in the hosting machine, and give the same path for \"--server-config\""
   
+  def cleanHadoopDataAtFirst(self):
+    serverSet = self.getServersByRole("hadoop-worker")
+    if not serverSet.servers[0].getProcess("datanode").isDataDirExists():
+      self.cleanHadoopMaster()
+      self.cleanHadoopWorker()
+    
   def startNameNode(self):
     return self.startProcess("namenode", setupClusterEnv = True)
   
