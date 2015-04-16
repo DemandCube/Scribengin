@@ -32,7 +32,7 @@ public class KafkaSource implements Source {
   void init(StorageDescriptor descriptor) throws Exception {
     this.descriptor = descriptor;
     KafkaTool kafkaTool = new KafkaTool(descriptor.attribute("dataflowName"), descriptor.attribute("zk.connect"));
-    kafkaTool.connect();
+    kafkaTool.connect(descriptor.attribute("zk.connect"));
     TopicMetadata topicMetdadata = kafkaTool.findTopicMetadata(descriptor.attribute("topic"));
     List<PartitionMetadata> partitionMetadatas = topicMetdadata.partitionsMetadata();
     for(int i = 0; i < partitionMetadatas.size(); i++) {

@@ -1,65 +1,50 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
-import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
-import com.neverwinterdp.scribengin.storage.StorageDescriptor;
-import com.neverwinterdp.scribengin.storage.hdfs.HDFSSourceGenerator;
-import com.neverwinterdp.util.JSONSerializer;
 
 
 public class HDFSToKafkaDataflowTest extends DataflowTest {
 
+  public static final String TEST_NAME = "hdfs-kafka";
+
   @ParametersDelegate
-  private DataflowSinkValidator   sinkValidator = new KafkaDataflowSinkValidator();
+  private DataflowSourceGenerator sourceGenerator = new HDFSDataflowSourceGenerator();
   
-  @Parameter(names = "--sink-topic", description = "Default sink topic")
-  public String DEFAULT_SINK_TOPIC = "hello.sink.default" ;
+  @ParametersDelegate
+  private DataflowSinkValidator   sinkValidator   = new KafkaDataflowSinkValidator();
   
   protected void doRun(ScribenginShell shell) throws Exception {
-    long start = System.currentTimeMillis();
-    FileSystem fs = FileSystem.getLocal(new Configuration());
     ScribenginClient scribenginClient = shell.getScribenginClient();
+    sourceGenerator.init(scribenginClient);
+    sourceGenerator.run();
+
     sinkValidator.init(scribenginClient);
-    
-    new HDFSSourceGenerator().generateSource(fs, getDataDir() + "/source");
+
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
-    dflDescriptor.setName("hello-hdfs-kafka-dataflow");
+    dflDescriptor.setName(dataflowName);
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
+    dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
     dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
     dflDescriptor.setScribe(TestCopyScribe.class.getName());
-    StorageDescriptor storageDescriptor = new StorageDescriptor("HDFS", getDataDir() + "/source") ;
-    dflDescriptor.setSourceDescriptor(storageDescriptor);
+
+    dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
 
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
-    System.out.println(JSONSerializer.INSTANCE.toString(dflDescriptor)) ;
-   
-    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
 
-    shell.console().println("Wait time to finish: " + duration + "ms");
-    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
-    dataflowInfoThread.start();
-    waitingEventListener.waitForEvents(duration);
-    shell.console().println("The test executed time: " + (System.currentTimeMillis() - start) + "ms");
-    dataflowInfoThread.interrupt();
-    
-    
-    //sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
+    printDebugInfo(shell, scribenginClient, dflDescriptor);
+    sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
     sinkValidator.run();
+    //runInBackground() wont work
     sinkValidator.waitForTermination();
-    DataflowTestReport report = new DataflowTestReport() ;
-    //sourceGenerator.populate(report);
-    sinkValidator.populate(report);
-    report.report(System.out);
-    //TODO: Implemement and test the juniReport method
-    junitReport(report);
+
+    report(shell, sourceGenerator, sinkValidator);
+
+    if (dumpRegistry) {
+      shell.execute("registry dump");
+    }
   }
 
   private String getDataDir() {

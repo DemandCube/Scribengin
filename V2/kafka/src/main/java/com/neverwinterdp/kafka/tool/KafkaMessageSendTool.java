@@ -79,16 +79,16 @@ public class KafkaMessageSendTool implements Runnable {
     }
     producerReport.setMessageSent(messageSent);
     producerReport.setMessageRetried(retried.get());
-    
 
-    try {
+
+   /* try {
       printDebugInfo();
     } catch (Exception e) {
       e.printStackTrace();
-    }
+    }*/
   }
 
-  private void printDebugInfo() throws Exception {
+  void printDebugInfo() throws Exception {
     System.out.println("SendCounter Total " + sendCounter.get());
     System.out.println("Counts from the partition Writers.");
     for (Entry<Integer, PartitionMessageWriter> writer : writers.entrySet()) {
@@ -202,6 +202,7 @@ public class KafkaMessageSendTool implements Runnable {
           byte[] key = ("p:" + metadata.partitionId() + ":" + writeCount).getBytes();
           byte[] message = messageGenerator.nextMessage(metadata.partitionId(), topicConfig.producerConfig.messageSize) ;
           writer.send(topicConfig.topic, metadata.partitionId(), key, message, failedCountCallback, topicConfig.producerConfig.sendTimeout);
+   //     System.err.println("write ");
           writeCount++;
           sendCounter.incrementAndGet();
           //Check max message per partition

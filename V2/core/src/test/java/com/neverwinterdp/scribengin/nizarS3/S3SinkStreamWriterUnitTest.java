@@ -331,6 +331,7 @@ public class S3SinkStreamWriterUnitTest {
     return byteOutputStream.toByteArray().length;
   }
 
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   protected static void setEnv(Map<String, String> newenv) {
     try {
       Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");

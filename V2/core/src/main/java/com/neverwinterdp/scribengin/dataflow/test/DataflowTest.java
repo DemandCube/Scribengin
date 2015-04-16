@@ -58,11 +58,10 @@ abstract public class DataflowTest {
   
   @Parameter(names = "--debug-dataflow-activity-detail", description = "Enable detailed debugger")
   protected boolean detailedDebugDataflowActivity = false;
-  
-  
+
   @Parameter(names = "--dump-registry", description = "Enable to dump the registry at the end")
   protected boolean dumpRegistry = false;
-  
+
   @Parameter(names = "--junit-report", description = "The junit report output file")
   protected String junitReport;
 
@@ -77,19 +76,19 @@ abstract public class DataflowTest {
   abstract protected void doRun(ScribenginShell shell) throws Exception;
 
   protected void report(ScribenginShell shell, DataflowSourceGenerator generator, DataflowSinkValidator validator) throws Exception {
-    DataflowTestReport report = new DataflowTestReport() ;
+    DataflowTestReport report = new DataflowTestReport();
     generator.populate(report);
     validator.populate(report);
     shell.console().println(report.getFormatedReport());
     junitReport(report);
   }
-  
+
   protected void report(ScribenginShell shell, DataflowWaitingEventListener waitingEventListener) throws IOException {
-    TabularFormater dataflowEventInfo = waitingEventListener.getTabularFormaterEventLogInfo() ;
+    TabularFormater dataflowEventInfo = waitingEventListener.getTabularFormaterEventLogInfo();
     dataflowEventInfo.setTitle("Dataflow event log info");
-    shell.console().println(dataflowEventInfo.getFormatText()) ;
+    shell.console().println(dataflowEventInfo.getFormatText());
   }
-  
+
   //TODO implement correctlly
   protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
     if(detailedDebugDataflowTask){
@@ -117,13 +116,15 @@ abstract public class DataflowTest {
 
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
+    try {
+      waitingEventListener.waitForEvents(duration);
+      dataflowInfoThread.interrupt();
+    } catch (Exception e) {
 
-    waitingEventListener.waitForEvents(duration);
-    dataflowInfoThread.interrupt();
-
-    report(shell, waitingEventListener) ;
+    }
+    report(shell, waitingEventListener);
   }
-  
+
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
     if (junitReport == null) {
       return;
@@ -165,7 +166,7 @@ abstract public class DataflowTest {
     testSet.addTestResult(newTestResult(++testNum,
         "Read Count: " + sinkReport.getReadCount(),
         sinkReport.getReadCount() > 0));
-    
+
     testSet.addTestResult(newTestResult(++testNum,
         "Overall Test success : " + (sinkReport.getReadCount() >= sourceReport.getWriteCount()),
         sinkReport.getReadCount() >= sourceReport.getWriteCount()));
@@ -197,12 +198,14 @@ abstract public class DataflowTest {
     }
 
     public void run() {
-      if(period < 1) return;
+      if (period < 1)
+        return;
       try {
         while (true) {
           Thread.sleep(period);
           try {
-            shell.console().println("#Dataflow Print Thread period = " + period + "#"); ;
+            shell.console().println("#Dataflow Print Thread period = " + period + "#");
+
             shell.execute("dataflow info --running " + descriptor.getName());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());
@@ -212,15 +215,15 @@ abstract public class DataflowTest {
       }
     }
   }
-  
+
   static public class TestCopyScribe extends ScribeAbstract {
     private int count = 0;
-    
+
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
       ctx.append(record);
-      count++ ;
-      if(count == 100) {
+      count++;
+      if (count == 100) {
         ctx.commit();
         count = 0;
       }
