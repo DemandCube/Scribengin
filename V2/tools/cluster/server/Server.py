@@ -153,4 +153,8 @@ class ScribenginServer(Server):
     for key in self.processes:
       if not self.processes[key].isRunning():
         return None
-    return super(ScribenginServer, self).getReportDict()
+    procDict = super(ScribenginServer, self).getReportDict()
+    yarnConnection = YarnRestApi(self.hostname)
+    procDict["Hostname"] = ",".join(yarnConnection.getNodesRunningContainers())
+    return procDict
+    
