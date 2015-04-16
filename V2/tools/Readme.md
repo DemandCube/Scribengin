@@ -20,6 +20,7 @@ http://pydev.org/manual_101_install.html
 
 #Usage#
 ```
+./clusterCommander.py --help
 Usage: clusterCommander.py [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
                            [ARGS]...]...
 
@@ -29,24 +30,70 @@ Options:
   --help                Show this message and exit.
 
 Commands:
+  cluster           Cluster commands
+  hadoop            Hadoop commands
   kafka             Kafka commands
   kafkafailure      Failure Simulation for Kafka
   monitor           Monitor Cluster status
+  scribengin        Scribengin commands
   status            Get Cluster status
+  vmmaster          VmMaster commands
   zookeeper         Zookeeper commands
   zookeeperfailure  Failure Simulation for Zookeeper
-  
-###########
-Usage: clusterCommander.py monitor [OPTIONS]
 
-  Monitor Cluster status
+###########
+./clusterCommander.py cluster --help
+Usage: clusterCommander.py cluster [OPTIONS]
+
+  Cluster commands
 
 Options:
-  --update-interval INTEGER  Time interval (in seconds) to wait between
-                             updating cluster status
-  --help                     Show this message and exit.
-  
+  --restart                    restart cluster
+  --start                      start cluster
+  --stop                       stop cluster
+  --force-stop                 kill cluster
+  --clean                      Clean old cluster data
+  --wait-before-start INTEGER  Time to wait before restarting cluster
+                               (seconds)
+  --wait-before-kill INTEGER   Time to wait before force killing cluster
+                               (seconds)
+  --kafka-server-config TEXT   Kafka server configuration template path,
+                               default is /opt/kafka/config/default.properties
+  --execute TEXT               execute given command on all nodes
+  --help                       Show this message and exit.
 
+###########
+./clusterCommander.py vmmaster --help
+Usage: clusterCommander.py vmmaster [OPTIONS]
+
+  VmMaster commands
+
+Options:
+  --restart                     restart VmMaster
+  --start                       start VmMaster
+  --stop                        stop VmMaster
+  --wait-before-start INTEGER   Time to wait before restarting VmMaster
+                                (seconds)
+  --wait-before-report INTEGER  Time to wait before restarting reporting
+                                cluster status (seconds)
+  --help                        Show this message and exit.
+
+###########
+./clusterCommander.py scribengin --help
+Usage: clusterCommander.py scribengin [OPTIONS]
+
+  Scribengin commands
+
+Options:
+  --restart                     restart Scribengin
+  --start                       start Scribengin
+  --stop                        stop Scribengin
+  --wait-before-start INTEGER   Time to wait before restarting Scribengin
+                                (seconds)
+  --wait-before-report INTEGER  Time to wait before restarting reporting
+                                cluster status (seconds)
+  --help                        Show this message and exit.
+  
 ###########
 Usage: clusterCommander.py kafka [OPTIONS]
 
@@ -140,5 +187,15 @@ Options:
   --role TEXT  Which role to check on (i.e. kafka, zookeeper, hadoop-master,
                hadoop-worker)
   --help       Show this message and exit.
+
+###########
+Usage: clusterCommander.py monitor [OPTIONS]
+
+  Monitor Cluster status
+
+Options:
+  --update-interval INTEGER  Time interval (in seconds) to wait between
+                             updating cluster status
+  --help                     Show this message and exit.
 
 ```
