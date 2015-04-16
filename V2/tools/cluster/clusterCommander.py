@@ -149,6 +149,7 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     cluster.paramDict["server_config"] = kafka_server_config
     cluster.startZookeeper()
     cluster.startKafka()
+    cluster.cleanHadoopDataAtFirst()
     cluster.startHadoopMaster()
     cluster.startHadoopWorker()
     cluster.startVmMaster()
