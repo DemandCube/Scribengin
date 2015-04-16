@@ -5,7 +5,7 @@ cd $DIR
 ../startCluster.sh
 
 #Start cluster
-ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && ./setup.sh && python clusterCommander.py zookeeper --clean --start kafka --clean --start"
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && python clusterCommander.py zookeeper --clean --start kafka --clean --start"
 
 #Give everything time to come up
 sleep 20

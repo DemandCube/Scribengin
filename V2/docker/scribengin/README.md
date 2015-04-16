@@ -1,3 +1,41 @@
+#Easy Setup#
+
+####Dependencies
+1. [Install Docker according to the documentation](https://docs.docker.com/installation/)
+2. [Make sure git is set up](http://git-scm.com/downloads)
+3. Make sure your user can edit your /etc/hosts file
+4. Make sure your ssh keys are set up (no password)
+    ```
+    ssh-keygen -p
+    # Start the SSH key creation process
+    # Enter file in which the key is (/Users/you/.ssh/id_rsa): [Hit enter]
+    # Key has comment '/Users/you/.ssh/id_rsa'
+    # Enter new passphrase (empty for no passphrase): [Type new passphrase]
+    # Enter same passphrase again: [One more time for luck]
+    # Your identification has been saved with the new passphrase.
+    ```
+
+5. Sync down Scribengin
+
+    ```git clone http://github.com/DemandCube/Scribengin```
+
+####Bring up the docker images
+```
+cd pathTo/Scribengin/V2/docker/scribengin
+./startCluster.sh
+#Your docker images are now created!
+```
+####Start Scribengin
+```
+#You shouldn't need a password if your ssh key was copied correctly
+#If not, the password is "neverwinterdp"
+ssh neverwinterdp@hadoop-master
+
+cd /opt/cluster
+./clusterCommander.py cluster --start --clean status
+#Scribengin is now running in YARN!
+```
+
 #Design#
 
 The structure directory of the scribengin docker
@@ -5,6 +43,9 @@ The structure directory of the scribengin docker
 ````
   Dockerfile 
   docker.sh
+  startCluster.sh
+  stopCluster.sh
+  integration-tests/
   bootstrap/
     post-install
       cluster.sh      
@@ -74,13 +115,11 @@ git clone http://github.com/DemandCube/Scribengin
 
 #####Dependencies
 1. [Install Docker according to the documentation](https://docs.docker.com/installation/)
-2. Make sure git is set up
-3. Run the script to install other DemandCube dependencies
-  
-  ```
-  cd pathTo/Scribengin/V2
-  ./installDependencies.sh
-  ```
+2. [Make sure git is set up](http://git-scm.com/downloads)
+3. Make sure your user can edit your /etc/hosts file
+4. Sync down Scribengin
+
+    ```git clone http://github.com/DemandCube/Scribengin```
 
 #####Build and release Scribengin
 ```
@@ -159,7 +198,7 @@ We need to go to the /opt/cluster directory and run the ```./clusterCommander.py
 $cd /opt/cluster
 
 #Install required libraries for python
-$./setup.sh
+$sudo ./setup.sh
 
 #To start zookeeper
 $./clusterCommander.py zookeeper --clean --start
@@ -175,6 +214,10 @@ $./clusterCommander.py zookeeper --clean --start kafka --clean --start
 
 #To start all at once
 $./clusterCommander.py cluster --clean --start
+
+#To get cluster status
+$./clusterCommander.py status
+
 ````
 Examples to print usage of clusterCommander.py:
 
@@ -182,11 +225,10 @@ Examples to print usage of clusterCommander.py:
 $./clusterCommander.py --help
 
 #For subcommand help
-$./clusterCommander.py zookeeper --help
-$./clusterCommander.py kafka --help
-$./clusterCommander.py hadoop --help
+$./clusterCommander.py [commandName] --help
+
+#Example:
 $./clusterCommander.py cluster --help
-$./clusterCommander.py monitor --help
 
 ````
 
@@ -240,7 +282,7 @@ Then run the script
 ````
   $cd /opt/cluster/
   $./setup.sh
-  $./clusterCommander.py cluster --clean --start
+  $./clusterCommander.py zookeeper --clean --start kafka --clean --start hadoop --clean --start
 ````
 
 will help to launch the zookeeper , kafka and hadoop.
@@ -253,6 +295,13 @@ This command will launch the yarn vm framework
   cd V2/release/build/release/scribengin
   ./bin/shell.sh vm start
 ````
+
+To launch zookeeper, kafka, hadoop, and launch Scribengin all in one step
+```
+  cd /opt/cluster
+  ./setup.sh
+  ./clusterCommander.py cluster --start --clean
+```
 
 Check http://hadoop-master:8088/cluster address with a browser, you should see the vm-master-1  with the RUNNING status
 
