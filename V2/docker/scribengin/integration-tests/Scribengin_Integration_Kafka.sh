@@ -1,8 +1,9 @@
-#Set up Scribengin cluster
-CWD=`pwd`
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd $DIR
-../startCluster.sh
+#Set up docker images
+DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+$DOCKERSCRIBEDIR/../startCluster.sh
+
+#make folder for test results
+mkdir testresults
 
 #Start cluster
 ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && python clusterCommander.py cluster --start --clean status"
@@ -24,8 +25,8 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                               --junit-report KafkaIntegrationTest.xml --dump-registry"
 
 #Get results
-scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/KafkaIntegrationTest.xml ./
+scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/KafkaIntegrationTest.xml ./testresults/
 
 #Clean up
-../stopCluster.sh
-cd $CWD
+$DOCKERSCRIBEDIR/../stopCluster.sh
+
