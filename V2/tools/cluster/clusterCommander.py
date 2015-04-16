@@ -47,14 +47,19 @@ def status(role):
 @click.option('--restart',           is_flag=True, help="restart VmMaster")
 @click.option('--start',             is_flag=True, help="start VmMaster")
 @click.option('--stop',              is_flag=True, help="stop VmMaster")
+@click.option('--force-stop',        is_flag=True, help="kill VmMaster")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting VmMaster (seconds)")
 @click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
-def vmmaster(restart, start, stop, wait_before_start, wait_before_report):
+def vmmaster(restart, start, stop,force_stop, wait_before_start, wait_before_report):
   cluster = Cluster()
   
   if(restart or stop):
     logging.debug("Shutting down VmMaster")
     cluster.shutdownVmMaster()
+  
+  if(force_stop):
+    logging.debug("Killing VmMaster")
+    cluster.killVmMaster()
   
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
@@ -70,15 +75,20 @@ def vmmaster(restart, start, stop, wait_before_start, wait_before_report):
 @click.option('--restart',           is_flag=True, help="restart Scribengin")
 @click.option('--start',             is_flag=True, help="start Scribengin")
 @click.option('--stop',              is_flag=True, help="stop Scribengin")
+@click.option('--force-stop',        is_flag=True, help="kill Scribengin")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting Scribengin (seconds)")
 @click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
-def scribengin(restart, start, stop, wait_before_start, wait_before_report):
+def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report):
   cluster = Cluster()
   
   if(restart or stop):
     logging.debug("Shutting down Scribengin")
     cluster.shutdownScribengin()
   
+  if(force_stop):
+    logging.debug("Killing Scribengin")
+    cluster.killScribengin()
+    
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
     sleep(wait_before_start)
@@ -107,8 +117,8 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     
   if(restart or stop):
     logging.debug("Shutting down Cluster")
-    cluster.shutdownScribengin()
-    cluster.shutdownVmMaster()
+    cluster.killScribengin()
+    cluster.killVmMaster()
     cluster.shutdownKafka()
     cluster.shutdownZookeeper()
     cluster.shutdownHadoopWorker()

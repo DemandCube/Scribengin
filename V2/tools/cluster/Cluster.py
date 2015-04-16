@@ -1,4 +1,4 @@
-from server.Server import KafkaServer,ZookeeperServer,HadoopMasterServer,HadoopWorkerServer,VmMasterServer,ScribenginServer
+from server.Server import KafkaServer,ZookeeperServer,HadoopMasterServer,HadoopWorkerServer
 from server.ServerSet import ServerSet
 
 import re
@@ -45,9 +45,7 @@ class Cluster(ServerSet):
           self.addServer(ZookeeperServer(hostname)) 
         if re.match("hadoop-master.*", hostname, re.IGNORECASE) is not None:
           hadoopMasters.append(hostname)
-          self.addServer(HadoopMasterServer(hostname)) 
-          self.addServer(VmMasterServer(hostname))
-          self.addServer(ScribenginServer(hostname))
+          self.addServer(HadoopMasterServer(hostname))
         if re.match("hadoop-worker.*", hostname, re.IGNORECASE) is not None :
           hadoopWorkers.append(hostname)
           self.addServer(HadoopWorkerServer(hostname))
