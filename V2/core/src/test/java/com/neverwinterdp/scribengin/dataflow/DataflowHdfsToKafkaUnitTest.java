@@ -72,7 +72,7 @@ public class DataflowHdfsToKafkaUnitTest {
             " --worker 3" +
             " --executor-per-worker 1" +
             " --duration 90000" +
-            " --task-max-execute-time 1000" +
+            " --task-max-execute-time 10000" +
             " --source-name output" +
             " --source-num-of-stream 10" +
             " --source-write-period 5" +

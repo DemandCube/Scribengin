@@ -79,8 +79,8 @@ public class DataflowKafkaToHdfsUnitTest {
             " --source-max-records-per-stream 10000" +
             " --sink-name output" +
             " --print-dataflow-info -1" +
-            " --debug-dataflow-task true" +
-            " --debug-dataflow-worker true" +
+            " --debug-dataflow-task " +
+            " --debug-dataflow-worker " +
             " --junit-report build/junit-report.xml" +
             " --dump-registry";
         shell.execute(command);
