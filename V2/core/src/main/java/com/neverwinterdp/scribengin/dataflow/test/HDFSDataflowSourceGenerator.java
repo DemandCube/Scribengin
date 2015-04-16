@@ -80,7 +80,6 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
     SinkStreamWriter writer = stream.getWriter();
     for(int i = 0; i < numOfFilesPerFolder; i++) {
       for(int j = 0; j < numOfRecordsPerFile; j ++) {
-        System.err.println("writing");
         writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();

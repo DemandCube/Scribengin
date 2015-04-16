@@ -43,6 +43,7 @@ public class DataflowKafkaToHdfsUnitTest {
 
   @Test
   public void testDataflows() throws Exception {
+    System.out.println(" com.neverwinterdp.scribengin.dataflow.DataflowKafkaToHdfsUnitTest.testDataflows()");
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
