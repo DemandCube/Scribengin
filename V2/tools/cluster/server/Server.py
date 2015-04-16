@@ -130,7 +130,7 @@ class VmMasterServer(Server):
     runningOn = ""
     yarnConnection = YarnRestApi(self.hostname)
     runningAppMasters = yarnConnection.getRunningApplicationMasters()
-    if runningAppMasters and "apps" in runningAppMasters and "app" in runningAppMasters["apps"]:
+    if runningAppMasters and "apps" in runningAppMasters and runningAppMasters["apps"] and "app" in runningAppMasters["apps"]:
       for appMaster in runningAppMasters["apps"]["app"]:
         if "amHostHttpAddress" in appMaster:
           runningOn = appMaster["amHostHttpAddress"]
