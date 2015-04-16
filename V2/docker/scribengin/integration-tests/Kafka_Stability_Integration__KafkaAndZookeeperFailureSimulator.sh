@@ -1,18 +1,8 @@
 #Set up Scribengin cluster
-cd V2/
-./installDependencies.sh
-cd docker/scribengin/
-./docker.sh container clean || true
-./docker.sh image clean || true
-./scribengin.sh build
-./docker.sh image build
-./docker.sh container run --zk-server=2 --kafka-server=4
-if [[ $OSTYPE == *"darwin"* ]] ; then
-  ./docker.sh ip-route
-  ./docker.sh update-hosts
-else
-  sudo ./docker.sh update-hosts
-fi
+CWD=`pwd`
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd $DIR
+../startCluster.sh
 
 #Start cluster
 ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && ./setup.sh && python clusterCommander.py zookeeper --clean --start kafka --clean --start"
@@ -52,12 +42,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 #Get results
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/build/*.xml ./
 
-#Allow failure simulator to save test results
-#sleep 10
-
-#Get results for failure simulator
-#scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/results/FAILURE_TEST_failure_simulator.xml ./
 
 #Clean up
-./docker.sh container clean || true
-./docker.sh image clean || true
+../stopCluster.sh
+cd $CWD

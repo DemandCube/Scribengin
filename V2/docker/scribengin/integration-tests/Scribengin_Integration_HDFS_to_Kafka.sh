@@ -1,22 +1,12 @@
 #Set up Scribengin cluster
-cd V2/
-./installDependencies.sh
-cd docker/scribengin/
-./docker.sh container clean || true
-./docker.sh image clean || true
-./scribengin.sh build
-./docker.sh image build
-./docker.sh container run
-sudo ./docker.sh update-hosts
+CWD=`pwd`
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd $DIR
+../startCluster.sh
 
 #Start cluster
-######ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt && ./cluster.sh kafka start --with-zookeeper"
-ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && ./setup.sh && python clusterCommander.py zookeeper --clean --start kafka --clean --start"
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && ./setup.sh && python clusterCommander.py cluster --start --clean status"
 
-sleep 5
-ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm start"
-sleep 5
-ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin start"
 sleep 5
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
@@ -29,5 +19,5 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/HDFS_to_Kafka_IntegrationTest.xml ./
 
 #Clean up
-./docker.sh container clean || true
-./docker.sh image clean || true
+../stopCluster.sh
+cd $CWD
