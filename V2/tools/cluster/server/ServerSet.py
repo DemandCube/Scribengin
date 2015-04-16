@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import os
 
 class ServerSet(object):
   def __init__(self, name):
@@ -102,7 +103,11 @@ class ServerSet(object):
     return self.startProcess("zookeeper")
   
   def startKafka(self):
-    return self.startProcess("kafka")
+    if os.path.isfile(self.paramDict["server_config"]):
+      return self.startProcess("kafka")
+    else:
+      print "Error: Invalid value for \"--server-config\": Path \"" + self.paramDict["server_config"] + "\" does not exist."
+      print "Please make sure kafka's \"<server_template_name>.properties\" file is available in the hosting machine, and give the same path for \"--server-config\""
   
   def startNameNode(self):
     return self.startProcess("namenode", setupClusterEnv = True)
