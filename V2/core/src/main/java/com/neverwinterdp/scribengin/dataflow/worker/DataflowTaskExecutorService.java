@@ -59,27 +59,36 @@ public class DataflowTaskExecutorService {
   
   
   void interrupt() throws Exception {
-    System.err.println("Interrupt dataflow worker executor");
+    System.err.println("  DataflowTaskExecutorService: Interrupt dataflow worker executor");
     for(DataflowTaskExecutor sel : taskExecutors) {
       if(sel.isAlive()) sel.interrupt();
     }
     waitForExecutorTermination(500);
-    System.err.println("Interrupt dataflow worker executor done!!!!!!!!!!!!!");
+    System.err.println("  DataflowTaskExecutorService: Interrupt dataflow worker executor done!!!!!!!!!!!!!");
   }
   
   public void pause() throws Exception {
+    System.err.println("DataflowTaskExecutorService: pause()");
+    workerStatus = DataflowWorkerStatus.PAUSING;
+    container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     interrupt();
     workerStatus = DataflowWorkerStatus.PAUSE;
     container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+    System.err.println("DataflowTaskExecutorService: pause() done!");
   }
   
   public void shutdown() throws Exception {
     logger.info("Start shutdown()");
+    System.err.println("DataflowTaskExecutorService: shutdown()");
     if(workerStatus != DataflowWorkerStatus.TERMINATED) {
+      workerStatus = DataflowWorkerStatus.TERMINATING;
+      container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+      dataflowTaskEventListener.setComplete();
       interrupt() ;
       workerStatus = DataflowWorkerStatus.TERMINATED;
       container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     }
+    System.err.println("DataflowTaskExecutorService: shutdown() done!");
     logger.info("Finish shutdown()");
   }
   

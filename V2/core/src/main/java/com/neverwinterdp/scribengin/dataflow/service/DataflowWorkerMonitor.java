@@ -27,8 +27,8 @@ public class DataflowWorkerMonitor {
     Node heartbeatNode = new Node(dataflowRegistry.getRegistry(), heartbeatPath);
     Node vmNode = heartbeatNode.getParentNode().getParentNode();
     workerHeartbeatListeners.remove(vmNode.getPath());
-    VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class) ;
-    dataflowRegistry.historyWorker(vmDescriptor);
+    // VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class) ;
+    dataflowRegistry.historyWorker(vmNode.getName());
   }
   
   public class DataflowWorkerHeartbeatListener extends NodeEventWatcher {
