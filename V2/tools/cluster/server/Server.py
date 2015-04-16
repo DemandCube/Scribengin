@@ -4,7 +4,7 @@ from os.path import join, dirname, abspath, expanduser
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
 from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginProcess  #@UnresolvedImport
-from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
+#from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Server(object):
   def __init__(self, hostname, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
@@ -111,6 +111,8 @@ class HadoopWorkerServer(Server):
     self.role = 'hadoop-worker' 
     Server.addProcess(self, HadoopDaemonProcess('datanode',hostname, 'DataNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('nodemanager',hostname, 'NodeManager', "sbin/yarn-daemon.sh"))
+    Server.addProcess(self, VmMasterProcess('vmmaster',hostname))
+    Server.addProcess(self, ScribenginProcess('scribengin',hostname))
 
 class HadoopMasterServer(Server):
   def __init__(self, hostname):
@@ -119,42 +121,6 @@ class HadoopMasterServer(Server):
     Server.addProcess(self, HadoopDaemonProcess('namenode',hostname, 'NameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('secondarynamenode',hostname, 'SecondaryNameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('resourcemanager',hostname, 'ResourceManager', "sbin/yarn-daemon.sh"))
-    
-class VmMasterServer(Server):
-  def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.role = 'vmMaster'
-    Server.addProcess(self, VmMasterProcess('vmmaster',hostname))
-  
-  def getReportDict(self):
-    runningOn = ""
-    yarnConnection = YarnRestApi(self.hostname)
-    runningAppMasters = yarnConnection.getRunningApplicationMasters()
-    if runningAppMasters and "apps" in runningAppMasters and runningAppMasters["apps"] and "app" in runningAppMasters["apps"]:
-      for appMaster in runningAppMasters["apps"]["app"]:
-        if "amHostHttpAddress" in appMaster:
-          runningOn = appMaster["amHostHttpAddress"]
-    
-      runningOn = runningOn.split(":")[0]
-      procDict = super(VmMasterServer, self).getReportDict()
-      procDict["Hostname"] = runningOn
-      return procDict
-    else:
-      return None
-  
-class ScribenginServer(Server):
-  def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.hostname = hostname
-    self.role = 'scribengin'
-    Server.addProcess(self, ScribenginProcess('scribengin',hostname))
-  
-  def getReportDict(self):
-    for key in self.processes:
-      if not self.processes[key].isRunning():
-        return None
-    procDict = super(ScribenginServer, self).getReportDict()
-    yarnConnection = YarnRestApi(self.hostname)
-    procDict["Hostname"] = ",".join(yarnConnection.getNodesRunningContainers())
-    return procDict
+
+
     

@@ -195,10 +195,15 @@ class HadoopDaemonProcess(Process):
 ############
 class VmMasterProcess(Process):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "ApplicationMaster")
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*")
     
   def setupClusterEnv(self, paramDict = {}):
     pass
+  
+  def getRunningPid(self):
+    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1}'"
+    stdout,stderr = self.sshExecute(command)
+    return stdout.strip().replace("\n",",")
   
   def start(self):
     self.printProgress("Starting ")
@@ -211,30 +216,24 @@ class VmMasterProcess(Process):
   def clean(self):
     pass 
   
-  def isRunning(self):
-    yarnConnection = YarnRestApi(self.hostname)
-    if yarnConnection.getRunningApplicationMasterIds():
-      return True
-    else:
-      return False
-  
-    
   def kill(self):
     return self.shutdown()
-    
-  def getRunningPid(self):
-    yarnConnection = YarnRestApi(self.hostname)
-    return ",".join(yarnConnection.getRunningApplicationMasterIds())
+  
     
   
 ############
 class ScribenginProcess(Process):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "YarnContainer")
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*")
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
     pass
+  
+  def getRunningPid(self):
+    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1}'"
+    stdout,stderr = self.sshExecute(command)
+    return stdout.strip().replace("\n",",")
   
   def start(self):
     self.printProgress("Starting ")
@@ -247,26 +246,7 @@ class ScribenginProcess(Process):
   def clean(self):
     pass 
   
-  
-  def isRunning(self):
-    yarnConnection = YarnRestApi(self.hostname)
-    result = False
-    for appMasterId in yarnConnection.getRunningApplicationMasterIds():
-      if yarnConnection.getNumContainersForApplicationMaster(appMasterId) > 1:
-        result = True
-    return result
-    
   def kill(self):
     return self.shutdown()
-    
-  def getRunningPid(self):
-    yarnConnection = YarnRestApi(self.hostname)
-    result = []
-    for appMasterId in yarnConnection.getRunningApplicationMasterIds():
-      result.append(str(yarnConnection.getNumContainersForApplicationMaster(appMasterId)))
-    
-    if result:
-      return "NumContainers: "+",".join(result)
-    else:
-      return "NumContainers: 0"
+  
   

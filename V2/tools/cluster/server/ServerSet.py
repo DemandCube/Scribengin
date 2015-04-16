@@ -94,10 +94,14 @@ class ServerSet(object):
     return serverSet
   
   def startVmMaster(self):
-    return self.startProcess("vmmaster")
+    hadoopMasterServers = self.getServersByRole("hadoop-worker")
+    if hadoopMasterServers.servers:
+      return self.startProcessOnHost("vmmaster", hadoopMasterServers.servers[0].getHostname())
   
   def startScribengin(self):
-    return self.startProcess("scribengin")
+    hadoopMasterServers = self.getServersByRole("hadoop-worker")
+    if hadoopMasterServers.servers:
+      return self.startProcessOnHost("scribengin", hadoopMasterServers.servers[0].getHostname())
   
   def startZookeeper(self):
     return self.startProcess("zookeeper")
@@ -137,10 +141,14 @@ class ServerSet(object):
     return self.startProcess("datanode,nodemanager")
   
   def shutdownVmMaster(self):
-    return self.shutdownProcess("vmmaster")
+    hadoopMasterServers = self.getServersByRole("hadoop-worker")
+    if hadoopMasterServers.servers:
+      return self.shutdownProcessOnHost("vmmaster", hadoopMasterServers.servers[0].getHostname())
   
   def shutdownScribengin(self):
-    return self.shutdownProcess("scribengin")
+    hadoopMasterServers = self.getServersByRole("hadoop-worker")
+    if hadoopMasterServers.servers:
+      return self.shutdownProcessOnHost("scribengin", hadoopMasterServers.servers[0].getHostname())
   
   def shutdownZookeeper(self):
     return self.shutdownProcess("zookeeper")
@@ -168,6 +176,12 @@ class ServerSet(object):
   
   def shutdownHadoopWorker(self):
     return self.shutdownProcess("datanode,nodemanager")
+  
+  def killScribengin(self):
+    return self.killProcess("scribengin")
+  
+  def killVmMaster(self):
+    return self.killProcess("vmmaster")
   
   def killZookeeper(self):
     return self.killProcess("zookeeper")
@@ -209,6 +223,8 @@ class ServerSet(object):
     return self.cleanProcess("datanode")
   
   def getReport(self):
+    omitStoppedProcesses = ["scribengin-master-*", "vm-master-*"]
+    
     serverReport = []
     sorted_servers = sorted(self.servers, key=lambda server: server.role)
     for server in sorted_servers :
@@ -218,8 +234,8 @@ class ServerSet(object):
         procs = server.getProcesses()
         for process in procs:
           procDict = server.getProcess(process).getReportDict()
-  
-          serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+          if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
+            serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
 
     headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
 
