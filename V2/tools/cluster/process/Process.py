@@ -1,7 +1,7 @@
 from os.path import expanduser, join, abspath, dirname
 from sys import path
 from tabulate import tabulate
-import paramiko, re
+import paramiko, re, os
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
 from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
@@ -70,6 +70,12 @@ class Process(object):
     stdout,stderr = self.sshExecute(command)
     return stdout.strip().replace("\n",",")
   
+  def isDataDirExists(self):
+    if self.sshExecute("if [ -d \"" + join(self.homeDir, "data") + "\" ]; then echo \"true\"; fi")[0].strip() == "true":
+      return True
+    else:
+      return False
+    
   def start(self):
     pass
   

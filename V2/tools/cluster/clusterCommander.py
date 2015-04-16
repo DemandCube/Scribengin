@@ -251,6 +251,7 @@ def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_st
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
     sleep(wait_before_start)
     logging.debug("Starting Hadoop")
+    cluster.cleanHadoopDataAtFirst()
     cluster.startHadoopMaster()
     cluster.startHadoopWorker()
   
