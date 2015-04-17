@@ -11,6 +11,7 @@ public class DataflowTaskExecutor {
   private DataflowTaskExecutorDescriptor executorDescriptor;
   private DataflowContainer dataflowContainer ;
   private ExecutorManagerThread executorManagerThread ;
+  private DataflowTask currentDataflowTask = null;
   private boolean interrupt = false;
   
   public DataflowTaskExecutor(DataflowTaskExecutorDescriptor  descriptor, DataflowContainer container) throws RegistryException {
@@ -30,7 +31,10 @@ public class DataflowTaskExecutor {
   }
   
   public void interrupt() throws Exception {
-    if(isAlive()) interrupt = true ;
+    if(isAlive()) {
+      interrupt = true ;
+      if(currentDataflowTask != null) currentDataflowTask.interrupt();
+    }
   }
   
   public boolean isAlive() {
@@ -40,29 +44,27 @@ public class DataflowTaskExecutor {
   
   public void execute() { 
     executorDescriptor.setStatus(DataflowTaskExecutorDescriptor.Status.RUNNING);
-    DataflowTask dataflowTask = null;
     DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
     try {
-      while(true) {
+      while(!interrupt) {
         DataflowTaskDescriptor taskDescriptor = dataflowRegistry.assignDataflowTask(vmDescriptor);
-        if(interrupt) break ;
+        if(interrupt) return ;
         if(taskDescriptor == null) return;
         
         executorDescriptor.addAssignedTask(taskDescriptor);
         dataflowRegistry.updateWorkerTaskExecutor(vmDescriptor, executorDescriptor);
-        dataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
-        dataflowTask.init();
-        DataflowTaskExecutorThread executorThread = new DataflowTaskExecutorThread(dataflowTask);
+        currentDataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
+        currentDataflowTask.init();
+        DataflowTaskExecutorThread executorThread = new DataflowTaskExecutorThread(currentDataflowTask);
         executorThread.start();
         executorThread.waitForTimeout(10000);
-        if(dataflowTask.isComplete()) dataflowTask.finish();
-        else dataflowTask.suspend();
-        if(interrupt) break ;
+        if(currentDataflowTask.isComplete()) currentDataflowTask.finish();
+        else currentDataflowTask.suspend();
       }
     } catch (InterruptedException e) {
-      System.err.println("detect shutdown interrupt for task " + dataflowTask.getDescriptor().getId());
-      dataflowTask.interrupt();
+      System.err.println("detect shutdown interrupt for task " + currentDataflowTask.getDescriptor().getId());
+      currentDataflowTask.interrupt();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {

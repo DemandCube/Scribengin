@@ -68,6 +68,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
       
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {
+        dflRegistry.dump();
         throw new Exception("Cannot detect the PAUSE status for " + waitingListener.getUndetectNodeEventCount() + " workers") ;
       }
     }

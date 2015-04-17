@@ -36,10 +36,16 @@ public class ActivityNodeDetailedFormatter extends NodeFormatter {
       b.append(activityFormater.getFormatText());
       
       List<ActivityStep> steps = activityNode.getChild("activity-steps").getChildrenAs(ActivityStep.class);
-      TabularFormater stepFormater = new TabularFormater("Step ID", "Type", "Status", "Description");
+      TabularFormater stepFormater = 
+          new TabularFormater("Step ID", "Type", "Max Retries", "Try", "Exec Time", "Status", "Description");
       stepFormater.setIndent("  ");
       for(ActivityStep step : steps) {
-        stepFormater.addRow(step.getId(), step.getType(), step.getStatus(), step.getDescription());
+        Object[] cells = {
+          step.getId(), step.getType(), step.getMaxRetries(), step.getTryCount(), 
+          step.getExecuteTime(), step.getStatus(), step.getDescription()
+        } ;
+        
+        stepFormater.addRow(cells);
       }
       
       b.append("\n");

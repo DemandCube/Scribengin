@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class DataflowRegistry {
     @Override
     public DataflowTaskDescriptor map(String path, byte[] data, Class<DataflowTaskDescriptor> type) {
       DataflowTaskDescriptor descriptor = JSONSerializer.INSTANCE.fromBytes(data, type);
-      descriptor.setStoredPath(path);
+      descriptor.setRegistryPath(path);
       return descriptor;
     }
   };
@@ -118,7 +119,7 @@ public class DataflowRegistry {
   //TODO: find where this method is used and pass an array of the descriptor and execute the add in the a transaction
   public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     Node taskNode = tasksDescriptors.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
-    taskDescriptor.setStoredPath(taskNode.getPath());
+    taskDescriptor.setRegistryPath(taskNode.getPath());
     taskNode.setData(taskDescriptor);
     DataflowTaskReport report = new DataflowTaskReport();
     report.setStartTime(System.currentTimeMillis());
@@ -140,15 +141,6 @@ public class DataflowRegistry {
     Node statusNode = workerNode.getChild("status");
     statusNode.setData(status);
   }
-  
-//  public void historyWorker(VMDescriptor vmDescriptor) throws RegistryException {
-//    Transaction transaction = registry.getTransaction() ;
-//    String fromPath = activeWorkers.getChild(vmDescriptor.getId()).getPath() ;
-//    String toPath   = historyWorkers.getChild(vmDescriptor.getId()).getPath();
-//    transaction.rcopy(fromPath, toPath);
-//    transaction.rdelete(fromPath);
-//    transaction.commit();
-//  }
   
   public void historyWorker(String vmId) throws RegistryException {
     Transaction transaction = registry.getTransaction() ;
@@ -221,7 +213,7 @@ public class DataflowRegistry {
         
         descriptor.setStatus(Status.SUSPENDED);    
         dataflowTaskUpdate(descriptor);
-        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
         String name = descriptorNode.getName();
         tasksAvailableQueue.offer(name.getBytes());
         //tasksAssigned.getChild(dataflowName).rdelete();
@@ -239,13 +231,13 @@ public class DataflowRegistry {
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
-        Node descriptorNode = registry.get(descriptor.getStoredPath()) ;
+        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
         String name = descriptorNode.getName();
         descriptor.setStatus(Status.TERMINATED);
         //TODO Transaction: convert to use the transaction
         Transaction transaction = registry.getTransaction();
         //update the task descriptor
-        transaction.setData(descriptor.getStoredPath(), descriptor);
+        transaction.setData(descriptor.getRegistryPath(), descriptor);
         transaction.createChild(tasksFinished, name, NodeCreateMode.PERSISTENT);
         transaction.rdelete(tasksAssigned.getPath() + "/" + name);
         //tasksFinished.createChild(transaction, dataflowName, NodeCreateMode.PERSISTENT);
@@ -258,16 +250,16 @@ public class DataflowRegistry {
   }
   
   public void dataflowTaskUpdate(DataflowTaskDescriptor descriptor) throws RegistryException {
-    registry.setData(descriptor.getStoredPath(), descriptor);
+    registry.setData(descriptor.getRegistryPath(), descriptor);
   }
   
   public void dataflowTaskReport(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
-    Node reportNode = registry.get(descriptor.getStoredPath() + "/report");
+    Node reportNode = registry.get(descriptor.getRegistryPath() + "/report");
     reportNode.setData(report);
   }
   
   public void create(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
-    Node taskNode = registry.get(descriptor.getStoredPath());
+    Node taskNode = registry.get(descriptor.getRegistryPath());
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
   }
   
@@ -280,13 +272,13 @@ public class DataflowRegistry {
   }
   
   public DataflowTaskReport getTaskReport(DataflowTaskDescriptor descriptor) throws RegistryException {
-    return registry.getDataAs(descriptor.getStoredPath() + "/report", DataflowTaskReport.class) ;
+    return registry.getDataAs(descriptor.getRegistryPath() + "/report", DataflowTaskReport.class) ;
   }
   
   public List<DataflowTaskReport> getTaskReports(List<DataflowTaskDescriptor> descriptors) throws RegistryException {
     List<String> reportPaths = new ArrayList<String>();
     for(int i = 0; i < descriptors.size(); i++) {
-      reportPaths.add(descriptors.get(i).getStoredPath() + "/report") ;
+      reportPaths.add(descriptors.get(i).getRegistryPath() + "/report") ;
     }
     return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
@@ -323,5 +315,9 @@ public class DataflowRegistry {
     System.out.println("  /scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned");
     debugger.watchChild(tasksAssigned.getPath(), ".*", new DataflowTaskNodeDebugger());
     return debugger ;
+  }
+  
+  public void dump() throws RegistryException, IOException {
+    registry.get(dataflowPath).dump(System.out);
   }
 }

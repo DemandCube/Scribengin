@@ -14,7 +14,7 @@ public class DataflowTaskDescriptor {
   private String                        scribe;
   private StreamDescriptor              streamDescriptor;
   private Map<String, StreamDescriptor> sinkStreamDescriptors;
-  private String                        storedPath;
+  private String                        registryPath;
 
   public int getId() { return id; }
   public void setId(int id) { this.id = id; }
@@ -43,15 +43,15 @@ public class DataflowTaskDescriptor {
   }
   
   @JsonIgnore
-  public String getStoredPath() { return storedPath; }
-  public void   setStoredPath(String storedPath) { this.storedPath = storedPath; }
+  public String getRegistryPath() { return registryPath; }
+  public void   setRegistryPath(String path) { this.registryPath = path; }
   
   public String storedName() {
-    if(this.storedPath == null) {
+    if(this.registryPath == null) {
       throw new RuntimeException("Stored path is not available") ;
     }
-    int idx = storedPath.lastIndexOf("/") ;
-    String storedName = storedPath.substring(idx + 1);
+    int idx = registryPath.lastIndexOf("/") ;
+    String storedName = registryPath.substring(idx + 1);
     return storedName;
   }
 }

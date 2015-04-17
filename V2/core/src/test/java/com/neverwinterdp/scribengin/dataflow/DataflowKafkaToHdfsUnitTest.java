@@ -89,9 +89,7 @@ public class DataflowKafkaToHdfsUnitTest {
       }
     }
 
-    synchronized void notifyTermimation() {
-      notify();
-    }
+    synchronized void notifyTermimation() { notify(); }
 
     synchronized void waitForTermination(long timeout) throws InterruptedException {
       wait(timeout);

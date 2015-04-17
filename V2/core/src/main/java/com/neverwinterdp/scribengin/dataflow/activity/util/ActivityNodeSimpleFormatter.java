@@ -21,24 +21,23 @@ public class ActivityNodeSimpleFormatter extends NodeFormatter {
     try {
       Activity activity = activityNode.getDataAs(Activity.class);
       if(activity == null) {
-        return "Activity Node: Activity data is not available!";
+        return "  Activity: Activity data is not available!";
       }
       
-      StringBuilder stepsString = new StringBuilder();
+      b.append("  Activity: ").
+        append("ID = " + activity.getId() + ", ").
+        append("Type = " + activity.getType() + ", ").
+        append("Description = " + activity.getDescription()+"\n");
+      
+      b.append("  Activity Steps: ");
       List<ActivityStep> steps = activityNode.getChild("activity-steps").getChildrenAs(ActivityStep.class);
       for(ActivityStep step : steps) {
-        stepsString.append("step:"+step.getId()+" = "+step.getStatus()+", ");
+        b.append("step:" + step.getId() + " = " + step.getStatus() + ", ");
       }
-      b.append("  Activity: ID = "+activity.getId()+", ");
-      b.append("Type = "+activity.getType()+", ");
-      b.append("Description = "+activity.getDescription()+"\n");
-      b.append("  Activity Steps: ");
-      b.append(stepsString.toString().substring(0, stepsString.toString().length()-2));
     } catch (RegistryException e) {
       b.append(e.getMessage());
     }
     b.append("\n");
     return b.toString();
   }
-
 }

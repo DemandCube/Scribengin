@@ -1,7 +1,10 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
+import java.util.List;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.activity.Activity;
@@ -10,9 +13,14 @@ import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityService;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
+import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.scribengin.dataflow.worker.VMDataflowWorkerApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -31,6 +39,13 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
           withExecutor(AddDataflowWorkerStepExecutor.class).
           attribute("worker.id", idTracker++));
     }
+    add(new ActivityStep().
+        withType("wait-for-worker-run-status").
+        withExecutor(WaitForWorkerRunningStatus.class));
+    
+    add(new ActivityStep().
+        withType("set-dataflow-run-status").
+        withExecutor(SetRunningDataflowStatusStepExecutor.class));
   }
   
   @Singleton
@@ -76,6 +91,37 @@ public class DataflowRunActivityBuilder extends ActivityBuilder {
       VMClient vmClient = new VMClient(registry);
       VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
       service.addWorker(vmDescriptor);
+    }
+  }
+  
+  @Singleton
+  static public class WaitForWorkerRunningStatus implements ActivityStepExecutor {
+    @Inject
+    private DataflowService service ;
+    
+    @Override
+    public void execute(Activity activity, ActivityStep step) throws Exception {
+      DataflowRegistry dflRegistry = service.getDataflowRegistry();
+      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
+      List<String> workers = workerNodes.getChildren();
+      WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
+      for(int i = 0; i < workers.size(); i++) {
+        String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
+        waitingListener.add(path, DataflowWorkerStatus.RUNNING);
+      }
+      waitingListener.waitForEvents(30 * 1000);
+    }
+  }
+  
+  @Singleton
+  static public class SetRunningDataflowStatusStepExecutor implements ActivityStepExecutor {
+    @Inject
+    private DataflowService service ;
+    
+    @Override
+    public void execute(Activity activity, ActivityStep step) throws Exception {
+      DataflowRegistry dflRegistry = service.getDataflowRegistry();
+      dflRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
     }
   }
 }

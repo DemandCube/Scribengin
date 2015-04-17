@@ -101,6 +101,7 @@ public class VMDataflowServiceApp extends VMApp {
     public void run() {
       try {
         service.run();
+        service. waitForTermination();
       } catch (Exception e) {
         e.printStackTrace();
       } finally {

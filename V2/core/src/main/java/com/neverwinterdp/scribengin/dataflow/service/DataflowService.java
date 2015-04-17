@@ -72,27 +72,23 @@ public class DataflowService {
     DataflowInitActivityBuilder dataflowInitActivityBuilder = new DataflowInitActivityBuilder(dataflowRegistry.getDataflowDescriptor());
     ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
     coordinator.waitForTermination(60000);
-    executeRunActivity();
-  }
-  
-  private void executeRunActivity() throws Exception {
-    System.err.println("execute RUN activity");
     
     dataflowTaskMonitor = new DataflowTaskMonitor(dataflowRegistry);
     
     DataflowRunActivityBuilder dataflowRunActivityBuilder = new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-    ActivityCoordinator coordinator = activityService.start(dataflowRunActivityBuilder);
-    coordinator.waitForTermination(60000);
-    
-    dataflowRegistry.setStatus(DataflowLifecycleStatus.RUNNING);
-    
+    ActivityCoordinator runCoordinator = activityService.start(dataflowRunActivityBuilder);
+    runCoordinator.waitForTermination(60000);
+  }
+  
+  
+  public void waitForTermination() throws Exception {
     dataflowTaskMonitor.waitForAllTaskFinish();
     
     DataflowStopActivityBuilder dataflowStopActivityBuilder = 
         new DataflowStopActivityBuilder(dataflowRegistry.getDataflowDescriptor());
     ActivityCoordinator stopCoordinator = activityService.start(dataflowStopActivityBuilder);
     stopCoordinator.waitForTermination(1 * 60 * 1000);
-    
+
     //finish
     System.err.println("DataflowService: FINISH");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
@@ -123,7 +119,7 @@ public class DataflowService {
             System.err.println("  Run resume activity");
             DataflowResumeActivityBuilder dataflowResumeActivityBuilder = 
                 new DataflowResumeActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-            ActivityCoordinator startCoordinator = activityService.start(dataflowResumeActivityBuilder);
+            ActivityCoordinator resumeCoordinator = activityService.start(dataflowResumeActivityBuilder);
           } else if(currentStatus == DataflowLifecycleStatus.STOP) {
             System.err.println("  Run run activity...");
             DataflowRunActivityBuilder dataflowRunActivityBuilder = 

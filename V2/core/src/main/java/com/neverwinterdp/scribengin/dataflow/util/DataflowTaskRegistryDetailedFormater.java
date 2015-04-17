@@ -81,7 +81,7 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       tasksFt.setTitle("Dataflow Tasks");
       for(int i = 0; i < taskDescriptors.size(); i++) {
         DataflowTaskDescriptor descriptor = taskDescriptors.get(i) ;
-        tasksFt.addRow(descriptor.getId(), descriptor.getStatus(), descriptor.getStoredPath());
+        tasksFt.addRow(descriptor.getId(), descriptor.getStatus(), descriptor.getRegistryPath());
       }
       b.append("\n");
       b.append(tasksFt.getFormatText());

@@ -79,30 +79,35 @@ public class DataflowTaskExecutorService {
   
   public void shutdown() throws Exception {
     logger.info("Start shutdown()");
-    System.err.println("DataflowTaskExecutorService: shutdown()");
     if(workerStatus != DataflowWorkerStatus.TERMINATED) {
+      System.err.println("DataflowTaskExecutorService: shutdown()");
       workerStatus = DataflowWorkerStatus.TERMINATING;
       container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
       dataflowTaskEventListener.setComplete();
       interrupt() ;
       workerStatus = DataflowWorkerStatus.TERMINATED;
       container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
+      System.err.println("DataflowTaskExecutorService: shutdown() done!");
     }
-    System.err.println("DataflowTaskExecutorService: shutdown() done!");
+    System.err.println("DataflowTaskExecutorService: Finish shutdown()");
     logger.info("Finish shutdown()");
   }
   
   public boolean isAlive() {
     for(DataflowTaskExecutor sel : taskExecutors) {
-      if(sel.isAlive()) return true;
+      if(sel.isAlive()) {
+        return true;
+      }
     }
     return false;
   }
   
-  synchronized public void waitForExecutorTermination(long checkPeriod) throws InterruptedException {
+  synchronized void waitForExecutorTermination(long checkPeriod) throws InterruptedException {
+    System.err.println("  DataflowTaskExecutorService: waitForExecutorTermination(long checkPeriod)");
     while(isAlive()) {
       wait(checkPeriod);
     }
+    System.err.println("  DataflowTaskExecutorService: waitForExecutorTermination(long checkPeriod) done!");
   }
   
   synchronized public void waitForFinish(long checkPeriod) throws InterruptedException, RegistryException {
@@ -112,6 +117,7 @@ public class DataflowTaskExecutorService {
         workerStatus = DataflowWorkerStatus.TERMINATED;
         container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
       }
+      wait(checkPeriod);
     }
   }
   
@@ -126,12 +132,13 @@ public class DataflowTaskExecutorService {
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
-          System.err.println("Dataflow worker detect pause event...................");
+          System.err.println("DataflowTaskExecutorService: Dataflow worker detect pause event!");
           pause() ;
         } else if(taskEvent == DataflowEvent.STOP) {
+          System.err.println("DataflowTaskExecutorService: Dataflow worker detect stop event!");
           shutdown() ;
         } else if(taskEvent == DataflowEvent.RESUME) {
-          System.err.println("Dataflow worker detect resume event...................");
+          System.err.println("DataflowTaskExecutorService: Dataflow worker detect resume event!");
           start() ;
         }
       }
