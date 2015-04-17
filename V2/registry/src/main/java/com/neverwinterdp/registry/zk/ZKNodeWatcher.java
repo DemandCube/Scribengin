@@ -16,7 +16,7 @@ public class ZKNodeWatcher implements Watcher {
   }
   
   public void process(WatchedEvent event) {
-    event.getState();
+    if(nodeWatcher.isComplete()) return ;
     NodeEvent nEvent = new NodeEvent(realPath(event.getPath()), eventType(event)) ;
     try {
       nodeWatcher.onEvent(nEvent);

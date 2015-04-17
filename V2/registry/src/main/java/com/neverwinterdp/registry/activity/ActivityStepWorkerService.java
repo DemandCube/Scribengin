@@ -62,18 +62,29 @@ public class ActivityStepWorkerService<T> {
         while((activityStepWorkUnit = activityStepWorkUnits.take()) != null) {
           Activity activity = activityStepWorkUnit.getActivity() ;
           ActivityStep activityStep = activityStepWorkUnit.getActivityStep() ;
-          try {
-            service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
-            ActivityStepExecutor executor = 
-                service.getActivityStepExecutor(activityStepWorkUnit.getActivityStep().getExecutor());
-            executor.execute(activity, activityStep);
-          } catch (Exception e) {
-            activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
-            e.printStackTrace();
-            return;
-          } finally {
-            service.updateActivityStepFinished(activity, activityStep);
+          Exception error = null ;
+          for(int i = 0; i < activityStep.getMaxRetries(); i++) {
+            error = null;
+            long startTime = System.currentTimeMillis();
+            try {
+              service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
+              ActivityStepExecutor executor = 
+                  service.getActivityStepExecutor(activityStepWorkUnit.getActivityStep().getExecutor());
+              executor.execute(activity, activityStep);
+              break ;
+            } catch (Exception e) {
+              activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
+              System.err.println("Fail to execute the activity due to the error: " + e.getMessage());
+              e.printStackTrace();
+              error = e ;
+            } finally {
+              long executeTime = System.currentTimeMillis() - startTime ;
+              activityStep.setExecuteTime(executeTime);
+              activityStep.setTryCount(i + 1);
+              service.updateActivityStepFinished(activity, activityStep);
+            }
           }
+          if(error != null) return ;
         }
       } catch (InterruptedException e) {
       } catch (Exception ex) {

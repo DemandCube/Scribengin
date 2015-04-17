@@ -14,6 +14,9 @@ public class ActivityStep {
   private Status              status     = Status.INIT;
   private String              executor;
   private int                 maxRetries = 1;
+  
+  private int                 tryCount ;
+  private long                executeTime = -1l ;
   private Map<String, Object> attributes;
   private List<String>        logs;
   private ActivityStepResult  result;
@@ -50,6 +53,12 @@ public class ActivityStep {
   
   public int getMaxRetries() { return maxRetries; }
   public void setMaxRetries(int maxRetries) { this.maxRetries = maxRetries; }
+  
+  public int getTryCount() { return tryCount; }
+  public void setTryCount(int tryCount) { this.tryCount = tryCount; }
+  
+  public long getExecuteTime() { return executeTime; }
+  public void setExecuteTime(long executeTime) { this.executeTime = executeTime; }
   
   public Map<String, Object> getAttributes() { return attributes; }
   public void setAttributes(Map<String, Object> attributes) {

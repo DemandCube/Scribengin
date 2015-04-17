@@ -43,9 +43,9 @@ public class Lock {
     if(ownerId.equals(lockId)) {
       return lockId ;
     } else {
-      LockWatcher watcher = new LockWatcher(timeout) ;
-      watcher.watch(currentLockIds);
-      watcher.waitForLock();
+      LockWatcher currentLockWatcher = new LockWatcher(timeout) ;
+      currentLockWatcher.watch(currentLockIds);
+      currentLockWatcher.waitForLock();
     }
     return lockId ;
   }
@@ -98,9 +98,7 @@ public class Lock {
     @Override
     public void onEvent(NodeEvent event) {
       try {
-        if(event.getType() != NodeEvent.Type.DELETE) {
-          return ;
-        }
+        if(event.getType() != NodeEvent.Type.DELETE) return ;
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
         if(currentLockIds.size() == 0) return ;
         LockId ownerId = currentLockIds.first() ;
@@ -114,7 +112,7 @@ public class Lock {
           watch(currentLockIds);
         }
       } catch(Throwable ex) {
-        throw new RuntimeException("Error lock " + lockDir, ex) ;
+        throw new RuntimeException("Error lock " + event.getPath() + ", event = " + event.getType(), ex) ;
       }
     }
     
@@ -129,6 +127,8 @@ public class Lock {
         try {
           wait(timeout - (System.currentTimeMillis() - startTime));
         } catch (InterruptedException e) {
+          setComplete() ;
+          unlock();
           throw new RegistryException(ErrorCode.Timeout, e) ;
         }
         if(!obtainedLock) {

@@ -115,6 +115,7 @@ abstract public class WaitingNodeEventListener {
     public String getPath() { return path ; }
     
     public String getDescription() { return description ; }
+    
   }
   
   class NodeEventTypeNodeWatcher extends WaitingNodeEventWatcher {
