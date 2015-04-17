@@ -30,6 +30,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
 #Print the running processes
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py status"
 
+sleep 20
 #Get results
 #scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/dataflowStartStopResumeTest.xml ./testresults/
 
