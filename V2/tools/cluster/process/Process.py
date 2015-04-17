@@ -33,18 +33,41 @@ class Process(object):
     return stdout,stderr
   
   def getReportDict(self):
+    report = []
     running = "Running"
     if not self.isRunning():
       running = "None"
-      
-    return  {
-            "Role" : self.role,
-            "Hostname": self.hostname,
-            "HomeDir" : self.homeDir,
-            "ProcessIdentifier" : self.processIdentifier,
-            "Status" : running,
-            "processID" : self.getRunningPid()
-            }
+    dictionary = {
+      "Role" : self.role,
+      "Hostname": self.hostname,
+      "HomeDir" : self.homeDir,
+      "Status" : running,
+      "ProcessIdentifier" : self.processIdentifier,
+      "processID" : self.getRunningPid()
+      }
+    report.append(dictionary)
+    return report
+  
+  def getReportDictForVMAndScribengin(self):
+    report = []
+    running = "Running"
+    if not self.isRunning():
+      running = "None"
+    pids = self.getRunningPid()
+    if pids != "":
+      for pid in pids.split(","):
+        pid_and_name = pid.split(" ")
+        dictionary = {
+          "Role" : self.role,
+          "Hostname": self.hostname,
+          "HomeDir" : self.homeDir,
+          "Status" : running
+          }
+        
+        dictionary["ProcessIdentifier"] = pid_and_name[1]
+        dictionary["processID"] = pid_and_name[0]
+        report.append(dictionary)
+    return report
   
   def getReport(self):
     report = self.getReportDict()
@@ -130,13 +153,12 @@ class KafkaProcess(Process):
 class ZookeeperProcess(Process):
   def __init__(self, hostname):
     Process.__init__(self, 'zookeeper',hostname, "/opt/zookeeper", 'QuorumPeerMain')
-    self.zoo_cfg_path="/opt/zookeeper/conf/zoo_sample.cfg"
     
   def setupClusterEnv(self, paramDict = {}):
     myid_path = ""
     fileStr = ""
     hostID = int(re.search(r'\d+', self.hostname).group())
-    for line in open(self.zoo_cfg_path).readlines():
+    for line in open(paramDict["zoo_cfg"]).readlines():
       if re.match(re.compile("dataDir=.*"), line):
         myid_path = line.split("=")[1].replace("\n", "")
       fileStr = fileStr + line
@@ -200,8 +222,11 @@ class VmMasterProcess(Process):
   def setupClusterEnv(self, paramDict = {}):
     pass
   
+  def getReportDict(self):
+    return self.getReportDictForVMAndScribengin()
+  
   def getRunningPid(self):
-    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1}'"
+    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
     stdout,stderr = self.sshExecute(command)
     return stdout.strip().replace("\n",",")
   
@@ -230,8 +255,11 @@ class ScribenginProcess(Process):
   def setupClusterEnv(self, paramDict = {}):
     pass
   
+  def getReportDict(self):
+    return self.getReportDictForVMAndScribengin()
+  
   def getRunningPid(self):
-    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1}'"
+    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
     stdout,stderr = self.sshExecute(command)
     return stdout.strip().replace("\n",",")
   

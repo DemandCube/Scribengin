@@ -100,16 +100,17 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
   #click.echo(cluster.getReport())  
 
 @mastercommand.command("cluster", help="Cluster commands")
-@click.option('--restart',           is_flag=True, help="restart cluster")
-@click.option('--start',             is_flag=True, help="start cluster")
-@click.option('--stop',              is_flag=True, help="stop cluster")
-@click.option('--force-stop',        is_flag=True, help="kill cluster")
-@click.option('--clean',             is_flag=True, help="Clean old cluster data")
-@click.option('--wait-before-start', default=0,    help="Time to wait before restarting cluster (seconds)")
-@click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing cluster (seconds)")
-@click.option('--kafka-server-config',   default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties')
-@click.option('--execute',                        help='execute given command on all nodes')
-def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_before_kill, kafka_server_config, execute):
+@click.option('--restart',             is_flag=True, help="restart cluster")
+@click.option('--start',               is_flag=True, help="start cluster")
+@click.option('--stop',                is_flag=True, help="stop cluster")
+@click.option('--force-stop',          is_flag=True, help="kill cluster")
+@click.option('--clean',               is_flag=True, help="Clean old cluster data")
+@click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
+@click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
+@click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
+@click.option('--zoo-cfg',             default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
+@click.option('--execute',             help='execute given command on all nodes')
+def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_before_kill, kafka_server_config, zoo_cfg, execute):
   cluster = Cluster()
   
   if(execute is not None):
@@ -147,6 +148,7 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
     sleep(wait_before_start)
     logging.debug("Starting Cluster")
     cluster.paramDict["server_config"] = kafka_server_config
+    cluster.paramDict["zoo_cfg"] = zoo_cfg
     cluster.startZookeeper()
     cluster.startKafka()
     cluster.cleanHadoopDataAtFirst()
@@ -166,7 +168,7 @@ def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_bef
 @click.option('--brokers',           default="",   help="Which kafka brokers to effect (command separated list)")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting kafka server (seconds)")
 @click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing Kafka process (seconds)")
-@click.option('--server-config',   default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties')
+@click.option('--server-config',     default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
 def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, wait_before_kill, server_config):
   cluster = Cluster()
   
@@ -206,7 +208,8 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, w
 @click.option('--zk-servers',        is_flag=True, help="Which ZK nodes to effect (command separated list)")
 @click.option('--wait-before-start', default=0,     help="Time to wait before starting ZK server (seconds)")
 @click.option('--wait-before-kill',  default=0,     help="Time to wait before force killing ZK process (seconds)")
-def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_start, wait_before_kill):
+@click.option('--zoo-cfg',           default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
+def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_start, wait_before_kill, zoo_cfg):
   cluster = Cluster()
   if(restart or stop):
     logging.debug("Shutting down Zookeeper")
@@ -226,6 +229,7 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
     sleep(wait_before_start)
     logging.debug("Starting Zookeeper")
+    cluster.paramDict["zoo_cfg"] = zoo_cfg
     cluster.startZookeeper()
   
   #click.echo(cluster.getReport())
@@ -236,9 +240,9 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
 @click.option('--stop',              is_flag=True, help="stop hadoop nodes")
 @click.option('--force-stop',        is_flag=True, help="kill -9 hadoop on brokers")
 @click.option('--clean',             is_flag=True, help="Clean old hadoop data")
-@click.option('--hadoop-nodes',        is_flag=True, help="Which hadoop nodes to effect (command separated list)")
-@click.option('--wait-before-start', default=0,     help="Time to wait before starting ZK server (seconds)")
-@click.option('--wait-before-kill',  default=0,     help="Time to wait before force killing ZK process (seconds)")
+@click.option('--hadoop-nodes',      is_flag=True, help="Which hadoop nodes to effect (command separated list)")
+@click.option('--wait-before-start', default=0,    help="Time to wait before starting ZK server (seconds)")
+@click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing ZK process (seconds)")
 def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_start, wait_before_kill):
   cluster = Cluster()
   if(restart or stop):
@@ -273,10 +277,10 @@ def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_st
 @click.option('--wait-before-start',              default=180,  help="Time to wait (in seconds) before starting server")
 @click.option('--servers',                        default="",   help="Servers to effect.  Command separated list (i.e. --servers zk1,zk2,zk3)")
 @click.option('--min-servers',                    default=1,    help="Minimum number of servers that must stay up")
-@click.option('--servers-to-fail-simultaneously', default=1,   help="Number of servers to kill simultaneously")
+@click.option('--servers-to-fail-simultaneously', default=1,    help="Number of servers to kill simultaneously")
 @click.option('--kill-method',                    default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
 @click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
-@click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
+@click.option('--junit-report',                   default="",   help="If set, will write the junit-report to the specified file")
 def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
   global _jobs
   if len(servers) < 1:
