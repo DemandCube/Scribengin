@@ -17,7 +17,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                               ./bin/shell.sh dataflow-test hdfs --dataflow-name  hdfs   \
                               --worker 3 --executor-per-worker 1 --duration 90000 --task-max-execute-time 1000 \
                               --source-name input --source-num-of-stream 10 --source-write-period 5 \
-                              --source-max-records-per-stream 10000 --sink-name output  --print-dataflow-info -1 \
+                              --source-max-records-per-stream 10000 --sink-name input  --print-dataflow-info -1 \
                               --debug-dataflow-task true --debug-dataflow-worker true \
                               --junit-report HDFS_IntegrationTest.xml --dump-registry"
 
