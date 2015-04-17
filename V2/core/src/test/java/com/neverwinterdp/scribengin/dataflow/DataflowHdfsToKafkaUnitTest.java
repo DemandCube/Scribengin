@@ -66,18 +66,21 @@ public class DataflowHdfsToKafkaUnitTest {
   public class DataflowSubmitter extends Thread {
     public void run() {
       try {
-        String command = 
-            "dataflow-test " + HDFSToKafkaDataflowTest.TEST_NAME +
+        String command =  "dataflow-test " + HDFSToKafkaDataflowTest.TEST_NAME +
             " --dataflow-name  hdfs-to-kafka" +
             " --worker 3" +
             " --executor-per-worker 1" +
             " --duration 90000" +
-            " --task-max-execute-time 10000" +
+            " --task-max-execute-time 50000" +
             " --source-name output" +
             " --source-num-of-stream 10" +
             " --source-write-period 5" +
             " --source-max-records-per-stream 1000" +
             " --sink-name output" +
+            " --print-dataflow-info -1" +
+            " --debug-dataflow-task " +
+            " --debug-dataflow-vm " +
+            " --debug-dataflow-activity " +
             " --junit-report build/junit-report.xml" +
             " --dump-registry";
         shell.execute(command);

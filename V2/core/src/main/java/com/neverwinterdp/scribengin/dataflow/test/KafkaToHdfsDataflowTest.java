@@ -4,6 +4,7 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class KafkaToHdfsDataflowTest extends DataflowTest {
 
@@ -34,6 +35,14 @@ public class KafkaToHdfsDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
 
     printDebugInfo(shell, scribenginClient, dflDescriptor);
+    
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    try {
+      waitingEventListener.waitForEvents(duration);
+    } catch (Exception e) {
+    }
+    report(shell, waitingEventListener);
+    
     sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
     sinkValidator.run();
     //runInBackground() wont work

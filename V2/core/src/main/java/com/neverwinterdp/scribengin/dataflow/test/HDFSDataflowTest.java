@@ -4,6 +4,7 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class HDFSDataflowTest extends DataflowTest {
   final static public String TEST_NAME = "hdfs";
@@ -14,11 +15,9 @@ public class HDFSDataflowTest extends DataflowTest {
   private DataflowSinkValidator sinkValidator = new HDFSDataflowSinkValidator();
 
   protected void doRun(ScribenginShell shell) throws Exception {
-    System.err.println("do we ever get here.1");
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     sourceGenerator.run();
-    System.err.println("do we ever get here.");
     sinkValidator.init(scribenginClient);
 
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
@@ -34,6 +33,13 @@ public class HDFSDataflowTest extends DataflowTest {
 
     printDebugInfo(shell, scribenginClient, dflDescriptor);
 
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    try {
+      waitingEventListener.waitForEvents(duration);
+    } catch (Exception e) {
+    }
+    report(shell, waitingEventListener);
+    
     sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
     sinkValidator.run();
 

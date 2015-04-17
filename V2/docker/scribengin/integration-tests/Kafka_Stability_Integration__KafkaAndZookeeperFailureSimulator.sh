@@ -13,17 +13,17 @@ sleep 20
 
 
 #Run failure simulator in the background
-ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && mkdir /opt/scribengin/scribengin/tools/kafka/build/"
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && mkdir -p /opt/scribengin/scribengin/tools/kafka/junit-reports"
 ssh -f -n -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && nohup                                  \
                                           python clusterCommander.py --debug                                                 \
                                            kafkafailure --servers kafka-1,kafka-2,kafka-3,kafka-4                            \
                                           --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
                                           --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report /opt/scribengin/scribengin/tools/kafka/build/kafkaFailureReport.xml \
+                                          --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/kafkaFailureReport.xml \
                                           zookeeperfailure --servers zookeeper-1,zookeeper-2                                 \
                                           --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
                                           --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report /opt/scribengin/scribengin/tools/kafka/build/zkFailureReport.xml    \
+                                          --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/zkFailureReport.xml    \
                                           monitor --update-interval 10"
 
 
@@ -38,10 +38,10 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                                           --producer:topic.metadata.refresh.interval.ms=-1                        \
                                           --producer:batch.num.messages=100 --producer:acks=all                   \
                                           --consume-max 50000000 --consume-max-duration 5550000                   \
-                                          --junit-report build/KafkaMessageCheckTool.xml"
+                                          --junit-report junit-reports/KafkaMessageCheckTool.xml"
 
 #Get results
-scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/build/*.xml ./testresults/
+scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/junit-reports/*.xml ./testresults/
 
 
 #Clean up

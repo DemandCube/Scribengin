@@ -4,6 +4,7 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class KafkaDataflowTest extends DataflowTest {
   final static public String TEST_NAME = "kafka-to-kakfa" ;
@@ -32,6 +33,13 @@ public class KafkaDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
     printDebugInfo(shell, scribenginClient, dflDescriptor);
+   
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    try {
+      waitingEventListener.waitForEvents(duration);
+    } catch (Exception e) {
+    }
+    report(shell, waitingEventListener);
     
     sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
     sinkValidator.run();

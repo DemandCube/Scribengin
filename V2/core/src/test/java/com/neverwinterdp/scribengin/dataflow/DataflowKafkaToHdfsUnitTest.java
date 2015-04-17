@@ -18,7 +18,6 @@ public class DataflowKafkaToHdfsUnitTest {
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
   }
 
-  
   protected ScribenginClusterBuilder clusterBuilder;
   protected ScribenginShell shell;
 
@@ -80,7 +79,8 @@ public class DataflowKafkaToHdfsUnitTest {
             " --sink-name output" +
             " --print-dataflow-info -1" +
             " --debug-dataflow-task " +
-            " --debug-dataflow-worker " +
+            " --debug-dataflow-vm " +
+            " --debug-dataflow-activity " +
             " --junit-report build/junit-report.xml" +
             " --dump-registry";
         shell.execute(command);

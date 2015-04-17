@@ -4,6 +4,7 @@ import com.beust.jcommander.ParametersDelegate;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 
 public class HDFSToKafkaDataflowTest extends DataflowTest {
@@ -35,19 +36,22 @@ public class HDFSToKafkaDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
 
     printDebugInfo(shell, scribenginClient, dflDescriptor);
+    
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    try {
+      waitingEventListener.waitForEvents(duration);
+    } catch (Exception e) {
+    }
+    report(shell, waitingEventListener);
+    
     sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
     sinkValidator.run();
     //runInBackground() wont work
-    sinkValidator.waitForTermination();
 
     report(shell, sourceGenerator, sinkValidator);
 
     if (dumpRegistry) {
       shell.execute("registry dump");
     }
-  }
-
-  private String getDataDir() {
-    return "./build/hdfs";
   }
 }

@@ -31,13 +31,10 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
 
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
-    System.err.println("start init");
     fs = scribenginClient.getVMClient().getFileSystem();
-    System.err.println("fs "+ fs);
     numOfFilesPerFolder=1;
     numOfRecordsPerFile = maxRecordsPerStream/numOfFilesPerFolder;
-    System.err.println("end init");
-  }
+    }
 
   @Override
   public void run() {

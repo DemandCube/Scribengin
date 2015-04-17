@@ -12,13 +12,13 @@ ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && 
 sleep 20
 
 #Run failure simulator in the background
-ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && mkdir /opt/scribengin/scribengin/tools/kafka/build/"
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && mkdir -p /opt/scribengin/scribengin/tools/kafka/junit-reports"
 ssh -f -n -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster &&  nohup                                 \
                                           python clusterCommander.py --debug kafkafailure                                    \
                                           --servers kafka-1,kafka-2,kafka-3,kafka-4                                          \
                                           --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
                                           --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report /opt/scribengin/scribengin/tools/kafka/build/kafkaFailureReport.xml \
+                                          --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/kafkaFailureReport.xml \
                                             monitor --update-interval 10"
 
 
