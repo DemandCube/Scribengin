@@ -47,7 +47,6 @@ public class HDFSToKafkaDataflowTest extends DataflowTest {
     sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
     sinkValidator.run();
     //runInBackground() wont work
-    sinkValidator.waitForTermination();
 
     report(shell, sourceGenerator, sinkValidator);
 

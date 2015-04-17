@@ -114,7 +114,7 @@ abstract public class DataflowTest {
 
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-    //dataflowInfoThread.interrupt();
+   //dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
@@ -197,7 +197,6 @@ abstract public class DataflowTest {
           Thread.sleep(period);
           try {
             shell.console().println("#Dataflow Print Thread period = " + period + "#");
-
             shell.execute("dataflow info --running " + descriptor.getName());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());

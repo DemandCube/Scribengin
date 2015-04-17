@@ -69,7 +69,7 @@ public class RegistryDebugger {
     public void onEvent(NodeEvent event) throws Exception {
       Node node = registryListener.getRegistry().get(event.getPath());
       String text = formater.getFormattedText();
-      println("RegistryDebugger: Node = " + node.getPath() + ", event = " + event.getType()) ;
+      println("RegistryDebugger: Node = " + node.getPath() + ", Event = " + event.getType()) ;
       println(text) ;
     }
   }
