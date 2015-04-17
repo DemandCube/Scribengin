@@ -21,7 +21,7 @@ ssh -f -n -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/scrib
                               --source-max-records-per-stream 100000 --sink-name output --debug-dataflow-activity-detail \
                               --debug-dataflow-task --dump-registry --print-dataflow-info -1"
 
-sleep 10
+sleep 15
 
 #Run start/stop/resume
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
