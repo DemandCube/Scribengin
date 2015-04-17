@@ -38,8 +38,7 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     this.descriptor = descriptor;
     FileStatus[] status = fs.listStatus(new Path(descriptor.getLocation()));
     for (int i = 0; i < status.length; i++) {
-//      if (new File(status[i].getPath().toUri()).isFile())
-        dataPaths.add(status[i].getPath());
+       dataPaths.add(status[i].getPath());
     }
     currentDataPathInputStream = nextDataPathInputStream();
   }
