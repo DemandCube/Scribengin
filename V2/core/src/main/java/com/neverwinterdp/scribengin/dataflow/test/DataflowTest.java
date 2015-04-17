@@ -112,17 +112,9 @@ abstract public class DataflowTest {
       shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, false);
     }
 
-    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-    try {
-      waitingEventListener.waitForEvents(duration);
-      dataflowInfoThread.interrupt();
-    } catch (Exception e) {
-
-    }
-    report(shell, waitingEventListener);
+    //dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
