@@ -15,6 +15,9 @@ import com.neverwinterdp.util.text.TabularFormater;
 public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   final static public String TEST_NAME = "start-stop-resume";
 
+  @Parameter(names = "--wait-before-start", description = "The command should repeat in this period of time")
+  long waitBeforeStart = -1;
+  
   @Parameter(names = "--sleep-before-execute", description = "The command should repeat in this period of time")
   long sleepBeforeExecute = 10000;
   
@@ -37,6 +40,9 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     int resumeCompleteCount = 0; 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     try {
+      if(waitBeforeStart > 0) {
+        Thread.sleep(waitBeforeStart);
+      }
       while(dataflowStatus != DataflowLifecycleStatus.FINISH) {
         if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
         stopCount++ ;
