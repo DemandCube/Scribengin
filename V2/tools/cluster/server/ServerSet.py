@@ -1,11 +1,31 @@
 from tabulate import tabulate
+from multiprocessing import Pool
 import os
 
+
+
+#This function is outside the ServerSet class
+#because otherwise it wouldn't be pickleable 
+#http://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-pythons-multiprocessing-pool-ma
+def getReportOnServer(server):
+  omitStoppedProcesses = ["scribengin-master-*", "vm-master-*"]
+  result = []
+  serverReportDict = server.getReportDict()
+  if serverReportDict is not None and serverReportDict["Hostname"] :
+    result.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
+    procs = server.getProcesses()
+    for process in procs:
+      procDict = server.getProcess(process).getReportDict()
+      if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
+        result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+  return result
+
 class ServerSet(object):
-  def __init__(self, name):
+  def __init__(self, name, numProcessesForStatus=30):
     self.role = name 
     self.servers = []
     self.paramDict = {}
+    self.numProcessesForStatus = numProcessesForStatus
     
   def clear(self):
     self.servers = []
@@ -222,23 +242,24 @@ class ServerSet(object):
   def cleanHadoopWorker(self):
     return self.cleanProcess("datanode")
   
+  
   def getReport(self):
-    omitStoppedProcesses = ["scribengin-master-*", "vm-master-*"]
-    
     serverReport = []
+    asyncresults = []
+    pool = Pool(processes=self.numProcessesForStatus)
     sorted_servers = sorted(self.servers, key=lambda server: server.role)
-    for server in sorted_servers :
-      serverReportDict = server.getReportDict()
-      if serverReportDict is not None and serverReportDict["Hostname"] :
-        serverReport.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
-        procs = server.getProcesses()
-        for process in procs:
-          procDict = server.getProcess(process).getReportDict()
-          if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
-            serverReport.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+    for server in sorted_servers:
+      asyncresults.append( pool.apply_async(getReportOnServer, [server])) 
+    
+    for async in asyncresults:
+      result = async.get(timeout=30)
+      if result: 
+        for row in result:
+          serverReport.append(row)
 
     headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
-
+    pool.close()
+    pool.join()
     return tabulate(serverReport, headers=headers)
  
   def report(self) :
