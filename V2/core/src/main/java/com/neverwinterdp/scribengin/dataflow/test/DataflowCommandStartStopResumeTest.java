@@ -36,28 +36,32 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     int resumeCount = 0 ;
     int resumeCompleteCount = 0; 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
-    while(dataflowStatus != DataflowLifecycleStatus.FINISH) {
-      if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
-      stopCount++ ;
-      DataflowEvent stopEvent = stopCount % 2 == 0 ? DataflowEvent.PAUSE : DataflowEvent.STOP;
-      ExecuteLog stopExecuteLog = doStop(dflClient, stopEvent) ;
-      executeLogs.add(stopExecuteLog);
-      shell.console().println(stopExecuteLog.getFormatText());
-      if(!stopExecuteLog.isSuccess()) {
-        break;
-      }
-      stopCompleteCount++ ;
-      
-      if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
+    try {
+      while(dataflowStatus != DataflowLifecycleStatus.FINISH) {
+        if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
+        stopCount++ ;
+        DataflowEvent stopEvent = stopCount % 2 == 0 ? DataflowEvent.PAUSE : DataflowEvent.STOP;
+        ExecuteLog stopExecuteLog = doStop(dflClient, stopEvent) ;
+        executeLogs.add(stopExecuteLog);
+        shell.console().println(stopExecuteLog.getFormatText());
+        if(!stopExecuteLog.isSuccess()) {
+          break;
+        }
+        stopCompleteCount++ ;
 
-      resumeCount++ ;
-      ExecuteLog resumeExecuteLog = doResume(dflClient) ;
-      executeLogs.add(resumeExecuteLog);
-      shell.console().println(resumeExecuteLog.getFormatText());
-      if(!resumeExecuteLog.isSuccess()) {
-        break;
+        if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
+
+        resumeCount++ ;
+        ExecuteLog resumeExecuteLog = doResume(dflClient) ;
+        executeLogs.add(resumeExecuteLog);
+        shell.console().println(resumeExecuteLog.getFormatText());
+        if(!resumeExecuteLog.isSuccess()) {
+          break;
+        }
+        resumeCompleteCount++ ;
       }
-      resumeCompleteCount++ ;
+    } catch(Exception ex) {
+      ex.printStackTrace();
     }
     
     if(printSummary) {
