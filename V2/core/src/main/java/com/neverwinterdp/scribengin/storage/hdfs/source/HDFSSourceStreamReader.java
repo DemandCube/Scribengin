@@ -1,6 +1,5 @@
 package com.neverwinterdp.scribengin.storage.hdfs.source;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
     this.descriptor = descriptor;
     FileStatus[] status = fs.listStatus(new Path(descriptor.getLocation()));
     for (int i = 0; i < status.length; i++) {
-      if (new File(status[i].getPath().toUri()).isFile())
+//      if (new File(status[i].getPath().toUri()).isFile())
         dataPaths.add(status[i].getPath());
     }
     currentDataPathInputStream = nextDataPathInputStream();
