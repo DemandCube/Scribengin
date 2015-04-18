@@ -15,9 +15,10 @@ def getReportOnServer(server):
     result.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
     procs = server.getProcesses()
     for process in procs:
-      procDict = server.getProcess(process).getReportDict()
-      if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
-        result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+      procDicts = server.getProcess(process).getReportDict()
+      for procDict in procDicts:
+        if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
+          result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
   return result
 
 class ServerSet(object):
@@ -127,11 +128,7 @@ class ServerSet(object):
     return self.startProcess("zookeeper")
   
   def startKafka(self):
-    if os.path.isfile(self.paramDict["server_config"]):
-      return self.startProcess("kafka")
-    else:
-      print "Error: Invalid value for \"--server-config\": Path \"" + self.paramDict["server_config"] + "\" does not exist."
-      print "Please make sure kafka's \"<server_template_name>.properties\" file is available in the hosting machine, and give the same path for \"--server-config\""
+    return self.startProcess("kafka")
   
   def cleanHadoopDataAtFirst(self):
     serverSet = self.getServersByRole("hadoop-worker")
