@@ -35,18 +35,17 @@ public class KafkaToHdfsDataflowTest extends DataflowTest {
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
 
     printDebugInfo(shell, scribenginClient, dflDescriptor);
-    
-    sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
-    sinkValidator.run();
-    
+
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     try {
       waitingEventListener.waitForEvents(duration);
     } catch (Exception e) {
     }
-    report(shell, waitingEventListener);
-    
 
+    report(shell, waitingEventListener);
+
+    sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
+    sinkValidator.run();
     //runInBackground() wont work
 
     report(shell, sourceGenerator, sinkValidator);
