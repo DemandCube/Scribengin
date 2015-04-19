@@ -48,8 +48,6 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
   }
 
   public Record next() throws Exception {
-    System.out.println("ndio hii "+currentDataPathInputStream);
-    System.out.println("null ama? " + currentDataPathInputStream.available());
     if (currentDataPathInputStream.available() <= 0) {
       currentDataPathInputStream.close();
       currentDataPathInputStream = nextDataPathInputStream();
