@@ -48,6 +48,8 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
   }
 
   public Record next() throws Exception {
+    System.out.println("ndio hii "+currentDataPathInputStream);
+    System.out.println("null ama? " + currentDataPathInputStream.available());
     if (currentDataPathInputStream.available() <= 0) {
       currentDataPathInputStream.close();
       currentDataPathInputStream = nextDataPathInputStream();
@@ -103,9 +105,12 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
 
   private FSDataInputStream nextDataPathInputStream() throws IOException {
     currentDataPathPos++;
+    System.out.println("currentDataPathPs "+ currentDataPathPos);
+    System.out.println("datapath.size() "+ dataPaths.size());
     if (currentDataPathPos >= dataPaths.size())
       return null;
     FSDataInputStream is = fs.open(dataPaths.get(currentDataPathPos));
+    System.out.println("what is? "+ is);
     return is;
   }
 }
