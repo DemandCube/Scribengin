@@ -105,14 +105,18 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
 @click.option('--stop',                is_flag=True, help="stop cluster")
 @click.option('--force-stop',          is_flag=True, help="kill cluster")
 @click.option('--clean',               is_flag=True, help="Clean old cluster data")
+@click.option('--sync',                is_flag=True, help="Sync cluster datas")
 @click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
 @click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
 @click.option('--zookeeper-server-config',             default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
 @click.option('--execute',             help='execute given command on all nodes')
-def cluster(restart, start, stop, force_stop, clean, wait_before_start, wait_before_kill, kafka_server_config, zookeeper_server_config, execute):
+def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wait_before_kill, kafka_server_config, zookeeper_server_config, execute):
   cluster = Cluster()
   
+  if(sync):
+    cluster.sync()
+    
   if(execute is not None):
     cluster.sshExecute(execute)
     

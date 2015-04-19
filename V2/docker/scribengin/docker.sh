@@ -271,12 +271,13 @@ function host_sync() {
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir /opt/scribengin"
   
   scp -r ../../release/build/release/*       neverwinterdp@hadoop-master:/opt/scribengin/
+  scp -r ../../tools/cluster/*         	     neverwinterdp@hadoop-master:/opt/cluster
   scp -r ./bootstrap/post-install/hadoop     neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/kafka      neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
   
-  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt && yes | ./cluster.sh sync"
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync"
 }
 
 function printUsage() {
