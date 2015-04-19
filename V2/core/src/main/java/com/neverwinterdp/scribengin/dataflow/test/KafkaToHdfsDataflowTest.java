@@ -45,6 +45,9 @@ public class KafkaToHdfsDataflowTest extends DataflowTest {
     } catch (Exception e) {
     }
     report(shell, waitingEventListener);
+    
+
+    //runInBackground() wont work
 
     report(shell, sourceGenerator, sinkValidator);
 
