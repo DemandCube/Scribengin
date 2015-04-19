@@ -44,9 +44,9 @@ public class KafkaToHdfsDataflowTest extends DataflowTest {
 
     report(shell, waitingEventListener);
 
+    Thread.sleep(20000);
     sinkValidator.setExpectRecords(sourceGenerator.maxRecordsPerStream * sourceGenerator.numberOfStream);
     sinkValidator.run();
-    //runInBackground() wont work
 
     report(shell, sourceGenerator, sinkValidator);
 
