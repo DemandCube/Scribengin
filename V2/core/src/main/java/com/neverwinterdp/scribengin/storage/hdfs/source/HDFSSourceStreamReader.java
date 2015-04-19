@@ -22,7 +22,6 @@ import com.neverwinterdp.util.JSONSerializer;
 public class HDFSSourceStreamReader implements SourceStreamReader {
   private String name;
   private FileSystem fs;
-  private StreamDescriptor descriptor;
   private List<Path> dataPaths = new ArrayList<Path>();
   private int currentDataPathPos = -1;
   private FSDataInputStream currentDataPathInputStream;
@@ -35,8 +34,9 @@ public class HDFSSourceStreamReader implements SourceStreamReader {
       IllegalArgumentException, IOException {
     this.name = name;
     this.fs = fs;
-    this.descriptor = descriptor;
     FileStatus[] status = fs.listStatus(new Path(descriptor.getLocation()));
+    System.out.println("location "+descriptor.getLocation());
+    System.out.println("fileStatuses "+ status.length);
     for (int i = 0; i < status.length; i++) {
        dataPaths.add(status[i].getPath());
     }
