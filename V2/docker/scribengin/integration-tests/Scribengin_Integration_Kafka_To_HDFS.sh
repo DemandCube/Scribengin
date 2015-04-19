@@ -17,7 +17,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
                               ./bin/shell.sh dataflow-test kafka-hdfs --dataflow-name kafka-hdfs   \
                               --worker 3 --executor-per-worker 1 --duration 100000 --task-max-execute-time 50000 \
-                              --source-name input --source-num-of-stream 10 --source-write-period 5 \
+                              --source-name input --source-num-of-stream 1 --source-write-period 5 \
                               --source-max-records-per-stream 1000 --sink-name input  --print-dataflow-info -1 \
                               --debug-dataflow-task true --debug-dataflow-worker true \
                               --junit-report Kafka_to_HDFS_IntegrationTest.xml --dump-registry"
