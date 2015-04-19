@@ -7,12 +7,19 @@ from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, V
 #from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Server(object):
-  def __init__(self, hostname, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
+  def __init__(self, hostname, role = 'unknown', sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.hostname = hostname 
-    self.role = 'unknown' 
+    #self.role = 'unknown' 
+    self.role = role 
     self.processes = {} 
     self.sshKeyPath=sshKeyPath
-        
+    self.user = "neverwinterdp"
+     
+  def printTitle(self, message):
+    print "***********************************************************************"
+    print message 
+    print "***********************************************************************"  
+     
   def getHostname(self):
     return self.hostname;
     
@@ -65,9 +72,7 @@ class Server(object):
   def sshExecute(self, command):
     process = self.processes.values()[0]
     output = process.sshExecute(command)
-    print "***********************************************************************"
-    print "Executing '" + command + "' on " + process.hostname 
-    print "***********************************************************************"
+    self.printTitle("Executing '" + command + "' on " + process.hostname)
     if not output[1]:
       print output[0]
     else:
@@ -94,21 +99,21 @@ class Server(object):
 
   
 class KafkaServer(Server):
-  def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.role = 'kafka' 
+  def __init__(self, hostname, role):
+    Server.__init__(self, hostname, role)
+    #self.role = 'kafka'
     Server.addProcess(self, KafkaProcess(hostname))
 
 class ZookeeperServer(Server):
-  def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.role = 'zookeeper'
+  def __init__(self, hostname, role):
+    Server.__init__(self, hostname, role)
+    #self.role = 'zookeeper'
     Server.addProcess(self, ZookeeperProcess(hostname))
         
 class HadoopWorkerServer(Server):
-  def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.role = 'hadoop-worker' 
+  def __init__(self, hostname, role):
+    Server.__init__(self, hostname, role)
+    #self.role = 'hadoop-worker'
     Server.addProcess(self, HadoopDaemonProcess('datanode',hostname, 'DataNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('nodemanager',hostname, 'NodeManager', "sbin/yarn-daemon.sh"))
     Server.addProcess(self, VmMasterProcess('vmmaster',hostname))
@@ -116,8 +121,8 @@ class HadoopWorkerServer(Server):
 
 class HadoopMasterServer(Server):
   def __init__(self, hostname):
-    Server.__init__(self, hostname)
-    self.role = 'hadoop-master'
+    Server.__init__(self, hostname, 'hadoop-master')
+    #self.role = 'hadoop-master'
     Server.addProcess(self, HadoopDaemonProcess('namenode',hostname, 'NameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('secondarynamenode',hostname, 'SecondaryNameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('resourcemanager',hostname, 'ResourceManager', "sbin/yarn-daemon.sh"))

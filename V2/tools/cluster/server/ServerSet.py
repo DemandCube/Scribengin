@@ -1,6 +1,7 @@
 from tabulate import tabulate
 from multiprocessing import Pool
-import os
+from subprocess import call
+import os, socket
 
 
 
@@ -30,14 +31,27 @@ class ServerSet(object):
     
   def clear(self):
     self.servers = []
- 
+  
+  def printTitle(self, message):
+    print "***********************************************************************"
+    print message 
+    print "***********************************************************************"  
+  
   def addServer(self, server):
     self.servers.append(server)
   
   def sshExecute(self, command):
     for server in self.servers :
       server.sshExecute(command)
-      
+  
+  def sync(self):
+    print socket.gethostname()
+    for server in self.servers :
+      if server.getHostname() != socket.gethostname():
+        self.printTitle("Sync data with " + server.getHostname())
+        command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
+        os.system(command)
+    
   def startProcessOnHost(self, processName, hostname):
     for server in self.servers :
       if server.getHostname() == hostname:
