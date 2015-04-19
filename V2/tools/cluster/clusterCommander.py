@@ -105,7 +105,7 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
 @click.option('--stop',                is_flag=True, help="stop cluster")
 @click.option('--force-stop',          is_flag=True, help="kill cluster")
 @click.option('--clean',               is_flag=True, help="Clean old cluster data")
-@click.option('--sync',                is_flag=True, help="sync cluster")
+@click.option('--sync',                is_flag=True, help="Sync cluster datas")
 @click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
 @click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))

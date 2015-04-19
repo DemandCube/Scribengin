@@ -120,8 +120,8 @@ class Process(object):
 ############
 
 class KafkaProcess(Process):
-  def __init__(self, hostname):
-    Process.__init__(self, "kafka", hostname, "/opt/kafka", "Kafka")
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/kafka", "Kafka")
    
   def setupClusterEnv(self, paramDict = {}):
     zkConnect = ":2181,".join(paramDict["zkList"]) + ":2181"
@@ -151,8 +151,8 @@ class KafkaProcess(Process):
 ############
 
 class ZookeeperProcess(Process):
-  def __init__(self, hostname):
-    Process.__init__(self, 'zookeeper',hostname, "/opt/zookeeper", 'QuorumPeerMain')
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/zookeeper", 'QuorumPeerMain')
     
   def setupClusterEnv(self, paramDict = {}):
     myid_path = ""
@@ -172,6 +172,7 @@ class ZookeeperProcess(Process):
     
   def start(self):
     self.printProgress("Starting ")
+    print "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR="+join(self.homeDir,"logs")+" "+join(self.homeDir, "bin/zkServer.sh")+ " start"
     return self.sshExecute("ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR="+join(self.homeDir,"logs")+" "+join(self.homeDir, "bin/zkServer.sh")+ " start")
     
   def shutdown(self):

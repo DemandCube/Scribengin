@@ -102,13 +102,13 @@ class KafkaServer(Server):
   def __init__(self, hostname, role):
     Server.__init__(self, hostname, role)
     #self.role = 'kafka'
-    Server.addProcess(self, KafkaProcess(hostname))
+    Server.addProcess(self, KafkaProcess(role, hostname))
 
 class ZookeeperServer(Server):
   def __init__(self, hostname, role):
     Server.__init__(self, hostname, role)
     #self.role = 'zookeeper'
-    Server.addProcess(self, ZookeeperProcess(hostname))
+    Server.addProcess(self, ZookeeperProcess(role, hostname))
         
 class HadoopWorkerServer(Server):
   def __init__(self, hostname, role):

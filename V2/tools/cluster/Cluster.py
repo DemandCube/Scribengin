@@ -41,7 +41,6 @@ class Cluster(ServerSet):
     hadoopWorkers = []
     spareHadoopWorkers = []
     hadoopMasters = []
-    all = []
     
     f = open(path, 'r')
     for line in f:
