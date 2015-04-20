@@ -13,7 +13,7 @@ import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandStartStopResume
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 
-public class DataflowTaskEventUnitTest {
+public class DataflowStartStopResumeUnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true") ;
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties") ;

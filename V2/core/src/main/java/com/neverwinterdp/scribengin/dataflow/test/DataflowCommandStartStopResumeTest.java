@@ -15,6 +15,9 @@ import com.neverwinterdp.util.text.TabularFormater;
 public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   final static public String TEST_NAME = "start-stop-resume";
 
+  @Parameter(names = "--flow-name", description = "The command should repeat in this period of time")
+  String flowName = "kafka-to-kafka";
+  
   @Parameter(names = "--wait-before-start", description = "The command should repeat in this period of time")
   long waitBeforeStart = -1;
   
@@ -30,9 +33,13 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   @Parameter(names = "--print-summary", description = "Enable to dump the registry at the end")
   protected boolean printSummary = false;
   
+  //TODO: implement junit report for this. 
+  @Parameter(names = "--junit-report", description = "Enable to dump the registry at the end")
+  String  junitReportFile = null;
+  
   public void doRun(ScribenginShell shell) throws Exception {
     ScribenginClient scribenginClient = shell.getScribenginClient() ;
-    DataflowClient dflClient = scribenginClient.getDataflowClient("kafka-to-kafka");
+    DataflowClient dflClient = scribenginClient.getDataflowClient(flowName);
     DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
     int stopCount = 0; 
     int stopCompleteCount = 0; 
@@ -84,6 +91,10 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       shell.console().println(
           "stop = " + stopCount +", stop complete = " + stopCompleteCount + ", " +
           "resume = " + resumeCount + ", resume complete = " + resumeCompleteCount);
+    }
+    
+    if(junitReportFile != null) {
+      junitReport(junitReportFile, executeLogs) ;
     }
   }
   

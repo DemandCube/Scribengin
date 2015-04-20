@@ -1,6 +1,14 @@
 package com.neverwinterdp.scribengin.client.shell;
 
-import com.neverwinterdp.scribengin.dataflow.test.*;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandStartStopResumeTest;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandTest;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowRandomServerFailureTest;
+import com.neverwinterdp.scribengin.dataflow.test.DataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSToKafkaDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.KafkaToHdfsDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.KafkaToS3DataflowTest;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
 import com.neverwinterdp.vm.client.shell.Shell;
@@ -20,6 +28,7 @@ public class DataflowTestCommand extends Command {
     add("kafka-s3", KafkaToS3DataflowTestSubCommand.class);
     
     add(DataflowCommandStartStopResumeTest.TEST_NAME, StartStopResumeSubcommand.class);
+    add(DataflowRandomServerFailureTest.TEST_NAME, RandomServerFailureSubcommand.class);
   }
   
   static public class DataflowTestSubCommand<T extends DataflowTest> extends SubCommand {
@@ -157,6 +166,13 @@ public class DataflowTestCommand extends Command {
       super(DataflowCommandStartStopResumeTest.class);
     }
   }
+  
+  static public class RandomServerFailureSubcommand<T extends DataflowCommandTest> extends DataflowCommandTestSubCommand<T> {
+    public RandomServerFailureSubcommand() {
+      super(DataflowRandomServerFailureTest.class);
+    }
+  }
+  
   
   @Override
   public String getDescription() {
