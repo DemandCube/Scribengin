@@ -64,6 +64,7 @@ public class DataflowStartStopResumeUnitTest {
       try {
         String command = 
             "dataflow-test " + DataflowCommandStartStopResumeTest.TEST_NAME +
+            "  --dataflow-name kafka-to-kafka" +
             "  --sleep-before-execute 10000 " +
             "  --max-wait-for-stop    20000 " +
             "  --max-wait-for-resume  20000 " +

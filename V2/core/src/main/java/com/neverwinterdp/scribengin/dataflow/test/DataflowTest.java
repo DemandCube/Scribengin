@@ -100,8 +100,7 @@ abstract public class DataflowTest {
     
     if(detailedDebugDataflowVM){
       shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, true);
-    }
-    else if(debugDataflowVM) {
+    } else if(debugDataflowVM) {
       shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, false);
     }
     
@@ -196,7 +195,7 @@ abstract public class DataflowTest {
         while (true) {
           Thread.sleep(period);
           try {
-            shell.console().println("#Dataflow Print Thread period = " + period + "#");
+            shell.console().println("#Dataflow Print Thread failurePeriod = " + period + "#");
             shell.execute("dataflow info --running " + descriptor.getName());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());

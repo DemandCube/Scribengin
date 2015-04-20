@@ -43,4 +43,13 @@ public class DataflowClient {
   public DataflowLifecycleStatus getStatus() throws RegistryException {
     return dflRegistry.getStatus() ;
   }
+  
+  public void waitForDataflowStatus(long timeout, DataflowLifecycleStatus status) throws Exception {
+    long stopTime = System.currentTimeMillis() + timeout;
+    while(System.currentTimeMillis() < stopTime) {
+      if(status == dflRegistry.getStatus()) return;
+      Thread.sleep(500);
+    }
+    throw new Exception("Cannot get the " + status + " after " + timeout + "ms");
+  }
 }

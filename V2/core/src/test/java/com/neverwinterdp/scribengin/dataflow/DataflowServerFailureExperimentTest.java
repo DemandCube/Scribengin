@@ -38,10 +38,13 @@ public class DataflowServerFailureExperimentTest {
   
   @Test
   public void testDataflows() throws Exception {
+    ServerFailureSimulator serverFailureSimulator = new ServerFailureSimulator() ;
+    serverFailureSimulator.start();
+    
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
-
-    Thread.sleep(5000);
+    
+    Thread.sleep(10000);
     
     ScribenginClient scribenginClient = shell.getScribenginClient();
     Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
@@ -50,9 +53,6 @@ public class DataflowServerFailureExperimentTest {
     Assert.assertEquals("kafka-to-kafka-master-1", dflClient.getDataflowMaster().getId());
     Assert.assertEquals(1, dflClient.getDataflowMasters().size());
 
-    ServerFailureSimulator serverFailureSimulator = new ServerFailureSimulator() ;
-    serverFailureSimulator.start();
-    
     submitter.waitForTermination(180000);
     serverFailureSimulator.waitForTermination(30000);
   }
@@ -63,7 +63,9 @@ public class DataflowServerFailureExperimentTest {
       running = true;
       try {
         String command = 
-          "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME ;
+          "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME + 
+          "  --dataflow-name kafka-to-kafka" + 
+          "  --failure-period 10000 --max-failure 2";
         shell.execute(command);
       } catch (Exception e) {
         e.printStackTrace();
