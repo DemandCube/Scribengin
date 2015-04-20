@@ -94,6 +94,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     }
     
     if(junitReportFile != null) {
+      //TODO: look into this junitReport and implement it
       junitReport(junitReportFile, executeLogs) ;
     }
   }
