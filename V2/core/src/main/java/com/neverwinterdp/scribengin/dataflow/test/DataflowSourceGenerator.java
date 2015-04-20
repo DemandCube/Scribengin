@@ -31,7 +31,7 @@ abstract public class DataflowSourceGenerator implements Runnable {
   @Parameter(names = "--source-max-records-per-stream", description = "The maximum number of record per stream")
   protected int    maxRecordsPerStream;
   
-  @Parameter(names = "--source-write-period", description = "The period that the generator should produce a record")
+  @Parameter(names = "--source-write-period", description = "The failurePeriod that the generator should produce a record")
   protected long    writePeriod;
   
   @Parameter(names = "--source-max-duration", description = "The maximum number of record per stream")

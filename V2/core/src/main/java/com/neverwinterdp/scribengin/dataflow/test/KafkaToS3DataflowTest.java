@@ -14,7 +14,6 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
-import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.tool.message.MessageGenerator;
@@ -24,10 +23,10 @@ public class KafkaToS3DataflowTest extends DataflowTest {
   @Parameter(names = "--source-topic", description = "Source topic")
   public String SOURCE_TOPIC = "hello.source";
 
-  @Parameter(names = "--flow-dataflowName", description = "Invalid sink topic")
+  @Parameter(names = "--flow-name", description = "Invalid sink topic")
   private String name = "hello";
 
-  @Parameter(names = "--kafka-write-period", description = "The write period for each partition in ms")
+  @Parameter(names = "--kafka-write-period", description = "The write failurePeriod for each partition in ms")
   private int writePeriod = 10;
 
   @Parameter(names = "--kafka-num-partition", description = "Number of the partitions")

@@ -136,9 +136,20 @@ public class ScribenginClient {
   }
   
   public DataflowClient getDataflowClient(String dataflowName) throws Exception {
+    return getDataflowClient(dataflowName, 60000) ;
+  }
+  
+  public DataflowClient getDataflowClient(String dataflowName, long timeout) throws Exception {
     String dataflowPath = ScribenginService.getDataflowPath(dataflowName);
-    DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
-    return dataflowClient ;
+    long stopTime = System.currentTimeMillis() + timeout;
+    while(System.currentTimeMillis() < stopTime) {
+      if(getRegistry().exists(dataflowPath)) {
+        DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
+        return dataflowClient ;
+      }
+      Thread.sleep(500);
+    }
+    throw new Exception("The dataflow " + dataflowName + " is not existed after " + timeout + "ms");
   }
   
   public RegistryDebugger getDataflowTaskDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {

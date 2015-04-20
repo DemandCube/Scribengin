@@ -15,19 +15,19 @@ import com.neverwinterdp.util.text.TabularFormater;
 public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   final static public String TEST_NAME = "start-stop-resume";
 
-  @Parameter(names = "--flow-name", description = "The command should repeat in this period of time")
-  String flowName = "kafka-to-kafka";
+  @Parameter(names = "--dataflow-name", description = "The command should repeat in this failurePeriod of time")
+  String dataflowName = "kafka-to-kafka";
   
-  @Parameter(names = "--wait-before-start", description = "The command should repeat in this period of time")
+  @Parameter(names = "--wait-before-start", description = "The command should repeat in this failurePeriod of time")
   long waitBeforeStart = -1;
   
-  @Parameter(names = "--sleep-before-execute", description = "The command should repeat in this period of time")
+  @Parameter(names = "--sleep-before-execute", description = "The command should repeat in this failurePeriod of time")
   long sleepBeforeExecute = 10000;
   
-  @Parameter(names = "--max-wait-for-stop", description = "The command should repeat in this period of time")
+  @Parameter(names = "--max-wait-for-stop", description = "The command should repeat in this failurePeriod of time")
   long maxWaitForStop = 20000;
   
-  @Parameter(names = "--max-wait-for-resume", description = "The command should repeat in this period of time")
+  @Parameter(names = "--max-wait-for-resume", description = "The command should repeat in this failurePeriod of time")
   long maxWaitForResume = 20000;
 
   @Parameter(names = "--print-summary", description = "Enable to dump the registry at the end")
@@ -39,7 +39,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   
   public void doRun(ScribenginShell shell) throws Exception {
     ScribenginClient scribenginClient = shell.getScribenginClient() ;
-    DataflowClient dflClient = scribenginClient.getDataflowClient(flowName);
+    DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
     DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
     int stopCount = 0; 
     int stopCompleteCount = 0; 

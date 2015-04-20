@@ -48,9 +48,9 @@ public class DataflowVMDebugger implements NodeDebugger{
     registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", Event = CREATE");
     
     NodeFormatter formatter = null;
-    if(this.detailedDebugger){
+    if(detailedDebugger){
       formatter = new DataflowVMDetailedFormatter(node);
-      registryDebugger.watchChild(node.getPath()+"/executors", ".*", new DataflowVMDebugger(detailedDebugger));
+      registryDebugger.watchChild(node.getPath() + "/executors", ".*", new DataflowVMDebugger(detailedDebugger));
     }
     else{
       formatter = new DataflowVMSimpleFormatter(node);

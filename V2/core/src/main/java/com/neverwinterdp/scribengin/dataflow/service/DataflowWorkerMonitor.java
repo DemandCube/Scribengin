@@ -5,17 +5,23 @@ import java.util.Map;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.activity.AddWorkerActivityBuilder;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowWorkerMonitor {
   private DataflowRegistry dataflowRegistry ;
+  private DataflowActivityService activityService ;
   private Map<String, DataflowWorkerHeartbeatListener> workerHeartbeatListeners = new HashMap<>();
   
-  public DataflowWorkerMonitor(DataflowRegistry dflRegistry) throws RegistryException {
+  public DataflowWorkerMonitor(DataflowRegistry dflRegistry, DataflowActivityService activityService) throws RegistryException {
     this.dataflowRegistry = dflRegistry;
+    this.activityService = activityService ;
   }
 
   synchronized public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
@@ -23,12 +29,16 @@ public class DataflowWorkerMonitor {
     workerHeartbeatListeners.put(vmDescriptor.getRegistryPath(), listener);
   }
   
-  synchronized void removeWorkerListener(String heartbeatPath) throws RegistryException {
+  synchronized void removeWorkerListener(String heartbeatPath) throws Exception {
     Node heartbeatNode = new Node(dataflowRegistry.getRegistry(), heartbeatPath);
     Node vmNode = heartbeatNode.getParentNode().getParentNode();
     workerHeartbeatListeners.remove(vmNode.getPath());
-    // VMDescriptor vmDescriptor = vmNode.getDataAs(VMDescriptor.class) ;
     dataflowRegistry.historyWorker(vmNode.getName());
+    
+    if(dataflowRegistry.getStatus() == DataflowLifecycleStatus.RUNNING) {
+      AddWorkerActivityBuilder addWorkerActivityBuilder =  new AddWorkerActivityBuilder(1);
+      ActivityCoordinator addWorkerCoordinator = activityService.start(addWorkerActivityBuilder);
+    }
   }
   
   public class DataflowWorkerHeartbeatListener extends NodeEventWatcher {

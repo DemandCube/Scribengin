@@ -66,7 +66,7 @@ public class DataflowService {
   }
   
   public void run() throws Exception {
-    dataflowWorkerMonitor = new DataflowWorkerMonitor(dataflowRegistry);
+    dataflowWorkerMonitor = new DataflowWorkerMonitor(dataflowRegistry, activityService);
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
     masterEventListener = new DataflowTaskMasterEventListenter(dataflowRegistry);
     DataflowInitActivityBuilder dataflowInitActivityBuilder = new DataflowInitActivityBuilder(dataflowRegistry.getDataflowDescriptor());
