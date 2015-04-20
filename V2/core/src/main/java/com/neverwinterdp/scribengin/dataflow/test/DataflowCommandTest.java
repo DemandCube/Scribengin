@@ -16,6 +16,12 @@ abstract public class DataflowCommandTest {
   abstract public void doRun(ScribenginShell shell) throws Exception ;
   
   protected void junitReport(String junitReportFile, List<ExecuteLog> executeLogs) throws Exception {
-    //TODO: assert for all execute log ass success for now
+    System.err.println("");
+    System.err.println("!!!!!!!!!!!!!!");
+    for(ExecuteLog log : executeLogs){
+      System.err.println(log.getFormatText());
+    }
+    System.err.println("??????????????");
+    System.err.println("");
   }
 }

@@ -67,7 +67,8 @@ public class DataflowStartStopResumeUnitTest {
             "  --sleep-before-execute 10000 " +
             "  --max-wait-for-stop    20000 " +
             "  --max-wait-for-resume  20000 " +
-            "  --print-summary ";
+            "  --print-summary "+
+            "--junit-report x.xml";
         shell.execute(command);
       } catch (Exception e) {
         e.printStackTrace();
