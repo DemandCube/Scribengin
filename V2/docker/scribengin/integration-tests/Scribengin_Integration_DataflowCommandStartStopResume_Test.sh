@@ -34,7 +34,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py status"
 
 #Wait for dataflow test to end
-ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "wait `cat /opt/junit-reports/save_pid.txt`"
+ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master 'wait `cat /opt/junit-reports/save_pid.txt`'
 
 sleep 30
 #Get results
