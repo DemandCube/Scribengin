@@ -31,7 +31,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
             --print-dataflow-info -1 \
             --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
 
-sleep 5
+
 
 #Run server failure
 ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master \ 
