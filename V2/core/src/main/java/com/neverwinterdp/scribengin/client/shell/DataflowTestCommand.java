@@ -18,15 +18,12 @@ public class DataflowTestCommand extends Command {
   
   public DataflowTestCommand() {
     add(KafkaDataflowTest.TEST_NAME, KafkaDataflowTestSubCommand.class);
-    
-    //TODO: fix the name as KafkaDataflowTest.TEST_NAME, in unit test , use XYZDataflowTest.TEST_NAME as well,
-    //so you can go to the test code easily
+
     //TODO: fix the other sub command, you should realize that you have a lot similar and copy/paste code.
-    add("hdfs", HdfsDataflowTestSubCommand.class);
-    add("hdfs-kafka", HdfsToKafkaDataflowTestSubCommand.class);
-    add("kafka-hdfs", KafkaToHdfsDataflowTestSubCommand.class);
-    add("kafka-s3", KafkaToS3DataflowTestSubCommand.class);
-    
+    add(HDFSDataflowTest.TEST_NAME, HdfsDataflowTestSubCommand.class);
+    add(HDFSToKafkaDataflowTest.TEST_NAME, HdfsToKafkaDataflowTestSubCommand.class);
+    add(KafkaToHdfsDataflowTest.TEST_NAME, KafkaToHdfsDataflowTestSubCommand.class);
+
     add(DataflowCommandStartStopResumeTest.TEST_NAME, StartStopResumeSubcommand.class);
     add(DataflowRandomServerFailureTest.TEST_NAME, RandomServerFailureSubcommand.class);
   }

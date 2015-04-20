@@ -7,7 +7,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class HDFSDataflowTest extends DataflowTest {
-  final static public String TEST_NAME = "hdfs";
+  final static public String TEST_NAME = "hdfs-to-hdfs";
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new HDFSDataflowSourceGenerator();
 

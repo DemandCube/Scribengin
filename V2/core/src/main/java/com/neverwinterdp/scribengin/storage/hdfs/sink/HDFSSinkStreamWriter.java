@@ -22,9 +22,8 @@ public class HDFSSinkStreamWriter implements SinkStreamWriter {
   public HDFSSinkStreamWriter(FileSystem fs, String location) throws IOException {
     this.fs = fs;
     this.location = location;
-    //TODO (tuan)  when buffer folder are in location we get exceptions
-    this.bufferLocation = "../buffer/"+location + "/.buffer" + UUID.randomUUID().toString();
-  //  this.bufferLocation = location + "/.buffer" + UUID.randomUUID().toString();
+
+    this.bufferLocation = location + "/.buffer" + UUID.randomUUID().toString();
     Path bufferPath = new Path(bufferLocation);
     if(!fs.exists(bufferPath)) fs.mkdirs(bufferPath);
     this.currentBuffer = nextSinkBuffer();
