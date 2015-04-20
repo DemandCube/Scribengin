@@ -36,7 +36,9 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
 #Run server failure
 ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master \ 
   "cd /opt/scribengin/scribengin && \
-  ./bin/shell.sh dataflow-test random-server-failure --print-summary "
+  ./bin/shell.sh dataflow-test random-server-failure --print-summary 
+    --dataflow-name kafka-to-kafka \
+    --failure-period 10000 --max-failure 2"
 
 
 #Print the running processes
