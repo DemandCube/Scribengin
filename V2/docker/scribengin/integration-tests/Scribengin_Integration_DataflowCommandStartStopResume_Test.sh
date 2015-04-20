@@ -13,12 +13,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
 
 #Run start/stop/resume
-ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master \ 
-  'mkdir -p /opt/junit-reports/ && cd /opt/scribengin/scribengin && \
-  nohup ./bin/shell.sh dataflow-test start-stop-resume --wait-before-start 25000 --sleep-before-execute 10000 \
-     --max-wait-for-stop  20000 --max-wait-for-resume  20000  --print-summary \
-     --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml \
-     & echo $! > /opt/junit-reports/save_pid.txt'
+ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master 'mkdir -p /opt/junit-reports/ && cd /opt/scribengin/scribengin && nohup ./bin/shell.sh dataflow-test start-stop-resume --wait-before-start 25000 --sleep-before-execute 10000 --max-wait-for-stop  20000 --max-wait-for-resume  20000  --print-summary --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml  & echo $! > /opt/junit-reports/save_pid.txt'
 
 #Run dataflow
 ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
