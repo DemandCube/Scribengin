@@ -19,7 +19,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
    nohup ./bin/shell.sh dataflow-test kafka-to-kakfa \
             --dataflow-name  kafka-to-kafka \
             --worker 2 --executor-per-worker 2 \
-            --duration 180000 --task-max-execute-time 5000 \
+            --duration 600000 --task-max-execute-time 5000 \
             --source-name input --source-num-of-stream 10 \
             --source-write-period 0 \
             --source-max-records-per-stream 100000 \
