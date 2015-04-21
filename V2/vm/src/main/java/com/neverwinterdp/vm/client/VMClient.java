@@ -21,7 +21,6 @@ import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.event.VMShutdownEventListener;
 import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 
