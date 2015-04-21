@@ -94,5 +94,3 @@ RUN /tmp/post-install/post-install.sh
 RUN rm -rf          /tmp/*.tgz
 RUN rm -rf          /tmp/post-install
 
-#clusterCommander dependencies
-RUN sudo /opt/cluster/setup.sh

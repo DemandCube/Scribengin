@@ -36,3 +36,7 @@ chmod -R 700 /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/aut
 
 h1 "Change /opt ownership and permission to neverwinterdp user"
 chown -R neverwinterdp:neverwinterdp /opt
+
+
+#clusterCommander dependencies
+sudo /opt/cluster/setup.sh
