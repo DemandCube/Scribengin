@@ -32,15 +32,17 @@ public class KafkaDataflowTest extends DataflowTest {
     
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
     
-    printDebugInfo(shell, scribenginClient, dflDescriptor);
+    setupDebugger(shell, scribenginClient, dflDescriptor);
    
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    
     try {
       waitingEventListener.waitForEvents(duration);
     } catch (Exception e) {
     }
     report(shell, waitingEventListener);
-    
+
+    //TODO: make the sink validator run the background and check in parallel as the dataflow progress
     sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
     sinkValidator.run();
     sinkValidator.waitForTermination();

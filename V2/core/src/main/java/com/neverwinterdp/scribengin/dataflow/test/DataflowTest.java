@@ -89,8 +89,7 @@ abstract public class DataflowTest {
     shell.console().println(dataflowEventInfo.getFormatText());
   }
 
-  //TODO implement correctlly
-  protected void printDebugInfo(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
+  protected void setupDebugger(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
     if(detailedDebugDataflowTask){
       shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName, true);
     }
