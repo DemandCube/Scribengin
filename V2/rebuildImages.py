@@ -10,5 +10,6 @@ for filename in out.split():
 if rebuild:
   p = subprocess.Popen(['./V2/docker/scribengin/docker.sh', 'cluster','--clean-containers','--clean-image', '--build-image'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
   out, err = p.communicate()
-  print "STDOUT: "+out
   print "STDERR: "+err
+  print "STDOUT: "+out
+  

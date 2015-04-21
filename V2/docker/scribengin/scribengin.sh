@@ -17,7 +17,7 @@ function printUsage() {
 
 function build(){
   OPTION=$1
-  
+  DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
   #Omit the the tests by default
   if [ "$OPTION" = "--with-test" ] ; then
     command="../gradlew clean build install release"
@@ -28,7 +28,7 @@ function build(){
   #Build Scribengin
   pwd=`pwd`
   h1 "Building Scribengin/V2"
-  cd ../../
+  cd $DOCKERSCRIBEDIR/../../
   $command
   cd "$pwd"
   
