@@ -317,6 +317,7 @@ function cluster(){
   
   if [ $DEPLOY_SCRIBENGIN == "true" ] || [ $LAUNCH == "true" ] ; then
     #$DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py cluster deploy
+    $DOCKERSCRIBEDIR/scribengin.sh build
     $DOCKERSCRIBEDIR/scribengin.sh deploy
   fi
   
