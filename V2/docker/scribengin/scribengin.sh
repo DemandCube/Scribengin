@@ -41,7 +41,7 @@ function build(){
   cd ../../release
   ../../gradlew clean release
   cd "$pwd"
-  
+
 }
 
 
