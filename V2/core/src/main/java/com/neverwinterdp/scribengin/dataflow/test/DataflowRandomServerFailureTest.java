@@ -34,8 +34,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   
   public void doRun(ScribenginShell shell) throws Exception {
     ScribenginClient scribenginClient = shell.getScribenginClient() ;
-    DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
-    dflClient.waitForDataflowStatus(waitForRunningDataflow, DataflowLifecycleStatus.RUNNING);
+    DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     boolean error = false ;
