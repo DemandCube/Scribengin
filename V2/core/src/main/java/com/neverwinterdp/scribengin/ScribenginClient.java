@@ -143,9 +143,13 @@ public class ScribenginClient {
     String dataflowPath = ScribenginService.getDataflowPath(dataflowName);
     long stopTime = System.currentTimeMillis() + timeout;
     while(System.currentTimeMillis() < stopTime) {
-      if(getRegistry().exists(dataflowPath)) {
-        DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
-        return dataflowClient ;
+      if(getRegistry().exists(dataflowPath + "/status")) {
+        DataflowLifecycleStatus status = 
+            getRegistry().get(dataflowPath + "/status").getDataAs(DataflowLifecycleStatus.class) ;
+        if(status == DataflowLifecycleStatus.RUNNING ) {
+          DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
+          return dataflowClient ;
+        }
       }
       Thread.sleep(500);
     }
