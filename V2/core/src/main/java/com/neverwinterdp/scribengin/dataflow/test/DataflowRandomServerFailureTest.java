@@ -78,8 +78,10 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
         VMDescriptor selWorker = selectRandomVM(dflClient.getDataflowWorkers());
         if(selWorker == null) return null ;
         if(simulateKill) {
+          System.err.println("RandomWorkerKillFailureSimulator: simulateKill");
           dflClient.getScribenginClient().getVMClient().simulateKill(selWorker);
         } else {
+          System.err.println("RandomWorkerKillFailureSimulator: kill");
           dflClient.getScribenginClient().getVMClient().kill(selWorker);
         }
       } finally {
