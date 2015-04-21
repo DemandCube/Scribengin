@@ -22,17 +22,8 @@
 ####Bring up the docker images
 ```
 cd pathTo/Scribengin/V2/docker/scribengin
-./startCluster.sh
-#Your docker images are now created!
-```
-####Start Scribengin
-```
-#You shouldn't need a password if your ssh key was copied correctly
-#If not, the password is "neverwinterdp"
-ssh neverwinterdp@hadoop-master
+./docker.sh cluster --launch
 
-cd /opt/cluster
-./clusterCommander.py cluster --start --clean status
 #Scribengin is now running in YARN!
 ```
 
