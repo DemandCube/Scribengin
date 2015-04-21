@@ -12,20 +12,14 @@ sleep 5
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
 
-#Run server failure
-ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master \ 
-  "cd /opt/scribengin/scribengin && \
-  ./bin/shell.sh dataflow-test random-server-failure --print-summary \
-    --dataflow-name kafka-to-kafka \
-    --failure-period 10000 --max-failure 10"
 
 #Run dataflow
-ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
-  "mkdir -p /opt/junit-reports/ && cd /opt/scribengin/scribengin && \
+ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
+   cd /opt/scribengin/scribengin && \
    nohup ./bin/shell.sh dataflow-test kafka-to-kakfa \
             --dataflow-name  kafka-to-kafka \
             --worker 2 --executor-per-worker 2 \
-            --duration 600000 --task-max-execute-time 5000 \
+            --duration 180000 --task-max-execute-time 5000 \
             --source-name input --source-num-of-stream 10 \
             --source-write-period 0 \
             --source-max-records-per-stream 100000 \
@@ -38,6 +32,12 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
             --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
 
 
+
+#Run server failure
+ssh -f -n -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
+  ./bin/shell.sh dataflow-test random-server-failure --print-summary \
+    --dataflow-name kafka-to-kafka \
+    --failure-period 10000 --max-failure 2"
 
 
 #Print the running processes
