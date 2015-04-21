@@ -36,7 +36,6 @@ function build(){
   cd $DOCKERSCRIBEDIR/../../release
   ../../gradlew clean release
   cd "$pwd"
-
 }
 
 

@@ -1,5 +1,5 @@
 #Rebuild images if a file from the last check in contains the string "docker" (i.e. the docker folder was updated)
-import subprocess,re
+import subprocess,re, os
 p = subprocess.Popen(['git', 'diff', '--name-only', 'HEAD~1', 'HEAD'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
 out, err = p.communicate()
 rebuild=False
@@ -8,7 +8,8 @@ for filename in out.split():
     rebuild=True
 
 if rebuild:
-  p = subprocess.Popen(['./V2/docker/scribengin/docker.sh', 'cluster','--clean-containers','--clean-image', '--build-image'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
+  os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)) , 'docker/scribengin'))
+  p = subprocess.Popen(['./docker.sh', 'cluster','--clean-containers','--clean-image', '--build-image'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
   out, err = p.communicate()
   print "STDERR: "+err
   print "STDOUT: "+out
