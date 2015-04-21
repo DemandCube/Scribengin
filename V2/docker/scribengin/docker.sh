@@ -280,6 +280,61 @@ function host_sync() {
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync"
 }
 
+function cluster(){
+  DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  CLEAN_IMAGE=$(has_opt "--clean-image" $@ )
+  BUILD_IMAGE=$(has_opt "--build-image" $@ )
+  CLEAN_CONTAINERS=$(has_opt "--clean-containers" $@ )
+  RUN_CONTAINERS=$(has_opt "--run-containers" $@ )
+  DEPLOY_SCRIBENGIN=$(has_opt "--deploy-scribengin" $@ )
+  START_CLUSTER=$(has_opt "--start-cluster" $@ )
+  STOP_CLUSTER=$(has_opt "--stop-cluster" $@ )
+  FORCE_STOP_CLUSTER=$(has_opt "--force-stop-cluster" $@ )
+  LAUNCH=$(has_opt "--launch" $@ )
+  
+  if [ $CLEAN_CONTAINERS == "true" ] || [ $LAUNCH == "true" ] ; then
+    container_clean
+  fi
+  
+  if [ $CLEAN_IMAGE == "true" ] || [ $LAUNCH == "true" ]  ; then
+    clean_image
+  fi
+  
+  if [ $BUILD_IMAGE == "true" ] || [ $LAUNCH == "true" ] ; then
+    build_image $@
+  fi
+  
+  
+  if [ $RUN_CONTAINERS == "true" ] || [ $LAUNCH == "true" ] ; then
+    launch_containers $@
+    container_update_hosts $@
+    if [[ $OSTYPE == *"darwin"* ]] ; then
+      sudo route -n add 172.17.0.0/16 `boot2docker ip`
+    fi
+    host_machine_update_hosts
+  fi
+  
+  if [ $DEPLOY_SCRIBENGIN == "true" ] || [ $LAUNCH == "true" ] ; then
+    #$DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py cluster deploy
+    $DOCKERSCRIBEDIR/scribengin.sh deploy
+  fi
+  
+  if [ $START_CLUSTER == "true" ] || [ $LAUNCH == "true" ] ; then
+    ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && python clusterCommander.py cluster --start --clean status"
+  fi
+  
+  
+  if [ $STOP_CLUSTER == "true" ] ; then
+    ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && python clusterCommander.py cluster --stop status"
+  fi
+  
+  if [ $FORCE_STOP_CLUSTER == "true" ] ; then
+    ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && python clusterCommander.py cluster --force-stop status"
+  fi
+  
+  
+}
+
 function printUsage() {
   echo "Cluster command options: "
   echo "  Command image consists of the sub commands: "
@@ -293,6 +348,19 @@ function printUsage() {
   echo "    clean                 : To remove and destroy all the running containers"
   echo "    login                 : To login the given containeri name or id  with the root user"
   echo "    update-hosts          : To update the /etc/hosts in all the running containers"
+  echo "  Cluster Commands: "
+  echo "     ./docker.sh cluster [options]"
+  echo "       Options: "
+  echo "         --clean               : Cleans docker containers AND images"
+  echo "         --clean-image         : Cleans docker images"
+  echo "         --build-image         : Builds the docker image for Scribengin"
+  echo "         --clean-containers    : Cleans docker containers"
+  echo "         --run-containers      : Runs docker containers"
+  echo "         --deploy-scribengin   : Deploys local Scribengin files onto the cluster"
+  echo "         --start-cluster       : Starts kafka, hadoop, zookeeper, and scribengin"
+  echo "         --stop-cluster        : Stops kafka, hadoop, zookeeper, and scribengin"
+  echo "         --force-stop-cluster  : Force stop kafka, hadoop, zookeeper, and scribengin"
+  echo "         --launch              : Cleans docker image and containers, Builds image and container, then launches Scribengin"
   echo "  Other commands:"
   echo "    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command"
   echo "    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
@@ -331,6 +399,8 @@ elif [ "$COMMAND" = "container" ] ; then
   else
     printUsage
   fi
+elif [ "$COMMAND" = "cluster" ] ; then
+  cluster $@
 elif [ "$COMMAND" = "ssh" ] ; then
   do_ssh $@
 elif [ "$COMMAND" = "scp" ] ; then

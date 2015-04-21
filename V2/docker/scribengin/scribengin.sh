@@ -48,17 +48,19 @@ function build(){
 function deploy(){
   OPTION=$1
   #Stop all running java processes across the cluster
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster.sh exec \"pkill -9 java\""
+  
+  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --force-stop"
   
   if [ "$OPTION" = "--clean" ] ; then
-    ssh neverwinterdp@hadoop-master -C "/opt/cluster.sh clean"
+    ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --clean"
   fi
   
   #Copy
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster.sh exec \"rm -rf /opt/scribengin\""
+  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
+  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
   scp -r ../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
   scp -r ../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
-  ssh neverwinterdp@hadoop-master -C "yes | /opt/cluster.sh sync"
+  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync"
 }
 
 # get command
