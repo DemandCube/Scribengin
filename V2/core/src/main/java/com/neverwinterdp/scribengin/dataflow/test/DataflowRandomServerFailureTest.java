@@ -48,7 +48,6 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     } ;
     while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
       ExecuteLog executeLog = failureSimulator[0].terminate(dflClient);
-      
       if(executeLog != null) {
         executeLogs.add(executeLog);
         Thread.sleep(failurePeriod);

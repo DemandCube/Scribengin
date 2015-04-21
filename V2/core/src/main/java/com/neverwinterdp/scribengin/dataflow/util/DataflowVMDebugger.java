@@ -45,7 +45,7 @@ public class DataflowVMDebugger implements NodeDebugger{
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
-    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", TerminateEvent = CREATE");
+    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", Event = CREATE");
     
     NodeFormatter formatter = null;
     if(detailedDebugger){
@@ -62,7 +62,7 @@ public class DataflowVMDebugger implements NodeDebugger{
 
   @Override
   public void onModify(RegistryDebugger registryDebugger, Node node) throws Exception {
-    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", TerminateEvent = MODIFY");
+    registryDebugger.println("DataflowVMDebugger: Node = " + node.getPath() + ", Event = MODIFY");
     NodeFormatter formatter = null;
     if(this.detailedDebugger){
       formatter = new DataflowVMDetailedFormatter(node);

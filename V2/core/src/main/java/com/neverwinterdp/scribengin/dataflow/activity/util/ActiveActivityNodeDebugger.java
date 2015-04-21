@@ -25,7 +25,7 @@ public class ActiveActivityNodeDebugger implements NodeDebugger {
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = CREATE");
+    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = CREATE");
     NodeFormatter formatter = null;
     if(this.detailedDebugger){
       formatter = new ActivityNodeDetailedFormatter(activityNode);
@@ -39,7 +39,7 @@ public class ActiveActivityNodeDebugger implements NodeDebugger {
 
   @Override
   public void onModify(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = MODIFY");
+    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = MODIFY");
     NodeFormatter formatter = null;
     if(this.detailedDebugger){
       formatter = new ActivityNodeDetailedFormatter(activityNode);
@@ -52,7 +52,7 @@ public class ActiveActivityNodeDebugger implements NodeDebugger {
 
   @Override
   public void onDelete(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = DELETE");
+    registryDebugger.println("ActiveActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = DELETE");
     String path = activityNode.getPath();
     path = path.replace("/active/", "/history/");
     Node historyNode = activityNode.getRegistry().get(path);
