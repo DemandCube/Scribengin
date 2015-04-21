@@ -17,8 +17,8 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   @Parameter(names = "--dataflow-name", description = "The command should repeat in this period of time")
   String dataflowName = "kafka-to-kafka";
   
-  @Parameter(names = "--wait-before-start", description = "The command should repeat in this failurePeriod of time")
-  long waitBeforeStart = -1;
+  @Parameter(names = "--wait-for-running-dataflow", description = "The command should repeat in this failurePeriod of time")
+  long waitForRunningDataflow = 180000;
   
   @Parameter(names = "--failure-period", description = "The command should repeat in this period of time")
   long failurePeriod = 5000;
@@ -35,10 +35,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   public void doRun(ScribenginShell shell) throws Exception {
     ScribenginClient scribenginClient = shell.getScribenginClient() ;
     DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
-    dflClient.waitForDataflowStatus(60000, DataflowLifecycleStatus.RUNNING);
-    if(waitBeforeStart > 0) {
-      Thread.sleep(waitBeforeStart);
-    }
+    dflClient.waitForDataflowStatus(waitForRunningDataflow, DataflowLifecycleStatus.RUNNING);
 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     boolean error = false ;
