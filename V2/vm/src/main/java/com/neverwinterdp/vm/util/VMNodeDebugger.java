@@ -9,7 +9,7 @@ public class VMNodeDebugger implements NodeDebugger {
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node node) throws Exception {
     VMRegistryFormatter formatter = new VMRegistryFormatter(node);
-    registryDebugger.println("RegistryDebugger: Node = " + node.getPath() + ", Event = CREATE");
+    registryDebugger.println("RegistryDebugger: Node = " + node.getPath() + ", TerminateEvent = CREATE");
     registryDebugger.println(formatter.getFormattedText());
 
     registryDebugger.watchModify(node.getPath(), formatter, true);

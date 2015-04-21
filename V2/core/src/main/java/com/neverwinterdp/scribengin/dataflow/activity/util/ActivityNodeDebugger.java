@@ -18,7 +18,7 @@ public class ActivityNodeDebugger implements NodeDebugger {
   
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = CREATE");
+    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = CREATE");
     NodeFormatter formatter = null;
     if(this.detailedDebugger){
       formatter = new ActivityNodeDetailedFormatter(activityNode);
@@ -31,12 +31,12 @@ public class ActivityNodeDebugger implements NodeDebugger {
 
   @Override
   public void onModify(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = MODIFY");
+    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = MODIFY");
   }
 
   @Override
   public void onDelete(RegistryDebugger registryDebugger, Node activityNode) throws Exception {
-    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", Event = DELETE");
+    registryDebugger.println("ActivityNodeDebugger: Node = " + activityNode.getPath() + ", TerminateEvent = DELETE");
   }
 
 }

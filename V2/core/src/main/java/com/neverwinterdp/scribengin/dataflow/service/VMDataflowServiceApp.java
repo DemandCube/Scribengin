@@ -38,7 +38,7 @@ public class VMDataflowServiceApp extends VMApp {
     election.setListener(new MasterLeaderElectionListener());
     election.start();
     try {
-      waitForShutdown();
+      waitForTerminate();
       System.err.println("finish waitForShutdown()");
     } catch(InterruptedException ex) {
     } finally {
@@ -106,7 +106,7 @@ public class VMDataflowServiceApp extends VMApp {
         e.printStackTrace();
       } finally {
         System.err.println("ServiceRunnerThread: notifyShutdown()");
-        notifyShutdown();
+        terminate(TerminateEvent.Shutdown);
       }
     }
   }

@@ -12,6 +12,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.activity.AddWorkerActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
+import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.vm.VMDescriptor;
 
 public class DataflowWorkerMonitor {
@@ -33,9 +34,13 @@ public class DataflowWorkerMonitor {
     Node heartbeatNode = new Node(dataflowRegistry.getRegistry(), heartbeatPath);
     Node vmNode = heartbeatNode.getParentNode().getParentNode();
     workerHeartbeatListeners.remove(vmNode.getPath());
+    Node dataflowWorkerNode = dataflowRegistry.getActiveWorkersNode().getChild(vmNode.getName());
+    DataflowWorkerStatus dataflowWorkerStatus = dataflowWorkerNode.getChild("status").getDataAs(DataflowWorkerStatus.class);
     dataflowRegistry.historyWorker(vmNode.getName());
     
-    if(dataflowRegistry.getStatus() == DataflowLifecycleStatus.RUNNING) {
+    System.err.println(">>>DataflowWorkerStatus = " + dataflowWorkerStatus) ;
+    
+    if(dataflowWorkerStatus != DataflowWorkerStatus.TERMINATED) {
       AddWorkerActivityBuilder addWorkerActivityBuilder =  new AddWorkerActivityBuilder(1);
       ActivityCoordinator addWorkerCoordinator = activityService.start(addWorkerActivityBuilder);
     }

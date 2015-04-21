@@ -88,6 +88,16 @@ public class VMClient {
     return result.getResultAs(Boolean.class);
   }
   
+  public boolean simulateKill(VMDescriptor vmDescriptor) throws Exception {
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill());
+    return result.getResultAs(Boolean.class);
+  }
+  
+  public boolean kill(VMDescriptor vmDescriptor) throws Exception {
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
+    return result.getResultAs(Boolean.class);
+  }
+  
   public FileSystem getFileSystem() throws IOException {
     return FileSystem.get(new Configuration());
   }

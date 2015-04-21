@@ -19,6 +19,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.JSONSerializer;
+import com.neverwinterdp.vm.VMApp.TerminateEvent;
 import com.neverwinterdp.vm.command.VMCommandWatcher;
 import com.neverwinterdp.vm.service.VMService;
 
@@ -130,14 +131,23 @@ public class VM {
   }
   
   public void shutdown() throws Exception {
+    terminate(TerminateEvent.Shutdown);
+  }
+  
+  public void terminate(final TerminateEvent event) throws Exception {
     if(vmApplicationRunner == null || !vmApplicationRunner.isAlive()) return;
     Thread thread = new Thread() {
       public void run() {
         try {
           Thread.sleep(500);
-          if(vmApplicationRunner.vmApplication.isWaittingForShutdown()) {
-            vmApplicationRunner.vmApplication.notifyShutdown();
-          } else {
+//          if(vmApplicationRunner.vmApplication.isWaittingForTerminate()) {
+//            vmApplicationRunner.vmApplication.terminate(event);
+//          } else {
+//            vmApplicationRunner.interrupt();
+//          }
+          
+          vmApplicationRunner.vmApplication.terminate(event);
+          if(!vmApplicationRunner.vmApplication.isWaittingForTerminate()) {
             vmApplicationRunner.interrupt();
           }
         } catch (InterruptedException e) {

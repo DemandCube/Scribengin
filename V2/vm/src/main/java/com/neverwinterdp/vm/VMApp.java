@@ -4,36 +4,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 abstract public class VMApp {
-  static public enum Event { Shutdown }
+  static public enum TerminateEvent { Shutdown, SimulateKill, Kill }
   
   private VM vm;
-  private boolean waitForShutdown = false ;
-  private List<EventListener> listeners = new ArrayList<>();
+  private boolean waitForTerminate = false ;
+  private List<VMAppTerminateEventListener> listeners = new ArrayList<>();
   
   public VM getVM() { return this.vm ; }
   public void setVM(VM vm) { this.vm = vm ; }
   
   abstract public void run() throws Exception ;
   
-  public boolean isWaittingForShutdown() { return waitForShutdown ; }
+  public boolean isWaittingForTerminate() { return waitForTerminate ; }
   
-  synchronized public void waitForShutdown() throws InterruptedException {
-    waitForShutdown = true;
+  synchronized public void waitForTerminate() throws InterruptedException {
+    waitForTerminate = true;
     wait(0);
   }
   
-  synchronized public void notifyShutdown() {
-    for(EventListener listener : listeners) {
-      listener.onEvent(this, Event.Shutdown);
+  synchronized public void terminate(TerminateEvent terminateEvent) {
+    for(VMAppTerminateEventListener listener : listeners) {
+      listener.onEvent(this, terminateEvent);
     }
     notify();
   }
   
-  public void addListener(EventListener listener) {
+  public void addListener(VMAppTerminateEventListener listener) {
     listeners.add(listener);
   }
   
-  static public interface EventListener {
-    public void onEvent(VMApp vmApp, Event event) ;
+  static public interface VMAppTerminateEventListener {
+    public void onEvent(VMApp vmApp, TerminateEvent terminateEvent) ;
   }
 }

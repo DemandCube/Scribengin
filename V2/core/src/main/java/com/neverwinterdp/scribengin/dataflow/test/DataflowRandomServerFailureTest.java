@@ -26,6 +26,9 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   @Parameter(names = "--max-failure", description = "The command should repeat in this period of time")
   int maxFailure = 100;
   
+  @Parameter(names = "--simulate-kill", description = "The command should repeat in this period of time")
+  boolean simulateKill = false;
+  
   @Parameter(names = "--print-summary", description = "Enable to dump the registry at the end")
   protected boolean printSummary = false;
   
@@ -40,8 +43,12 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     boolean error = false ;
     int failureCount = 0 ;
+    FailureSimulator[] failureSimulator = {
+      new RandomWorkerKillFailureSimulator()
+    } ;
     while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
-      ExecuteLog executeLog = doKillRandomWorker(dflClient);
+      ExecuteLog executeLog = failureSimulator[0].terminate(dflClient);
+      
       if(executeLog != null) {
         executeLogs.add(executeLog);
         Thread.sleep(failurePeriod);
@@ -53,46 +60,33 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     report(shell, executeLogs);
   }
   
-  ExecuteLog doKillRandomWorker(DataflowClient dflClient) throws Exception {
-    ExecuteLog executeLog = new ExecuteLog("Kill random a dataflow worker") ;
-    executeLog.start();
-    try {
-      VMDescriptor selWorker = selectRandom(dflClient.getDataflowWorkers());
-      if(selWorker == null) return null ;
-      dflClient.getScribenginClient().getVMClient().shutdown(selWorker);
-    } finally {
-      executeLog.stop();
+  abstract public class FailureSimulator {
+    abstract public ExecuteLog terminate(DataflowClient dflClient) throws Exception ;
+    
+    VMDescriptor selectRandomVM(List<VMDescriptor> vmDescriptors) throws Exception {
+      if(vmDescriptors.size() == 0) return null ;
+      Random rand = new Random() ;
+      int selIndex = rand.nextInt(vmDescriptors.size()) ;
+      return vmDescriptors.get(selIndex) ;
     }
-    return executeLog;
   }
   
-  ExecuteLog doShutdownWorker(DataflowClient dflClient) throws Exception {
-    ExecuteLog executeLog = new ExecuteLog("Shutdown randomly a dataflow worker") ;
-    executeLog.start();
-    try {
-      VMDescriptor selWorker = selectRandom(dflClient.getDataflowWorkers());
-      if(selWorker == null) return null ;
-      dflClient.getScribenginClient().getVMClient().shutdown(selWorker);
-    } finally {
-      executeLog.stop();
+  public class RandomWorkerKillFailureSimulator extends FailureSimulator {
+    public ExecuteLog terminate(DataflowClient dflClient) throws Exception {
+      ExecuteLog executeLog = new ExecuteLog("Kill random a dataflow worker") ;
+      executeLog.start();
+      try {
+        VMDescriptor selWorker = selectRandomVM(dflClient.getDataflowWorkers());
+        if(selWorker == null) return null ;
+        if(simulateKill) {
+          dflClient.getScribenginClient().getVMClient().simulateKill(selWorker);
+        } else {
+          dflClient.getScribenginClient().getVMClient().kill(selWorker);
+        }
+      } finally {
+        executeLog.stop();
+      }
+      return executeLog;
     }
-    return executeLog;
-  }
-  
-  ExecuteLog doKillMaster(DataflowClient dflClient) throws Exception {
-    ExecuteLog executeLog = new ExecuteLog("Stop the dataflow with the event") ;
-    return executeLog;
-  }
-  
-  ExecuteLog doShutdownMaster(DataflowClient dflClient) throws Exception {
-    ExecuteLog executeLog = new ExecuteLog("Stop the dataflow with the event") ;
-    return executeLog;
-  }
-  
-  VMDescriptor selectRandom(List<VMDescriptor> vmDescriptors) throws Exception {
-    if(vmDescriptors.size() == 0) return null ;
-    Random rand = new Random() ;
-    int selIndex = rand.nextInt(vmDescriptors.size()) ;
-    return vmDescriptors.get(selIndex) ;
   }
 }

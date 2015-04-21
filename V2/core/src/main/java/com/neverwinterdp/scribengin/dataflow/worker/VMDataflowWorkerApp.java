@@ -63,12 +63,17 @@ public class VMDataflowWorkerApp extends VMApp {
     Injector injector = Guice.createInjector(Stage.PRODUCTION, modules);
     container = injector.getInstance(DataflowContainer.class);
     dataflowTaskExecutorService = container.getDataflowTaskExecutorManager();
-    addListener(new VMApp.EventListener() {
+    addListener(new VMApp.VMAppTerminateEventListener() {
       @Override
-      public void onEvent(VMApp vmApp, Event event) {
+      public void onEvent(VMApp vmApp, TerminateEvent terminateEvent) {
+        System.err.println("VMDataflowWorkerApp terminate event = " + terminateEvent);
         try {
-          if(event == Event.Shutdown) {
+          if(terminateEvent == TerminateEvent.Shutdown) {
             dataflowTaskExecutorService.shutdown();
+          } else if(terminateEvent == TerminateEvent.SimulateKill) {
+            dataflowTaskExecutorService.simulateKill();
+          } else if(terminateEvent == TerminateEvent.Kill) {
+            System.exit(0);;
           }
         } catch (Exception e) {
           e.printStackTrace();

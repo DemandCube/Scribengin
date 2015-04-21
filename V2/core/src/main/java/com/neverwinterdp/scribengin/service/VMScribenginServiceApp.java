@@ -38,11 +38,11 @@ public class VMScribenginServiceApp extends VMApp {
     
     ScribenginShutdownEventListener shutdownListener = new ScribenginShutdownEventListener(registry) {
       @Override
-      public void onShutdownEvent() { notifyShutdown(); }
+      public void onShutdownEvent() { terminate(TerminateEvent.Shutdown); }
     };
 
     try {
-      waitForShutdown();
+      waitForTerminate();
     } catch(InterruptedException ex) {
     } finally {
       if(election != null && election.getLeaderId() != null) {

@@ -11,8 +11,10 @@ public class DataflowTaskExecutor {
   private DataflowTaskExecutorDescriptor executorDescriptor;
   private DataflowContainer dataflowContainer ;
   private ExecutorManagerThread executorManagerThread ;
+  private DataflowTaskExecutorThread executorThread ;
   private DataflowTask currentDataflowTask = null;
   private boolean interrupt = false;
+  private boolean kill = false ;
   
   public DataflowTaskExecutor(DataflowTaskExecutorDescriptor  descriptor, DataflowContainer container) throws RegistryException {
     executorDescriptor = descriptor;
@@ -56,7 +58,7 @@ public class DataflowTaskExecutor {
         dataflowRegistry.updateWorkerTaskExecutor(vmDescriptor, executorDescriptor);
         currentDataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
         currentDataflowTask.init();
-        DataflowTaskExecutorThread executorThread = new DataflowTaskExecutorThread(currentDataflowTask);
+        executorThread = new DataflowTaskExecutorThread(currentDataflowTask);
         executorThread.start();
         executorThread.waitForTimeout(10000);
         if(currentDataflowTask.isComplete()) currentDataflowTask.finish();
@@ -73,6 +75,7 @@ public class DataflowTaskExecutor {
   }
 
   void doExit() {
+    if(kill) return ;
     try {
       DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
       VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
@@ -81,6 +84,16 @@ public class DataflowTaskExecutor {
     } catch(Exception ex) {
       ex.printStackTrace();
     }
+  }
+  
+  /**
+   * This method is used to simulate the failure
+   * @throws Exception
+   */
+  public void kill() throws Exception {
+    kill = true;
+    if(executorThread != null && executorThread.isAlive()) executorThread.interrupt();
+    if(executorManagerThread != null && executorManagerThread.isAlive()) executorManagerThread.interrupt();
   }
   
   public class ExecutorManagerThread extends Thread {

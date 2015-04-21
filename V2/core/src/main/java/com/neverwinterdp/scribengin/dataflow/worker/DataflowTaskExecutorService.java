@@ -28,6 +28,7 @@ public class DataflowTaskExecutorService {
   private DataflowDescriptor dataflowDescriptor;
   private List<DataflowTaskExecutor> taskExecutors;
   private DataflowWorkerStatus workerStatus = DataflowWorkerStatus.INIT;
+  private boolean kill = false ;
   
   @Inject
   public void onInit(DataflowRegistry dflRegistry) throws Exception {
@@ -78,6 +79,7 @@ public class DataflowTaskExecutorService {
   }
   
   public void shutdown() throws Exception {
+    if(kill) return;
     logger.info("Start shutdown()");
     if(workerStatus != DataflowWorkerStatus.TERMINATED) {
       System.err.println("DataflowTaskExecutorService: shutdown()");
@@ -91,6 +93,17 @@ public class DataflowTaskExecutorService {
     }
     System.err.println("DataflowTaskExecutorService: Finish shutdown()");
     logger.info("Finish shutdown()");
+  }
+  
+  public void simulateKill() throws Exception {
+    logger.info("Start kill()");
+    kill = true ;
+    if(workerStatus != DataflowWorkerStatus.TERMINATED) {
+      for(DataflowTaskExecutor sel : taskExecutors) {
+        if(sel.isAlive()) sel.kill();
+      }
+    }
+    logger.info("Finish kill()");
   }
   
   public boolean isAlive() {

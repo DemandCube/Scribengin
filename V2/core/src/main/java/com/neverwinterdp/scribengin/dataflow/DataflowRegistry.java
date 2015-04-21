@@ -303,6 +303,10 @@ public class DataflowRegistry {
     return activeWorkers.getChildren();
   }
   
+  public DataflowWorkerStatus getDataflowWorkerStatus(String vmId) throws RegistryException {
+    return activeWorkers.getChild(vmId).getChild("status").getDataAs(DataflowWorkerStatus.class);
+  }
+  
   public List<DataflowTaskExecutorDescriptor> getActiveExecutors(String worker) throws RegistryException {
     Node executors = activeWorkers.getDescendant(worker + "/executors") ;
     return executors.getChildrenAs(DataflowTaskExecutorDescriptor.class);
