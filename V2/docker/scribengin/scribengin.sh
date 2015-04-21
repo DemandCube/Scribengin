@@ -32,13 +32,8 @@ function build(){
   $command
   cd "$pwd"
   
-  #Build and release the javaagent
-  #cd ../../jvmagent/registry/
-  #../../../gradlew clean build release -x test
-  #cd "$pwd"
-  
   #Release the project
-  cd ../../release
+  cd $DOCKERSCRIBEDIR/../../release
   ../../gradlew clean release
   cd "$pwd"
 
