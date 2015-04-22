@@ -3,13 +3,14 @@ package com.neverwinterdp.scribengin.client.shell;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
-import com.neverwinterdp.scribengin.event.ScribenginWaitingEventListener;
 import com.neverwinterdp.util.IOUtil;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
@@ -37,8 +38,22 @@ public class DataflowCommand extends Command {
     @Parameter(names = "--history", description = "The history dataflow id")
     private String history ;
     
+    @Parameter(names = "--show-tasks", description = "The history dataflow id")
+    private boolean tasks = false;
+    
+    @Parameter(names = "--show-workers", description = "The history dataflow id")
+    private boolean workers = false;
+    
+    @Parameter(names = "--show-activities", description = "The history dataflow id")
+    private boolean activities = false;
+    
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
+      boolean showAll = false;
+      if(!tasks && !workers && !activities){
+        showAll = true;
+      }
+      
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       ScribenginClient scribenginClient= scribenginShell.getScribenginClient();
       DataflowRegistry dRegistry = null;
@@ -47,23 +62,49 @@ public class DataflowCommand extends Command {
       } else if(history != null) {
         dRegistry = scribenginClient.getHistoryDataflowRegistry(history);
       }
+      
       Console console = shell.console();
       console.h1("Dataflow " + dRegistry.getDataflowPath());
-      console.println("\nTasks:\n");
-      List<DataflowTaskDescriptor> taskDescriptors = dRegistry.getTaskDescriptors();
-      Formater.DataFlowTaskDescriptorList taskList = new Formater.DataFlowTaskDescriptorList(taskDescriptors);
-      console.println(taskList.format("All Tasks"));
-      List<DataflowTaskReport> taskReports = dRegistry.getTaskReports(taskDescriptors) ;
-      Formater.DataflowTaskReportList reportList = new Formater.DataflowTaskReportList(taskReports);
-      console.print(reportList.format("Report", "  "));
       
-      console.println("Workers:\n");
-      List<String> workers = dRegistry.getActiveWorkerNames();
-      for(String worker : workers) {
-        List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getActiveExecutors(worker);
-        console.println("\n  Worker: " + worker + "\n");
-        Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
-        console.println(executorList.format("Executors", "    "));
+      if(tasks || showAll){
+        console.println("\nTasks:");
+        List<DataflowTaskDescriptor> taskDescriptors = dRegistry.getTaskDescriptors();
+        Formater.DataFlowTaskDescriptorList taskList = new Formater.DataFlowTaskDescriptorList(taskDescriptors);
+        console.println(taskList.format("All Tasks"));
+        List<DataflowTaskReport> taskReports = dRegistry.getTaskReports(taskDescriptors) ;
+        Formater.DataflowTaskReportList reportList = new Formater.DataflowTaskReportList(taskReports);
+        console.print(reportList.format("Report", "  "));
+      }
+      
+      if(workers || showAll){
+        console.println("\nWorkers:");
+        List<String> workers = dRegistry.getActiveWorkerNames();
+        for(String worker : workers) {
+          List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getActiveExecutors(worker);
+          console.println("  Worker: " + worker);
+          Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
+          console.println(executorList.format("Executors", "    "));
+        }
+      }
+      
+      if(activities || showAll){
+        console.println("\nActivities:");
+        console.println("  Active Activities:");
+        List<Activity> ActiveActivities = dRegistry.getActiveActivities();
+        for(Activity activity : ActiveActivities) {
+          List<ActivityStep> steps = dRegistry.getActiveActivitySteps(activity.getId());
+          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps);
+          console.println(activityFormatter.format("    "));
+          console.println("");
+        }
+        
+        console.println("  History Activities:");
+        List<Activity> historyActivities = dRegistry.getHistoryActivities();
+        for(Activity activity : historyActivities) {
+          List<ActivityStep> steps = dRegistry.getHistoryActivitySteps(activity.getId());
+          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps);
+          console.println(activityFormatter.format("    "));
+        }
       }
     }
 
