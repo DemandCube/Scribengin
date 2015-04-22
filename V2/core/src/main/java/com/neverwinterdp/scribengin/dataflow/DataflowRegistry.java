@@ -18,6 +18,8 @@ import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.registry.util.RegistryDebugger;
+import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
@@ -40,11 +42,16 @@ public class DataflowRegistry {
   final static public String WORKER_EVENT_PATH      = "event/worker" ;
   
   final static public String ACTIVITIES_PATH        = "activities";
+  final static public String ACTIVE_ACTIVITIES_PATH    = ACTIVITIES_PATH +"/active";
+  final static public String HISTORY_ACTIVITIES_PATH   = ACTIVITIES_PATH +"/history";
+  
   final static public String MASTER_PATH            = "master";
   final static public String MASTER_LEADER_PATH     = MASTER_PATH + "/leader";
   
   final static public String ACTIVE_WORKERS_PATH    = "workers/active";
   final static public String HISTORY_WORKERS_PATH   = "workers/history";
+  
+  
 
   final static public DataMapperCallback<DataflowTaskDescriptor> TASK_DESCRIPTOR_DATA_MAPPER = new DataMapperCallback<DataflowTaskDescriptor>() {
     @Override
@@ -72,6 +79,7 @@ public class DataflowRegistry {
   
   private Node               activeWorkers;
   private Node               historyWorkers;
+  
 
 
   public DataflowRegistry() { }
@@ -323,5 +331,25 @@ public class DataflowRegistry {
   
   public void dump() throws RegistryException, IOException {
     registry.get(dataflowPath).dump(System.out);
+  }
+
+  public List<ActivityStep> getActiveActivitySteps(String activityName) throws RegistryException {
+    return registry.getChildrenAs(
+        dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH+ "/" + activityName + "/" + "activity-steps", 
+        ActivityStep.class);
+  }
+  
+  public List<ActivityStep> getHistoryActivitySteps(String activityName) throws RegistryException {
+    return registry.getChildrenAs(
+        dataflowPath + "/" + HISTORY_ACTIVITIES_PATH+ "/" + activityName +"/" + "activity-steps", 
+        ActivityStep.class);
+  }
+
+  public List<Activity> getActiveActivities() throws RegistryException {
+    return registry.getChildrenAs(dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH, Activity.class);
+  }
+
+  public List<Activity> getHistoryActivities() throws RegistryException {
+    return registry.getChildrenAs(dataflowPath + "/" + HISTORY_ACTIVITIES_PATH, Activity.class);
   }
 }
