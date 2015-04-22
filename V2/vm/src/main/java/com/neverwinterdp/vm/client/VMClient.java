@@ -118,6 +118,7 @@ public class VMClient {
     private String path ;
     private CommandResult<?> result ;
     private Exception error ;
+    private boolean discardResult = false;
     
     public CommandReponseWatcher(String path) {
       this.path = path;
@@ -127,9 +128,14 @@ public class VMClient {
     public void onEvent(NodeEvent event) {
       String path = event.getPath();
       try {
-        CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
-        result = payload.getResult() ;
-        registry.delete(path);
+        if(event.getType() == NodeEvent.Type.DELETE) {
+          discardResult = true ;
+          return ;
+        } else {
+          CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
+          result = payload.getResult() ;
+          registry.delete(path);
+        }
         synchronized(this) {
           notify();
         }
@@ -138,19 +144,22 @@ public class VMClient {
       }
     }
     
-    
-    
     public CommandResult<?> waitForResult(long timeout) throws Exception {
       if(result == null) {
-        CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
-        result = payload.getResult() ;
-        if(result == null) {
-          synchronized(this) {
-            wait(timeout);
-          }
+        synchronized(this) {
+          wait(timeout);
         }
       }
       if(error != null) throw error;
+      if(discardResult) {
+        result = new CommandResult<Object>() ;
+        result.setDiscardResult(true);
+      }
+      //Check one more time in case the server return the response before the watcher is registered
+      if(result == null) {
+        CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
+        result = payload.getResult() ;
+      }
       if(result == null) {
         throw new TimeoutException("Cannot get the result after " + timeout + "ms") ;
       }

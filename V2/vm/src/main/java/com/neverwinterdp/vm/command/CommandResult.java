@@ -6,6 +6,7 @@ import com.neverwinterdp.util.JSONSerializer;
 
 public class CommandResult<T> {
   private T result ;
+  private boolean discardResult ;
   private String errorStacktrace;
   
   public <V> V getResultAs(Class<V> type) { return (V) result; }
@@ -15,6 +16,11 @@ public class CommandResult<T> {
   
   @JsonSerialize(using=JSONSerializer.GenericTypeSerializer.class)
   public void setResult(T result) { this.result = result; }
+
+  public boolean isDiscardResult() { return discardResult; }
+  public void setDiscardResult(boolean discardResult) {
+    this.discardResult = discardResult;
+  }
 
   public String getErrorStacktrace() { return errorStacktrace; }
   public void setErrorStacktrace(String errorStacktrace) { this.errorStacktrace = errorStacktrace; }
