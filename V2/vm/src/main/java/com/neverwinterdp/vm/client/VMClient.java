@@ -4,7 +4,6 @@ import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -86,16 +85,19 @@ public class VMClient {
   
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
+    if(result.isDiscardResult()) return true;
     return result.getResultAs(Boolean.class);
   }
   
   public boolean simulateKill(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill());
+    if(result.isDiscardResult()) return true;
     return result.getResultAs(Boolean.class);
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
     CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
+    if(result.isDiscardResult()) return true;
     return result.getResultAs(Boolean.class);
   }
   
