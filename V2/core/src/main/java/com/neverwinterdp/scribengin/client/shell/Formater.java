@@ -88,10 +88,19 @@ public class Formater {
     public String format(String title, String ident) {
       TabularFormater formater = new TabularFormater("Id", "Scribe", "Status");
       formater.setIndent("  ");
+      int stringLengthLimit = 50;
+      
       for (DataflowTaskDescriptor descriptor : descriptors) {
+        String scribeName = descriptor.getScribe();
+        if(scribeName.length() > stringLengthLimit){
+          scribeName = "..." +
+                       descriptor.getScribe().
+                       substring(descriptor.getScribe().length()-stringLengthLimit, 
+                           descriptor.getScribe().length());
+        }
         formater.addRow(
             descriptor.getId(),
-            descriptor.getScribe(),
+            scribeName,
             descriptor.getStatus()
             );
       }
@@ -114,11 +123,16 @@ public class Formater {
           "Finish Time");
       formater.setIndent(indent);
       for (DataflowTaskReport descriptor : descriptors) {
+        String finishTime="";
+        if( descriptor.getFinishTime() > 0 ){
+          finishTime = DateUtil.asCompactDateTime(descriptor.getFinishTime());
+        }
+        
         formater.addRow(
             descriptor.getProcessCount(),
             descriptor.getCommitProcessCount(),
             DateUtil.asCompactDateTime(descriptor.getStartTime()),
-            DateUtil.asCompactDateTime(descriptor.getFinishTime())
+            finishTime
             );
       }
       formater.setTitle(title);
