@@ -36,20 +36,20 @@ public class VMCommand {
   }
   
   static public class Shutdown extends Terminate {
-    public Shutdown(long delay) { 
-      super("shutdown", TerminateEvent.Shutdown, delay) ; 
+    public Shutdown() { 
+      super("shutdown", TerminateEvent.Shutdown, 1000) ; 
     }
   }
   
   static public class SimulateKill extends Terminate {
-    public SimulateKill(long delay) { 
-      super("simulate-kill", TerminateEvent.SimulateKill, delay) ; 
+    public SimulateKill() { 
+      super("simulate-kill", TerminateEvent.SimulateKill, 1000) ; 
     }
   }
   
   static public class Kill extends Terminate {
-    public Kill(long delay) { 
-      super("kill", TerminateEvent.Kill, delay) ; 
+    public Kill() { 
+      super("kill", TerminateEvent.Kill, 1000) ; 
     }
   }
 }

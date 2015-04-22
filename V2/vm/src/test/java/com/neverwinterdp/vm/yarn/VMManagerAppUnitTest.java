@@ -135,7 +135,7 @@ public class VMManagerAppUnitTest {
   }
   
   private boolean shutdown(VMClient vmClient, VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = vmClient.execute(vmDescriptor, new VMCommand.Shutdown(1000));
+    CommandResult<?> result = vmClient.execute(vmDescriptor, new VMCommand.Shutdown());
     Assert.assertNull(result.getErrorStacktrace());
     return result.getResultAs(Boolean.class);
   }

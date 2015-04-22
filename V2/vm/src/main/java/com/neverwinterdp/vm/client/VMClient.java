@@ -4,6 +4,7 @@ import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -60,7 +61,7 @@ public class VMClient {
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {
     CommandPayload payload = new CommandPayload(command, null) ;
     Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
-    CommandReponseWatcher responseWatcher = new CommandReponseWatcher();
+    CommandReponseWatcher responseWatcher = new CommandReponseWatcher(node.getPath());
     node.watch(responseWatcher);
     return responseWatcher.waitForResult(timeout);
   }
@@ -84,17 +85,17 @@ public class VMClient {
   }
   
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown(1000));
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
     return result.getResultAs(Boolean.class);
   }
   
   public boolean simulateKill(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill(1000));
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill());
     return result.getResultAs(Boolean.class);
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill(1000));
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
     return result.getResultAs(Boolean.class);
   }
   
@@ -114,8 +115,13 @@ public class VMClient {
   }
   
   public class CommandReponseWatcher extends NodeWatcher {
+    private String path ;
     private CommandResult<?> result ;
     private Exception error ;
+    
+    public CommandReponseWatcher(String path) {
+      this.path = path;
+    }
     
     @Override
     public void onEvent(NodeEvent event) {
@@ -132,10 +138,16 @@ public class VMClient {
       }
     }
     
+    
+    
     public CommandResult<?> waitForResult(long timeout) throws Exception {
       if(result == null) {
-        synchronized(this) {
-          wait(timeout);
+        CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
+        result = payload.getResult() ;
+        if(result == null) {
+          synchronized(this) {
+            wait(timeout);
+          }
         }
       }
       if(error != null) throw error;
