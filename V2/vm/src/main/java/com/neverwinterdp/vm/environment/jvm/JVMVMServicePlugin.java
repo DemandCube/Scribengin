@@ -36,7 +36,7 @@ public class JVMVMServicePlugin implements VMServicePlugin {
   synchronized public void killVM(VMService vmService, VMDescriptor vmDescriptor) throws Exception {
     VM found = VM.getVM(vmDescriptor);
     if(found == null) return;
-    found.terminate(TerminateEvent.SimulateKill);
+    found.terminate(TerminateEvent.SimulateKill, 1000);
     killCount++ ;
   }
 
@@ -44,7 +44,7 @@ public class JVMVMServicePlugin implements VMServicePlugin {
   synchronized public void shutdownVM(VMService vmService, VMDescriptor vmDescriptor) throws Exception {
     VM found = VM.getVM(vmDescriptor);
     if(found == null) return;
-    found.terminate(TerminateEvent.Shutdown);
+    found.terminate(TerminateEvent.Shutdown, 1000);
     shutdownCount++ ;
   }
 

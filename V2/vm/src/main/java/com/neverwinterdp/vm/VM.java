@@ -131,15 +131,15 @@ public class VM {
   }
   
   public void shutdown() throws Exception {
-    terminate(TerminateEvent.Shutdown);
+    terminate(TerminateEvent.Shutdown, 1000);
   }
   
-  public void terminate(final TerminateEvent event) throws Exception {
+  public void terminate(final TerminateEvent event, final long delay) throws Exception {
     if(vmApplicationRunner == null || !vmApplicationRunner.isAlive()) return;
     Thread thread = new Thread() {
       public void run() {
         try {
-          Thread.sleep(3000);
+          Thread.sleep(delay);
 //          if(vmApplicationRunner.vmApplication.isWaittingForTerminate()) {
 //            vmApplicationRunner.vmApplication.terminate(event);
 //          } else {

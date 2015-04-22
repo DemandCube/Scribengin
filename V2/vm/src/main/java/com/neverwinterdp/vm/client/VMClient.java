@@ -4,6 +4,7 @@ import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,7 +57,7 @@ public class VMClient {
     return execute(vmDescriptor, command, 60000);
   }
   
-  public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws RegistryException, Exception {
+  public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {
     CommandPayload payload = new CommandPayload(command, null) ;
     Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
     CommandReponseWatcher responseWatcher = new CommandReponseWatcher();
@@ -83,17 +84,17 @@ public class VMClient {
   }
   
   public boolean shutdown(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown());
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Shutdown(1000));
     return result.getResultAs(Boolean.class);
   }
   
   public boolean simulateKill(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill());
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.SimulateKill(1000));
     return result.getResultAs(Boolean.class);
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill(1000));
     return result.getResultAs(Boolean.class);
   }
   
@@ -138,6 +139,9 @@ public class VMClient {
         }
       }
       if(error != null) throw error;
+      if(result == null) {
+        throw new TimeoutException("Cannot get the result after " + timeout + "ms") ;
+      }
       return result ;
     }
   }

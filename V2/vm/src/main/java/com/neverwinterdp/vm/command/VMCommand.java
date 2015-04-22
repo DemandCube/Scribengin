@@ -7,22 +7,25 @@ import com.neverwinterdp.vm.VMApp.TerminateEvent;
 public class VMCommand {
   static public class Terminate extends Command {
     private TerminateEvent event = TerminateEvent.Shutdown;
+    private long delay = 1000;
     
-    public Terminate(String name, TerminateEvent event) { 
+    public Terminate(String name, TerminateEvent event, long delay) { 
       super(name) ; 
       this.event = event;
+      this.delay = delay ;
     }
     
     public TerminateEvent getEvent() { return event; }
-
     public void setEvent(TerminateEvent event) { this.event = event; }
+
+    public long getDelay() { return delay; }
+    public void setDelay(long delay) { this.delay = delay; }
 
     @Override
     public CommandResult<?> execute(VM vm) {
       CommandResult<Boolean> result = new CommandResult<Boolean>() ;
       try {
-        System.err.println("Terminate command with event " + event);
-        vm.terminate(event);
+        vm.terminate(event, delay);
         result.setResult(true);
       } catch (Exception e) {
         result.setResult(false);
@@ -33,20 +36,20 @@ public class VMCommand {
   }
   
   static public class Shutdown extends Terminate {
-    public Shutdown() { 
-      super("shutdown", TerminateEvent.Shutdown) ; 
+    public Shutdown(long delay) { 
+      super("shutdown", TerminateEvent.Shutdown, delay) ; 
     }
   }
   
   static public class SimulateKill extends Terminate {
-    public SimulateKill() { 
-      super("simulate-kill", TerminateEvent.SimulateKill) ; 
+    public SimulateKill(long delay) { 
+      super("simulate-kill", TerminateEvent.SimulateKill, delay) ; 
     }
   }
   
   static public class Kill extends Terminate {
-    public Kill() { 
-      super("kill", TerminateEvent.Kill) ; 
+    public Kill(long delay) { 
+      super("kill", TerminateEvent.Kill, delay) ; 
     }
   }
 }
