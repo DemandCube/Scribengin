@@ -339,10 +339,13 @@ def monitor(update_interval):
   p.start()
 
 def doMonitor(interval):
-  cluster = Cluster()
   while True:
-    click.echo(cluster.getReport())
-    click.echo("\n\n")
+    try:
+      cluster = Cluster()
+      click.echo(cluster.getReport())
+      click.echo("\n\n")
+    except:
+      click.echo("Error getting cluster report")
     sleep(interval)
     
 def catchSignal(signal, frame):
