@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
-import com.neverwinterdp.registry.activity.ActivityService;
+import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
@@ -38,7 +38,7 @@ public class DataflowRunActivityBuilder extends AddWorkerActivityBuilder {
     DataflowActivityStepWorkerService activityStepWorkerService;
    
     @Override
-    protected <T> void execute(ActivityService service, Activity activity, ActivityStep step) {
+    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
       activityStepWorkerService.exectute(activity, step);
     }
   }

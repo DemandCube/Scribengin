@@ -69,9 +69,8 @@ public class ActivityServiceUnitTest {
   @Test
   public void testActivityService() throws Exception {
     ActivityService service = new ActivityService(container, ACTIVITIES_PATH) ;
-    HelloActivityBuilder hello = new HelloActivityBuilder(10) ;
     
-    Activity activityCreate = service.create(hello);
+    Activity activityCreate = service.create(new HelloActivityBuilder().build());
     
     Activity activityGet = service.getActivity(activityCreate.getId()) ;
     Assert.assertEquals(activityCreate.getId(), activityGet.getId());
@@ -99,22 +98,29 @@ public class ActivityServiceUnitTest {
   }
   
   @Test
-  public void testActivity() throws Exception {
+  public void testRunActivity() throws Exception {
     ActivityService service = new ActivityService(container, ACTIVITIES_PATH) ;
-    HelloActivityBuilder hello = new HelloActivityBuilder(10) ;
-    Activity activity = service.create(hello) ;
+    Activity activity = new HelloActivityBuilder().build() ;
     
-    ActivityCoordinator coordinator1 = service.getActivityCoordinator(activity.getCoordinator()) ;
-    coordinator1.onStart(service, activity);
+    ActivityExecutionContext context1 = service.run(activity);
+    context1.waitForTermination(5000);
     
-    Thread.sleep(5000);
-    
-    ActivityCoordinator coordinator2 = service.getActivityCoordinator(activity.getCoordinator()) ;
-    Assert.assertEquals(coordinator1, coordinator2) ;
+    ActivityCoordinator helloCoordinator = service.getActivityCoordinator(activity.getCoordinator()) ;
+    Assert.assertEquals(context1.getActivityCoordinator(), helloCoordinator) ;
     registry.get("/").dump(System.out);
   }
   
-  
+  @Test
+  public void testQueueActivity() throws Exception {
+    ActivityService service = new ActivityService(container, ACTIVITIES_PATH) ;
+    Activity activity = new HelloActivityBuilder().build() ;
+    
+    service.queue(activity);
+    Thread.sleep(5000);
+    registry.get("/").dump(System.out);
+    service.onDestroy();
+    Thread.sleep(1000);
+  }
   
   static public class HelloActivityStepWorkerDescriptor {
     String refPath = "some/path";

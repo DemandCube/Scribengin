@@ -16,25 +16,25 @@ public class HelloActivityCoordinator extends ActivityCoordinator {
   }
 
   @Override
-  public void onExecuting(ActivityService service, Activity activity, ActivityStep step)  {
-    super.onExecuting(service, activity, step);
+  public void onExecuting(ActivityExecutionContext context, Activity activity, ActivityStep step)  {
+    super.onExecuting(context, activity, step);
     System.err.println("On assign activity step: " + activity.getDescription()) ;
   }
 
   @Override
-  public void onBroken(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
-    super.onBroken(service, activity, step);
+  public void onBroken(ActivityExecutionContext context, Activity activity, ActivityStep step) throws RegistryException {
+    super.onBroken(context, activity, step);
     System.err.println("On activity step broken: " + activity.getDescription()) ;
   }
   
   @Override
-  public void onFinish(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
-    super.onFinish(service, activity, step);
+  public void onFinish(ActivityExecutionContext context, Activity activity, ActivityStep step) throws RegistryException {
+    super.onFinish(context, activity, step);
     System.err.println("On finish activity step: " + activity.getDescription()) ;
   }
 
   @Override
-  protected <T> void execute(ActivityService service, Activity activity, ActivityStep step) {
+  protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
     workerService.exectute(activity, step);
   }
 }

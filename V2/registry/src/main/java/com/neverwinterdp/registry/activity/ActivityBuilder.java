@@ -11,7 +11,9 @@ abstract public class ActivityBuilder {
   
   public List<ActivityStep> getActivitySteps() { return this.activitySteps ; }
   
-  protected void add(ActivityStep step) {
-    activitySteps.add(step) ;
+  protected void add(ActivityStep step) { activitySteps.add(step) ; }
+  
+  public Activity build() {
+    throw new RuntimeException("This method need to implement and override");
   }
 }

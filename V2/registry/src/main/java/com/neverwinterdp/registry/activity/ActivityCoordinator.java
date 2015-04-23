@@ -22,37 +22,36 @@ abstract public class ActivityCoordinator {
     registryListener = new RegistryListener(registry) ;
   }
   
-  public void onStart(ActivityService service, Activity activity) throws RegistryException {
-    Node activityNode = service.getActivityNode(activity);
-    //registryListener.watch(activityNode.getPath(), new ActivityNodeWatcher());
+  public void onStart(ActivityExecutionContext ctx, Activity activity) throws RegistryException {
+    ActivityService service = ctx.getActivityService();
     List<ActivityStep> nextSteps = findNextActivitySteps(service, activity);
     for(int i = 0; i < nextSteps.size(); i++) {
       ActivityStep nextStep = nextSteps.get(i);
       nextStep.setStatus(ActivityStep.Status.ASSIGNED);
-      schedule(service, activity, nextStep);
+      schedule(ctx, activity, nextStep);
     }
-    //System.err.println("ActivityCoordinator: onStart  " + activity.getDescription());
   }
   
-  public void onResume(ActivityService service, Activity activity) {
+  public void onResume(ActivityExecutionContext ctx, Activity activity) {
     
   }
   
-  public void onExecuting(ActivityService service, Activity activity, ActivityStep step) {
+  public void onExecuting(ActivityExecutionContext ctx, Activity activity, ActivityStep step) {
   }
   
-  public void onBroken(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
-    schedule(service, activity, step);
+  public void onBroken(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws RegistryException {
+    schedule(ctx, activity, step);
   }
   
   
-  public void onFinish(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
+  public void onFinish(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws RegistryException {
+    ActivityService service = ctx.getActivityService();
     List<ActivityStep> nextSteps = findNextActivitySteps(service, activity);
     if(nextSteps.size() > 0) {
       for(int i = 0; i < nextSteps.size(); i++) {
         ActivityStep nextStep = nextSteps.get(i);
         nextStep.setStatus(ActivityStep.Status.ASSIGNED);
-        schedule(service, activity, nextStep);
+        schedule(ctx, activity, nextStep);
       } 
     } else {
       onFinish(service, activity);
@@ -88,14 +87,15 @@ abstract public class ActivityCoordinator {
     return nextStepHolder;
   }
   
-  protected <T> void schedule(ActivityService service, Activity activity, ActivityStep step) throws RegistryException {
+  protected <T> void schedule(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws RegistryException {
+    ActivityService service = ctx.getActivityService();
     service.updateActivityStepAssigned(activity, step);
     Node activityStepNode = service.getActivityStepNode(activity, step);
-    registryListener.watchHeartbeat(activityStepNode, new ActivityStepNodeWatcher(service));
-    execute(service, activity, step);
+    registryListener.watchHeartbeat(activityStepNode, new ActivityStepNodeWatcher(ctx));
+    execute(ctx, activity, step);
   }
   
-  abstract protected <T> void execute(ActivityService service, Activity activity, ActivityStep step) ;
+  abstract protected <T> void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) ;
   
   static public class ActivityNodeWatcher extends NodeWatcher {
     @Override
@@ -105,10 +105,10 @@ abstract public class ActivityCoordinator {
   }
   
   public class ActivityStepNodeWatcher extends NodeWatcher {
-    private ActivityService service;
+    private ActivityExecutionContext context;
     
-    ActivityStepNodeWatcher(ActivityService service) {
-      this.service = service;
+    ActivityStepNodeWatcher(ActivityExecutionContext context) {
+      this.context = context;
     }
     
     @Override
@@ -127,12 +127,12 @@ abstract public class ActivityCoordinator {
       
       try {
         if(event.getType() == NodeEvent.Type.CREATE) {
-          onExecuting(service, activity, activityStep);
+          onExecuting(context, activity, activityStep);
         } else if(event.getType() == NodeEvent.Type.DELETE) {
           if(activityStep.getStatus() !=  ActivityStep.Status.FINISHED) {
-            onBroken(service, activity, activityStep);
+            onBroken(context, activity, activityStep);
           } else {
-            onFinish(service, activity, activityStep);
+            onFinish(context, activity, activityStep);
           }
         } else {
           System.err.println("ActivityStepNodeWatcher Error: event = " + event.getType() + ", path = " + event.getPath());
