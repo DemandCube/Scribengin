@@ -2,6 +2,8 @@ package com.neverwinterdp.scribengin.client.shell;
 
 import java.util.List;
 
+import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
@@ -86,10 +88,19 @@ public class Formater {
     public String format(String title, String ident) {
       TabularFormater formater = new TabularFormater("Id", "Scribe", "Status");
       formater.setIndent("  ");
+      int stringLengthLimit = 50;
+      
       for (DataflowTaskDescriptor descriptor : descriptors) {
+        String scribeName = descriptor.getScribe();
+        if(scribeName.length() > stringLengthLimit){
+          scribeName = "..." +
+                       descriptor.getScribe().
+                       substring(descriptor.getScribe().length()-stringLengthLimit, 
+                           descriptor.getScribe().length());
+        }
         formater.addRow(
             descriptor.getId(),
-            descriptor.getScribe(),
+            scribeName,
             descriptor.getStatus()
             );
       }
@@ -112,11 +123,16 @@ public class Formater {
           "Finish Time");
       formater.setIndent(indent);
       for (DataflowTaskReport descriptor : descriptors) {
+        String finishTime="";
+        if( descriptor.getFinishTime() > 0 ){
+          finishTime = DateUtil.asCompactDateTime(descriptor.getFinishTime());
+        }
+        
         formater.addRow(
             descriptor.getProcessCount(),
             descriptor.getCommitProcessCount(),
             DateUtil.asCompactDateTime(descriptor.getStartTime()),
-            DateUtil.asCompactDateTime(descriptor.getFinishTime())
+            finishTime
             );
       }
       formater.setTitle(title);
@@ -151,4 +167,43 @@ public class Formater {
     }
 
   }
+  
+  public static class ActivityFormatter{
+    private List<ActivityStep> activitySteps;
+    private Activity activity;
+
+    public ActivityFormatter(Activity activity, List<ActivityStep> activitySteps) {
+      this.activity = activity;
+      this.activitySteps = activitySteps;
+    }
+    
+    public String format() {
+      return format("");
+    }
+    
+    public String format(String indent) {
+      
+      TabularFormater stepFormatter = 
+          new TabularFormater("Step ID", "Type", "Max Retries", "Try", "Exec Time", "Status", "Description");
+      
+      stepFormatter.setIndent(indent);
+      stepFormatter.setTitle(
+                        "Activity: "+
+                        "ID = " + this.activity.getId() + ", "+
+                        "Type = " + this.activity.getType() + ", "+
+                        "Description = " + this.activity.getDescription());
+      
+      for(ActivityStep step : activitySteps) {
+        Object[] cells = {
+          step.getId(), step.getType(), step.getMaxRetries(), step.getTryCount(), 
+          step.getExecuteTime(), step.getStatus(), step.getDescription()
+        } ;
+        
+        stepFormatter.addRow(cells);
+      }
+      
+      return stepFormatter.getFormatText();
+    }
+  }
+  
 }
