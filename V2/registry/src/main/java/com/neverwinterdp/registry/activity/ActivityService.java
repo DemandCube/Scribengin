@@ -46,6 +46,7 @@ public class ActivityService {
   
   @PreDestroy
   public void onDestroy() {
+    queue.shutdown();
     activityScheduler.interrupt();
   }
   
@@ -233,10 +234,8 @@ public class ActivityService {
       try {
         doRun() ;
       } catch (InterruptedException e) {
-        System.err.println("Interrupt...................");
-        e.printStackTrace();
+      } catch (DistributedQueue.ShutdownException e) {
       } catch (Exception e) {
-        System.err.println("Exception...................");
         e.printStackTrace();
       }
     }

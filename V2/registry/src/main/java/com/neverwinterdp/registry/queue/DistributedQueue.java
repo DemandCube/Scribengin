@@ -19,6 +19,8 @@ import com.neverwinterdp.util.JSONSerializer;
 public class DistributedQueue {
   private final String path;
   private Registry     registry;
+  private LatchChildWatcher takeAvailableWatcher;
+  private boolean shutdown = false;
 
   public DistributedQueue(Registry registry, String path) throws RegistryException {
     this.path = path;
@@ -112,13 +114,16 @@ public class DistributedQueue {
    * @throws RegistryException
    * @throws InterruptedException
    */
-  public byte[] take() throws RegistryException, InterruptedException {
+  public byte[] take() throws RegistryException, ShutdownException, InterruptedException {
     while(true){
+      if(shutdown) {
+        throw new ShutdownException("The queue has been shut down") ;
+      }
       List<String> orderedChildren = orderedChildren();
       if(orderedChildren.size() == 0) {
-        LatchChildWatcher childWatcher = new LatchChildWatcher();
-        registry.watchChildren(path, childWatcher);
-        childWatcher.await();
+        takeAvailableWatcher = new LatchChildWatcher();
+        registry.watchChildren(path, takeAvailableWatcher);
+        takeAvailableWatcher.await();
         continue;
       }
       String headNode = orderedChildren.get(0);
@@ -129,9 +134,16 @@ public class DistributedQueue {
     }
   }
   
-  public <T> T takeAs(Class<T> type) throws RegistryException, InterruptedException {
+  public <T> T takeAs(Class<T> type) throws RegistryException, InterruptedException, ShutdownException {
     byte[] data = take() ;
     return JSONSerializer.INSTANCE.fromBytes(data, type);
+  }
+  
+  public void shutdown() {
+    shutdown = true;
+    if(takeAvailableWatcher.latch.getCount() > 0) {
+      takeAvailableWatcher.latch.countDown();
+    }
   }
   
   /**
@@ -158,6 +170,14 @@ public class DistributedQueue {
     
     public void await() throws InterruptedException {
       latch.await();
+    }
+  }
+  
+  static public class ShutdownException extends Exception {
+    private static final long serialVersionUID = 1L;
+
+    public ShutdownException(String message) {
+      super(message);
     }
   }
 }

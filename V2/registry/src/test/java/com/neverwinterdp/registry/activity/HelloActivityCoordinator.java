@@ -35,6 +35,6 @@ public class HelloActivityCoordinator extends ActivityCoordinator {
 
   @Override
   protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
-    workerService.exectute(activity, step);
+    workerService.exectute(context, activity, step);
   }
 }

@@ -40,7 +40,7 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
    
     @Override
     protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
-      activityStepWorkerService.exectute(activity, step);
+      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   

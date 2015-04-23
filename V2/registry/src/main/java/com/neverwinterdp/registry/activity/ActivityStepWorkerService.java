@@ -8,12 +8,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.google.inject.Injector;
 import com.neverwinterdp.registry.RegistryException;
 
 public class ActivityStepWorkerService<T> {
   private T workerDescriptor ;
-  private ActivityService service ;
   
   private List<ActivityStepWorker> workers = new ArrayList<>();
   private ExecutorService executorService ;
@@ -22,13 +20,13 @@ public class ActivityStepWorkerService<T> {
   public ActivityStepWorkerService() {
   }
   
-  public ActivityStepWorkerService(T workerDescriptor, Injector container, String activityPath) throws RegistryException {
-    init(workerDescriptor, container, activityPath);
+  public ActivityStepWorkerService(T workerDescriptor) throws RegistryException {
+    init(workerDescriptor);
   }
 
-  public void init(T workerDescriptor, Injector container, String activityPath) throws RegistryException {
+  public void init(T workerDescriptor) throws RegistryException {
     this.workerDescriptor = workerDescriptor;
-    int numOfWorkers = 5;
+    int numOfWorkers = 3;
     executorService = Executors.newFixedThreadPool(numOfWorkers);
     for(int i = 0; i < numOfWorkers; i++) {
       ActivityStepWorker worker = new ActivityStepWorker() ;
@@ -36,14 +34,13 @@ public class ActivityStepWorkerService<T> {
       executorService.submit(worker);
     }
     executorService.shutdown();
-    service = new ActivityService(container, activityPath);
   }
 
   
   public T getWorkerDescriptor() { return workerDescriptor; }
   
-  public void exectute(Activity activity, ActivityStep step) {
-    ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(activity, step) ;
+  public void exectute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
+    ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(context, activity, step) ;
     ActivityStepWorker worker = workers.get(rand.nextInt(workers.size()));
     worker.offer(wUnit);
   }
@@ -60,6 +57,8 @@ public class ActivityStepWorkerService<T> {
       ActivityStepWorkUnit activityStepWorkUnit  = null ; 
       try {
         while((activityStepWorkUnit = activityStepWorkUnits.take()) != null) {
+          ActivityExecutionContext context = activityStepWorkUnit.getActivityExecutionContext();
+          ActivityService service = context.getActivityService();
           Activity activity = activityStepWorkUnit.getActivity() ;
           ActivityStep activityStep = activityStepWorkUnit.getActivityStep() ;
           Exception error = null ;
@@ -96,11 +95,15 @@ public class ActivityStepWorkerService<T> {
   static public class ActivityStepWorkUnit {
     private Activity activity;
     private ActivityStep activityStep ;
+    private ActivityExecutionContext context;
     
-    public ActivityStepWorkUnit(Activity activity, ActivityStep activityStep) {
+    public ActivityStepWorkUnit(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) {
+      this.context = context ;
       this.activity = activity;
       this.activityStep = activityStep;
     }
+    
+    public ActivityExecutionContext getActivityExecutionContext() { return context ; }
     
     public Activity getActivity() { return activity ; }
     

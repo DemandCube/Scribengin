@@ -9,6 +9,6 @@ import com.neverwinterdp.registry.RegistryException;
 public class HelloActivityStepWorkerService extends ActivityStepWorkerService<String> {
   @Inject
   public HelloActivityStepWorkerService(Injector container) throws RegistryException {
-    super("HelloWorker", container, "/activities");
+    super("HelloWorker");
   }
 }

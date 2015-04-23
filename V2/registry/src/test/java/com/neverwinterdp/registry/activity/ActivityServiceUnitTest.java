@@ -95,6 +95,7 @@ public class ActivityServiceUnitTest {
     service.history(activityGet);
     Assert.assertEquals(1, service.getHistoryActivities().size());
     registry.get("/").dump(System.out);
+    service.onDestroy();
   }
   
   @Test
@@ -108,6 +109,7 @@ public class ActivityServiceUnitTest {
     ActivityCoordinator helloCoordinator = service.getActivityCoordinator(activity.getCoordinator()) ;
     Assert.assertEquals(context1.getActivityCoordinator(), helloCoordinator) ;
     registry.get("/").dump(System.out);
+    service.onDestroy();
   }
   
   @Test
@@ -119,7 +121,6 @@ public class ActivityServiceUnitTest {
     Thread.sleep(5000);
     registry.get("/").dump(System.out);
     service.onDestroy();
-    Thread.sleep(1000);
   }
   
   static public class HelloActivityStepWorkerDescriptor {
