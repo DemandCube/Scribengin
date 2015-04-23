@@ -7,13 +7,12 @@ abstract public class ActivityBuilder {
   private Activity activity = new Activity();
   private List<ActivityStep> activitySteps = new ArrayList<>();
   
+  @Deprecated
   public Activity getActivity() { return activity ; }
   
+  @Deprecated
   public List<ActivityStep> getActivitySteps() { return this.activitySteps ; }
   
+  @Deprecated
   protected void add(ActivityStep step) { activitySteps.add(step) ; }
-  
-  public Activity build() {
-    throw new RuntimeException("This method need to implement and override");
-  }
 }

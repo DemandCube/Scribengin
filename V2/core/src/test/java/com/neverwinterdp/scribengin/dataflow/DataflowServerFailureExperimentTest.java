@@ -65,7 +65,7 @@ public class DataflowServerFailureExperimentTest {
         String command = 
           "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME + 
           "  --dataflow-name kafka-to-kafka" + 
-          "  --failure-period 10000 --max-failure 4 --simulate-kill";
+          "  --failure-period 10000 --max-failure 2 --simulate-kill";
         shell.execute(command);
       } catch (Exception e) {
         e.printStackTrace();

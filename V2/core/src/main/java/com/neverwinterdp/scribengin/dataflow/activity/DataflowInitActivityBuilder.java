@@ -1,15 +1,19 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
+import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
@@ -23,14 +27,26 @@ import com.neverwinterdp.scribengin.storage.source.SourceStream;
 
 public class DataflowInitActivityBuilder extends ActivityBuilder {
   
-  public DataflowInitActivityBuilder( DataflowDescriptor dflDescriptor) {
-    getActivity().setDescription("Init Dataflow Activity");
-    getActivity().setType("init-dataflow");
-    getActivity().withCoordinator(InitActivityCoordinator.class);
-    
-    add(new ActivityStep().
-        withType("init-dataflow-task").
-        withExecutor(InitDataflowTaskExecutor.class));
+  public Activity build() {
+    Activity activity = new Activity();
+    activity.setDescription("Init Dataflow Activity");
+    activity.setType("init-dataflow");
+    activity.withCoordinator(InitActivityCoordinator.class);
+    activity.withActivityStepBuilder(DataflowInitActivityStepBuilder.class) ;
+    return activity;
+  }
+  
+  @Singleton
+  static public class DataflowInitActivityStepBuilder implements ActivityStepBuilder {
+    @Override
+    public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
+      List<ActivityStep> steps = new ArrayList<>() ;
+      steps.add(
+          new ActivityStep().
+          withType("init-dataflow-task").
+          withExecutor(InitDataflowTaskExecutor.class));
+      return steps;
+    }
   }
   
   @Singleton
@@ -50,7 +66,7 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
 
     @Override
-    public void execute(Activity activity, ActivityStep step) throws Exception {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowDescriptor dataflowDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
       SourceFactory sourceFactory = service.getSourceFactory();
       SinkFactory sinkFactory = service.getSinkFactory() ;

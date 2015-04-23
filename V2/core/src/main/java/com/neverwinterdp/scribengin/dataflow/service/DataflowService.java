@@ -69,15 +69,14 @@ public class DataflowService {
     dataflowWorkerMonitor = new DataflowWorkerMonitor(dataflowRegistry, activityService);
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
     masterEventListener = new DataflowTaskMasterEventListenter(dataflowRegistry);
-    DataflowInitActivityBuilder dataflowInitActivityBuilder = new DataflowInitActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-    ActivityCoordinator coordinator = activityService.start(dataflowInitActivityBuilder);
-    coordinator.waitForTermination(60000);
-    
     dataflowTaskMonitor = new DataflowTaskMonitor(dataflowRegistry);
+    
+    activityService.queue(new DataflowInitActivityBuilder().build());
+    //TODO: ActivityService should queue , detect and execute the activity in the proper order
+    Thread.sleep(15000);
     
     DataflowRunActivityBuilder dataflowRunActivityBuilder = new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
     ActivityCoordinator runCoordinator = activityService.start(dataflowRunActivityBuilder);
-    runCoordinator.waitForTermination(60000);
   }
   
   

@@ -49,7 +49,7 @@ public class HelloActivityBuilder extends ActivityBuilder {
   @Singleton
   static public class HelloActivityStepExecutor implements ActivityStepExecutor {
     @Override
-    public void execute(Activity activity, ActivityStep step) {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) {
       System.out.println("hello activity executor, step = " + step.getId()) ;
     }
 
@@ -58,7 +58,7 @@ public class HelloActivityBuilder extends ActivityBuilder {
   @Singleton
   static public class PauseActivityExecutor implements ActivityStepExecutor {
     @Override
-    public void execute(Activity activity, ActivityStep step) {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) {
       System.out.println("pause activity executor,  step = " + step.getId() + ", pause = 3s") ;
       try {
         Thread.sleep(500);

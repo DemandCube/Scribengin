@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
+import java.util.List;
 import java.util.Map;
 
 import com.neverwinterdp.registry.Node;
@@ -28,9 +29,10 @@ public class DataflowVMSimpleFormatter extends NodeFormatter{
       Node master = dataflowNode.getChild("master").getChild("leader");
       b.append("  DataflowMaster: "+master.getDataAs(Map.class).get("path")+"\n");
       b.append("  Workers: ");
-      for(String workerNode: dataflowNode.getChild("workers").getChild("active").getChildren()){
-        Node worker = dataflowNode.getChild("workers").getChild("active").getChild(workerNode);
-        b.append(worker.getName()+": "+worker.getDataAs(Map.class).get("path")+", ");
+      List<String> workerIds = dataflowNode.getDescendant("workers/active").getChildren();
+      for(String workerId : workerIds){
+        Node worker = dataflowNode.getDescendant("workers/active/" + workerId);
+        b.append(worker.getName() + ": " + worker.getDataAs(Map.class).get("path") + ", ");
       }
       
     } catch (Exception e) {

@@ -55,7 +55,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
     
     @Override
-    public void execute(Activity activity, ActivityStep step) throws Exception {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       Node workerNodes = dflRegistry.getActiveWorkersNode() ;
       List<String> workers = workerNodes.getChildren();
@@ -81,7 +81,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
     
     @Override
-    public void execute(Activity activity, ActivityStep step) throws Exception {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       dflRegistry.setStatus(DataflowLifecycleStatus.PAUSE);
     }

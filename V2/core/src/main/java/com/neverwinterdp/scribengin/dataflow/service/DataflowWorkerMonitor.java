@@ -5,10 +5,9 @@ import java.util.Map;
 
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
+import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
-import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.activity.AddWorkerActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
@@ -41,8 +40,8 @@ public class DataflowWorkerMonitor {
     System.err.println(">>>DataflowWorkerStatus = " + dataflowWorkerStatus) ;
     
     if(dataflowWorkerStatus != DataflowWorkerStatus.TERMINATED) {
-      AddWorkerActivityBuilder addWorkerActivityBuilder =  new AddWorkerActivityBuilder(1);
-      ActivityCoordinator addWorkerCoordinator = activityService.start(addWorkerActivityBuilder);
+      Activity activity = new AddWorkerActivityBuilder().build(1);
+      activityService.queue(activity);
     }
   }
   

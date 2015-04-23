@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PreDestroy;
 
@@ -19,15 +21,16 @@ import com.neverwinterdp.registry.queue.DistributedQueue;
 public class ActivityService {
   static DecimalFormat     ORDER_FORMATER = new DecimalFormat("#000");
 
-  private Injector         container;
-  private Registry         registry;
+  private Injector                    container;
+  private Registry                    registry;
 
-  private Node             activeNode;
-  private Node             historyNode;
-  private DistributedQueue queue;
-  private Map<String, ActivityRunner> activeActivities = new ConcurrentHashMap<String, ActivityRunner>();
-  private ActivityScheduler activityScheduler ;
-  
+  private Node                        activeNode;
+  private Node                        historyNode;
+  private DistributedQueue            queue;
+  private Map<String, ActivityRunner> activeActivities = new ConcurrentHashMap<>();
+  private ActivityScheduler           activityScheduler;
+  private final Lock                  lock             = new ReentrantLock(true);
+
   public ActivityService() { }
   
   public ActivityService(Injector container, String activityPath) throws RegistryException {
@@ -49,6 +52,8 @@ public class ActivityService {
     queue.shutdown();
     activityScheduler.interrupt();
   }
+  
+  public Lock getLock() { return this.lock; }
   
   public <T extends ActivityCoordinator> T getActivityCoordinator(String type) throws Exception {
     return container.getInstance((Class<T>)Class.forName(type));
@@ -247,6 +252,7 @@ public class ActivityService {
         ActivityExecutionContext context = new ActivityExecutionContext(activity, ActivityService.this);
         ActivityRunner runner = new ActivityRunner(context, activity);
         runner.start(); 
+        
       }
     }
   }
@@ -263,11 +269,17 @@ public class ActivityService {
     public void run() {
       try {
         activeActivities.put(activity.getId(), this);
+        System.err.println("try lock for activity " + activity.getId());
+        getLock().tryLock();
+        System.err.println("obtain lock for activity " + activity.getId());
         doRun() ;
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
         activeActivities.remove(activity.getId());
+        getLock().unlock();
+        System.err.println("unlock lock for activity " + activity.getId());
+        context.notifyTermination();
       }
     }
    

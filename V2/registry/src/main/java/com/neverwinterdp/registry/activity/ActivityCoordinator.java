@@ -97,13 +97,6 @@ abstract public class ActivityCoordinator {
   
   abstract protected <T> void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) ;
   
-  static public class ActivityNodeWatcher extends NodeWatcher {
-    @Override
-    public void onEvent(NodeEvent event) {
-      System.err.println("ActivityNodeWatcher: event = " + event.getType() + ", path = " + event.getPath());
-    }
-  }
-  
   public class ActivityStepNodeWatcher extends NodeWatcher {
     private ActivityExecutionContext context;
     

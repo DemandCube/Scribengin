@@ -1,9 +1,11 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
@@ -12,8 +14,8 @@ import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
-import com.neverwinterdp.registry.activity.ActivityService;
 import com.neverwinterdp.registry.activity.ActivityStep;
+import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
 import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
@@ -29,23 +31,34 @@ import com.neverwinterdp.vm.client.VMClient;
 public class AddWorkerActivityBuilder extends ActivityBuilder {
   static public AtomicInteger idTracker = new AtomicInteger(1) ;
   
-  public AddWorkerActivityBuilder() {
+  public Activity build(int numOfWorkerToAdd) {
+    Activity activity = new Activity();
+    activity.setDescription("Add Dataflow Worker Activity");
+    activity.setType("add-dataflow-worker");
+    activity.withCoordinator(AddDataflowWorkerActivityCoordinator.class);
+    activity.withActivityStepBuilder(DataflowAddWorkerActivityStepBuilder.class) ;
+    activity.attribute("num-of-worker-to-add", numOfWorkerToAdd);
+    return activity;
   }
   
-  public AddWorkerActivityBuilder(int numOfWorkerToAdd) {
-    getActivity().setDescription("Add Dataflow Worker Activity");
-    getActivity().setType("add-dataflow-worker");
-    getActivity().withCoordinator(AddDataflowWorkerActivityCoordinator.class);
-    
-    for(int i = 0; i < numOfWorkerToAdd; i++) {
-      add(new ActivityStep().
-          withType("create-dataflow-worker").
-          withExecutor(AddDataflowWorkerStepExecutor.class).
-          attribute("worker.id", idTracker.getAndIncrement()));
+  @Singleton
+  static public class DataflowAddWorkerActivityStepBuilder implements ActivityStepBuilder {
+    @Override
+    public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
+      List<ActivityStep> steps = new ArrayList<>() ;
+      int numOfWorkerToAdd = activity.attributeAsInt("num-of-worker-to-add", 0);
+      System.err.println("num-of-worker-to-add = " + numOfWorkerToAdd);
+      for(int i = 0; i < numOfWorkerToAdd; i++) {
+        steps.add(new ActivityStep().
+            withType("create-dataflow-worker").
+            withExecutor(AddDataflowWorkerStepExecutor.class).
+            attribute("worker.id", idTracker.getAndIncrement()));
+      }
+      steps.add(new ActivityStep().
+          withType("wait-for-worker-run-status").
+          withExecutor(WaitForWorkerRunningStatus.class));
+      return steps;
     }
-    add(new ActivityStep().
-        withType("wait-for-worker-run-status").
-        withExecutor(WaitForWorkerRunningStatus.class));
   }
   
   @Singleton
@@ -65,7 +78,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
     
     @Override
-    public void execute(Activity activity, ActivityStep step) throws Exception {
+    public void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
       DataflowDescriptor dflDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
 
       DataflowRegistry dataflowRegistry = service.getDataflowRegistry();
@@ -100,7 +113,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     private DataflowService service ;
     
     @Override
-    public void execute(Activity activity, ActivityStep step) throws Exception {
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       Node workerNodes = dflRegistry.getActiveWorkersNode() ;
       List<String> workers = workerNodes.getChildren();

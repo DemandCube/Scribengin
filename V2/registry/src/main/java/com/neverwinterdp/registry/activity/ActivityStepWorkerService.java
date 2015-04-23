@@ -40,10 +40,43 @@ public class ActivityStepWorkerService<T> {
   public T getWorkerDescriptor() { return workerDescriptor; }
   
   public void exectute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
-    ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(context, activity, step) ;
-    ActivityStepWorker worker = workers.get(rand.nextInt(workers.size()));
-    worker.offer(wUnit);
+    try {
+      doExecute(context, activity, step);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+//    ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(context, activity, step) ;
+//    ActivityStepWorker worker = workers.get(rand.nextInt(workers.size()));
+//    worker.offer(wUnit);
   }
+
+  void doExecute(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) throws Exception, InterruptedException {
+    ActivityService service = context.getActivityService();
+    Exception error = null ;
+    for(int i = 0; i < activityStep.getMaxRetries(); i++) {
+      error = null;
+      long startTime = System.currentTimeMillis();
+      try {
+        service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
+        ActivityStepExecutor executor = 
+            service.getActivityStepExecutor(activityStep.getExecutor());
+        executor.execute(context, activity, activityStep);
+        return;
+      } catch (Exception e) {
+        activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
+        System.err.println("Fail to execute the activity due to the error: "  + e.getMessage());
+        e.printStackTrace();
+        error = e ;
+      } finally {
+        long executeTime = System.currentTimeMillis() - startTime ;
+        activityStep.setExecuteTime(executeTime);
+        activityStep.setTryCount(i + 1);
+        service.updateActivityStepFinished(activity, activityStep);
+      }
+    }
+    throw error ;
+  }
+  
   
   public class ActivityStepWorker implements Runnable {
     private BlockingQueue<ActivityStepWorkUnit> activityStepWorkUnits = new LinkedBlockingQueue<>() ;
@@ -58,32 +91,9 @@ public class ActivityStepWorkerService<T> {
       try {
         while((activityStepWorkUnit = activityStepWorkUnits.take()) != null) {
           ActivityExecutionContext context = activityStepWorkUnit.getActivityExecutionContext();
-          ActivityService service = context.getActivityService();
           Activity activity = activityStepWorkUnit.getActivity() ;
           ActivityStep activityStep = activityStepWorkUnit.getActivityStep() ;
-          Exception error = null ;
-          for(int i = 0; i < activityStep.getMaxRetries(); i++) {
-            error = null;
-            long startTime = System.currentTimeMillis();
-            try {
-              service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
-              ActivityStepExecutor executor = 
-                  service.getActivityStepExecutor(activityStepWorkUnit.getActivityStep().getExecutor());
-              executor.execute(activity, activityStep);
-              break ;
-            } catch (Exception e) {
-              activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
-              System.err.println("Fail to execute the activity due to the error: " + e.getMessage());
-              e.printStackTrace();
-              error = e ;
-            } finally {
-              long executeTime = System.currentTimeMillis() - startTime ;
-              activityStep.setExecuteTime(executeTime);
-              activityStep.setTryCount(i + 1);
-              service.updateActivityStepFinished(activity, activityStep);
-            }
-          }
-          if(error != null) return ;
+          doExecute(context, activity, activityStep);
         }
       } catch (InterruptedException e) {
       } catch (Exception ex) {
