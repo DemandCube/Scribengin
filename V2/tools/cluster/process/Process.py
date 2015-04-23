@@ -172,7 +172,6 @@ class ZookeeperProcess(Process):
     
   def start(self):
     self.printProgress("Starting ")
-    print "ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR="+join(self.homeDir,"logs")+" "+join(self.homeDir, "bin/zkServer.sh")+ " start"
     return self.sshExecute("ZOO_LOG4J_PROP='INFO,ROLLINGFILE' ZOO_LOG_DIR="+join(self.homeDir,"logs")+" "+join(self.homeDir, "bin/zkServer.sh")+ " start")
     
   def shutdown(self):
@@ -260,7 +259,7 @@ class ScribenginProcess(Process):
     return self.getReportDictForVMAndScribengin()
   
   def getRunningPid(self):
-    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+    command = "jps -m | grep '"+self.processIdentifier+"\|dataflow-master-*\|dataflow-worker-*' | awk '{print $1 \" \" $4}'"
     stdout,stderr = self.sshExecute(command)
     return stdout.strip().replace("\n",",")
   
