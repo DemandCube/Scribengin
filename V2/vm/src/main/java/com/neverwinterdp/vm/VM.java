@@ -140,12 +140,6 @@ public class VM {
       public void run() {
         try {
           Thread.sleep(delay);
-//          if(vmApplicationRunner.vmApplication.isWaittingForTerminate()) {
-//            vmApplicationRunner.vmApplication.terminate(event);
-//          } else {
-//            vmApplicationRunner.interrupt();
-//          }
-          
           vmApplicationRunner.vmApplication.terminate(event);
           if(!vmApplicationRunner.vmApplication.isWaittingForTerminate()) {
             vmApplicationRunner.interrupt();
@@ -170,6 +164,7 @@ public class VM {
     Map<String, String> properties;
     
     public VMApplicationRunner(VMApp vmApplication, Map<String, String> props) {
+      setName("VM-" + vmApplication.getVM().getDescriptor().getId());
       this.vmApplication = vmApplication;
       this.properties = props;
     }

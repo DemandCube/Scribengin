@@ -1,22 +1,10 @@
 package com.neverwinterdp.registry.activity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.neverwinterdp.registry.RegistryException;
 
 public class ActivityStepWorkerService<T> {
   private T workerDescriptor ;
   
-  private List<ActivityStepWorker> workers = new ArrayList<>();
-  private ExecutorService executorService ;
-  private Random rand = new Random() ;
-
   public ActivityStepWorkerService() {
   }
   
@@ -26,31 +14,12 @@ public class ActivityStepWorkerService<T> {
 
   public void init(T workerDescriptor) throws RegistryException {
     this.workerDescriptor = workerDescriptor;
-    int numOfWorkers = 3;
-    executorService = Executors.newFixedThreadPool(numOfWorkers);
-    for(int i = 0; i < numOfWorkers; i++) {
-      ActivityStepWorker worker = new ActivityStepWorker() ;
-      workers.add(worker);
-      executorService.submit(worker);
-    }
-    executorService.shutdown();
   }
 
   
   public T getWorkerDescriptor() { return workerDescriptor; }
   
-  public void exectute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
-    try {
-      doExecute(context, activity, step);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-//    ActivityStepWorkUnit wUnit = new ActivityStepWorkUnit(context, activity, step) ;
-//    ActivityStepWorker worker = workers.get(rand.nextInt(workers.size()));
-//    worker.offer(wUnit);
-  }
-
-  void doExecute(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) throws Exception, InterruptedException {
+  public void exectute(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) throws Exception, InterruptedException {
     ActivityService service = context.getActivityService();
     Exception error = null ;
     for(int i = 0; i < activityStep.getMaxRetries(); i++) {
@@ -75,48 +44,5 @@ public class ActivityStepWorkerService<T> {
       }
     }
     throw error ;
-  }
-  
-  
-  public class ActivityStepWorker implements Runnable {
-    private BlockingQueue<ActivityStepWorkUnit> activityStepWorkUnits = new LinkedBlockingQueue<>() ;
-    
-    public void offer(ActivityStepWorkUnit activityStepWorkUnit) {
-      activityStepWorkUnits.add(activityStepWorkUnit);
-    }
-    
-    @Override
-    public void run() {
-      ActivityStepWorkUnit activityStepWorkUnit  = null ; 
-      try {
-        while((activityStepWorkUnit = activityStepWorkUnits.take()) != null) {
-          ActivityExecutionContext context = activityStepWorkUnit.getActivityExecutionContext();
-          Activity activity = activityStepWorkUnit.getActivity() ;
-          ActivityStep activityStep = activityStepWorkUnit.getActivityStep() ;
-          doExecute(context, activity, activityStep);
-        }
-      } catch (InterruptedException e) {
-      } catch (Exception ex) {
-        ex.printStackTrace();
-      }
-    }
-  }
-  
-  static public class ActivityStepWorkUnit {
-    private Activity activity;
-    private ActivityStep activityStep ;
-    private ActivityExecutionContext context;
-    
-    public ActivityStepWorkUnit(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) {
-      this.context = context ;
-      this.activity = activity;
-      this.activityStep = activityStep;
-    }
-    
-    public ActivityExecutionContext getActivityExecutionContext() { return context ; }
-    
-    public Activity getActivity() { return activity ; }
-    
-    public ActivityStep getActivityStep() { return activityStep ; }
   }
 }

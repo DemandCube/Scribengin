@@ -58,10 +58,10 @@ public class DataflowService {
   
   public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     dataflowRegistry.addAvailableTask(taskDescriptor);
+    dataflowTaskMonitor.addMonitorTask(taskDescriptor);
   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
-    dataflowRegistry.addWorker(vmDescriptor);
     dataflowWorkerMonitor.addWorker(vmDescriptor);
   }
   
@@ -72,22 +72,14 @@ public class DataflowService {
     dataflowTaskMonitor = new DataflowTaskMonitor(dataflowRegistry);
     
     activityService.queue(new DataflowInitActivityBuilder().build());
-    //TODO: ActivityService should queue , detect and execute the activity in the proper order
-    Thread.sleep(15000);
-    
-    DataflowRunActivityBuilder dataflowRunActivityBuilder = new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-    ActivityCoordinator runCoordinator = activityService.start(dataflowRunActivityBuilder);
+    activityService.queue(new DataflowRunActivityBuilder().build());
   }
   
   
   public void waitForTermination() throws Exception {
+    System.err.println("DataflowService: waitForTermination()");
     dataflowTaskMonitor.waitForAllTaskFinish();
-    
-    DataflowStopActivityBuilder dataflowStopActivityBuilder = 
-        new DataflowStopActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-    ActivityCoordinator stopCoordinator = activityService.start(dataflowStopActivityBuilder);
-    stopCoordinator.waitForTermination(1 * 60 * 1000);
-
+    dataflowWorkerMonitor.waitForAllWorkerTerminated();
     //finish
     System.err.println("DataflowService: FINISH");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
@@ -108,9 +100,7 @@ public class DataflowService {
               new DataflowPauseActivityBuilder(dataflowRegistry.getDataflowDescriptor());
           ActivityCoordinator pauseCoordinator = activityService.start(dataflowPauseActivityBuilder);
         } else if(taskEvent == DataflowEvent.STOP) {
-          DataflowStopActivityBuilder dataflowStopActivityBuilder = 
-              new DataflowStopActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-          ActivityCoordinator stopCoordinator = activityService.start(dataflowStopActivityBuilder);
+          activityService.queue(new DataflowStopActivityBuilder().build());
         } else if(taskEvent == DataflowEvent.RESUME) {
           DataflowLifecycleStatus currentStatus = dataflowRegistry.getStatus();
           System.err.println("Detect the resume event, current status = " + currentStatus);
@@ -121,9 +111,7 @@ public class DataflowService {
             ActivityCoordinator resumeCoordinator = activityService.start(dataflowResumeActivityBuilder);
           } else if(currentStatus == DataflowLifecycleStatus.STOP) {
             System.err.println("  Run run activity...");
-            DataflowRunActivityBuilder dataflowRunActivityBuilder = 
-                new DataflowRunActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-            ActivityCoordinator startCoordinator = activityService.start(dataflowRunActivityBuilder);
+            activityService.queue(new DataflowRunActivityBuilder().build());
           }
           
         }

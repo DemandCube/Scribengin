@@ -24,6 +24,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.scribengin.dataflow.worker.VMDataflowWorkerApp;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
@@ -47,7 +48,6 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
       int numOfWorkerToAdd = activity.attributeAsInt("num-of-worker-to-add", 0);
-      System.err.println("num-of-worker-to-add = " + numOfWorkerToAdd);
       for(int i = 0; i < numOfWorkerToAdd; i++) {
         steps.add(new ActivityStep().
             withType("create-dataflow-worker").
@@ -67,7 +67,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     DataflowActivityStepWorkerService activityStepWorkerService;
    
     @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
+    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
       activityStepWorkerService.exectute(context, activity, step);
     }
   }
@@ -115,14 +115,17 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
-      List<String> workers = workerNodes.getChildren();
+      Node activeWorkerNodes = dflRegistry.getActiveWorkersNode() ;
+      List<String> workers = activeWorkerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
-        String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
+        String path = activeWorkerNodes.getPath() + "/" + workers.get(i) + "/status" ;
         waitingListener.add(path, DataflowWorkerStatus.RUNNING);
       }
+      
       waitingListener.waitForEvents(30 * 1000);
+      TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo();
+      System.err.println(formater.getFormatText());
     }
   }
 }

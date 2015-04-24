@@ -44,7 +44,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     DataflowActivityStepWorkerService activityStepWorkerService;
    
     @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) {
+    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
       activityStepWorkerService.exectute(context, activity, step);
     }
   }

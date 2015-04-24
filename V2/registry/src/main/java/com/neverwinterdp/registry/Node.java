@@ -91,6 +91,10 @@ public class Node {
     registry.watchExists(path, watcher);
   }
   
+  public void watchModify(NodeWatcher watcher) throws RegistryException {
+    registry.watchModify(path, watcher);
+  }
+  
   public void watchChildren(NodeWatcher watcher) throws RegistryException {
     registry.watchChildren(path, watcher);
   }

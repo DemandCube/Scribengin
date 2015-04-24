@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -235,6 +236,10 @@ public class ActivityService {
   }
   
   public class ActivityScheduler extends Thread {
+    public ActivityScheduler() {
+      setName("ActivityScheduler");
+    }
+    
     public void run() {
       try {
         doRun() ;
@@ -262,23 +267,30 @@ public class ActivityService {
     private ActivityExecutionContext context ;
     
     public ActivityRunner(ActivityExecutionContext context, Activity activity) {
+      setName("activity-runner-for-" + activity.getId());
       this.context = context;
       this.activity = activity;
     }
     
     public void run() {
+      activeActivities.put(activity.getId(), this);
+      boolean lockAcquired = false;
       try {
-        activeActivities.put(activity.getId(), this);
         System.err.println("try lock for activity " + activity.getId());
-        getLock().tryLock();
+        lockAcquired = getLock().tryLock(30, TimeUnit.MINUTES);
+        if(!lockAcquired) {
+          throw new Exception("Cannet obtain the lock after 15 minutes");
+        }
         System.err.println("obtain lock for activity " + activity.getId());
         doRun() ;
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
         activeActivities.remove(activity.getId());
-        getLock().unlock();
-        System.err.println("unlock lock for activity " + activity.getId());
+        if(lockAcquired) {
+          getLock().unlock();
+          System.err.println("unlock lock for activity " + activity.getId());
+        }
         context.notifyTermination();
       }
     }

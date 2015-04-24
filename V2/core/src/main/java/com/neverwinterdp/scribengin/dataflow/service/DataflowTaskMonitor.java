@@ -26,6 +26,11 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
     numOfTasks = dflRegistry.getTaskDescriptors().size();
     watchChildren(dflRegistry.getTasksAssignedPath());
   }
+  
+  
+  public void addMonitorTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
+    numOfTasks++;
+  }
 
   @Override
   public void processNodeEvent(NodeEvent nodeEvent) throws Exception {
@@ -76,6 +81,7 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
   synchronized public void onFinishDataflowTask(DataflowTaskDescriptor descriptor) throws RegistryException {
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
     finishedTaskCount++ ;
+    System.err.println("Detect finish task with status = " + status + " finishedTaskCount = " + finishedTaskCount +", numOfTasks = " + numOfTasks);
     if(numOfTasks == finishedTaskCount) {
       notifyAll() ;
     }

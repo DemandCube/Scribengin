@@ -1,10 +1,13 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
@@ -63,16 +66,26 @@ dataflow
       Node master = dataflowNode.getChild("master").getChild("leader");
       workerNodeTable.addRow("DataflowMaster", master.getDataAs(Map.class).get("path"));
       
-      for(String workerNode: dataflowNode.getChild("workers").getChild("active").getChildren()){
-        Node worker = dataflowNode.getChild("workers").getChild("active").getChild(workerNode);
-        workerNodeTable.addRow(worker.getName(), worker.getDataAs(Map.class).get("path"));
+      List<String> workerIds = dataflowNode.getDescendant("workers/active").getChildren();
+      for(String workerId : workerIds){
+        Node worker = dataflowNode.getDescendant("workers/active/" + workerId);
+        RefNode refVMDescriptor = worker.getDataAs(RefNode.class) ;
+        if(refVMDescriptor == null) {
+          System.err.println("Cannot get the data for " + worker.getPath());
+          try {
+            dataflowNode.getDescendant("workers/active").dump(System.err);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          continue;
+        }
+        workerNodeTable.addRow(worker.getName(), refVMDescriptor.getPath());
         if(worker.hasChild("executors")){
           for(String executorNode: worker.getChild("executors").getChildren()){
             Node executor = worker.getChild("executors").getChild(executorNode);
             DataflowTaskExecutorDescriptor desc = executor.getDataAs(DataflowTaskExecutorDescriptor.class);
-            
-            executorNodeTable.addRow(worker.getName(), desc.getId(),desc.getStatus(), 
-                StringUtils.join(desc.getAssignedTaskIds(), ","));
+            String taskIds = StringUtils.join(desc.getAssignedTaskIds(), ",");
+            executorNodeTable.addRow(worker.getName(), desc.getId(),desc.getStatus(), taskIds);
           }
         }
       }

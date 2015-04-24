@@ -54,14 +54,14 @@ public class VMClient {
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
-    return execute(vmDescriptor, command, 60000);
+    return execute(vmDescriptor, command, 5000);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {
     CommandPayload payload = new CommandPayload(command, null) ;
     Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
-    CommandReponseWatcher responseWatcher = new CommandReponseWatcher(node.getPath());
-    node.watch(responseWatcher);
+    CommandReponseWatcher responseWatcher = new CommandReponseWatcher(registry, node.getPath());
+    node.watchModify(responseWatcher);
     return responseWatcher.waitForResult(timeout);
   }
   
@@ -116,13 +116,15 @@ public class VMClient {
     throw new RuntimeException("This method need to override") ;
   }
   
-  public class CommandReponseWatcher extends NodeWatcher {
-    private String path ;
-    private CommandResult<?> result ;
-    private Exception error ;
-    private boolean discardResult = false;
+  static public class CommandReponseWatcher extends NodeWatcher {
+    private Registry         registry;
+    private String           path;
+    private CommandResult<?> result;
+    private Exception        error;
+    private boolean          discardResult = false;
     
-    public CommandReponseWatcher(String path) {
+    public CommandReponseWatcher(Registry registry, String path) {
+      this.registry = registry;
       this.path = path;
     }
     
@@ -138,30 +140,25 @@ public class VMClient {
           result = payload.getResult() ;
           registry.delete(path);
         }
-        synchronized(this) {
-          notify();
-        }
       } catch(Exception e) {
         error = e ;
+      } finally {
+        notifyForResult() ;
       }
     }
+    synchronized void notifyForResult() {
+      notifyAll() ;
+    }
     
-    public CommandResult<?> waitForResult(long timeout) throws Exception {
+    synchronized public CommandResult<?> waitForResult(long timeout) throws Exception {
       if(result == null) {
-        synchronized(this) {
-          wait(timeout);
-        }
+        wait(timeout);
       }
-      if(error != null) throw error;
       if(discardResult) {
         result = new CommandResult<Object>() ;
         result.setDiscardResult(true);
       }
-      //Check one more time in case the server return the response before the watcher is registered
-      if(result == null) {
-        CommandPayload payload = registry.getDataAs(path, CommandPayload.class) ;
-        result = payload.getResult() ;
-      }
+      if(error != null) throw error;
       if(result == null) {
         throw new TimeoutException("Cannot get the result after " + timeout + "ms") ;
       }

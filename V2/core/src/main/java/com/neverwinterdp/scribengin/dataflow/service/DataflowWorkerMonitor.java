@@ -37,11 +37,22 @@ public class DataflowWorkerMonitor {
     DataflowWorkerStatus dataflowWorkerStatus = dataflowWorkerNode.getChild("status").getDataAs(DataflowWorkerStatus.class);
     dataflowRegistry.historyWorker(vmNode.getName());
     
-    System.err.println(">>>DataflowWorkerStatus = " + dataflowWorkerStatus) ;
-    
     if(dataflowWorkerStatus != DataflowWorkerStatus.TERMINATED) {
       Activity activity = new AddWorkerActivityBuilder().build(1);
       activityService.queue(activity);
+    } else {
+      notifyWorkerTerminated();
+    }
+  }
+  
+  synchronized void notifyWorkerTerminated() {
+    notifyAll();
+  }
+  
+  synchronized void waitForAllWorkerTerminated() throws InterruptedException {
+    if(workerHeartbeatListeners.size() == 0) return;
+    while(workerHeartbeatListeners.size() > 0) {
+      wait();
     }
   }
   
