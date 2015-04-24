@@ -2,6 +2,8 @@ package com.neverwinterdp.scribengin.storage.s3;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -14,6 +16,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteBucketRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -22,20 +26,21 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class S3Client {
-  private AmazonS3Client s3Client ;
+  private AmazonS3Client s3Client;
   private Region region;
-  
-  public S3Client(String regionName){
+
+  public S3Client(String regionName) {
     region = Region.getRegion(Regions.fromName(regionName));
   }
-  public S3Client(){
-    region = Region.getRegion(Regions.US_WEST_1);
+
+  public S3Client() {
+    region = Region.getRegion(Regions.EU_CENTRAL_1);
   }
-  
+
   @PostConstruct
   public void onInit() {
     s3Client = new AmazonS3Client();
-    
+
     s3Client.setRegion(region);
   }
 
@@ -43,92 +48,116 @@ public class S3Client {
   public void onDestroy() {
     s3Client.shutdown();
   }
-  
-  public AmazonS3Client getAmazonS3Client() { return this.s3Client ; }
+
+  public AmazonS3Client getAmazonS3Client() {
+    return this.s3Client;
+  }
 
   public Bucket createBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
-    return s3Client.createBucket(bucketName) ;
+    return s3Client.createBucket(bucketName);
   }
-  
-  public boolean hasBucket(String bucketName) throws AmazonClientException, AmazonServiceException { 
-    return s3Client.doesBucketExist(bucketName) ; 
+
+  public boolean hasBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
+    System.out.println("bucket name " + bucketName);
+    boolean sheExists = s3Client.doesBucketExist(bucketName);
+    return sheExists;
   }
-  
+
   public void deleteBucket(String bucketName, boolean recursive) throws AmazonClientException, AmazonServiceException {
-    if(recursive) {
+    if (recursive) {
       deleteKeyWithPrefix(bucketName, "");
     }
-    DeleteBucketRequest request = new DeleteBucketRequest(bucketName) ;
+    DeleteBucketRequest request = new DeleteBucketRequest(bucketName);
     s3Client.deleteBucket(request);
   }
-  
+
   public void create(String bucketName, String key, byte[] data, String mimeType) throws AmazonServiceException {
     InputStream is = new ByteArrayInputStream(data);
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentType(mimeType);
     s3Client.putObject(new PutObjectRequest(bucketName, key, is, metadata));
   }
-  
+
   public boolean hasKey(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
     try {
-      s3Client.getObjectMetadata(bucketName, key); 
-    } catch(AmazonServiceException e) {
-      if(e.getStatusCode() == 404) return false;
-      throw e ;
+      System.out.println("keyfunguo " + key);
+      s3Client.getObjectMetadata(bucketName, key);
+    } catch (AmazonServiceException e) {
+      if (e.getStatusCode() == 404)
+        return false;
+      throw e;
     }
     return true;
   }
-  
-  public ObjectMetadata getObjectMetadata(String bucketName, String key) throws AmazonClientException, AmazonServiceException { 
-    return s3Client.getObjectMetadata(bucketName, key) ; 
+
+  public ObjectMetadata getObjectMetadata(String bucketName, String key) throws AmazonClientException,
+      AmazonServiceException {
+    return s3Client.getObjectMetadata(bucketName, key);
   }
-  
+
   public void createObject(String bucketName, String key, byte[] data, ObjectMetadata metadata) {
-    InputStream is = new ByteArrayInputStream(data) ;
+    InputStream is = new ByteArrayInputStream(data);
     createObject(bucketName, key, is, metadata);
   }
-  
+
   public void createObject(String bucketName, String key, InputStream is, ObjectMetadata metadata) {
     s3Client.putObject(new PutObjectRequest(bucketName, key, is, metadata));
     metadata.addUserMetadata("transaction", "test");
   }
-  
+
   public void updateObjectMetadata(String bucketName, String key, ObjectMetadata metadata) {
-    CopyObjectRequest request = 
-      new CopyObjectRequest(bucketName, key, bucketName, key).withNewObjectMetadata(metadata);
+    CopyObjectRequest request =
+        new CopyObjectRequest(bucketName, key, bucketName, key).withNewObjectMetadata(metadata);
     s3Client.copyObject(request);
   }
-  
-  public S3Object getObject(String bucketName, String key) throws AmazonClientException, AmazonServiceException { 
-    return s3Client.getObject(bucketName, key) ; 
+
+  public S3Object getObject(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
+    return s3Client.getObject(bucketName, key);
   }
-  
-  public S3Folder createS3Folder(String bucketName, String folderPath) throws AmazonClientException, AmazonServiceException {
-    if(!hasBucket(bucketName)) {
-      throw new AmazonServiceException("Bucket " + bucketName + " does not exist") ;
+
+  public S3Folder createS3Folder(String bucketName, String folderPath) throws AmazonClientException,
+      AmazonServiceException {
+    if (!hasBucket(bucketName)) {
+      throw new AmazonServiceException("Bucket " + bucketName + " does not exist");
     }
     create(bucketName, folderPath, new byte[0], "s3system/folder");
-    return new S3Folder(this, bucketName, folderPath) ;
+    return new S3Folder(this, bucketName, folderPath);
   }
-  
+
   public void deleteS3Folder(String bucketName, String folderPath) {
     deleteKeyWithPrefix(bucketName, folderPath);
   }
-  
-  public S3Folder getS3Folder(String bucketName, String folderPath) throws AmazonClientException, AmazonServiceException {
-    if(!hasBucket(bucketName)) {
-      throw new AmazonServiceException("Bucket " + bucketName + " does not exist") ;
+
+  public S3Folder getS3Folder(String bucketName, String folderPath) throws AmazonClientException,
+      AmazonServiceException {
+    if (!hasBucket(bucketName)) {
+      throw new AmazonServiceException("Bucket " + bucketName + " does not exist");
     }
-    if(getObjectMetadata(bucketName,folderPath) == null) {
-      throw new AmazonServiceException("Folder " + folderPath + " does not exist") ;
+    if (getObjectMetadata(bucketName, folderPath) == null) {
+      throw new AmazonServiceException("Folder " + folderPath + " does not exist");
     }
-    return new S3Folder(this, bucketName, folderPath) ;
+    return new S3Folder(this, bucketName, folderPath);
   }
 
-  
-  
+  public List<S3Folder> getRootFolders(String bucket) {
+    List<S3Folder> folders = new ArrayList<S3Folder>();
+    S3Folder folder;
+
+    ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withDelimiter("/");
+    ObjectListing objectListing = getAmazonS3Client().listObjects(request);
+    System.err.println("listiing " + objectListing.getCommonPrefixes());
+
+    for (String folderName : objectListing.getCommonPrefixes()) {
+      folderName = folderName.substring(0, folderName.indexOf("/"));
+      System.err.println("a folderderderder "+ folderName);
+      folder = new S3Folder(this, bucket, folderName);
+      folders.add(folder);
+    }
+    return folders;
+  }
+
   void deleteKeyWithPrefix(String bucketName, String prefix) {
-    for (S3ObjectSummary file : s3Client.listObjects(bucketName, prefix).getObjectSummaries()){
+    for (S3ObjectSummary file : s3Client.listObjects(bucketName, prefix).getObjectSummaries()) {
       s3Client.deleteObject(bucketName, file.getKey());
     }
   }

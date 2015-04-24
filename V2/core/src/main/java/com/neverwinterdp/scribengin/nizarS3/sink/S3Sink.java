@@ -50,7 +50,7 @@ public class S3Sink implements Sink {
   
   @Override
   synchronized public SinkStream newStream() throws IOException {
-    int id = idTracker++;
+    int id = ++idTracker;
     String location = descriptor.getLocation() + "/stream-" + id;
     StreamDescriptor streamDescriptor = new StreamDescriptor("S3", id, location) ;
     streamDescriptor.putAll(descriptor);

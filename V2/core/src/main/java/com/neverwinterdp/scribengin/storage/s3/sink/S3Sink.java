@@ -24,7 +24,13 @@ public class S3Sink implements Sink {
         s3Client.onInit();
         init(s3Client, descriptor);
   }
+
+  public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
+    init(s3Client, descriptor);
+  }
+
   private void init(S3Client s3Client, StorageDescriptor descriptor) {
+    System.err.println("init s3 sink " + descriptor);
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");
     if(!s3Client.hasBucket(bucketName)) {
@@ -34,8 +40,9 @@ public class S3Sink implements Sink {
     if(!s3Client.hasKey(bucketName, folderPath)) {
       s3Client.createS3Folder(bucketName, folderPath) ;
     }
+
     sinkFolder = s3Client.getS3Folder(bucketName, folderPath);
-    
+    System.err.println("sink folder children "+ sinkFolder.getChildrenNames());
     List<String> streamNames = sinkFolder.getChildrenNames();
     for(String streamName : streamNames) {
       StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
@@ -46,11 +53,7 @@ public class S3Sink implements Sink {
       if(idTracker < stream.getDescriptor().getId()) {
         idTracker = stream.getDescriptor().getId();
       }
-    }
-    
-  }
-  public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
-    init(s3Client, descriptor);
+    } System.out.println("shidanga "+ streams);
   }
   
   public S3Folder getSinkFolder() { return this.sinkFolder ; }
@@ -60,6 +63,8 @@ public class S3Sink implements Sink {
 
   @Override
   synchronized public SinkStream getStream(StreamDescriptor descriptor) throws Exception {
+    System.err.println("shida "+ streams);
+    System.err.println("descriptor.getid "+ descriptor.getId());
     return streams.get(descriptor.getId());
   }
 
@@ -80,7 +85,7 @@ public class S3Sink implements Sink {
 
   @Override
   synchronized public SinkStream newStream() throws Exception {
-    int streamId = ++idTracker ;
+    int streamId = idTracker++ ;
     StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
     streamDescriptor.setId(streamId);
     streamDescriptor.attribute("s3.stream.name", "stream-" + streamId);

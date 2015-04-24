@@ -9,12 +9,13 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSToS3DataflowTest;
+import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class DataflowHdfsToHdfsUnitTest {
+public class DataflowHDFSToS3UnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -44,7 +45,23 @@ public class DataflowHdfsToHdfsUnitTest {
 
   @Test
   public void testDataflows() throws Exception {
-    DataflowSubmitter submitter = new DataflowSubmitter();
+    //First clean up s3
+    S3Client s3Client = new S3Client();
+s3Client.onInit();
+    int numStreams = 1;
+    String bucketName = "amusyoki";
+    String folderPath = "database";
+
+    //TODO move to @Before
+    if (s3Client.hasBucket(bucketName)) {
+      s3Client.deleteS3Folder(bucketName, folderPath);
+    } else {
+      s3Client.createBucket(bucketName);
+    }
+    for (int i = 1; i <= numStreams; i++) {
+      s3Client.createS3Folder(bucketName, folderPath + "/stream-" + i);
+    }
+    DataflowSubmitter submitter = new DataflowSubmitter(bucketName, folderPath, numStreams);
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
 
@@ -55,7 +72,7 @@ public class DataflowHdfsToHdfsUnitTest {
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
+      shell.execute("dataflow   info --history hello-s3-dataflow-0");
     } catch (Throwable err) {
       throw err;
     } finally {
@@ -65,24 +82,33 @@ public class DataflowHdfsToHdfsUnitTest {
   }
 
   public class DataflowSubmitter extends Thread {
+    private String bucketName;
+    private String folderPath;
+    private int numStreams;
+
+    public DataflowSubmitter(String bucketName, String folderPath, int numStreams) {
+      this.bucketName = bucketName;
+      this.folderPath = folderPath;
+      this.numStreams = numStreams;
+    }
+
     public void run() {
       try {
         String command =
-            "dataflow-test " + HDFSDataflowTest.TEST_NAME +
-                " --dataflow-name  hdfs-to-hdfs" +
+            "dataflow-test " + HDFSToS3DataflowTest.TEST_NAME +
+                " --dataflow-name  s3-to-s3" +
                 " --worker 3" +
                 " --executor-per-worker 1" +
                 " --duration 90000" +
-                " --task-max-execute-time 1000" +
+                " --task-max-execute-time 10000" +
                 " --source-name output" +
-                " --source-num-of-stream 10" +
-                " --source-write-period 5" +
-                " --source-max-records-per-stream 100" +
-                " --sink-name output" +
+                " --source-num-of-stream " +numStreams + 
+                " --source-max-records-per-stream 1000" +
+                " --sink-name " + bucketName +
+                " --sink-location " + folderPath +
                 " --print-dataflow-info -1" +
-                " --debug-dataflow-task " +
-                " --debug-dataflow-vm " +
-                " --debug-dataflow-activity " +
+                " --debug-dataflow-task true" +
+                " --debug-dataflow-worker true" +
                 " --junit-report build/junit-report.xml" +
                 " --dump-registry";
         shell.execute(command);

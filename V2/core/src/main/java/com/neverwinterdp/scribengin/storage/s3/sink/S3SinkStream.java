@@ -26,4 +26,15 @@ public class S3SinkStream implements SinkStream {
   public SinkStreamWriter getWriter() throws Exception {
     return new S3SinkStreamWriter(streamS3Folder);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("S3SinkStream [streamS3Folder=");
+    builder.append(streamS3Folder);
+    builder.append(", descriptor=");
+    builder.append(descriptor);
+    builder.append("]");
+    return builder.toString();
+  }
 }

@@ -39,6 +39,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   public void completeCommit() throws Exception {
     ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
+    System.err.println("andika");
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
   }
   
@@ -55,6 +56,5 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   
   @Override
   public void close() throws Exception {
-    
   }
 }

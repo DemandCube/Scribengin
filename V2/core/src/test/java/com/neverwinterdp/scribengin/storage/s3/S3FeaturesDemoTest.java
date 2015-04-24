@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Test;
 
@@ -60,7 +59,7 @@ public class S3FeaturesDemoTest {
     System.out.println("===========================================\n");
 
     try {
-      String bucketName = "my-first-s3-bucket-" + UUID.randomUUID();
+      String bucketName = "amusyoki";
       String key = "MyObjectKey";
       init();
       createBucket(bucketName);
@@ -95,7 +94,7 @@ public class S3FeaturesDemoTest {
       System.out.println("Error Message: " + ace.getMessage());
     }
   }
-  
+
   public void init() throws Exception {
     /*
      * Create your credentials file at ~/.aws/credentials
@@ -107,7 +106,7 @@ public class S3FeaturesDemoTest {
      * aws_secret_access_key=YOUR_SECRET_ACCESS_KEY
      */
     s3Client = new AmazonS3Client();
-    Region region = Region.getRegion(Regions.US_WEST_2);
+    Region region = Region.getRegion(Regions.EU_CENTRAL_1);
     //Region region = Region.getRegion(Regions.SA_EAST_1);
     s3Client.setRegion(region);
   }

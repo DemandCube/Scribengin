@@ -8,7 +8,7 @@ import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
 import com.neverwinterdp.scribengin.dataflow.test.HDFSToKafkaDataflowTest;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaToHdfsDataflowTest;
-import com.neverwinterdp.scribengin.dataflow.test.KafkaToS3DataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSToS3DataflowTest;
 import com.neverwinterdp.vm.client.shell.Command;
 import com.neverwinterdp.vm.client.shell.CommandInput;
 import com.neverwinterdp.vm.client.shell.Shell;
@@ -23,6 +23,7 @@ public class DataflowTestCommand extends Command {
     add(HDFSDataflowTest.TEST_NAME, HdfsDataflowTestSubCommand.class);
     add(HDFSToKafkaDataflowTest.TEST_NAME, HdfsToKafkaDataflowTestSubCommand.class);
     add(KafkaToHdfsDataflowTest.TEST_NAME, KafkaToHdfsDataflowTestSubCommand.class);
+    add(HDFSToS3DataflowTest.TEST_NAME, KafkaToS3DataflowTestSubCommand.class);
 
     add(DataflowCommandStartStopResumeTest.TEST_NAME, StartStopResumeSubcommand.class);
     add(DataflowRandomServerFailureTest.TEST_NAME, RandomServerFailureSubcommand.class);
@@ -79,7 +80,7 @@ public class DataflowTestCommand extends Command {
     Class<? extends DataflowTest> testClass ;
     
     public KafkaToS3DataflowTestSubCommand() {
-      this.testClass = KafkaToS3DataflowTest.class;
+      this.testClass = HDFSToS3DataflowTest.class;
     }
     
     @Override
@@ -175,5 +176,4 @@ public class DataflowTestCommand extends Command {
   public String getDescription() {
     return "a sample dataflow";
   }
-  
 }
