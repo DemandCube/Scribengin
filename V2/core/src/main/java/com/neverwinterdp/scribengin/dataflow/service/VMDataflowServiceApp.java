@@ -9,6 +9,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
+import com.mycila.guice.ext.closeable.CloseableInjector;
 import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
@@ -42,6 +43,7 @@ public class VMDataflowServiceApp extends VMApp {
       System.err.println("finish waitForShutdown()");
     } catch(InterruptedException ex) {
     } finally {
+      appContainer.getInstance(CloseableInjector.class).close();
       if(election != null && election.getLeaderId() != null) {
         election.stop();
       }

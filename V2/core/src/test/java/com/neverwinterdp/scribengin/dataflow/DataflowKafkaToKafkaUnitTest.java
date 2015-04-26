@@ -47,11 +47,12 @@ public class DataflowKafkaToKafkaUnitTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      submitter.waitForTermination(300000);
+      submitter.waitForTermination(90000);
     } catch(Throwable err) {
       throw err;
     } finally {
       if(submitter.isAlive()) submitter.interrupt();
+      Thread.sleep(3000);
     }
   }
   

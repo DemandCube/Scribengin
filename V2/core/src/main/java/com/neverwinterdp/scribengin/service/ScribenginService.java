@@ -3,11 +3,14 @@ package com.neverwinterdp.scribengin.service;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.PreDestroy;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
@@ -59,7 +62,9 @@ public class ScribenginService {
     this.vmClient = vmClient;
   }
   
+  @PreDestroy
   public void onDestroy() throws Exception {
+    registryListener.close();
   }
   
   public boolean deploy(DataflowDescriptor descriptor) throws Exception {
@@ -97,7 +102,8 @@ public class ScribenginService {
   private void moveToHistory(DataflowDescriptor descriptor) throws Exception {
     String fromPath = dataflowsRunningNode.getPath() + "/" + descriptor.getName();
     String toPath   = dataflowsHistoryNode.getPath() + "/" + descriptor.getName() + "-" + historyIdTracker.getAndIncrement();
-    registry.rcopy(fromPath, toPath);
+    PathFilter ignoreLeader = new PathFilter.IgnorePathFilter(".*/leader/leader-.*") ;
+    registry.rcopy(fromPath, toPath, ignoreLeader);
     registry.rdelete(fromPath);
   }
   

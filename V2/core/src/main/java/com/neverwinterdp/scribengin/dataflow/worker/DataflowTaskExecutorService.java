@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.dataflow.worker;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,7 @@ public class DataflowTaskExecutorService {
     System.err.println("DataflowTaskExecutorService: pause() done!");
   }
   
+  @PreDestroy
   public void shutdown() throws Exception {
     if(kill) return;
     logger.info("Start shutdown()");

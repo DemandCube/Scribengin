@@ -6,6 +6,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
+import com.mycila.guice.ext.closeable.CloseableInjector;
 import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
@@ -45,6 +46,9 @@ public class VMScribenginServiceApp extends VMApp {
       waitForTerminate();
     } catch(InterruptedException ex) {
     } finally {
+      if(appContainer != null) {
+        appContainer.getInstance(CloseableInjector.class).close();
+      }
       if(election != null && election.getLeaderId() != null) {
         election.stop();
       }

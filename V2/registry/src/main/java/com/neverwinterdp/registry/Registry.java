@@ -50,6 +50,8 @@ public interface Registry {
   
   public void rcopy(String path, String toPath) throws RegistryException ;
   
+  public void rcopy(String path, String toPath, PathFilter filter) throws RegistryException ;
+  
   public Transaction getTransaction() ;
   
   public <T> T executeBatch(BatchOperations<T> ops, int retry, long timeoutThreshold) throws RegistryException ;

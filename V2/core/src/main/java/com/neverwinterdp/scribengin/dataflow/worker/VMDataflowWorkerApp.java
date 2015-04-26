@@ -67,7 +67,6 @@ public class VMDataflowWorkerApp extends VMApp {
     addListener(new VMApp.VMAppTerminateEventListener() {
       @Override
       public void onEvent(VMApp vmApp, TerminateEvent terminateEvent) {
-        System.err.println("VMDataflowWorkerApp terminate event = " + terminateEvent);
         try {
           if(terminateEvent == TerminateEvent.Shutdown) {
             dataflowTaskExecutorService.shutdown();
@@ -86,9 +85,7 @@ public class VMDataflowWorkerApp extends VMApp {
       dataflowTaskExecutorService.waitForFinish(500);
     } catch(InterruptedException ex) {
     } finally {
-      dataflowTaskExecutorService.shutdown();
       container.getInstance(CloseableInjector.class).close();
-      System.err.println("VMDataflowWorkerApp: Shutdown dataflow worker done!!!!!!!!");
     }
   }
 }

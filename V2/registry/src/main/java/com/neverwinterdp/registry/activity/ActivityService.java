@@ -32,7 +32,9 @@ public class ActivityService {
   private ActivityScheduler           activityScheduler;
   private final Lock                  lock             = new ReentrantLock(true);
 
-  public ActivityService() { }
+  public ActivityService() {
+  }
+
   
   public ActivityService(Injector container, String activityPath) throws RegistryException {
     init(container, activityPath);
@@ -50,6 +52,7 @@ public class ActivityService {
   
   @PreDestroy
   public void onDestroy() {
+    System.err.println("ActivityService: onDestroy()");
     queue.shutdown();
     activityScheduler.interrupt();
   }

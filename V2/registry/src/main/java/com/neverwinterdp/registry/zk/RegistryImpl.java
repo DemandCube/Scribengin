@@ -3,6 +3,8 @@ package com.neverwinterdp.registry.zk;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.PreDestroy;
@@ -23,6 +25,7 @@ import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -407,9 +410,13 @@ public class RegistryImpl implements Registry {
   }
   
   public void rcopy(String path, String toPath) throws RegistryException {
+    rcopy(path, toPath, null);
+  }
+  
+  public void rcopy(String path, String toPath, PathFilter filter) throws RegistryException {
     try {
       PathUtils.validatePath(path);
-      List<String> tree = ZKUtil.listSubTreeBFS(zkClient, realPath(path));
+      List<String> tree = listSubTreeBFS(zkClient, realPath(path), filter);
       for (int i = 0; i < tree.size(); i++) {
         String selPath = tree.get(i);
         String selToPath = selPath.replace(path, toPath);
@@ -493,6 +500,44 @@ public class RegistryImpl implements Registry {
       }
     }
     return new RegistryException(ErrorCode.Unknown, message, t) ;
+  }
+  
+  /**
+   * BFS Traversal of the system under pathRoot, with the entries in the list, in the 
+   * same order as that of the traversal.
+   * <p>
+   * <b>Important:</b> This is <i>not an atomic snapshot</i> of the tree ever, but the
+   *  state as it exists across multiple RPCs from zkClient to the ensemble.
+   * For practical purposes, it is suggested to bring the clients to the ensemble 
+   * down (i.e. prevent writes to pathRoot) to 'simulate' a snapshot behavior.   
+   * 
+   * @param zk the zookeeper handle
+   * @param pathRoot The znode path, for which the entire subtree needs to be listed.
+   * @throws InterruptedException 
+   * @throws KeeperException 
+   */
+  static List<String> listSubTreeBFS(ZooKeeper zk, final String pathRoot, PathFilter filter) throws KeeperException, InterruptedException {
+    Deque<String> queue = new LinkedList<String>();
+    List<String> tree = new ArrayList<String>();
+    queue.add(pathRoot);
+    boolean accept = true;
+    if(filter != null) {
+      accept = filter.accept(pathRoot);
+    }
+    if(accept) tree.add(pathRoot);
+    while (true) {
+      String node = queue.pollFirst();
+      if (node == null) {
+        break;
+      }
+      List<String> children = zk.getChildren(node, false);
+      for (final String child : children) {
+        final String childPath = node + "/" + child;
+        queue.add(childPath);
+        tree.add(childPath);
+      }
+    }
+    return tree;
   }
   
   @PreDestroy
