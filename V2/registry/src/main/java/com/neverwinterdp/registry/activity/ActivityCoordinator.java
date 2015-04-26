@@ -27,9 +27,7 @@ abstract public class ActivityCoordinator {
     for(int i = 0; i < activitySteps.size(); i++) {
       ActivityStep nextStep = activitySteps.get(i);
       nextStep.setStatus(ActivityStep.Status.ASSIGNED);
-      System.err.println("Before execute activity = " + activity.getId() + " activity step = " + nextStep.getId());
       schedule(ctx, activity, nextStep);
-      System.err.println("After execute activity = " + activity.getId() + " activity step = " + nextStep.getId());
       nextStep.setStatus(ActivityStep.Status.FINISHED);
     }
     onFinish(ctx, activity);

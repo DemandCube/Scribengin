@@ -15,10 +15,8 @@ public interface PathFilter {
     @Override
     public boolean accept(String path) {
       if(pattern.matcher(path).matches()) {
-        System.err.println("ignore path = " + path);
         return false;
       }
-      System.err.println("accept path = " + path);
       return true;
     }
     

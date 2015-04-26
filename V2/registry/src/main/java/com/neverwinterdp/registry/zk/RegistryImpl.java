@@ -533,8 +533,14 @@ public class RegistryImpl implements Registry {
       List<String> children = zk.getChildren(node, false);
       for (final String child : children) {
         final String childPath = node + "/" + child;
-        queue.add(childPath);
-        tree.add(childPath);
+        accept = true;
+        if(filter != null) {
+          accept = filter.accept(childPath);
+        }
+        if(accept) {
+          queue.add(childPath);
+          tree.add(childPath);
+        }
       }
     }
     return tree;

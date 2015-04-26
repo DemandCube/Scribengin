@@ -52,7 +52,6 @@ public class ActivityService {
   
   @PreDestroy
   public void onDestroy() {
-    System.err.println("ActivityService: onDestroy()");
     queue.shutdown();
     activityScheduler.interrupt();
   }
