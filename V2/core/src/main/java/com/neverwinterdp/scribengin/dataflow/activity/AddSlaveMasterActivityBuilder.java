@@ -29,21 +29,20 @@ import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class AddWorkerActivityBuilder extends ActivityBuilder {
+public class AddSlaveMasterActivityBuilder extends ActivityBuilder {
   static public AtomicInteger idTracker = new AtomicInteger(1) ;
   
   public Activity build(int numOfWorkerToAdd) {
     Activity activity = new Activity();
-    activity.setDescription("Add Dataflow Worker Activity");
-    activity.setType("add-dataflow-worker");
-    activity.withCoordinator(AddDataflowWorkerActivityCoordinator.class);
-    activity.withActivityStepBuilder(AddDataflowWorkerActivityStepBuilder.class) ;
-    activity.attribute("num-of-worker-to-add", numOfWorkerToAdd);
+    activity.setDescription("Add Dataflow Slave Master Activity");
+    activity.setType("add-dataflow-slave-master");
+    activity.withCoordinator(AddDataflowSlaveMasterActivityCoordinator.class);
+    activity.withActivityStepBuilder(AddDataflowSlaveMasterActivityStepBuilder.class) ;
     return activity;
   }
   
   @Singleton
-  static public class AddDataflowWorkerActivityStepBuilder implements ActivityStepBuilder {
+  static public class AddDataflowSlaveMasterActivityStepBuilder implements ActivityStepBuilder {
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
@@ -51,8 +50,8 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       for(int i = 0; i < numOfWorkerToAdd; i++) {
         steps.add(new ActivityStep().
             withType("create-dataflow-worker").
-            withExecutor(AddDataflowWorkerStepExecutor.class).
-            attribute("worker.id", idTracker.getAndIncrement()));
+            withExecutor(AddDataflowSlaveMasterStepExecutor.class).
+            attribute("master.id", idTracker.getAndIncrement()));
       }
       steps.add(new ActivityStep().
           withType("wait-for-worker-run-status").
@@ -62,7 +61,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class AddDataflowWorkerActivityCoordinator extends ActivityCoordinator {
+  static public class AddDataflowSlaveMasterActivityCoordinator extends ActivityCoordinator {
     @Inject
     DataflowActivityStepWorkerService activityStepWorkerService;
    
@@ -73,7 +72,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class AddDataflowWorkerStepExecutor implements ActivityStepExecutor {
+  static public class AddDataflowSlaveMasterStepExecutor implements ActivityStepExecutor {
     @Inject
     private DataflowService service ;
     
@@ -88,7 +87,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       VMConfig vmConfig = new VMConfig();
       vmConfig.
       setEnvironment(service.getVMConfig().getEnvironment()).
-      setName(dflDescriptor.getName() + "-worker-" + step.attribute("worker.id")).
+      setName(dflDescriptor.getName() + "-worker-" + step.attribute("master.id")).
       addRoles("dataflow-worker").
       setRegistryConfig(registryConfig).
       setVmApplication(VMDataflowWorkerApp.class.getName()).
