@@ -46,8 +46,8 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
     try {
       S3Source source = new S3Source(s3Client, getSinkDescriptor());
       SourceStream[] streams = source.getStreams();
-      for (SourceStream selStream : streams) {
-        SourceStreamReader streamReader = selStream.getReader("S3DataflowSinkValidator");
+      for (SourceStream sourceStream : streams) {
+        SourceStreamReader streamReader = sourceStream.getReader("S3DataflowSinkValidator");
         Record record = null;
         while ((record = streamReader.next()) != null) {
           Message message = messageExtractor.extract(record.getData());

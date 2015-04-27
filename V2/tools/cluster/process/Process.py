@@ -232,7 +232,9 @@ class VmMasterProcess(Process):
   
   def start(self):
     self.printProgress("Starting ")
-    self.sshExecute(join(self.homeDir, "shell.sh")+" vm start")
+    stdout,stderr = self.sshExecute(join(self.homeDir, "shell.sh")+" vm start")
+    print "STDOUT from vm start: \n"+stdout
+    print "STDERR from vm start: \n"+stderr
     
   def shutdown(self):
     self.printProgress("Stopping ")
@@ -265,7 +267,9 @@ class ScribenginProcess(Process):
   
   def start(self):
     self.printProgress("Starting ")
-    self.sshExecute(join(self.homeDir, "shell.sh")+" scribengin start")
+    stdout,stderr = self.sshExecute(join(self.homeDir, "shell.sh")+" scribengin start")
+    print "STDOUT from scribengin start: \n"+stdout
+    print "STDERR from scribengin start: \n"+stderr
     
   def shutdown(self):
     self.printProgress("Stopping ")
