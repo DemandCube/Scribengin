@@ -7,7 +7,7 @@ import click, logging, multiprocessing, signal
 from sys import stdout, exit
 from time import sleep
 
-from failure.FailureSimulator import ZookeeperFailure,KafkaFailure
+from failure.FailureSimulator import ZookeeperFailure,KafkaFailure,DataFlowFailure
 from Cluster import Cluster
 
 
@@ -324,6 +324,22 @@ def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, 
   _jobs.append(p)
   p.start()
   
+
+@mastercommand.command("dataflowfailure",help="Failure Simulation for dataflow")
+@click.option('--role',                           default='dataflow-worker', type=click.Choice(['dataflow-worker', 'dataflow-master']), help="'dataflow-worker' will run failure simulation on dataflow-worker, 'dataflow-master' will run failure simulation on dataflow-master,")
+@click.option('--failure-interval',               default=180,  help="Time interval (in seconds) to fail server")
+@click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
+def dataflowfailure(role, failure_interval, junit_report):
+  global _jobs
+  
+  dataflowFailure = DataFlowFailure(role)
+  p = multiprocessing.Process(name="DataflowFailure",
+                              target=dataflowFailure.dataflowFailureSimulation, 
+                              args=(failure_interval, junit_report))
+  _jobs.append(p)
+  p.start()
+  
+
 
 @mastercommand.command("monitor",help="Monitor Cluster status")
 @click.option('--update-interval', default=30, help="Time interval (in seconds) to wait between updating cluster status")

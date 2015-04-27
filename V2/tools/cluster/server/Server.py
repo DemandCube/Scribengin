@@ -68,16 +68,18 @@ class Server(object):
   def killProcesses(self):
     for key in self.processes:
       self.processes[key].kill()
-  
-  def sshExecute(self, command):
+                
+  def sshExecute(self, command, enableConsoleOutput = True):
     process = self.processes.values()[0]
     output = process.sshExecute(command)
-    self.printTitle("Executing '" + command + "' on " + process.hostname)
-    if not output[1]:
-      print output[0]
-    else:
-      print output[1]
-    print "***********************************************************************"
+    if enableConsoleOutput:
+      self.printTitle("Executing '" + command + "' on " + process.hostname)
+      if not output[1]:
+        print output[0]
+      else:
+        print output[1]
+        print "***********************************************************************"
+    return output
     
   def getReportDict(self):
     procDict= {}
