@@ -16,7 +16,6 @@ public class S3ToS3DataflowTest extends DataflowTest {
   private DataflowSinkValidator sinkValidator = new S3DataflowSinkValidator();
 
   protected void doRun(ScribenginShell shell) throws Exception {
-    System.err.println("hdfstos3dataflowtest dorun");
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     sourceGenerator.run();

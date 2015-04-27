@@ -142,7 +142,6 @@ public class S3Client {
 
     ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withDelimiter("/");
     ObjectListing objectListing = getAmazonS3Client().listObjects(request);
-
     for (String folderName : objectListing.getCommonPrefixes()) {
       folderName = folderName.substring(0, folderName.indexOf("/"));
       folder = new S3Folder(this, bucket, folderName);

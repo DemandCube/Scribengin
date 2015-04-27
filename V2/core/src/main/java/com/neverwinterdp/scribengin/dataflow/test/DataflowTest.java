@@ -112,7 +112,7 @@ abstract public class DataflowTest {
 
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-   //dataflowInfoThread.interrupt();
+   dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
@@ -210,11 +210,9 @@ abstract public class DataflowTest {
 
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
-      System.err.println("process meeee");
       ctx.append(record);
       count++;
       if (count == 100) {
-        System.out.println("commit ");
         ctx.commit();
         count = 0;
       }
