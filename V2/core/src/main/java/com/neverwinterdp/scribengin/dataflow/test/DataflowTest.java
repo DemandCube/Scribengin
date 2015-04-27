@@ -110,9 +110,11 @@ abstract public class DataflowTest {
       shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, false);
     }
 
-    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
-    dataflowInfoThread.start();
-    //dataflowInfoThread.interrupt();
+    //TODO: this code should not be here and should not be used this way. If you use the thread like this, it is like
+    //you call start and follow by a stop call.
+//    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
+//    dataflowInfoThread.start();
+//    dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {
@@ -210,11 +212,9 @@ abstract public class DataflowTest {
 
     @Override
     public void process(Record record, DataflowTaskContext ctx) throws Exception {
-      System.err.println("process meeee");
       ctx.append(record);
       count++;
       if (count == 100) {
-        System.out.println("commit ");
         ctx.commit();
         count = 0;
       }

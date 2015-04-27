@@ -24,20 +24,13 @@ public class DataflowTaskContext {
 
   public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report)
       throws Exception {
-    System.err.println("creating dataflowtask context " + descriptor);
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
     Iterator<Map.Entry<String, StreamDescriptor>> i = descriptor.getSinkStreamDescriptors().entrySet().iterator();
-    System.err.println(" source stream descriptor " + descriptor.getSourceStreamDescriptor());
-    System.err.println(" sink stream descriptors " + descriptor.getSinkStreamDescriptors());
       while (i.hasNext()) {
         Map.Entry<String, StreamDescriptor> entry = i.next();
-        System.err.println(" an entry value"+ entry.getValue());
-        System.err.println("container.get sinkfactory "+ container.getSinkFactory());
         SinkContext context = new SinkContext(container.getSinkFactory(), entry.getValue());
-        System.err.println("mpya "+ context);
         sinkContexts.put(entry.getKey(), context);
       }
-      System.err.println("sink contexts if we ever get here!!!" + sinkContexts);
       this.report = report;
       this.dataflowTaskDescriptor = descriptor;
       this.dataflowRegistry = container.getDataflowRegistry();
@@ -53,7 +46,6 @@ public class DataflowTaskContext {
 
   public void append(Record record) throws Exception {
     SinkContext sinkContext = sinkContexts.get("default");
-    System.err.println("append to sink " + record);
     sinkContext.assignedSinkStreamWriter.append(record);
   }
 
@@ -65,7 +57,6 @@ public class DataflowTaskContext {
   private void prepareCommit() throws Exception {
     sourceContext.assignedSourceStreamReader.prepareCommit();
     Iterator<SinkContext> i = sinkContexts.values().iterator();
-    System.out.println("sink contexts " + sinkContexts);
     while (i.hasNext()) {
       SinkContext ctx = i.next();
       ctx.prepareCommit();
@@ -110,7 +101,6 @@ public class DataflowTaskContext {
 
   private void completeCommit() throws Exception {
     Iterator<SinkContext> i = sinkContexts.values().iterator();
-    System.err.println("nganganga " + i.hasNext());
     while (i.hasNext()) {
       SinkContext ctx = i.next();
       ctx.completeCommit();
@@ -158,15 +148,9 @@ public class DataflowTaskContext {
     private SinkStreamWriter assignedSinkStreamWriter;
 
     public SinkContext(SinkFactory factory, StreamDescriptor streamDescriptor) throws Exception {
-   System.err.println("create sink context ");
       this.sink = factory.create(streamDescriptor);
-      System.err.println("sink " + sink);
-      System.err.println("stream descriptor " + streamDescriptor);
       this.assignedSinkStream = sink.getStream(streamDescriptor);
-      System.err.println("stream " + assignedSinkStream);
       this.assignedSinkStreamWriter = this.assignedSinkStream.getWriter();
-
-      System.err.println("writer " + assignedSinkStreamWriter);
     }
 
     public void prepareCommit() throws Exception {

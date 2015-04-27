@@ -3,6 +3,7 @@ package com.neverwinterdp.scribengin.storage.s3;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class S3SinkSourceIntegrationTest {
     s3Client.createS3Folder(BUCKET_NAME, STORAGE_PATH + "/stream-1");
   }
 
- // @AfterClass
+  @AfterClass
   static public void afterClass() {
     s3Client.deleteBucket(BUCKET_NAME, true);
     s3Client.onDestroy();
@@ -82,7 +83,7 @@ public class S3SinkSourceIntegrationTest {
     for (int i = 0; i < streams.length; i++) {
       SourceStream stream = streams[i];
       SourceStreamReader reader = stream.getReader(stream.getDescriptor().getLocation());
-  
+
       while (reader.next() != null) {
         recordCount++;
       }

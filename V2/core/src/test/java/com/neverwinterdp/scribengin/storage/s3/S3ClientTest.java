@@ -4,17 +4,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 //this is a unit test but it is not named so so as not to run in jenkins
 public class S3ClientTest {
-  
-  S3Client s3Client;
-  String BUCKET_NAME = "amusyoki";
-  String Folder_PATH = "unittest";
+
+  private S3Client s3Client;
+  private final String BUCKET_NAME = "amusyoki";
+  private final String FOLDER_PATH = "unit-test";
 
   @Before
   public void setup() {
@@ -24,21 +23,24 @@ public class S3ClientTest {
     if (s3Client.hasBucket(BUCKET_NAME)) {
       s3Client.deleteBucket(BUCKET_NAME, true);
     }
-    s3Client.createBucket(BUCKET_NAME);
-    s3Client.createS3Folder(BUCKET_NAME, Folder_PATH);
-    s3Client.createS3Folder(BUCKET_NAME, Folder_PATH + "/stream-0");
-    s3Client.createS3Folder(BUCKET_NAME, Folder_PATH + "/stream-1");
+  }
+  
+  @After
+  public void tearDown() {
+    s3Client.deleteBucket(BUCKET_NAME, true);
   }
 
   @Test
   public void testGetRootFolders() {
-    S3Folder s3Folder = new S3Folder(s3Client, BUCKET_NAME, Folder_PATH);
-    for(S3ObjectSummary object : s3Folder.getChildren()) {
-      System.err.println("key " + object.getKey());
+    s3Client.createBucket(BUCKET_NAME);
+
+    int counter = 3;
+    for (int i = 0; i < counter; i++) {
+      s3Client.createS3Folder(BUCKET_NAME, FOLDER_PATH + "/" + i);
     }
 
     List<S3Folder> folders = s3Client.getRootFolders(BUCKET_NAME);
     System.out.println("folders " + folders);
-    assertEquals(1, folders.size());
+    assertEquals(counter, folders.size());
   }
 }
