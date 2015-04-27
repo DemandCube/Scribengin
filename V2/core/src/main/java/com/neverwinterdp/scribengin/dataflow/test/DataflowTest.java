@@ -112,7 +112,7 @@ abstract public class DataflowTest {
 
     Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
     dataflowInfoThread.start();
-   //dataflowInfoThread.interrupt();
+    //dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {

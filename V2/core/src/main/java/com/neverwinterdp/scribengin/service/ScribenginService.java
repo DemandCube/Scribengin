@@ -12,9 +12,11 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.RegistryListener;
+import com.neverwinterdp.scribengin.activity.AddDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
@@ -32,6 +34,7 @@ public class ScribenginService {
   final static public String SCRIBENGIN_PATH         = "/scribengin";
   
   final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
+  final static public String ACTIVITIES_PATH          = SCRIBENGIN_PATH + "/activities";
   final static public String SHUTDOWN_EVENT_PATH     = EVENTS_PATH + "/shutdown";
 
   final static public String LEADER_PATH             = SCRIBENGIN_PATH + "/master/leader";
@@ -75,32 +78,11 @@ public class ScribenginService {
   public boolean deploy(DataflowDescriptor descriptor) throws Exception {
     Node dataflowNode = dataflowsRunningNode.createChild(descriptor.getName(), descriptor, NodeCreateMode.PERSISTENT);
     dataflowNode.createDescendantIfNotExists("master/leader");
+    Activity activity = new AddDataflowMasterActivityBuilder().build(dataflowNode.getPath()) ;
     String dataflowStatusPath = getDataflowStatusPath(descriptor.getName());
     registryListener.watch(dataflowStatusPath, new DataflowStatusListener(registry));
-    DataflowDeployer deployer = new DataflowDeployer(descriptor);
-    deployer.start();
+    activityService.queue(activity);
     return true;
-  }
-  
-  private VMDescriptor createDataflowMaster(DataflowDescriptor descriptor, int id) throws Exception {
-    String dataflowAppHome = descriptor.getDataflowAppHome();
-    Node dataflowNode = registry.get(DATAFLOWS_RUNNING_PATH + "/" + descriptor.getName()) ;
-    VMConfig dfVMConfig = new VMConfig() ;
-    if(dataflowAppHome != null) {
-      dfVMConfig.setAppHome(dataflowAppHome);
-      dfVMConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
-    }
-    dfVMConfig.setEnvironment(vmConfig.getEnvironment());
-    dfVMConfig.setName(descriptor.getName() + "-master-" + id);
-    dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
-    dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
-    dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
-    dfVMConfig.addProperty("dataflow.registry.path", dataflowNode.getPath());
-    dfVMConfig.setHadoopProperties(vmConfig.getHadoopProperties());
-    VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
-    CommandResult<VMDescriptor> result = 
-        (CommandResult<VMDescriptor>)vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(dfVMConfig));
-    return result.getResult();
   }
   
   //TODO: use transaction
@@ -133,24 +115,6 @@ public class ScribenginService {
       }
     }
   };
-  
-  public class DataflowDeployer extends Thread {
-    private DataflowDescriptor descriptor;
-    
-    public DataflowDeployer(DataflowDescriptor descriptor) {
-      this.descriptor      = descriptor;
-    }
-    
-    public void run() {
-      try {
-        VMDescriptor dataflowMaster1 = createDataflowMaster(descriptor, 1);
-      } catch(Exception ex) {
-        ex.printStackTrace();
-      }
-    }
-  }
-  
-  
   
   static public String getDataflowPath(String dataflowName) { 
     return DATAFLOWS_RUNNING_PATH + "/" + dataflowName; 

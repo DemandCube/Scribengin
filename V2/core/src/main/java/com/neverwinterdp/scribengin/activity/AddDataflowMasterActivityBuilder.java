@@ -34,10 +34,11 @@ import com.neverwinterdp.vm.client.VMClient;
 public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
   static public AtomicInteger idTracker = new AtomicInteger(1) ;
   
-  public Activity build(int numOfWorkerToAdd) {
+  public Activity build(String dataflowPath) {
     Activity activity = new Activity();
     activity.setDescription("Add Dataflow Master Activity");
     activity.setType("add-dataflow-master");
+    activity.attribute("dataflow.descriptor.path", dataflowPath);
     activity.withCoordinator(AddDataflowMasterActivityCoordinator.class);
     activity.withActivityStepBuilder(AddDataflowMasterActivityStepBuilder.class) ;
     return activity;
@@ -101,7 +102,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
       dfVMConfig.addProperty("dataflow.registry.path", dataflowNode.getPath());
       dfVMConfig.setHadoopProperties(vmConfig.getHadoopProperties());
       VMClient vmClient = new VMClient(registry);
-      VMDescriptor vmDescriptor = vmClient.allocate(vmConfig);
+      VMDescriptor vmDescriptor = vmClient.allocate(dfVMConfig);
     }
   }
   

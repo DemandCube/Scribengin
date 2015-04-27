@@ -33,7 +33,7 @@ public class S3ClientTest {
   @Test
   public void testGetRootFolders() {
     S3Folder s3Folder = new S3Folder(s3Client, BUCKET_NAME, Folder_PATH);
-    for (S3ObjectSummary object : s3Folder.getChildren()) {
+    for(S3ObjectSummary object : s3Folder.getChildren()) {
       System.err.println("key " + object.getKey());
     }
 
