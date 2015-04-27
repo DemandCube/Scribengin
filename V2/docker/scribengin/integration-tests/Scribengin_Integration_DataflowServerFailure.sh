@@ -13,11 +13,16 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
 
+MONITOR_PID=$!
+
 #Run server failure
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
   ./bin/shell.sh dataflow-test random-server-failure \
     --dataflow-name kafka-to-kafka \
     --failure-period 10000 --max-failure 10 --print-summary" &
+
+FAILURE_PID=$!
+
 #Run dataflow
 ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
    cd /opt/scribengin/scribengin && \
@@ -42,7 +47,8 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/juni
 #Print the running processes
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py status"
 
-wait 
+kill -9 $MONITOR_PID $FAILURE_PID
+
 #Get results
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/junit-reports/*.xml ./testresults/
 
