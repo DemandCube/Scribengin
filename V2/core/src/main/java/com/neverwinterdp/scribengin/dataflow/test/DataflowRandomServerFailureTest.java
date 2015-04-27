@@ -14,8 +14,8 @@ import com.neverwinterdp.vm.VMDescriptor;
 public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   final static public String TEST_NAME = "random-server-failure";
 
-  @Parameter(names = "--dataflow-name", description = "The command should repeat in this period of time")
-  String dataflowName = "kafka-to-kafka";
+  @Parameter(names = "--dataflow-name", required=true, description = "The command should repeat in this period of time")
+  String dataflowName ;
   
   @Parameter(names = "--wait-for-running-dataflow", description = "The command should repeat in this failurePeriod of time")
   long waitForRunningDataflow = 180000;
@@ -34,14 +34,18 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   
   public void doRun(ScribenginShell shell) throws Exception {
     ScribenginClient scribenginClient = shell.getScribenginClient() ;
+    long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
     DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
-
+    while(dflClient.countActiveDataflowWorkers() > 0 && System.currentTimeMillis() < stopTime) {
+      Thread.sleep(500);
+    }
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     boolean error = false ;
     int failureCount = 0 ;
     FailureSimulator[] failureSimulator = {
       new RandomWorkerKillFailureSimulator()
     } ;
+    
     while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
       ExecuteLog executeLog = failureSimulator[0].terminate(dflClient);
       if(executeLog != null) {
@@ -71,7 +75,8 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       ExecuteLog executeLog = new ExecuteLog("Kill random a dataflow worker") ;
       executeLog.start();
       try {
-        VMDescriptor selWorker = selectRandomVM(dflClient.getDataflowWorkers());
+        VMDescriptor selWorker = selectRandomVM(dflClient.getActiveDataflowWorkers());
+        System.err.println("Select random worker = " + selWorker);
         if(selWorker == null) return null ;
         if(simulateKill) {
           System.err.println("RandomWorkerKillFailureSimulator: simulateKill");

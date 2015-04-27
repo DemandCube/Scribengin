@@ -32,8 +32,12 @@ public class DataflowClient {
     return dflRegistry.getDataflowMasters();
   }
   
-  public List<VMDescriptor> getDataflowWorkers() throws RegistryException {
+  public List<VMDescriptor> getActiveDataflowWorkers() throws RegistryException {
     return dflRegistry.getActiveWorkers();
+  }
+  
+  public int countActiveDataflowWorkers() throws RegistryException {
+    return dflRegistry.countActiveDataflowWorkers();
   }
   
   public void setDataflowEvent(DataflowEvent event) throws RegistryException {

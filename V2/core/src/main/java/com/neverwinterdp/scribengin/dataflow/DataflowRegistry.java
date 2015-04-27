@@ -300,8 +300,17 @@ public class DataflowRegistry {
     return registry.getRefChildrenAs(dataflowPath + "/" + MASTER_PATH, VMDescriptor.class);
   }
   
+  public int countDataflowMasters() throws RegistryException {
+    return registry.getChildren(dataflowPath + "/" + MASTER_LEADER_PATH ).size();
+  }
+  
+  
   public List<VMDescriptor> getActiveWorkers() throws RegistryException {
     return registry.getRefChildrenAs(dataflowPath + "/" + ACTIVE_WORKERS_PATH, VMDescriptor.class);
+  }
+  
+  public int countActiveDataflowWorkers() throws RegistryException {
+    return registry.getChildren(dataflowPath + "/" + ACTIVE_WORKERS_PATH).size();
   }
   
   public Node getActiveWorkersNode() { return activeWorkers ; }
@@ -350,5 +359,9 @@ public class DataflowRegistry {
 
   public List<Activity> getHistoryActivities() throws RegistryException {
     return registry.getChildrenAs(dataflowPath + "/" + HISTORY_ACTIVITIES_PATH, Activity.class);
+  }
+  
+  static  public DataflowLifecycleStatus getStatus(Registry registry, String dataflowPath) throws RegistryException {
+    return registry.getDataAs(dataflowPath + "/status" , DataflowLifecycleStatus.class) ;
   }
 }

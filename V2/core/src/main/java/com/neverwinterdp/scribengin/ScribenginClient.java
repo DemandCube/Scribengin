@@ -111,7 +111,7 @@ public class ScribenginClient {
     waitingEventListener.waitDataflowLeader(format("Expect %s-master-1 as the leader", name), name,  format("%s-master-1", name));
     waitingEventListener.waitDataflowStatus("Expect dataflow init status", name, DataflowLifecycleStatus.INIT);
     waitingEventListener.waitDataflowStatus("Expect dataflow running status", name, DataflowLifecycleStatus.RUNNING);
-    waitingEventListener.waitDataflowStatus("Expect dataflow  finish status", name, DataflowLifecycleStatus.FINISH);
+    waitingEventListener.waitDataflowStatus("Expect dataflow terminated status", name, DataflowLifecycleStatus.TERMINATED);
    
     VMDescriptor scribenginMaster = getScribenginMaster();
     Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(descriptor) ;

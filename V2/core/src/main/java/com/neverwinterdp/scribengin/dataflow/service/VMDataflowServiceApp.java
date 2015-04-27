@@ -19,6 +19,8 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.election.LeaderElectionListener;
+import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -33,6 +35,7 @@ public class VMDataflowServiceApp extends VMApp {
   
   @Override
   public void run() throws Exception {
+    System.err.println("VMDataflowServiceApp: run().....................");
     VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
     dataflowRegistryPath = vmConfig.getProperties().get("dataflow.registry.path");
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), dataflowRegistryPath + "/master/leader") ;
@@ -43,7 +46,9 @@ public class VMDataflowServiceApp extends VMApp {
       System.err.println("finish waitForShutdown()");
     } catch(InterruptedException ex) {
     } finally {
-      appContainer.getInstance(CloseableInjector.class).close();
+      if(appContainer != null) {
+        appContainer.getInstance(CloseableInjector.class).close();
+      }
       if(election != null && election.getLeaderId() != null) {
         election.stop();
       }
@@ -53,8 +58,14 @@ public class VMDataflowServiceApp extends VMApp {
   class MasterLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
+      System.err.println("VMDataflowServiceApp: onElected().....................");
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
+        if(registry.exists(dataflowRegistryPath + "/status") && DataflowLifecycleStatus.FINISH == DataflowRegistry.getStatus(registry, dataflowRegistryPath)) {
+          terminate(TerminateEvent.Shutdown);
+          return;
+        }
+        
         final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
         AppModule module = new AppModule(vmConfig.getProperties()) {
           @Override
@@ -84,7 +95,6 @@ public class VMDataflowServiceApp extends VMApp {
         };
         appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
         dataflowService = appContainer.getInstance(DataflowService.class);
-        
         serviceRunnerThread = new ServiceRunnerThread(dataflowService);
         serviceRunnerThread.start();
       } catch(Exception e) {

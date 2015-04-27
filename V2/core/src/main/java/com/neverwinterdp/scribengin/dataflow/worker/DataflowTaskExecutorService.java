@@ -26,7 +26,7 @@ public class DataflowTaskExecutorService {
 
   @Inject
   private DataflowContainer container;
-  private DataflowTaskWorkerEventListenter dataflowTaskEventListener ;
+  private DataflowWorkerEventListenter dataflowTaskEventListener ;
   private DataflowDescriptor dataflowDescriptor;
   private List<DataflowTaskExecutor> taskExecutors;
   private DataflowWorkerStatus workerStatus = DataflowWorkerStatus.INIT;
@@ -35,7 +35,7 @@ public class DataflowTaskExecutorService {
   @Inject
   public void onInit(DataflowRegistry dflRegistry) throws Exception {
     logger.info("Start onInit()");
-    dataflowTaskEventListener = new DataflowTaskWorkerEventListenter(dflRegistry);
+    dataflowTaskEventListener = new DataflowWorkerEventListenter(dflRegistry);
     dataflowDescriptor = dflRegistry.getDataflowDescriptor();
     
     int numOfExecutors = dataflowDescriptor.getNumberOfExecutorsPerWorker();
@@ -137,8 +137,8 @@ public class DataflowTaskExecutorService {
     }
   }
   
-  public class DataflowTaskWorkerEventListenter extends NodeEventWatcher {
-    public DataflowTaskWorkerEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
+  public class DataflowWorkerEventListenter extends NodeEventWatcher {
+    public DataflowWorkerEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
       super(dflRegistry.getRegistry(), true/*persistent*/);
       watchModify(dflRegistry.getDataflowTasksWorkerEventNode().getPath());
     }

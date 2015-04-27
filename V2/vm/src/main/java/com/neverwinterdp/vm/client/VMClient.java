@@ -54,7 +54,7 @@ public class VMClient {
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
-    return execute(vmDescriptor, command, 30000);
+    return execute(vmDescriptor, command, 60000);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {

@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.SequenceNumberTrackerService;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;

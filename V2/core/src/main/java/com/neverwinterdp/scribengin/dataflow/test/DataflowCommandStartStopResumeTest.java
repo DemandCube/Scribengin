@@ -50,7 +50,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       if(waitBeforeStart > 0) {
         Thread.sleep(waitBeforeStart);
       }
-      while(dataflowStatus != DataflowLifecycleStatus.FINISH) {
+      while(dataflowStatus != DataflowLifecycleStatus.FINISH && dataflowStatus != DataflowLifecycleStatus.TERMINATED) {
         if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
         stopCount++ ;
         DataflowEvent stopEvent = stopCount % 2 == 0 ? DataflowEvent.PAUSE : DataflowEvent.STOP;

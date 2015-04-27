@@ -17,10 +17,9 @@ import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.RegistryListener;
 import com.neverwinterdp.scribengin.activity.AddDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
+import com.neverwinterdp.scribengin.activity.ShutdownDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
-import com.neverwinterdp.vm.VMConfig;
-import com.neverwinterdp.vm.client.VMClient;
 
 @Singleton
 @JmxBean("role=scribengin-master, type=ScribenginService, dataflowName=ScribenginService")
@@ -35,11 +34,8 @@ public class ScribenginService {
   final static public String DATAFLOWS_HISTORY_PATH  = SCRIBENGIN_PATH + "/dataflows/history";
   final static public String DATAFLOWS_RUNNING_PATH  = SCRIBENGIN_PATH + "/dataflows/running";
   
-  @Inject
-  private VMConfig vmConfig; 
   private Registry registry;
   
-  private VMClient vmClient ;
   private RegistryListener registryListener ;
   
   private Node dataflowsRunningNode ;
@@ -50,7 +46,7 @@ public class ScribenginService {
   private ScribenginActivityService activityService;
   
   @Inject
-  public void onInit(Registry registry, VMClient vmClient) throws Exception {
+  public void onInit(Registry registry) throws Exception {
     this.registry = registry;
     this.registryListener = new RegistryListener(registry);
 
@@ -61,7 +57,6 @@ public class ScribenginService {
     registry.createIfNotExist(DATAFLOWS_HISTORY_PATH);
     dataflowsHistoryNode = registry.get(DATAFLOWS_HISTORY_PATH) ;
     historyIdTracker = new AtomicLong(dataflowsHistoryNode.getChildren().size());
-    this.vmClient = vmClient;
   }
   
   @PreDestroy
@@ -72,15 +67,17 @@ public class ScribenginService {
   public boolean deploy(DataflowDescriptor descriptor) throws Exception {
     Node dataflowNode = dataflowsRunningNode.createChild(descriptor.getName(), descriptor, NodeCreateMode.PERSISTENT);
     dataflowNode.createDescendantIfNotExists("master/leader");
-    Activity activity = new AddDataflowMasterActivityBuilder().build(dataflowNode.getPath()) ;
     String dataflowStatusPath = getDataflowStatusPath(descriptor.getName());
     registryListener.watch(dataflowStatusPath, new DataflowStatusListener(registry));
+    
+    Activity activity = new AddDataflowMasterActivityBuilder().build(dataflowNode.getPath()) ;
+    activityService.queue(activity);
     activityService.queue(activity);
     return true;
   }
   
   //TODO: use transaction
-  private void moveToHistory(DataflowDescriptor descriptor) throws Exception {
+  public void moveToHistory(DataflowDescriptor descriptor) throws Exception {
     String fromPath = dataflowsRunningNode.getPath() + "/" + descriptor.getName();
     String toPath   = dataflowsHistoryNode.getPath() + "/" + descriptor.getName() + "-" + historyIdTracker.getAndIncrement();
     PathFilter ignoreLeader = new PathFilter.IgnorePathFilter(".*/leader/leader-.*") ;
@@ -99,8 +96,11 @@ public class ScribenginService {
         try {
           Node statusNode = registry.get(event.getPath());
           Node dataflowNode = statusNode.getParentNode() ;
-          DataflowDescriptor dataflowDescriptor = dataflowNode.getDataAs(DataflowDescriptor.class);
-          moveToHistory(dataflowDescriptor) ;
+          //DataflowDescriptor dataflowDescriptor = dataflowNode.getDataAs(DataflowDescriptor.class);
+          //moveToHistory(dataflowDescriptor) ;
+          System.err.println("ShutdownDataflowMasterActivityBuilder: detect event and call shutdown activity") ;
+          Activity activity = new ShutdownDataflowMasterActivityBuilder().build(dataflowNode.getPath()) ;
+          activityService.queue(activity);
         } catch (Exception e) {
           e.printStackTrace();
         }
