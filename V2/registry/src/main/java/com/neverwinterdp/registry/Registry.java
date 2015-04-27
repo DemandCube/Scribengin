@@ -28,8 +28,8 @@ public interface Registry {
   public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException ;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException;
-  public void setData(String path, byte[] data) throws RegistryException ;
-  public <T> void setData(String path, T data) throws RegistryException ;
+  public NodeInfo setData(String path, byte[] data) throws RegistryException ;
+  public <T> NodeInfo setData(String path, T data) throws RegistryException ;
   
   public List<String> getChildren(String dir) throws RegistryException ;
   public List<String> getChildrenPath(String dir) throws RegistryException ;

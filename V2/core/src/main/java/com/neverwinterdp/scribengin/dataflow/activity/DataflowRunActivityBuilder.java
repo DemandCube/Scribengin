@@ -6,12 +6,14 @@ import java.util.List;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.SequenceNumberTrackerService;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
+import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -32,15 +34,16 @@ public class DataflowRunActivityBuilder extends AddWorkerActivityBuilder {
     @Inject
     private DataflowService service ;
     
+    @Inject
+    private ScribenginIdTrackerService idTrackerService ;
+    
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       DataflowDescriptor dflDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
       List<ActivityStep> steps = new ArrayList<>() ;
       for(int i = 0; i < dflDescriptor.getNumberOfWorkers(); i++) {
-        steps.add(new ActivityStep().
-            withType("create-dataflow-worker").
-            withExecutor(AddDataflowWorkerStepExecutor.class).
-            attribute("worker.id", idTracker.getAndIncrement()));
+        ActivityStep addWorkerStep = AddDataflowWorkerActivityStepBuilder.createAddDataflowWorkerStep(idTrackerService);
+        steps.add(addWorkerStep);
       }
       steps.add(new ActivityStep().
           withType("wait-for-worker-run-status").

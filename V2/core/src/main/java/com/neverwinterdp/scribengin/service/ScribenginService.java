@@ -139,7 +139,6 @@ public class ScribenginService {
     public void run() {
       try {
         VMDescriptor dataflowMaster1 = createDataflowMaster(descriptor, 1);
-        //VMDescriptor dataflowMaster2 = createDataflowMaster(descriptor, 2);
       } catch(Exception ex) {
         ex.printStackTrace();
       }

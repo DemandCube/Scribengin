@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.activity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -10,6 +9,7 @@ import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.SequenceNumberTrackerService;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
@@ -19,6 +19,7 @@ import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
 import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
+import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
@@ -30,8 +31,6 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 
 public class AddWorkerActivityBuilder extends ActivityBuilder {
-  static public AtomicInteger idTracker = new AtomicInteger(1) ;
-  
   public Activity build(int numOfWorkerToAdd) {
     Activity activity = new Activity();
     activity.setDescription("Add Dataflow Worker Activity");
@@ -44,20 +43,28 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
   
   @Singleton
   static public class AddDataflowWorkerActivityStepBuilder implements ActivityStepBuilder {
+    @Inject
+    private ScribenginIdTrackerService idTrackerService ;
+    
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
       int numOfWorkerToAdd = activity.attributeAsInt("num-of-worker-to-add", 0);
       for(int i = 0; i < numOfWorkerToAdd; i++) {
-        steps.add(new ActivityStep().
-            withType("create-dataflow-worker").
-            withExecutor(AddDataflowWorkerStepExecutor.class).
-            attribute("worker.id", idTracker.getAndIncrement()));
+        steps.add(createAddDataflowWorkerStep(idTrackerService));
       }
       steps.add(new ActivityStep().
           withType("wait-for-worker-run-status").
           withExecutor(WaitForWorkerRunningStatus.class));
       return steps;
+    }
+    
+    static public ActivityStep createAddDataflowWorkerStep(ScribenginIdTrackerService idTrackerService) throws Exception {
+      ActivityStep step = new ActivityStep().
+      withType("create-dataflow-worker").
+      withExecutor(AddDataflowWorkerStepExecutor.class).
+      attribute("worker.id", idTrackerService.nextDataflowWorkerId());
+      return step;
     }
   }
   

@@ -15,11 +15,11 @@ import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
+import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.registry.util.RegistryDebugger;
-import com.neverwinterdp.registry.activity.Activity;
-import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
@@ -51,8 +51,6 @@ public class DataflowRegistry {
   final static public String ACTIVE_WORKERS_PATH    = "workers/active";
   final static public String HISTORY_WORKERS_PATH   = "workers/history";
   
-  
-
   final static public DataMapperCallback<DataflowTaskDescriptor> TASK_DESCRIPTOR_DATA_MAPPER = new DataMapperCallback<DataflowTaskDescriptor>() {
     @Override
     public DataflowTaskDescriptor map(String path, byte[] data, Class<DataflowTaskDescriptor> type) {
@@ -66,6 +64,7 @@ public class DataflowRegistry {
   private String             dataflowPath;
   @Inject
   private Registry           registry;
+  
   private Node               status;
   
   private Node               tasksDescriptors;

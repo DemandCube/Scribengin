@@ -25,6 +25,7 @@ import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
+import com.neverwinterdp.registry.NodeInfo;
 import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
@@ -51,11 +52,9 @@ public class RegistryImpl implements Registry {
     this.config = config;
   }
   
-  public RegistryConfig getRegistryConfig() {
-    return this.config ;
-  }
+  public RegistryConfig getRegistryConfig() { return config; }
   
-  public ZooKeeper getZkClient() { return this.zkClient ; }
+  public ZooKeeper getZkClient() { return zkClient; }
   
   public String getSessionId() {
     if(zkClient == null) return null ;
@@ -231,19 +230,20 @@ public class RegistryImpl implements Registry {
     return holder;
   }
   
-  public void setData(String path, byte[] data) throws RegistryException {
+  public NodeInfo setData(String path, byte[] data) throws RegistryException {
     checkConnected();
     try {
       Stat stat = zkClient.setData(realPath(path), data, -1) ;
+      return new ZKNodeInfo(stat);
     } catch (KeeperException | InterruptedException e) {
       throw new RegistryException(ErrorCode.Unknown, e) ;
     }
   }
   
-  public <T> void setData(String path, T data) throws RegistryException {
+  public <T> NodeInfo setData(String path, T data) throws RegistryException {
     checkConnected();
     byte[] bytes = JSONSerializer.INSTANCE.toBytes(data) ;
-    setData(path, bytes);
+    return setData(path, bytes);
   }
   
   
