@@ -2,6 +2,8 @@ package com.neverwinterdp.scribengin.dataflow;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.UUID;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +16,12 @@ import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
+/*
+ * A unit test that shouldn't run all the time
+ * */
+//TODO delete bucket after test
 
-public class DataflowS3ToS3UnitTest {
+public class DataflowS3ToS3Test {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -49,7 +55,7 @@ public class DataflowS3ToS3UnitTest {
     S3Client s3Client = new S3Client();
     s3Client.onInit();
     int numStreams = 1;
-    String bucketName = "amusyoki";
+    String bucketName = "s3-integration-test-" + UUID.randomUUID();
     String folderPath = "dataflow-test";
 
     //TODO move to @Before

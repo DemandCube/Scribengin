@@ -23,7 +23,7 @@ public class DataflowTestCommand extends Command {
     add(HDFSDataflowTest.TEST_NAME, HdfsDataflowTestSubCommand.class);
     add(HDFSToKafkaDataflowTest.TEST_NAME, HdfsToKafkaDataflowTestSubCommand.class);
     add(KafkaToHdfsDataflowTest.TEST_NAME, KafkaToHdfsDataflowTestSubCommand.class);
-    add(S3ToS3DataflowTest.TEST_NAME, KafkaToS3DataflowTestSubCommand.class);
+    add(S3ToS3DataflowTest.TEST_NAME, S3ToS3DataflowTestSubCommand.class);
 
     add(DataflowCommandStartStopResumeTest.TEST_NAME, StartStopResumeSubcommand.class);
     add(DataflowRandomServerFailureTest.TEST_NAME, RandomServerFailureSubcommand.class);
@@ -76,10 +76,10 @@ public class DataflowTestCommand extends Command {
       return "creates the sample dataflow";
     }
   }
-  static public class KafkaToS3DataflowTestSubCommand<T extends DataflowTest> extends SubCommand {
+  static public class S3ToS3DataflowTestSubCommand<T extends DataflowTest> extends SubCommand {
     Class<? extends DataflowTest> testClass ;
     
-    public KafkaToS3DataflowTestSubCommand() {
+    public S3ToS3DataflowTestSubCommand() {
       this.testClass = S3ToS3DataflowTest.class;
     }
     
@@ -155,7 +155,7 @@ public class DataflowTestCommand extends Command {
 
     @Override
     public String getDescription() {
-      return "creates the sample dataflow";
+      return "creates a sample dataflow";
     }
   }
   
