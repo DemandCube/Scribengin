@@ -34,7 +34,6 @@ public class S3SourceStreamReader implements SourceStreamReader {
     this.descriptor = descriptor;
     S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"), descriptor.attribute("s3.storage.path"));
  
-
     //get all files in folder
     List<S3ObjectSummary> status = folder.getDescendants();
     for (S3ObjectSummary s3Object : status) {

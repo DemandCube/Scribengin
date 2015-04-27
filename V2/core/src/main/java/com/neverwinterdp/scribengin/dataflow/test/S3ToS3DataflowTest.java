@@ -34,7 +34,7 @@ public class S3ToS3DataflowTest extends DataflowTest {
 
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
 
-    printDebugInfo(shell, scribenginClient, dflDescriptor);
+    setupDebugger(shell, scribenginClient, dflDescriptor);
 
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
     try {
