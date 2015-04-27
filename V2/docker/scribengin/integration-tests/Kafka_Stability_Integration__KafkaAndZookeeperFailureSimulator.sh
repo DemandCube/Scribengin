@@ -11,17 +11,23 @@ sleep 5
 
 #Run failure simulator in the background
 ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && mkdir -p /opt/scribengin/scribengin/tools/kafka/junit-reports"
-ssh -f -n -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && nohup                                  \
-                                          python clusterCommander.py --debug                                                 \
-                                           kafkafailure --servers kafka-1,kafka-2,kafka-3,kafka-4                            \
-                                          --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
-                                          --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/kafkaFailureReport.xml \
-                                          zookeeperfailure --servers zookeeper-1,zookeeper-2                                 \
-                                          --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
-                                          --servers-to-fail-simultaneously 1                                                 \
-                                          --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/zkFailureReport.xml    \
-                                          monitor --update-interval 10"
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster &&                                   \
+                                      python clusterCommander.py --debug                                                 \
+                                       kafkafailure --servers kafka-1,kafka-2,kafka-3,kafka-4                            \
+                                      --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
+                                      --servers-to-fail-simultaneously 1                                                 \
+                                      --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/kafkaFailureReport.xml \
+                                      zookeeperfailure --servers zookeeper-1,zookeeper-2                                 \
+                                      --wait-before-start 30 --failure-interval 30 --kill-method restart                 \
+                                      --servers-to-fail-simultaneously 1                                                 \
+                                      --junit-report /opt/scribengin/scribengin/tools/kafka/junit-reports/zkFailureReport.xml " &
+
+FAIL_SIM_PID=$!
+
+ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "cd /opt/cluster && \
+                                    python clusterCommander.py  monitor --update-interval 10 " &
+MONITOR_PID=$!
+
 
 
 #Run kafkaStabilityCheckTool
@@ -40,6 +46,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 #Get results
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/scribengin/scribengin/tools/kafka/junit-reports/*.xml ./testresults/
 
+kill -9 $FAIL_SIM_PID $MONITOR_PID
 
 #Clean up
 $DOCKERSCRIBEDIR/.././docker.sh cluster --clean-containers

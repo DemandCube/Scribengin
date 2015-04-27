@@ -40,6 +40,7 @@ function build(){
 
 
 function deploy(){
+  DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
   OPTION=$1
   #Stop all running java processes across the cluster
   
@@ -52,8 +53,8 @@ function deploy(){
   #Copy
   ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
   ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
-  scp -r ../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
-  scp -r ../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
+  scp -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
+  scp -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
   ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync"
 }
 
