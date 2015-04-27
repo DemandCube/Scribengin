@@ -3,7 +3,6 @@ package com.neverwinterdp.scribengin.storage.s3;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -70,6 +69,7 @@ public class S3SinkSourceIntegrationTest {
 
   @Test
   public void testSource() throws Exception {
+    //we need to write some data.
     testSink();
     int recordCount = 0;
     StorageDescriptor sourceDescriptor = new StorageDescriptor("s3", BUCKET_NAME);

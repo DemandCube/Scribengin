@@ -22,8 +22,6 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
 
   @Override
   public StorageDescriptor getSinkDescriptor() {
-    System.err.println("location " + sinkLocation);
-    System.err.println("sinkName " + sinkName);
     //bucket is sink name
     StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sinkLocation);
     storageDescriptor.attribute("s3.bucket.name", sinkLocation);
@@ -48,12 +46,10 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
     try {
       S3Source source = new S3Source(s3Client, getSinkDescriptor());
       SourceStream[] streams = source.getStreams();
-      System.err.println("ngapi "+ streams.length);
       for (SourceStream selStream : streams) {
         SourceStreamReader streamReader = selStream.getReader("S3DataflowSinkValidator");
         Record record = null;
         while ((record = streamReader.next()) != null) {
-          System.err.println("Record is not null "+ record);
           Message message = messageExtractor.extract(record.getData());
           messageTracker.log(message);
         }
