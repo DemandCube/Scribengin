@@ -8,7 +8,7 @@ for filename in out.split():
     rebuild=True
 
 if rebuild:
-  os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)) , 'docker/scribengin'))
+  os.chdir(os.path.dirname(os.path.realpath(__file__)))
   p = subprocess.Popen(['./docker.sh', 'cluster','--clean-containers','--clean-image', '--build-image'], stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
   out, err = p.communicate()
   print "STDERR: "+err
