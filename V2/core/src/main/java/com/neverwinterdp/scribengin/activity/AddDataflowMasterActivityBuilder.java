@@ -1,4 +1,4 @@
-package com.neverwinterdp.scribengin.dataflow.activity;
+package com.neverwinterdp.scribengin.activity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +19,7 @@ import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
 import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
+import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
@@ -44,16 +45,19 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
   
   @Singleton
   static public class AddDataflowMasterActivityStepBuilder implements ActivityStepBuilder {
+    @Inject
+    private ScribenginIdTrackerService idTrackerService ;
+    
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
       steps.add(new ActivityStep().
           withType("create-dataflow-master").
           withExecutor(AddDataflowMasterStepExecutor.class).
-          attribute("master.id", idTracker.getAndIncrement()));
-      steps.add(new ActivityStep().
-          withType("wait-for-master-run-status").
-          withExecutor(WaitForDataflowMasterRunningStatus.class));
+          attribute("master.id", idTrackerService.nextDataflowMasterId()));
+//      steps.add(new ActivityStep().
+//          withType("wait-for-master-run-status").
+//          withExecutor(WaitForDataflowMasterRunningStatus.class));
       return steps;
     }
   }
@@ -61,7 +65,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
   @Singleton
   static public class AddDataflowMasterActivityCoordinator extends ActivityCoordinator {
     @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
+    ScribenginActivityStepWorkerService activityStepWorkerService;
    
     @Override
     protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
@@ -90,7 +94,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
         dfVMConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
       }
       dfVMConfig.setEnvironment(vmConfig.getEnvironment());
-      dfVMConfig.setName(descriptor.getName() + "-master-" + idTracker.incrementAndGet());
+      dfVMConfig.setName(descriptor.getName() + "-master-" + activity.attribute("master.id"));
       dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
       dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
       dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());

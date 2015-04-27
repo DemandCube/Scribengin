@@ -15,8 +15,10 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.RegistryListener;
+import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
+import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
 import com.neverwinterdp.scribengin.dataflow.service.VMDataflowServiceApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -46,6 +48,9 @@ public class ScribenginService {
   private Node dataflowsRunningNode ;
   private Node dataflowsHistoryNode ;
   private AtomicLong historyIdTracker ;
+  
+  @Inject
+  private ScribenginActivityService activityService;
   
   @Inject
   public void onInit(Registry registry, VMClient vmClient) throws Exception {
