@@ -6,11 +6,11 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
-public class HDFSToS3DataflowTest extends DataflowTest {
-  final static public String TEST_NAME = "kafka-to-s3";
+public class S3ToS3DataflowTest extends DataflowTest {
+  final static public String TEST_NAME = "s3-to-s3";
 
   @ParametersDelegate
-  private DataflowSourceGenerator sourceGenerator = new HDFSDataflowSourceGenerator();
+  private DataflowSourceGenerator sourceGenerator = new S3DataflowSourceGenerator();
 
   @ParametersDelegate
   private DataflowSinkValidator sinkValidator = new S3DataflowSinkValidator();

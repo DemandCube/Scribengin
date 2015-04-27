@@ -40,8 +40,7 @@ public class S3Client {
   @PostConstruct
   public void onInit() {
     s3Client = new AmazonS3Client();
-
-    s3Client.setRegion(region);
+  s3Client.setRegion(region);
   }
 
   @PreDestroy
@@ -58,7 +57,6 @@ public class S3Client {
   }
 
   public boolean hasBucket(String bucketName) throws AmazonClientException, AmazonServiceException {
-    System.out.println("bucket name " + bucketName);
     boolean sheExists = s3Client.doesBucketExist(bucketName);
     return sheExists;
   }
@@ -80,7 +78,6 @@ public class S3Client {
 
   public boolean hasKey(String bucketName, String key) throws AmazonClientException, AmazonServiceException {
     try {
-      System.out.println("keyfunguo " + key);
       s3Client.getObjectMetadata(bucketName, key);
     } catch (AmazonServiceException e) {
       if (e.getStatusCode() == 404)
@@ -145,11 +142,9 @@ public class S3Client {
 
     ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucket).withDelimiter("/");
     ObjectListing objectListing = getAmazonS3Client().listObjects(request);
-    System.err.println("listiing " + objectListing.getCommonPrefixes());
 
     for (String folderName : objectListing.getCommonPrefixes()) {
       folderName = folderName.substring(0, folderName.indexOf("/"));
-      System.err.println("a folderderderder "+ folderName);
       folder = new S3Folder(this, bucket, folderName);
       folders.add(folder);
     }

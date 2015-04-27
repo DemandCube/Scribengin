@@ -9,13 +9,13 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.test.HDFSToS3DataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.S3ToS3DataflowTest;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class DataflowHDFSToS3UnitTest {
+public class DataflowS3ToS3UnitTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -47,10 +47,10 @@ public class DataflowHDFSToS3UnitTest {
   public void testDataflows() throws Exception {
     //First clean up s3
     S3Client s3Client = new S3Client();
-s3Client.onInit();
+    s3Client.onInit();
     int numStreams = 1;
     String bucketName = "amusyoki";
-    String folderPath = "database";
+    String folderPath = "dataflow-test";
 
     //TODO move to @Before
     if (s3Client.hasBucket(bucketName)) {
@@ -95,17 +95,18 @@ s3Client.onInit();
     public void run() {
       try {
         String command =
-            "dataflow-test " + HDFSToS3DataflowTest.TEST_NAME +
+            "dataflow-test " + S3ToS3DataflowTest.TEST_NAME +
                 " --dataflow-name  s3-to-s3" +
-                " --worker 3" +
+                " --worker 1" +
                 " --executor-per-worker 1" +
                 " --duration 90000" +
-                " --task-max-execute-time 10000" +
-                " --source-name output" +
+                " --task-max-execute-time 100000" +
+                " --source-location " + bucketName +
+                " --source-name " + folderPath +
                 " --source-num-of-stream " +numStreams + 
-                " --source-max-records-per-stream 1000" +
-                " --sink-name " + bucketName +
-                " --sink-location " + folderPath +
+                " --source-max-records-per-stream 100" +
+                " --sink-location " + bucketName +
+                " --sink-name " + folderPath +
                 " --print-dataflow-info -1" +
                 " --debug-dataflow-task true" +
                 " --debug-dataflow-worker true" +

@@ -32,13 +32,11 @@ public class SinkFactory {
 
   public Sink create(StorageDescriptor descriptor) throws Exception {
     if("hdfs".equalsIgnoreCase(descriptor.getType())) {
-      System.err.println("hahahahahahahahahahahahahahahahaha "+fs);
-      return new HDFSSink(fs, descriptor);
+         return new HDFSSink(fs, descriptor);
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
     }else if("s3".equalsIgnoreCase(descriptor.getType())) {  
-      System.err.println("hahahahahahahahahahahahahahahahaha "+s3Client);
-      return new S3Sink(s3Client, descriptor);
+         return new S3Sink(s3Client, descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }
@@ -49,8 +47,7 @@ public class SinkFactory {
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
     }else if("s3".equalsIgnoreCase(descriptor.getType())) { 
-      System.err.println("huhuhuhuhuhuhuhuhuhuhuhuhuh "+s3Client);
-      return new S3Sink(s3Client,descriptor);
+         return new S3Sink(s3Client,descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }

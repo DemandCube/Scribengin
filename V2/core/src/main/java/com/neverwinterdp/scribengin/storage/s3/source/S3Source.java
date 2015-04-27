@@ -31,7 +31,7 @@ public class S3Source implements Source {
     String bucket = descriptor.getLocation();
     this.descriptor = descriptor;
     
-    //TODO do we create the bucket or die?
+    //TODO(tuan) do we create the bucket or die?
     if (!s3Client.hasBucket(bucket)) {
       //  s3Client.createBucket(descriptor.getLocation());
       throw new Exception("bucket " + bucket + " does not exist!");
@@ -41,7 +41,6 @@ public class S3Source implements Source {
     List<S3Folder> folders = s3Client.getRootFolders(bucket);
     int id = 0;
     for (S3Folder s3Folder : folders) {
-      System.err.println("a folder for creating a sorce stream " + s3Folder);
       StreamDescriptor sDescriptor = new StreamDescriptor();
       sDescriptor.setType(descriptor.getType());
       sDescriptor.setLocation(s3Folder.getFolderPath());

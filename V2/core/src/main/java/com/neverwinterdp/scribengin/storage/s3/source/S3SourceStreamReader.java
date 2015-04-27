@@ -32,16 +32,14 @@ public class S3SourceStreamReader implements SourceStreamReader {
     this.name = name;
     this.s3Client = client;
     this.descriptor = descriptor;
-    S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"),
-        descriptor.attribute("s3.storage.path"));
-    System.err.println("folder der der " + folder);
+    S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"), descriptor.attribute("s3.storage.path"));
+ 
 
     //get all files in folder
     List<S3ObjectSummary> status = folder.getDescendants();
     for (S3ObjectSummary s3Object : status) {
-      s3Objects.add(s3Object);
+          s3Objects.add(s3Object);
     }
-    System.err.println("objects in folder " + s3Objects.size());
     recordObjectReader = nextObjectReader();
   }
 
@@ -54,10 +52,16 @@ public class S3SourceStreamReader implements SourceStreamReader {
     if (recordObjectReader == null) {
       return null;
     }
-   
-    return new Record(s3Objects.get(currentObject).getKey(), null);
+    if (!recordObjectReader.hasNext()) {
+      recordObjectReader.close();
+      recordObjectReader = nextObjectReader();
+    }
+    if (recordObjectReader.hasNext())
+      return recordObjectReader.next();
+    return null;
   }
 
+  //TODO not implemented
   public Record[] next(int size) throws Exception {
     List<Record> holder = new ArrayList<Record>();
     Record[] array = new Record[holder.size()];
@@ -106,16 +110,7 @@ public class S3SourceStreamReader implements SourceStreamReader {
       return null;
     }
     S3Object object = s3Client.getObject(descriptor.get("s3.bucket.name"), s3Objects.get(currentObject).getKey());
-
     RecordObjectReader reader = new RecordObjectReader(object.getObjectContent());
     return reader;
-  }
-
-  void reademAll(S3Object object) {
-    RecordObjectReader reader = new RecordObjectReader(object.getObjectContent());
-    System.err.println("reading " + object.getKey());
-    while (reader.hasNext()) {
-      System.out.println(reader.next());
-    }
   }
 }

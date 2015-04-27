@@ -25,9 +25,10 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
     System.err.println("location " + sinkLocation);
     System.err.println("sinkName " + sinkName);
     //bucket is sink name
-    StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sinkName);
-    storageDescriptor.attribute("s3.bucket.name", sinkName);
-    storageDescriptor.attribute("s3.storage.path", sinkLocation);
+    StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sinkLocation);
+    storageDescriptor.attribute("s3.bucket.name", sinkLocation);
+    storageDescriptor.attribute("s3.storage.path", sinkName);
+    //TODO get a way to externalize this
     storageDescriptor.attribute("s3.region.name", "eu-central-1");
     return storageDescriptor;
   }

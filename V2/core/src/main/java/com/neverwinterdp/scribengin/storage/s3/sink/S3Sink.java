@@ -30,7 +30,6 @@ public class S3Sink implements Sink {
   }
 
   private void init(S3Client s3Client, StorageDescriptor descriptor) {
-    System.err.println("init s3 sink " + descriptor);
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");
     if(!s3Client.hasBucket(bucketName)) {
@@ -42,7 +41,6 @@ public class S3Sink implements Sink {
     }
 
     sinkFolder = s3Client.getS3Folder(bucketName, folderPath);
-    System.err.println("sink folder children "+ sinkFolder.getChildrenNames());
     List<String> streamNames = sinkFolder.getChildrenNames();
     for(String streamName : streamNames) {
       StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
@@ -53,7 +51,7 @@ public class S3Sink implements Sink {
       if(idTracker < stream.getDescriptor().getId()) {
         idTracker = stream.getDescriptor().getId();
       }
-    } System.out.println("shidanga "+ streams);
+    }
   }
   
   public S3Folder getSinkFolder() { return this.sinkFolder ; }
@@ -63,8 +61,6 @@ public class S3Sink implements Sink {
 
   @Override
   synchronized public SinkStream getStream(StreamDescriptor descriptor) throws Exception {
-    System.err.println("shida "+ streams);
-    System.err.println("descriptor.getid "+ descriptor.getId());
     return streams.get(descriptor.getId());
   }
 
