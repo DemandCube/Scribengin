@@ -26,8 +26,6 @@ import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 //TODO (anthony)  clean up this. don't call sink in source.
 public class S3SinkSourceIntegrationTest {
   
-  
-
  private static final String   BUCKET_NAME = "sink-source-test-" + UUID.randomUUID(); 
  private static final String STORAGE_PATH = "unit-test";
 

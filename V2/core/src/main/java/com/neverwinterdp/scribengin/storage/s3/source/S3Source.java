@@ -31,9 +31,9 @@ public class S3Source implements Source {
     String bucket = descriptor.getLocation();
     this.descriptor = descriptor;
     
-    //TODO(tuan) do we create the bucket or die?
+    //TODO(tuan) do we create the bucket or die? ==> You can have an autocreate boolean parameter.
     if (!s3Client.hasBucket(bucket)) {
-      //  s3Client.createBucket(descriptor.getLocation());
+      //s3Client.createBucket(descriptor.getLocation());
       throw new Exception("bucket " + bucket + " does not exist!");
     }
     

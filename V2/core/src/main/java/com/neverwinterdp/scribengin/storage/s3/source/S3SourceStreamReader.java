@@ -46,7 +46,7 @@ public class S3SourceStreamReader implements SourceStreamReader {
     return name;
   }
 
-  //TODO (tuan)  please check this
+  //TODO (tuan)  please check this: what are your suspect, what do you want to check ??
   public Record next() throws Exception {
     if (recordObjectReader == null) {
       return null;
@@ -60,7 +60,7 @@ public class S3SourceStreamReader implements SourceStreamReader {
     return null;
   }
 
-  //TODO not implemented
+  //TODO not implemented? => what do you mean ???
   public Record[] next(int size) throws Exception {
     List<Record> holder = new ArrayList<Record>();
     Record[] array = new Record[holder.size()];
