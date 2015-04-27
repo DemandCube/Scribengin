@@ -16,12 +16,12 @@ import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
+
 /*
  * A unit test that shouldn't run all the time
  * */
-//TODO delete bucket after test
 
-public class DataflowS3ToS3Test {
+public class DataflowS3ToS3IntegrationTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -29,6 +29,11 @@ public class DataflowS3ToS3Test {
 
   protected ScribenginClusterBuilder clusterBuilder;
   protected ScribenginShell shell;
+
+  private S3Client s3Client;
+
+  private String folderPath;
+  private String bucketName;
 
   @Before
   public void setup() throws Exception {
@@ -38,11 +43,25 @@ public class DataflowS3ToS3Test {
     clusterBuilder.startVMMasters();
     clusterBuilder.startScribenginMasters();
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+
+    bucketName = "s3-integration-test-" + UUID.randomUUID();
+    folderPath = "dataflow-test";
+    
+    s3Client = new S3Client();
+    s3Client.onInit();
+
+    if (s3Client.hasBucket(bucketName)) {
+      s3Client.deleteS3Folder(bucketName, folderPath);
+    }
+    s3Client.createBucket(bucketName);
   }
 
   @After
   public void teardown() throws Exception {
     clusterBuilder.shutdown();
+
+    s3Client.deleteBucket(bucketName, true);
+    s3Client.onDestroy();
   }
 
   protected VMClusterBuilder getVMClusterBuilder() throws Exception {
@@ -51,19 +70,8 @@ public class DataflowS3ToS3Test {
 
   @Test
   public void testDataflows() throws Exception {
-    //First clean up s3
-    S3Client s3Client = new S3Client();
-    s3Client.onInit();
-    int numStreams = 1;
-    String bucketName = "s3-integration-test-" + UUID.randomUUID();
-    String folderPath = "dataflow-test";
+    int numStreams = 2;
 
-    //TODO move to @Before
-    if (s3Client.hasBucket(bucketName)) {
-      s3Client.deleteS3Folder(bucketName, folderPath);
-    } else {
-      s3Client.createBucket(bucketName);
-    }
     for (int i = 1; i <= numStreams; i++) {
       s3Client.createS3Folder(bucketName, folderPath + "/stream-" + i);
     }
@@ -109,7 +117,7 @@ public class DataflowS3ToS3Test {
                 " --task-max-execute-time 100000" +
                 " --source-location " + bucketName +
                 " --source-name " + folderPath +
-                " --source-num-of-stream " +numStreams + 
+                " --source-num-of-stream " + numStreams +
                 " --source-max-records-per-stream 100" +
                 " --sink-location " + bucketName +
                 " --sink-name " + folderPath +
