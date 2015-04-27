@@ -16,6 +16,9 @@ public class SinkFactory {
   @Inject
   private FileSystem fs;
   
+  @Inject
+  private S3Client s3Client;
+  
   public SinkFactory() {
   }
   
@@ -23,13 +26,17 @@ public class SinkFactory {
     this.fs = fs;
   }
   
+  public SinkFactory(S3Client s3Client) {
+    this.s3Client = s3Client;
+  }
+
   public Sink create(StorageDescriptor descriptor) throws Exception {
     if("hdfs".equalsIgnoreCase(descriptor.getType())) {
-      return new HDFSSink(fs, descriptor);
+         return new HDFSSink(fs, descriptor);
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
-    }else if("s3".equalsIgnoreCase(descriptor.getType())) {      
-      return new S3Sink(descriptor);
+    }else if("s3".equalsIgnoreCase(descriptor.getType())) {  
+         return new S3Sink(s3Client, descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }
@@ -39,8 +46,8 @@ public class SinkFactory {
       return new HDFSSink(fs, descriptor);
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
-    }else if("s3".equalsIgnoreCase(descriptor.getType())) {      
-      return new S3Sink(descriptor);
+    }else if("s3".equalsIgnoreCase(descriptor.getType())) { 
+         return new S3Sink(s3Client,descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());
   }

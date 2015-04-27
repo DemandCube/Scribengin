@@ -39,6 +39,7 @@ public class DataflowTask {
     DataflowTaskReport report = context.getReport();
     SourceStreamReader reader = context.getSourceStreamReader() ;
     Record record = null ;
+    System.err.println("process records");
     while(!interrupt && (record = reader.next()) != null) {
       report.incrProcessCount();
       processor.process(record, context);

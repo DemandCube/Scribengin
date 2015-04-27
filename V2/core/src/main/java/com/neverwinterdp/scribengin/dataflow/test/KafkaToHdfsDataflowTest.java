@@ -8,7 +8,7 @@ import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class KafkaToHdfsDataflowTest extends DataflowTest {
 
-  public static final String TEST_NAME = "kafka-hdfs";
+  public static final String TEST_NAME = "kafka-to-hdfs";
 
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new KafkaDataflowSourceGenerator();

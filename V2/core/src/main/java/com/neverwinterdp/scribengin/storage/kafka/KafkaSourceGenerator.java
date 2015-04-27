@@ -67,7 +67,7 @@ public class KafkaSourceGenerator {
   
   public ExecutorService generate(String topic) throws Exception {
     createTopic(topic, numOfReplication, numPartitions);
-    SinkFactory  sinkFactory = new SinkFactory(null);
+    SinkFactory  sinkFactory = new SinkFactory();
     StorageDescriptor storageDescriptor = new StorageDescriptor("kafka");
     storageDescriptor.attribute("dataflowName", name);
     storageDescriptor.attribute("topic", topic);
