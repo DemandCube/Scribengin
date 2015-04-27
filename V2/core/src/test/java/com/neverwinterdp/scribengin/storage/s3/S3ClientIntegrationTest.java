@@ -63,20 +63,17 @@ public class S3ClientIntegrationTest {
     Assert.assertEquals("buffering", metadata.getUserMetaDataOf("transaction"));
   }
   
-  //TODO(anthony) this test fails
   @Test
   public void testGetRootFolders() {
-    String folderPath= "unittest";
+    String folderPath= "unit-test";
 
     int counter = 3;
     for (int i = 0; i < counter; i++) {
-      s3Client.createS3Folder(BUCKET_NAME, folderPath + "/" + i);
+      s3Client.createS3Folder(BUCKET_NAME, folderPath + "-" + i+ "/" + UUID.randomUUID());
     }
 
     List<S3Folder> folders = s3Client.getRootFolders(BUCKET_NAME);
     System.out.println("folders " + folders);
     assertEquals(counter, folders.size());
   }
-  
-  //TODO (anthony) test S3ObjectReader
 }

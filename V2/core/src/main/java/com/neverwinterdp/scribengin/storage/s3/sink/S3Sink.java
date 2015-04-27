@@ -28,7 +28,7 @@ public class S3Sink implements Sink {
   public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
     init(s3Client, descriptor);
   }
-
+//TODO we should have autocreate boolean as an attribute in descriptor
   private void init(S3Client s3Client, StorageDescriptor descriptor) {
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");

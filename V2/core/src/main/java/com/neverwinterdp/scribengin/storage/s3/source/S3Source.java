@@ -30,13 +30,14 @@ public class S3Source implements Source {
   public S3Source(S3Client s3Client, StorageDescriptor descriptor) throws Exception {
     String bucket = descriptor.getLocation();
     this.descriptor = descriptor;
-    
+
     //TODO(tuan) do we create the bucket or die? ==> You can have an autocreate boolean parameter.
+    //@tuan I don't think we should attempt to read from a bucket that doesn't exists. We should always throw exception
+    //However for sink we should have autocreate
     if (!s3Client.hasBucket(bucket)) {
-      //s3Client.createBucket(descriptor.getLocation());
       throw new Exception("bucket " + bucket + " does not exist!");
     }
-    
+
     // a source stream for every folder in the bucket
     List<S3Folder> folders = s3Client.getRootFolders(bucket);
     int id = 0;

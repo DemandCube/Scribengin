@@ -8,15 +8,14 @@ import java.util.regex.Pattern;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.util.JSONSerializer;
-
-public class RecordObjectReader implements Closeable {
+//TODO(anthony) convert to use a json reader
+public class S3ObjectReader implements Closeable {
 
   protected static final Pattern PATTERN = Pattern.compile("(?=<)|(?<=})");
   private InputStream inputStream;
   private Scanner scanner;
 
-  public RecordObjectReader(InputStream inputStream) {
-    super();
+  public S3ObjectReader(InputStream inputStream) {
     this.scanner = new Scanner(inputStream);
     scanner.useDelimiter(PATTERN);
     this.inputStream = inputStream;

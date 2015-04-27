@@ -15,12 +15,12 @@ import com.neverwinterdp.scribengin.storage.source.CommitPoint;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class S3SourceStreamReader implements SourceStreamReader {
-  //TODO name is folder
+
   private String name;
   private S3Client s3Client;
   private List<S3ObjectSummary> s3Objects = new ArrayList<>();
   private int currentObject = -1;
-  private RecordObjectReader recordObjectReader;
+  private S3ObjectReader recordObjectReader;
 
   private int commitPoint;
   private int currPosition;
@@ -32,12 +32,13 @@ public class S3SourceStreamReader implements SourceStreamReader {
     this.name = name;
     this.s3Client = client;
     this.descriptor = descriptor;
-    S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"), descriptor.attribute("s3.storage.path"));
- 
+    S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"),
+        descriptor.attribute("s3.storage.path"));
+
     //get all files in folder
     List<S3ObjectSummary> status = folder.getDescendants();
     for (S3ObjectSummary s3Object : status) {
-          s3Objects.add(s3Object);
+      s3Objects.add(s3Object);
     }
     recordObjectReader = nextObjectReader();
   }
@@ -46,21 +47,20 @@ public class S3SourceStreamReader implements SourceStreamReader {
     return name;
   }
 
-  //TODO (tuan)  please check this: what are your suspect, what do you want to check ??
   public Record next() throws Exception {
-    if (recordObjectReader == null) {
+    if(recordObjectReader==null) {
       return null;
     }
     if (!recordObjectReader.hasNext()) {
       recordObjectReader.close();
       recordObjectReader = nextObjectReader();
     }
-    if (recordObjectReader.hasNext())
+    if (recordObjectReader !=null && recordObjectReader.hasNext())
       return recordObjectReader.next();
-    return null;
+    else
+      return next();
   }
 
-  //TODO not implemented? => what do you mean ???
   public Record[] next(int size) throws Exception {
     List<Record> holder = new ArrayList<Record>();
     Record[] array = new Record[holder.size()];
@@ -76,7 +76,7 @@ public class S3SourceStreamReader implements SourceStreamReader {
   }
 
   public void rollback() throws Exception {
-    System.err.println("This method is not implemented");
+    System.err.println("rollback() This method is not implemented");
     currPosition = commitPoint;
   }
 
@@ -90,7 +90,7 @@ public class S3SourceStreamReader implements SourceStreamReader {
   }
 
   public void commit() throws Exception {
-    System.err.println("This method is not implemented");
+    System.err.println("commit() This method is not implemented");
     lastCommitInfo = new CommitPoint(name, commitPoint, currPosition);
     this.commitPoint = currPosition;
   }
@@ -102,14 +102,13 @@ public class S3SourceStreamReader implements SourceStreamReader {
   public void close() throws Exception {
   }
 
-  //read the next file
-  private RecordObjectReader nextObjectReader() throws IOException {
+  private S3ObjectReader nextObjectReader() throws IOException {
     currentObject++;
-    if (currentObject >= s3Objects.size()) {
-      return null;
-    }
+        if (currentObject >= s3Objects.size()) {
+          return null;
+        }
     S3Object object = s3Client.getObject(descriptor.get("s3.bucket.name"), s3Objects.get(currentObject).getKey());
-    RecordObjectReader reader = new RecordObjectReader(object.getObjectContent());
+    S3ObjectReader reader = new S3ObjectReader(object.getObjectContent());
     return reader;
   }
 }
