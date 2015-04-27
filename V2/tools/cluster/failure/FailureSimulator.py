@@ -10,7 +10,8 @@ from Cluster import Cluster  #@UnresolvedImport
 class FailureSimulator():
   def __init__(self, role=None):
     self.roleName = role
-    
+  
+  
   def failureSimulation(self,failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
     """
     Run the failure loop for a given role
@@ -122,3 +123,92 @@ class ZookeeperFailure(FailureSimulator):
   def __init__(self):
     FailureSimulator.__init__(self, "zookeeper");
 
+class DataFlowFailure(FailureSimulator):
+  def __init__(self, role):
+    FailureSimulator.__init__(self, role);
+
+  def getServerArray(self, cluster):
+    serverArray = []
+    for server in cluster.servers:
+      serverArray.append(server.getHostname())
+    return serverArray
+  
+  def sshExecuteOnHost(self, cluster, hostname, command):
+    for server in cluster.servers:
+      if server.getHostname() == hostname:
+        return server.sshExecute(command, False)
+  
+  def getRunningDataflowProcessNamesOnHost(self, cluster, hostname, processName):
+    command = "jps -m | grep '" + processName + "' | awk '{print $4}'"
+    return self.sshExecuteOnHost(cluster, hostname, command)[0].strip().split("\n")
+
+  def killProcessOnHost(self, cluster, hostname, processName):
+    command = "jps -m | grep '" + processName + "' | awk '{print $1}' | xargs kill -9"
+    return self.sshExecuteOnHost(cluster, hostname, command)
+    
+  def isProcessRunningOnHost(self, cluster, hostname, processName):
+    processNames = self.getRunningDataflowProcessNamesOnHost(cluster, hostname, processName)
+    if processNames[0] != '':
+      return True
+    else:
+      return False
+  
+  def dataflowFailureSimulation(self, failure_interval, junit_report):
+    
+    testCases = []
+    testNum = 0
+    
+    logging.debug("Failure interval: " + str(failure_interval))
+    logging.debug("Role name: "+ self.roleName)
+    logging.debug("Junit Report: "+ junit_report)
+    
+    num_process_to_fail_simultaneously = 1
+    cluster = Cluster()
+    cluster = cluster.getServersByRole("hadoop-worker")
+    serverArray = self.getServerArray(cluster)
+    
+    while True:
+      start = time()
+      failedCount = 0
+      sleep(failure_interval)
+      killedProcesses = {}
+      while True:
+        serversToCheck = sample(serverArray, num_process_to_fail_simultaneously)
+        for hostname in serversToCheck:
+          processNames = self.getRunningDataflowProcessNamesOnHost(cluster, hostname, self.roleName + "-*")
+          processName = sample(processNames, 1)[0]
+          if processName != '':
+            logging.debug("Killing " + processName + " on " + hostname)
+            killedProcesses[hostname] = processName
+            self.killProcessOnHost(cluster, hostname, processName)
+            failedCount = failedCount+1
+          if failedCount == num_process_to_fail_simultaneously:
+            break
+        if failedCount == num_process_to_fail_simultaneously:
+          break
+      
+      for hostname in killedProcesses.keys():
+        processName = killedProcesses[hostname]
+        print self.isProcessRunningOnHost(cluster, hostname, processName)
+        #Create basis for test case
+        tc = TestCase('Test'+str(testNum), processName+'FailureSimulator', time()-start, 
+                      'Killing '+processName+" on host "+hostname, '')
+        #If the process is still running, then try killing it one more time
+        if(self.isProcessRunningOnHost(cluster, hostname, processName)):
+          logging.debug("Killing "+processName + " on " +hostname+" one last time")
+          self.killProcessOnHost(cluster, hostname, processName)
+          #If the process is *still* running then report a failure
+          if(cluster.isProcessRunningOnHost(processName, hostname)):
+            tc.add_failure_info(processName+" is still running on"+hostname, "")
+        testCases.append(tc)
+        testNum+=1
+        
+      if(not junit_report == "" ):
+        logging.debug("Writing junit report to: "+junit_report)
+        if(not os.path.exists(os.path.dirname(junit_report))):
+          os.makedirs(os.path.dirname(junit_report))
+        f = open(junit_report,'w')
+        ts = TestSuite(self.roleName+" Test Suite", testCases)
+        f.write(TestSuite.to_xml_string([ts]))
+        f.close()
+    

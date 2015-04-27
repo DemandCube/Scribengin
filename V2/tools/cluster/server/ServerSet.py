@@ -41,8 +41,10 @@ class ServerSet(object):
     self.servers.append(server)
   
   def sshExecute(self, command):
+    output = {}
     for server in self.servers :
-      server.sshExecute(command)
+      output[server.getHostname()] = server.sshExecute(command)
+    return output 
   
   def sync(self):
     print socket.gethostname()
