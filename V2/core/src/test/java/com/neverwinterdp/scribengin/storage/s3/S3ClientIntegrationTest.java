@@ -1,6 +1,9 @@
 package com.neverwinterdp.scribengin.storage.s3;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.AfterClass;
@@ -59,4 +62,21 @@ public class S3ClientIntegrationTest {
     metadata = s3Client.getObjectMetadata(BUCKET_NAME, KEY) ;
     Assert.assertEquals("buffering", metadata.getUserMetaDataOf("transaction"));
   }
+  
+  //TODO(anthony) this test fails
+  @Test
+  public void testGetRootFolders() {
+    String folderPath= "unittest";
+
+    int counter = 3;
+    for (int i = 0; i < counter; i++) {
+      s3Client.createS3Folder(BUCKET_NAME, folderPath + "/" + i);
+    }
+
+    List<S3Folder> folders = s3Client.getRootFolders(BUCKET_NAME);
+    System.out.println("folders " + folders);
+    assertEquals(counter, folders.size());
+  }
+  
+  //TODO (anthony) test S3ObjectReader
 }

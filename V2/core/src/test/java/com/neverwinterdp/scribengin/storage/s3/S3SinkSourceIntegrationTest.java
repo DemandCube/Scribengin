@@ -3,6 +3,8 @@ package com.neverwinterdp.scribengin.storage.s3;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.UUID;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,8 +18,12 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
+//TODO (anthony)  clean up this. don't call sink in source.
 public class S3SinkSourceIntegrationTest {
- private static final String   BUCKET_NAME = "amusyoki";
+  
+  
+
+ private static final String   BUCKET_NAME = "sink-source-test-" + UUID.randomUUID(); 
  private static final String STORAGE_PATH = "unit-test";
 
   private static S3Client s3Client;

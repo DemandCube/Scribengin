@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -59,7 +60,7 @@ public class S3FeaturesDemoTest {
     System.out.println("===========================================\n");
 
     try {
-      String bucketName = "amusyoki";
+      String bucketName = "features-demo-test-" + UUID.randomUUID(); 
       String key = "MyObjectKey";
       init();
       createBucket(bucketName);
