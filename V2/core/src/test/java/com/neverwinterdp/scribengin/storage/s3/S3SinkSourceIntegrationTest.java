@@ -18,6 +18,11 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
+//TODO: 1. dump info like s3 hierachy structure, lock or fail buffer...
+//      2. The goal of unit test is to have an isolated and clean env. So you should drop the bucket for each test 
+//         instead of using static. What is the value of counter in test source. Do you think it is clean and isolated ??
+//         I do not see how it works when testSink is run and it gat call again in the testSource.
+//         For this case ,  you should have a generateSink method that reuse in both testSink and testSource.
 //TODO (anthony)  clean up this. don't call sink in source.
 public class S3SinkSourceIntegrationTest {
   

@@ -1,6 +1,5 @@
 package com.neverwinterdp.scribengin.service;
 
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PreDestroy;
@@ -20,13 +19,8 @@ import com.neverwinterdp.scribengin.activity.AddDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
-import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
-import com.neverwinterdp.scribengin.dataflow.service.VMDataflowServiceApp;
 import com.neverwinterdp.vm.VMConfig;
-import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
-import com.neverwinterdp.vm.command.CommandResult;
-import com.neverwinterdp.vm.service.VMServiceCommand;
 
 @Singleton
 @JmxBean("role=scribengin-master, type=ScribenginService, dataflowName=ScribenginService")
