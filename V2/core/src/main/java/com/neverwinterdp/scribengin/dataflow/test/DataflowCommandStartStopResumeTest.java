@@ -110,6 +110,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     if(stopEvent == DataflowEvent.STOP) {
       expectStatus = DataflowLifecycleStatus.STOP;
     }
+    System.err.println("Client: start request stop, event = " + stopEvent + ", expect status = " + expectStatus);
     WaitingOrderNodeEventListener stopWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
     stopWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), expectStatus);
     dflClient.setDataflowEvent(stopEvent);
@@ -117,6 +118,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     if(stopWaitingListener.getUndetectNodeEventCount() > 0) {
       executeLog.setSuccess(false);
     }
+    System.err.println("Client: finish request stop, success = " + executeLog.isSuccess() + ", undetect event = " + stopWaitingListener.getUndetectNodeEventCount());
     executeLog.addLog(stopWaitingListener.getTabularFormaterEventLogInfo().getFormatText());
     executeLog.stop();
     return executeLog;
@@ -125,6 +127,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   ExecuteLog doResume(DataflowClient dflClient) throws Exception {
     ExecuteLog executeLog = new ExecuteLog("Resume the dataflow") ;
     executeLog.start();
+    System.err.println("Client: start request resume...");
     WaitingOrderNodeEventListener resumeWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
     resumeWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), DataflowLifecycleStatus.RUNNING);
     dflClient.setDataflowEvent(DataflowEvent.RESUME);
@@ -132,6 +135,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     if(resumeWaitingListener.getUndetectNodeEventCount() > 0) {
       executeLog.setSuccess(false);
     }
+    System.err.println("Client: finish request stop, success = " + executeLog.isSuccess() + ", undetect event = " + resumeWaitingListener.getUndetectNodeEventCount());
     executeLog.addLog(resumeWaitingListener.getTabularFormaterEventLogInfo().getFormatText());
     executeLog.stop();
     return executeLog ;
