@@ -37,10 +37,9 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
       long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
       DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
-      while(dflClient.countActiveDataflowWorkers() > 0 && System.currentTimeMillis() < stopTime) {
+      while(dflClient.countActiveDataflowWorkers() == 0 && System.currentTimeMillis() < stopTime) {
         Thread.sleep(500);
       }
-
       List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
       boolean error = false ;
       int failureCount = 0 ;
@@ -83,13 +82,13 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       executeLog.start();
       try {
         VMDescriptor selWorker = selectRandomVM(dflClient.getActiveDataflowWorkers());
-        System.err.println("Select random worker = " + selWorker);
+        System.err.println("DataflowRandomServerFailureTest: Select random worker = " + selWorker);
         if(selWorker == null) return null ;
         if(simulateKill) {
-          System.err.println("RandomWorkerKillFailureSimulator: simulateKill");
+          System.err.println("DataflowRandomServerFailureTest: simulateKill");
           dflClient.getScribenginClient().getVMClient().simulateKill(selWorker);
         } else {
-          System.err.println("RandomWorkerKillFailureSimulator: kill");
+          System.err.println("DataflowRandomServerFailureTest: kill");
           dflClient.getScribenginClient().getVMClient().kill(selWorker);
         }
       } finally {
