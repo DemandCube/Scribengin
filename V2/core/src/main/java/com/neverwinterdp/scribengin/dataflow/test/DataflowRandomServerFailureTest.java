@@ -64,32 +64,36 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       throw ex ;
     }
   }
+
+  VMDescriptor selectRandomVM(List<VMDescriptor> vmDescriptors) throws Exception {
+    if(vmDescriptors.size() == 0) return null ;
+    Random rand = new Random() ;
+    int selIndex = rand.nextInt(vmDescriptors.size()) ;
+    return vmDescriptors.get(selIndex) ;
+  }
   
   abstract public class FailureSimulator {
     abstract public ExecuteLog terminate(DataflowClient dflClient) throws Exception ;
-    
-    VMDescriptor selectRandomVM(List<VMDescriptor> vmDescriptors) throws Exception {
-      if(vmDescriptors.size() == 0) return null ;
-      Random rand = new Random() ;
-      int selIndex = rand.nextInt(vmDescriptors.size()) ;
-      return vmDescriptors.get(selIndex) ;
-    }
   }
   
   public class RandomWorkerKillFailureSimulator extends FailureSimulator {
     public ExecuteLog terminate(DataflowClient dflClient) throws Exception {
-      ExecuteLog executeLog = new ExecuteLog("Kill random a dataflow worker") ;
+      ExecuteLog executeLog = new ExecuteLog() ;
       executeLog.start();
       try {
         VMDescriptor selWorker = selectRandomVM(dflClient.getActiveDataflowWorkers());
         System.err.println("DataflowRandomServerFailureTest: Select random worker = " + selWorker);
-        if(selWorker == null) return null ;
-        if(simulateKill) {
-          System.err.println("DataflowRandomServerFailureTest: simulateKill");
-          dflClient.getScribenginClient().getVMClient().simulateKill(selWorker);
+        if(selWorker != null) {
+          executeLog.setDescription("Kill the dataflow worker " + selWorker.getId());
+          if(simulateKill) {
+            System.err.println("DataflowRandomServerFailureTest: simulateKill");
+            dflClient.getScribenginClient().getVMClient().simulateKill(selWorker);
+          } else {
+            System.err.println("DataflowRandomServerFailureTest: kill");
+            dflClient.getScribenginClient().getVMClient().kill(selWorker);
+          }
         } else {
-          System.err.println("DataflowRandomServerFailureTest: kill");
-          dflClient.getScribenginClient().getVMClient().kill(selWorker);
+          executeLog.setDescription("No available worker is found to kill");
         }
       } finally {
         executeLog.stop();
