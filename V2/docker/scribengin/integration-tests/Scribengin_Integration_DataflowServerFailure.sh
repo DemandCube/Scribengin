@@ -19,7 +19,7 @@ MONITOR_PID=$!
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
   ./bin/shell.sh dataflow-test random-server-failure \
     --dataflow-name kafka-to-kafka \
-    --failure-period 10000 --max-failure 10 --print-summary" &
+    --failure-period 10000 --max-failure 100 --print-summary" &
 
 FAILURE_PID=$!
 
