@@ -180,23 +180,11 @@ function do_scp() {
 }
 
 function container_ids() {
-  docker_ps_result=$(docker ps -a)
-  entries=()
-  while read -r line; do
-    entries+=("$line")
-  done <<< "$docker_ps_result"
+  echo $(docker ps -q | tr '\n' ' ')
+}
 
-  entries_len=${#entries[@]}
-  IDS=""do
-  for(( i=1; i<${entries_len}; i++ ));
-  do
-    #extract the container id
-    if (( i > 1 )); then
-      IDS+=' '
-    fi
-    IDS+=$(echo ${entries[$i]} | cut -d' ' -f 1)
-  done
-  echo "$IDS"
+function all_container_ids() {
+  echo $(docker ps -a -q | tr '\n' ' ')
 }
 
 function container_update_hosts() {
@@ -259,7 +247,7 @@ function host_machine_update_hosts() {
 }
 
 function container_clean() {
-  for container_id in $(container_ids); do
+  for container_id in $(all_container_ids); do
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
     docker rm -f $container_id
     echo "Remove the instance $container_name"
@@ -369,6 +357,7 @@ function printUsage() {
   echo "    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
   echo "    host-sync             : Run this to run \"./scribengin.sh build\" and then sync the release folder and post-install with your cluster."
 }
+
 
 # get command
 COMMAND=$1
