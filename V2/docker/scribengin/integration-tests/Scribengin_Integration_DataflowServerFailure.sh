@@ -32,7 +32,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/juni
             --duration 300000 --task-max-execute-time 5000 \
             --source-name input --source-num-of-stream 10 \
             --source-write-period 0 \
-            --source-max-records-per-stream 500000 \
+            --source-max-records-per-stream 5000000 \
             --sink-name output  \
             --debug-dataflow-activity-detail \
             --debug-dataflow-task \
