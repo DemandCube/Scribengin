@@ -10,6 +10,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 
 import com.mycila.jmx.annotation.JmxBean;
+import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
@@ -140,8 +141,11 @@ public class VMClient {
           result = payload.getResult() ;
           registry.delete(path);
         }
-      } catch(Exception e) {
+      } catch(RegistryException e) {
         error = e ;
+        if(e.getErrorCode() == ErrorCode.NoNode) {
+          discardResult = true ;
+        }
       } finally {
         notifyForResult() ;
       }
