@@ -16,8 +16,8 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 #Run start/stop/resume
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
       cd /opt/scribengin/scribengin && nohup ./bin/shell.sh dataflow-test start-stop-resume  \
-      --wait-before-start 5000 --sleep-before-execute 10000 --max-wait-for-stop  20000 \
-      --max-wait-for-resume  20000  --print-summary  \
+      --wait-before-start 5000 --sleep-before-execute 10000 --max-wait-for-stop  10000 \
+      --max-wait-for-resume  10000  --print-summary  \
       --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml" &
 
 #Run dataflow
@@ -26,7 +26,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
    ./bin/shell.sh dataflow-test kafka-to-kakfa  --dataflow-name  kafka-to-kafka --worker 2 \
      --executor-per-worker 2 --duration 300000 --task-max-execute-time 5000 \
      --source-name input --source-num-of-stream 10 --source-write-period 0  \
-     --source-max-records-per-stream 100000 --sink-name output --debug-dataflow-activity-detail \
+     --source-max-records-per-stream 5000000 --sink-name output --debug-dataflow-activity-detail \
      --debug-dataflow-task --dump-registry --print-dataflow-info -1 \
      --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
 
