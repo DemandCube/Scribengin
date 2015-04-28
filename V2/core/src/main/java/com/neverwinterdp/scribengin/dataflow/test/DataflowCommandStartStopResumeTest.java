@@ -38,15 +38,16 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   String  junitReportFile = null;
   
   public void doRun(ScribenginShell shell) throws Exception {
-    ScribenginClient scribenginClient = shell.getScribenginClient() ;
-    DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
-    DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
     int stopCount = 0; 
     int stopCompleteCount = 0; 
     int resumeCount = 0 ;
     int resumeCompleteCount = 0; 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     try {
+      ScribenginClient scribenginClient = shell.getScribenginClient() ;
+      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
+      DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
+      
       if(waitBeforeStart > 0) {
         Thread.sleep(waitBeforeStart);
       }
@@ -78,6 +79,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
         resumeCompleteCount++ ;
       }
     } catch(Exception ex) {
+      shell.execute("registry dump");
       ex.printStackTrace();
     }
     
