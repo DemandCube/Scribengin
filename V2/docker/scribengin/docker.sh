@@ -180,14 +180,14 @@ function do_scp() {
 }
 
 function container_ids() {
-  docker_ps_result=$(docker ps)
+  docker_ps_result=$(docker ps -a)
   entries=()
   while read -r line; do
     entries+=("$line")
   done <<< "$docker_ps_result"
 
   entries_len=${#entries[@]}
-  IDS=""
+  IDS=""do
   for(( i=1; i<${entries_len}; i++ ));
   do
     #extract the container id
