@@ -33,30 +33,37 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   protected boolean printSummary = false;
   
   public void doRun(ScribenginShell shell) throws Exception {
-    ScribenginClient scribenginClient = shell.getScribenginClient() ;
-    long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
-    DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
-    while(dflClient.countActiveDataflowWorkers() > 0 && System.currentTimeMillis() < stopTime) {
-      Thread.sleep(500);
-    }
-    List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
-    boolean error = false ;
-    int failureCount = 0 ;
-    FailureSimulator[] failureSimulator = {
-      new RandomWorkerKillFailureSimulator()
-    } ;
-    
-    while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
-      ExecuteLog executeLog = failureSimulator[0].terminate(dflClient);
-      if(executeLog != null) {
-        executeLogs.add(executeLog);
-        Thread.sleep(failurePeriod);
-      } else {
-        error = true ;
+    try {
+      ScribenginClient scribenginClient = shell.getScribenginClient() ;
+      long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
+      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
+      while(dflClient.countActiveDataflowWorkers() > 0 && System.currentTimeMillis() < stopTime) {
+        Thread.sleep(500);
       }
-      failureCount++ ;
+
+      List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
+      boolean error = false ;
+      int failureCount = 0 ;
+      FailureSimulator[] failureSimulator = {
+          new RandomWorkerKillFailureSimulator()
+      } ;
+
+      while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
+        ExecuteLog executeLog = failureSimulator[0].terminate(dflClient);
+        if(executeLog != null) {
+          executeLogs.add(executeLog);
+          Thread.sleep(failurePeriod);
+        } else {
+          error = true ;
+        }
+        failureCount++ ;
+      }
+      report(shell, executeLogs);
+    } catch(Exception ex) {
+      shell.execute("registry dump");
+      ex.printStackTrace();
+      throw ex ;
     }
-    report(shell, executeLogs);
   }
   
   abstract public class FailureSimulator {
