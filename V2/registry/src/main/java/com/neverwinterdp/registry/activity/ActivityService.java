@@ -82,14 +82,6 @@ public class ActivityService {
     return context;
   }
   
-  public ActivityCoordinator start(ActivityBuilder builder) throws Exception {
-    Activity activity = create(builder.getActivity(), builder.getActivitySteps());
-    ActivityCoordinator coordinator = getActivityCoordinator(activity.getCoordinator());
-    ActivityExecutionContext context = new ActivityExecutionContext(activity, this);
-    coordinator.onStart(context, activity);
-    return coordinator;
-  }
-  
   public Activity create(Activity activity, List<ActivityStep> activitySteps) throws RegistryException {
     Node activityNode = activeNode.createChild(activity.getType() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
     activity.setId(activityNode.getName());

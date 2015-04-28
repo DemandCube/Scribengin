@@ -66,8 +66,8 @@ public class DataflowStartStopResumeUnitTest {
             "dataflow-test " + DataflowCommandStartStopResumeTest.TEST_NAME +
             "  --dataflow-name kafka-to-kafka" +
             "  --sleep-before-execute 10000 " +
-            "  --max-wait-for-stop    20000 " +
-            "  --max-wait-for-resume  20000 " +
+            "  --max-wait-for-stop    10000 " +
+            "  --max-wait-for-resume  5000 " +
             "  --print-summary ";
             //"  --junit-report DataflowCommandStartStopResume.xml";
         shell.execute(command);

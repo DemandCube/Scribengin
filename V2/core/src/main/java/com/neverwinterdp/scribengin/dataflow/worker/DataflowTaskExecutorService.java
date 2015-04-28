@@ -126,9 +126,10 @@ public class DataflowTaskExecutorService {
     System.err.println("  DataflowTaskExecutorService: waitForExecutorTermination(long checkPeriod) done!");
   }
   
-  synchronized public void waitForFinish(long checkPeriod) throws InterruptedException, RegistryException {
+  synchronized public void waitForTerminated(long checkPeriod) throws InterruptedException, RegistryException {
     while(workerStatus != DataflowWorkerStatus.TERMINATED) {
       waitForExecutorTermination(checkPeriod);
+      System.err.println("  Dataflow worker status = " + workerStatus + ", worker = " + container.getVMDescriptor().getId());
       if(workerStatus == DataflowWorkerStatus.RUNNING) {
         workerStatus = DataflowWorkerStatus.TERMINATED;
         container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);

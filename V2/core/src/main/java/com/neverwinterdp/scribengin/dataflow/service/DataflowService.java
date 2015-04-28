@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
@@ -93,12 +94,12 @@ public class DataflowService {
 
     @Override
     public void processNodeEvent(NodeEvent event) throws Exception {
+      System.err.println("Dataflow event = " + event.getType() + ", path = " + event.getPath());
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
-          DataflowPauseActivityBuilder dataflowPauseActivityBuilder = 
-              new DataflowPauseActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-          ActivityCoordinator pauseCoordinator = activityService.start(dataflowPauseActivityBuilder);
+          Activity activity = new DataflowPauseActivityBuilder().build();
+          activityService.queue(activity);
         } else if(taskEvent == DataflowEvent.STOP) {
           activityService.queue(new DataflowStopActivityBuilder().build());
         } else if(taskEvent == DataflowEvent.RESUME) {
@@ -106,9 +107,8 @@ public class DataflowService {
           System.err.println("Detect the resume event, current status = " + currentStatus);
           if(currentStatus == DataflowLifecycleStatus.PAUSE) {
             System.err.println("  Run resume activity");
-            DataflowResumeActivityBuilder dataflowResumeActivityBuilder = 
-                new DataflowResumeActivityBuilder(dataflowRegistry.getDataflowDescriptor());
-            ActivityCoordinator resumeCoordinator = activityService.start(dataflowResumeActivityBuilder);
+            Activity activity = new DataflowResumeActivityBuilder().build();
+            activityService.queue(activity);
           } else if(currentStatus == DataflowLifecycleStatus.STOP) {
             System.err.println("  Run run activity...");
             activityService.queue(new DataflowRunActivityBuilder().build());

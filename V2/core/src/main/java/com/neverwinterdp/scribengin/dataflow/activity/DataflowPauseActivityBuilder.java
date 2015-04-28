@@ -1,42 +1,55 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
-import com.neverwinterdp.registry.activity.ActivityService;
 import com.neverwinterdp.registry.activity.ActivityStep;
+import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
-import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
 import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
-import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
+import com.neverwinterdp.util.text.TabularFormater;
 
 public class DataflowPauseActivityBuilder extends ActivityBuilder {
-  static int idTracker = 1 ;
-  
-  public DataflowPauseActivityBuilder(DataflowDescriptor dflDescriptor) {
-    getActivity().setDescription("Pause Dataflow Activity");
-    getActivity().setType("pause-dataflow");
-    getActivity().withCoordinator(PauseActivityCoordinator.class);
-    add(new ActivityStep().
-        withType("broadcast-pause-dataflow-worker").
-        withExecutor(BroadcastPauseWorkerStepExecutor.class));
-    
-    add(new ActivityStep().
-        withType("set-dataflow-pause-status").
-        withExecutor(SetPauseDataflowStatusStepExecutor.class));
+  public Activity build() {
+    Activity activity = new Activity() ;
+    activity.setDescription("Pause Dataflow Activity");
+    activity.setType("pause-dataflow");
+    activity.withCoordinator(PauseActivityCoordinator.class);
+    activity.withActivityStepBuilder(DataflowPauseActivityStepBuilder.class);
+    return activity;
   }
+  
+  @Singleton
+  static public class DataflowPauseActivityStepBuilder implements ActivityStepBuilder {
+    
+    @Override
+    public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
+      List<ActivityStep> steps = new ArrayList<>() ;
+      steps.add(new ActivityStep().
+          withType("broadcast-pause-dataflow-worker").
+          withExecutor(BroadcastPauseWorkerStepExecutor.class));
+      
+      steps.add(new ActivityStep().
+          withType("set-dataflow-pause-status").
+          withExecutor(SetPauseDataflowStatusStepExecutor.class));
+      return steps;
+    }
+  }
+  
   
   @Singleton
   static public class PauseActivityCoordinator extends ActivityCoordinator {
@@ -70,6 +83,8 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {
         dflRegistry.dump();
+        TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo() ;
+        System.err.println(formater.getFormatText());
         throw new Exception("Cannot detect the PAUSE status for " + waitingListener.getUndetectNodeEventCount() + " workers") ;
       }
     }
