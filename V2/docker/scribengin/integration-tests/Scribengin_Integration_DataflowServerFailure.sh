@@ -29,7 +29,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/juni
    ./bin/shell.sh dataflow-test kafka-to-kakfa \
             --dataflow-name  kafka-to-kafka \
             --worker 3 --executor-per-worker 2 \
-            --duration 300000 --task-max-execute-time 5000 \
+            --duration 3600000 --task-max-execute-time 5000 \
             --source-name input --source-num-of-stream 10 \
             --source-write-period 0 \
             --source-max-records-per-stream 5000000 \
