@@ -54,7 +54,8 @@ public class DataflowHdfsToKafkaUnitTest {
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
+      
+      shell.execute("dataflow   info --history "+HDFSToKafkaDataflowTest.TEST_NAME+"-0");
     } catch (Throwable err) {
       throw err;
     } finally {

@@ -69,6 +69,49 @@ abstract public class DataflowTest {
     doRun(shell);
   }
 
+  public void sourceToSinkDataflowTest(ScribenginShell shell, DataflowSourceGenerator sourceGenerator, 
+      DataflowSinkValidator sinkValidator) throws Exception{
+    ScribenginClient scribenginClient = shell.getScribenginClient();
+    sourceGenerator.init(scribenginClient);
+    if(sourceGenerator.canRunInBackground()){
+      sourceGenerator.runInBackground();
+    } else{
+      sourceGenerator.run();
+    }
+    sinkValidator.init(scribenginClient);
+    
+    DataflowDescriptor dflDescriptor = new DataflowDescriptor();
+    dflDescriptor.setName(dataflowName);
+    dflDescriptor.setNumberOfWorkers(numOfWorkers);
+    dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
+    dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
+    dflDescriptor.setScribe(TestCopyScribe.class.getName());
+    dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
+    dflDescriptor.addSinkDescriptor("default",sinkValidator.getSinkDescriptor());
+    
+    setupDebugger(shell, scribenginClient, dflDescriptor);
+   
+    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
+    
+    try {
+      waitingEventListener.waitForEvents(duration);
+    } catch (Exception e) {
+    }
+    report(shell, waitingEventListener);
+
+    //TODO: make the sink validator run the background and check in parallel as the dataflow progress
+    sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
+    sinkValidator.run();
+    if(sinkValidator.canWaitForTermination()){
+      sinkValidator.waitForTermination();
+    }
+    
+    report(shell, sourceGenerator, sinkValidator) ;
+    if(dumpRegistry) {
+      shell.execute("registry dump");
+    }
+  }
+  
   protected Thread newPrintDataflowThread(ScribenginShell shell, DataflowDescriptor descriptor) throws Exception {
     return new PrintDataflowInfoThread(shell, descriptor, printDataflowInfo);
   }
@@ -178,6 +221,8 @@ abstract public class DataflowTest {
     return tr;
   }
 
+  
+  
   public static class PrintDataflowInfoThread extends Thread {
     ScribenginShell shell;
     DataflowDescriptor descriptor;

@@ -62,6 +62,8 @@ abstract public class DataflowSourceGenerator implements Runnable {
   
   abstract public void runInBackground() ;
   
+  abstract public boolean canRunInBackground();
+  
   abstract public void populate(DataflowTestReport report) ;
 
   static public class RecordMessageGenerator implements MessageGenerator {
