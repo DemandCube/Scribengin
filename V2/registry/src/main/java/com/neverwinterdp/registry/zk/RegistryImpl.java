@@ -213,13 +213,24 @@ public class RegistryImpl implements Registry {
   
   @Override
   public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException {
+    return getDataAs(paths, type, false);
+  }
+  
+  @Override
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type, boolean ignoreNoNodeError) throws RegistryException {
     checkConnected();
     List<T> holder = new ArrayList<T>();
     for(String path : paths) {
-      holder.add(getDataAs(path, type));
+      try {
+        holder.add(getDataAs(path, type));
+      } catch(RegistryException ex) {
+        if(ex.getErrorCode() == ErrorCode.NoNode && ignoreNoNodeError) continue;
+        throw ex;
+      }
     }
     return holder;
   }
+  
   
   @Override
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException {
@@ -345,6 +356,24 @@ public class RegistryImpl implements Registry {
     return getDataAs(paths, type);
   }
 
+  @Override
+  public <T> List<T> getRefChildrenAs(String path, Class<T> type, boolean ignoreNoNodeError) throws RegistryException {
+    checkConnected();
+    List<RefNode> refNodes = null ;
+    try {
+      refNodes = getChildrenAs(path, RefNode.class) ;
+    } catch(RegistryException ex) {
+      if(ex.getErrorCode() == ErrorCode.NoNode && ignoreNoNodeError) return new ArrayList<T>() ;
+      throw ex;
+    }
+    List<String> paths = new ArrayList<>() ;
+    for(int i = 0; i < refNodes.size(); i++) {
+      paths.add(refNodes.get(i).getPath());
+    }
+    return getDataAs(paths, type, ignoreNoNodeError);
+  }
+
+  
   @Override
   public boolean exists(String path) throws RegistryException {
     checkConnected();

@@ -27,6 +27,7 @@ public interface Registry {
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException ;
   public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException ;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException;
+  public <T> List<T> getDataAs(List<String> paths, Class<T> type, boolean ignoreNoNodeError) throws RegistryException;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException;
   public NodeInfo setData(String path, byte[] data) throws RegistryException ;
   public <T> NodeInfo setData(String path, T data) throws RegistryException ;
@@ -49,6 +50,8 @@ public interface Registry {
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback, boolean ignoreNoNodeError) throws RegistryException;
   
   public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException;
+  
+  public <T> List<T> getRefChildrenAs(String path, Class<T> type, boolean ignoreNoNodeError) throws RegistryException;
   
   public boolean exists(String path) throws RegistryException ;
   

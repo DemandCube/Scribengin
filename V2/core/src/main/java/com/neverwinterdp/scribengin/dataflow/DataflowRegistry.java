@@ -306,7 +306,7 @@ public class DataflowRegistry {
   
   
   public List<VMDescriptor> getActiveWorkers() throws RegistryException {
-    return registry.getRefChildrenAs(dataflowPath + "/" + ACTIVE_WORKERS_PATH, VMDescriptor.class);
+    return registry.getRefChildrenAs(dataflowPath + "/" + ACTIVE_WORKERS_PATH, VMDescriptor.class, true);
   }
   
   public int countActiveDataflowWorkers() throws RegistryException {
