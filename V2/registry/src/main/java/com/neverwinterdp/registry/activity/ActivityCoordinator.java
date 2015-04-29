@@ -28,6 +28,7 @@ abstract public class ActivityCoordinator {
       ActivityStep nextStep = activitySteps.get(i);
       nextStep.setStatus(ActivityStep.Status.ASSIGNED);
       schedule(ctx, activity, nextStep);
+      if(ctx.isAbort()) break;
       nextStep.setStatus(ActivityStep.Status.FINISHED);
     }
     onFinish(ctx, activity);

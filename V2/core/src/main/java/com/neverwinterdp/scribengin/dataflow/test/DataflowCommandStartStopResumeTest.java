@@ -62,6 +62,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       }
       int count = 0 ;
       while(count < maxExecution) {
+        count++ ;
         if(sleepBeforeStop > 0) Thread.sleep(sleepBeforeStop);
         try {
           dataflowStatus = dflClient.getStatus();

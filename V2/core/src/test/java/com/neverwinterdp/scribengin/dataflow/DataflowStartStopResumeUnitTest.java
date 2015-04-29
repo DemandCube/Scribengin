@@ -70,7 +70,6 @@ public class DataflowStartStopResumeUnitTest {
             "  --max-wait-for-resume  5000 " +
             "  --max-execution 3" +
             "  --print-summary ";
-            //"  --junit-report DataflowCommandStartStopResume.xml";
         shell.execute(command);
       } catch (Exception e) {
         e.printStackTrace();

@@ -40,6 +40,10 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
       steps.add(new ActivityStep().
+          withType("check-dataflow-status").
+          withExecutor(CheckDataflowStatusStepExecutor.class));
+      
+      steps.add(new ActivityStep().
           withType("broadcast-pause-dataflow-worker").
           withExecutor(BroadcastPauseWorkerStepExecutor.class));
       
@@ -59,6 +63,19 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     @Override
     protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
       activityStepWorkerService.exectute(context, activity, step);
+    }
+  }
+  
+  @Singleton
+  static public class CheckDataflowStatusStepExecutor implements ActivityStepExecutor {
+    @Inject
+    private DataflowRegistry dflRegistry ;
+    
+    @Override
+    public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
+      if(DataflowLifecycleStatus.RUNNING != dflRegistry.getStatus()) {
+       ctx.setAbort(true);
+      }
     }
   }
   
