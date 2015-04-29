@@ -34,7 +34,7 @@ ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/juni
             --source-write-period 0 \
             --source-max-records-per-stream 2500000 \
             --sink-name output  \
-            --debug-dataflow-activity-detail \
+            --debug-dataflow-activity \
             --debug-dataflow-task \
             --debug-dataflow-vm \
             --dump-registry \

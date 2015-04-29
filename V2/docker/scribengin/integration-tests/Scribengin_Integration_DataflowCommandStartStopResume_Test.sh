@@ -16,18 +16,22 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 #Run start/stop/resume
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
       cd /opt/scribengin/scribengin && nohup ./bin/shell.sh dataflow-test start-stop-resume  \
-      --wait-before-start 5000 --sleep-before-execute 10000 --max-wait-for-stop  30000 \
-      --max-wait-for-resume  30000  --print-summary  \
-      --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml" &
+      --wait-before-start 15000 --sleep-before-stop 30000 --max-wait-for-stop  30000  --sleep-before-resume 5000 --max-wait-for-resume  30000  --max-execution 25 \
+      --print-summary  --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml" &
 
 #Run dataflow
 ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master \
    "cd /opt/scribengin/scribengin && \
-   ./bin/shell.sh dataflow-test kafka-to-kakfa  --dataflow-name  kafka-to-kafka --worker 2 \
-     --executor-per-worker 2 --duration 2400000 --task-max-execute-time 5000 \
-     --source-name input --source-num-of-stream 10 --source-write-period 0  \
-     --source-max-records-per-stream 1000000 --sink-name output --debug-dataflow-activity-detail \
-     --debug-dataflow-task --dump-registry --print-dataflow-info -1 \
+   ./bin/shell.sh dataflow-test kafka-to-kakfa  \
+     --dataflow-name  kafka-to-kafka --worker 3 --executor-per-worker 2 \
+     --duration 2400000 --task-max-execute-time 15000 \
+     --source-name input --source-num-of-stream 10 --source-write-period 0  --source-max-records-per-stream 1000000 \
+     --sink-name output \
+     --debug-dataflow-activity \
+     --debug-dataflow-task \
+     --debug-dataflow-vm \
+     --dump-registry \
+     --print-dataflow-info -1 \
      --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
 
 #Print the running processes
