@@ -103,6 +103,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       //TODO: look into this junitReport and implement it
       junitReport(junitReportFile, executeLogs) ;
     }
+    shell.execute("registry dump");
   }
   
   ExecuteLog doStop(DataflowClient dflClient, DataflowEvent stopEvent) throws Exception {
