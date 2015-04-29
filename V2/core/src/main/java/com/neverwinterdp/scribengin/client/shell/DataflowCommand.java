@@ -47,6 +47,9 @@ public class DataflowCommand extends Command {
     @Parameter(names = "--show-activities", description = "The history dataflow id")
     private boolean activities = false;
     
+    @Parameter(names = "--verbose", description = "Verbose output")
+    private boolean verbose = false;
+    
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       boolean showAll = false;
@@ -93,7 +96,7 @@ public class DataflowCommand extends Command {
         List<Activity> ActiveActivities = dRegistry.getActiveActivities();
         for(Activity activity : ActiveActivities) {
           List<ActivityStep> steps = dRegistry.getActiveActivitySteps(activity.getId());
-          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps);
+          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps, verbose);
           console.println(activityFormatter.format("    "));
           console.println("");
         }
@@ -102,7 +105,7 @@ public class DataflowCommand extends Command {
         List<Activity> historyActivities = dRegistry.getHistoryActivities();
         for(Activity activity : historyActivities) {
           List<ActivityStep> steps = dRegistry.getHistoryActivitySteps(activity.getId());
-          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps);
+          Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps, verbose);
           console.println(activityFormatter.format("    "));
         }
       }
