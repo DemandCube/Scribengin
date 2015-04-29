@@ -90,6 +90,15 @@ function clean_image() {
 }
 
 function launch_containers() {
+  
+  #Checks to make sure images exist
+  #If they don't exist, then create them
+  scribeImageLine=$(docker images | grep scribengin)
+  if [ "$scribeImageLine" == "" ] ; then
+    clean_image
+    build_image $@
+  fi
+  
   h1 "Launch hadoop containers"
   docker run -d -p 22 -p 50070:50070 -p 9000:9000 -p 8030:8030 -p 8032:8032 -p 8088:8088 --privileged -h hadoop-master --name hadoop-master  ubuntu:scribengin
   
@@ -357,6 +366,7 @@ function printUsage() {
   echo "    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
   echo "    host-sync             : Run this to run \"./scribengin.sh build\" and then sync the release folder and post-install with your cluster."
 }
+
 
 
 # get command
