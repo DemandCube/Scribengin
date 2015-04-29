@@ -348,13 +348,12 @@ public class DataflowRegistry {
   }
   
   public List<ActivityStep> getHistoryActivitySteps(String activityName) throws RegistryException {
-    return registry.getChildrenAs(
-        dataflowPath + "/" + HISTORY_ACTIVITIES_PATH+ "/" + activityName +"/" + "activity-steps", 
-        ActivityStep.class);
+    String historyActivityPath = dataflowPath + "/" + HISTORY_ACTIVITIES_PATH + "/" + activityName + "/activity-steps" ; 
+    return registry.getChildrenAs(historyActivityPath, ActivityStep.class);
   }
 
   public List<Activity> getActiveActivities() throws RegistryException {
-    return registry.getChildrenAs(dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH, Activity.class);
+    return registry.getChildrenAs(dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH, Activity.class, true);
   }
 
   public List<Activity> getHistoryActivities() throws RegistryException {

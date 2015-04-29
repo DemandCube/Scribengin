@@ -68,6 +68,7 @@ public class DataflowStartStopResumeUnitTest {
             "  --sleep-before-execute 10000 " +
             "  --max-wait-for-stop    10000 " +
             "  --max-wait-for-resume  5000 " +
+            "  --max-execution 3" +
             "  --print-summary ";
             //"  --junit-report DataflowCommandStartStopResume.xml";
         shell.execute(command);
@@ -97,7 +98,7 @@ public class DataflowStartStopResumeUnitTest {
         String command = 
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
           "  --dataflow-name  kafka-to-kafka" +
-          "  --worker 2 --executor-per-worker 2 --duration 180000 --task-max-execute-time 5000" +
+          "  --worker 3 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 100000" + 
           "  --sink-name output "+
           "  --debug-dataflow-activity-detail" +

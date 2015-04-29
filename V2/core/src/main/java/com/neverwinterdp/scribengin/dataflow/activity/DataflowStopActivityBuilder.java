@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
@@ -68,7 +69,9 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       ActiveDataflowWorkerWatcher workerWatcher = new ActiveDataflowWorkerWatcher(dflRegistry, true) ;
       dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.STOP);
-      workerWatcher.waitForNoMoreWorker(30 * 1000);
+      if(!workerWatcher.waitForNoMoreWorker(30 * 1000)) {
+       throw new Exception("Wait for no more workers, but there is still " + dflRegistry.countActiveDataflowWorkers() + " workers") ; 
+      }
     }
   }
   
@@ -86,10 +89,12 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
   
   static public class ActiveDataflowWorkerWatcher extends NodeChildrenWatcher {
     private List<String> activeWorkers = null ;
+    private Node activeWorkersNode ;
     
     public ActiveDataflowWorkerWatcher(DataflowRegistry dflRegistry, boolean persistent) throws RegistryException {
       super(dflRegistry.getRegistry(), persistent);
-      watchChildren(dflRegistry.getActiveWorkersNode().getPath());
+      activeWorkersNode = dflRegistry.getActiveWorkersNode() ;
+      watchChildren(activeWorkersNode.getPath());
     }
 
     @Override
@@ -111,15 +116,19 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
       return activeWorkers ;
     }
     
-    public void waitForNoMoreWorker(long timeout) throws InterruptedException {
+    public boolean waitForNoMoreWorker(long timeout) throws Exception, InterruptedException {
       long waitTime = timeout ;
       while(waitTime > 0) {
         long start = System.currentTimeMillis() ;
         List<String> workers = waitForActiveWorkerChange(waitTime) ;
-        if(workers.size() == 0) return ;
+        if(workers == null) {
+          workers = activeWorkersNode.getChildren();
+        }
+        if(workers.size() == 0) return true;
         long duration = System.currentTimeMillis() - start ;
         waitTime = waitTime - duration ;
       }
+      return false ;
     }
   }
 }

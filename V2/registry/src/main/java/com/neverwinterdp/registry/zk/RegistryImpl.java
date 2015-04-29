@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.ErrorCode;
+import com.neverwinterdp.registry.JSONDataMapperCallback;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeInfo;
@@ -195,7 +196,7 @@ public class RegistryImpl implements Registry {
       if(bytes == null || bytes.length == 0) return null;
       return JSONSerializer.INSTANCE.fromBytes(bytes, type);
     } catch (KeeperException | InterruptedException e) {
-      throw new RegistryException(ErrorCode.Unknown, e) ;
+      throw toRegistryException("Get the node data error", e) ;
     }
   }
   
@@ -282,31 +283,56 @@ public class RegistryImpl implements Registry {
   }
   
   public <T> List<T> getChildrenAs(String path, Class<T> type) throws RegistryException {
+    return getChildrenAs(path, type, false);
+  }
+  
+  public <T> List<T> getChildrenAs(String path, Class<T> type, boolean ignoreNoNodeError) throws RegistryException {
     checkConnected();
     List<T> holder = new ArrayList<T>();
-    List<String> nodes = getChildren(path);
+    List<String> nodes = null;
+    try {
+      nodes = getChildren(path);
+    } catch(RegistryException ex) {
+      if(ex.getErrorCode() == ErrorCode.NoNode && ignoreNoNodeError) return holder ;
+      throw ex;
+    }
     Collections.sort(nodes);
     for(int i = 0; i < nodes.size(); i++) {
       String name = nodes.get(i) ;
-      T object = getDataAs(path + "/" + name, type);
-      holder.add(object);
+      try {
+        T object = getDataAs(path + "/" + name, type);
+        holder.add(object);
+      } catch(RegistryException ex) {
+        if(ex.getErrorCode() == ErrorCode.NoNode && ignoreNoNodeError) continue;
+      }
     }
     return holder ;
   }
   
   @Override
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException {
+    return getChildrenAs(path, type, callback, false);
+  }
+  
+  @Override
+  public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback, boolean ignoreNoNodeError) throws RegistryException {
     checkConnected();
     List<T> holder = new ArrayList<T>();
     List<String> nodes = getChildren(path);
     Collections.sort(nodes);
     for(int i = 0; i < nodes.size(); i++) {
       String name = nodes.get(i) ;
-      T object = getDataAs(path + "/" + name, type, callback);
-      holder.add(object);
+      try {
+        T object = getDataAs(path + "/" + name, type, callback);
+        holder.add(object);
+      } catch(RegistryException ex) {
+        if(ex.getErrorCode() == ErrorCode.NoNode && ignoreNoNodeError) continue;
+        throw ex;
+      }
     }
     return holder ;
   }
+  
   
   @Override
   public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException {

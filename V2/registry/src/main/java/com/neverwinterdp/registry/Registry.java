@@ -35,7 +35,18 @@ public interface Registry {
   public List<String> getChildrenPath(String dir) throws RegistryException ;
   public List<String> getChildren(String path, boolean watch) throws RegistryException;
   public <T> List<T> getChildrenAs(String path, Class<T> type) throws RegistryException;
+  /**
+   * This method should return a list of the children data
+   * @param path
+   * @param type
+   * @param ignoreNoNodeError Some time , the child can get delete randomly or move to the other location by another thread. 
+   *                          The current thread can ignore the missing child
+   * @return
+   * @throws RegistryException
+   */
+  public <T> List<T> getChildrenAs(String path, Class<T> type, boolean ignoreNoNodeError) throws RegistryException;
   public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback) throws RegistryException;
+  public <T> List<T> getChildrenAs(String path, Class<T> type, DataMapperCallback<T> callback, boolean ignoreNoNodeError) throws RegistryException;
   
   public <T> List<T> getRefChildrenAs(String path, Class<T> type) throws RegistryException;
   

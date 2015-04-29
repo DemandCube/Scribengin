@@ -33,7 +33,6 @@ public class ActivityStepWorkerService<T> {
         return;
       } catch (Exception e) {
         activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
-        System.err.println("Fail to execute the activity due to the error: "  + e.getMessage());
         e.printStackTrace();
         error = e ;
       } finally {

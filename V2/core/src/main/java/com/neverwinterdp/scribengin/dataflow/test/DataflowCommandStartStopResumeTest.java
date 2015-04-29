@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
+import com.neverwinterdp.registry.ErrorCode;
+import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
@@ -33,6 +35,9 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   @Parameter(names = "--print-summary", description = "Enable to dump the registry at the end")
   protected boolean printSummary = false;
   
+  @Parameter(names = "--max-execution", description = "The maximum number of start/stop/resume execution")
+  int maxExecution = 3;
+  
   //TODO: implement junit report for this. 
   @Parameter(names = "--junit-report", description = "Enable to dump the registry at the end")
   String  junitReportFile = null;
@@ -51,9 +56,15 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       if(waitBeforeStart > 0) {
         Thread.sleep(waitBeforeStart);
       }
-      while(true) {
+      int count = 0 ;
+      while(count < maxExecution) {
         if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
-        dataflowStatus = dflClient.getStatus();
+        try {
+          dataflowStatus = dflClient.getStatus();
+        } catch(RegistryException ex) {
+          if(ex.getErrorCode() == ErrorCode.NoNode) break;
+          throw ex;
+        }
         if(dataflowStatus == DataflowLifecycleStatus.FINISH || dataflowStatus == DataflowLifecycleStatus.TERMINATED) {
           break;
         }
@@ -103,7 +114,6 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       //TODO: look into this junitReport and implement it
       junitReport(junitReportFile, executeLogs) ;
     }
-    shell.execute("registry dump");
   }
   
   ExecuteLog doStop(DataflowClient dflClient, DataflowEvent stopEvent) throws Exception {
