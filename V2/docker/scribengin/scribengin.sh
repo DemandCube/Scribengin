@@ -44,18 +44,18 @@ function deploy(){
   OPTION=$1
   #Stop all running java processes across the cluster
   
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --force-stop"
+  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --force-stop"
   
   if [ "$OPTION" = "--clean" ] ; then
-    ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --clean"
+    ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --clean"
   fi
   
   #Copy
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
-  scp -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
-  scp -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
-  ssh neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync"
+  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
+  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
+  scp -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
+  scp -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
+  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync"
 }
 
 # get command
