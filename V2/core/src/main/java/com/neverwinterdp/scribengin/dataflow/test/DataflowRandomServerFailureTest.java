@@ -60,6 +60,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       report(shell, executeLogs);
     } catch(Exception ex) {
       shell.execute("registry dump");
+      shell.execute("dataflow info --running " + dataflowName);
       ex.printStackTrace();
       throw ex ;
     }

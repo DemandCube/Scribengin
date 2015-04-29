@@ -96,6 +96,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       }
     } catch(Exception ex) {
       shell.execute("registry dump");
+      shell.execute("dataflow info --running " + dataflowName);
       ex.printStackTrace();
     }
     
