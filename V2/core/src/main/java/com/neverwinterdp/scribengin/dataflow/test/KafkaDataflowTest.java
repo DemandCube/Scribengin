@@ -1,13 +1,12 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
 import com.beust.jcommander.ParametersDelegate;
-import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
-import com.neverwinterdp.scribengin.dataflow.event.DataflowWaitingEventListener;
 
 public class KafkaDataflowTest extends DataflowTest {
+  
   final static public String TEST_NAME = "kafka-to-kakfa" ;
+  
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new KafkaDataflowSourceGenerator();
   
@@ -15,41 +14,6 @@ public class KafkaDataflowTest extends DataflowTest {
   private DataflowSinkValidator   sinkValidator   = new KafkaDataflowSinkValidator();
   
   protected void doRun(ScribenginShell shell) throws Exception {
-    ScribenginClient scribenginClient = shell.getScribenginClient();
-    sourceGenerator.init(scribenginClient);
-    sourceGenerator.runInBackground();
-    
-    sinkValidator.init(scribenginClient);
-    
-    DataflowDescriptor dflDescriptor = new DataflowDescriptor();
-    dflDescriptor.setName(dataflowName);
-    dflDescriptor.setNumberOfWorkers(numOfWorkers);
-    dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
-    dflDescriptor.setNumberOfExecutorsPerWorker(numOfExecutorPerWorker);
-    dflDescriptor.setScribe(TestCopyScribe.class.getName());
-
-    dflDescriptor.setSourceDescriptor(sourceGenerator.getSourceDescriptor());
-    
-    dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
-    
-    setupDebugger(shell, scribenginClient, dflDescriptor);
-   
-    DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
-    
-    try {
-      waitingEventListener.waitForEvents(duration);
-    } catch (Exception e) {
-    }
-    report(shell, waitingEventListener);
-
-    //TODO: make the sink validator run the background and check in parallel as the dataflow progress
-    sinkValidator.setExpectRecords(sourceGenerator.getNumberOfGeneratedRecords());
-    sinkValidator.run();
-    sinkValidator.waitForTermination();
-    
-    report(shell, sourceGenerator, sinkValidator) ;
-    if(dumpRegistry) {
-      shell.execute("registry dump");
-    }
+    sourceToSinkDataflowTest(shell, sourceGenerator, sinkValidator);
   }
 }

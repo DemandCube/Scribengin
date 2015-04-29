@@ -75,4 +75,9 @@ public class KafkaDataflowSinkValidator extends DataflowSinkValidator {
     kafkaMessageCheckTool.setMessageExtractor(new RecordMessageExtractor());
     return kafkaMessageCheckTool;
   }
+
+  @Override
+  public boolean canWaitForTermination() {
+    return true;
+  }
 }

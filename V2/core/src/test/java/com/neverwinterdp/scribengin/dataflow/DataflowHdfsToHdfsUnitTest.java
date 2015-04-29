@@ -55,7 +55,8 @@ public class DataflowHdfsToHdfsUnitTest {
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-hdfs-dataflow-0");
+      
+      shell.execute("dataflow   info --history "+HDFSDataflowTest.TEST_NAME+"-0");
     } catch (Throwable err) {
       throw err;
     } finally {
