@@ -9,7 +9,6 @@ from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, V
 class Server(object):
   def __init__(self, hostname, role = 'unknown', sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.hostname = hostname 
-    #self.role = 'unknown' 
     self.role = role 
     self.processes = {} 
     self.sshKeyPath=sshKeyPath
