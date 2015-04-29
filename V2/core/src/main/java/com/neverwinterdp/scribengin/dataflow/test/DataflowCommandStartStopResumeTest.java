@@ -23,8 +23,12 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   @Parameter(names = "--wait-before-start", description = "The command should repeat in this failurePeriod of time")
   long waitBeforeStart = -1;
   
-  @Parameter(names = "--sleep-before-execute", description = "The command should repeat in this failurePeriod of time")
-  long sleepBeforeExecute = 10000;
+  @Parameter(names = "--sleep-before-stop", description = "The command should repeat in this failurePeriod of time")
+  long sleepBeforeStop = 10000;
+  
+  @Parameter(names = "--sleep-before-resume", description = "The command should repeat in this failurePeriod of time")
+  long sleepBeforeResume = 10000;
+  
   
   @Parameter(names = "--max-wait-for-stop", description = "The command should repeat in this failurePeriod of time")
   long maxWaitForStop = 20000;
@@ -58,7 +62,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       }
       int count = 0 ;
       while(count < maxExecution) {
-        if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
+        if(sleepBeforeStop > 0) Thread.sleep(sleepBeforeStop);
         try {
           dataflowStatus = dflClient.getStatus();
         } catch(RegistryException ex) {
@@ -78,7 +82,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
         }
         stopCompleteCount++ ;
 
-        if(sleepBeforeExecute > 0) Thread.sleep(sleepBeforeExecute);
+        if(sleepBeforeResume > 0) Thread.sleep(sleepBeforeResume);
 
         resumeCount++ ;
         ExecuteLog resumeExecuteLog = doResume(dflClient) ;
