@@ -70,7 +70,7 @@ public class DataflowKafkaToKafkaUnitTest {
             " --source-num-of-stream 10" +
             " --source-write-period 0" +
             " --source-max-records-per-stream 10000" +
-            " --sink-name input " +
+            " --sink-name output " +
             " --print-dataflow-info -1" +
             " --debug-dataflow-task " +
             " --debug-dataflow-vm " +
