@@ -86,4 +86,9 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
     sinkReport.setReadCount(messageTracker.getLogCount());
     sinkReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
+
+  @Override
+  public boolean canWaitForTermination() {
+    return false;
+  }
 }

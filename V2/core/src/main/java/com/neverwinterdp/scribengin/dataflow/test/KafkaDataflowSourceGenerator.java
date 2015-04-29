@@ -55,4 +55,9 @@ public class KafkaDataflowSourceGenerator extends DataflowSourceGenerator {
     sourceDescriptor.attribute("zk.connect", zkConnect);
     return sourceDescriptor;
   }
+
+  @Override
+  public boolean canRunInBackground() {
+    return true;
+  }
 }

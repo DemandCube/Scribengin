@@ -35,6 +35,8 @@ abstract public class DataflowSinkValidator implements Runnable {
   
   abstract public void populate(DataflowTestReport report) ;
   
+  abstract public boolean canWaitForTermination();
+  
   static public class RecordMessageExtractor implements MessageExtractor {
     @Override
     public Message extract(byte[] message) {

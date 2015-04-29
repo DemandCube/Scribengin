@@ -83,4 +83,9 @@ public class HDFSDataflowSourceGenerator extends DataflowSourceGenerator {
     }
     writer.close();
   }
+
+  @Override
+  public boolean canRunInBackground() {
+    return false;
+  }
 }
