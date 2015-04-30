@@ -59,13 +59,13 @@ function build_image() {
   mkdir ./tmp
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-  if [ ! -d ../../release/build/release ] ; then
+  if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
     $DOCKERSCRIBEDIR/scribengin.sh build
   fi
   
   #Move release/build/release to ./tmp
-  cp -R -f ../../release/build/release ./tmp/release
-  cp -R -f ../../tools/cluster ./tmp/cluster
+  cp -R -f $DOCKERSCRIBEDIR/../../release/build/release ./tmp/release
+  cp -R -f $DOCKERSCRIBEDIR/../../tools/cluster ./tmp/cluster
   
   
   #Use existing key if it already exists
