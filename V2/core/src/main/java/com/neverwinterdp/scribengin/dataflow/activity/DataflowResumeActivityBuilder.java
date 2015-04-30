@@ -76,7 +76,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
         waitingListener.add(path, DataflowWorkerStatus.RUNNING);
       }
       
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.RESUME);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.RESUME);
       
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {

@@ -13,6 +13,9 @@ abstract public class ActivityCoordinator {
   }
   
   public void onResume(ActivityExecutionContext ctx, Activity activity) throws Exception {
+    ActivityService service = ctx.getActivityService();
+    List<ActivityStep> activitySteps = findUnfinishedActivitySteps(service, activity);
+    execute(ctx, activity, activitySteps);
   }
   
   public void onFinish(ActivityExecutionContext ctx, Activity activity) throws RegistryException {
@@ -42,12 +45,12 @@ abstract public class ActivityCoordinator {
   public void shutdown() {
   }
   
-  protected List<ActivityStep> findNextActivitySteps(ActivityService service, Activity activity) throws RegistryException {
+  protected List<ActivityStep> findUnfinishedActivitySteps(ActivityService service, Activity activity) throws RegistryException {
     List<ActivityStep> nextStepHolder = new ArrayList<>() ;
     List<ActivityStep> activitySteps = service.getActivitySteps(activity);
     for(int i = 0; i < activitySteps.size(); i++) {
       ActivityStep step = activitySteps.get(i);
-      if(ActivityStep.Status.INIT.equals(step.getStatus())) {
+      if(!ActivityStep.Status.FINISHED.equals(step.getStatus())) {
         nextStepHolder.add(step) ;
         break;
       }

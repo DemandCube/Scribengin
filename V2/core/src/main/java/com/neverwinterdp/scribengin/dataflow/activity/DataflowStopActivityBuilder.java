@@ -85,7 +85,7 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       ActiveDataflowWorkerWatcher workerWatcher = new ActiveDataflowWorkerWatcher(dflRegistry, true) ;
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.STOP);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.STOP);
       if(!workerWatcher.waitForNoMoreWorker(45 * 1000)) {
        throw new Exception("Wait for no more workers, but there is still " + dflRegistry.countActiveDataflowWorkers() + " workers") ; 
       }

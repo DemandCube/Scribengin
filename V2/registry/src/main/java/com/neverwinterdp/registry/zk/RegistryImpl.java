@@ -496,7 +496,7 @@ public class RegistryImpl implements Registry {
       } catch (RegistryException e) {
         if(e.getErrorCode() != ErrorCode.Timeout) throw e;
       } catch (Exception e) {
-        throw new RegistryException(ErrorCode.Unknown, e);
+        throw toRegistryException("Cannot execute the batch operations", e);
       }
     }
     throw new RegistryException(ErrorCode.Unknown, "Fail after " + retry + "tries");

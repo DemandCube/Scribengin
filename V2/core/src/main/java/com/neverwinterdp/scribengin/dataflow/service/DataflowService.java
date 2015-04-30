@@ -5,7 +5,6 @@ import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
@@ -86,10 +85,14 @@ public class DataflowService {
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
   }
   
+  public void kill() throws Exception {
+    activityService.kill();
+  }
+  
   public class DataflowTaskMasterEventListenter extends NodeEventWatcher {
     public DataflowTaskMasterEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
       super(dflRegistry.getRegistry(), true/*persistent*/);
-      watchModify(dflRegistry.getDataflowTasksMasterEventNode().getPath());
+      watchModify(dflRegistry.getMasterEventNode().getPath());
     }
 
     @Override

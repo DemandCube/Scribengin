@@ -256,6 +256,13 @@ public class ActivityService {
     }
   }
   
+  public void kill() throws Exception {
+    activityScheduler.interrupt();
+    for(ActivityRunner selRunner : activeActivities.values()) {
+      selRunner.interrupt();
+    }
+  }
+  
   public class ActivityRunner extends Thread {
     private Activity activity ;
     private ActivityExecutionContext context ;

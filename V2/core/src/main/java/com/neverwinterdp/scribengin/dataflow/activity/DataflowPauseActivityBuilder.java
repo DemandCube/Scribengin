@@ -95,7 +95,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
         waitingListener.add(path, DataflowWorkerStatus.PAUSE);
       }
       
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.PAUSE);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.PAUSE);
       
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {

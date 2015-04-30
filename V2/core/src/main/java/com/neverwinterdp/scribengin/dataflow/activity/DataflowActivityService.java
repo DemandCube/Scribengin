@@ -12,6 +12,6 @@ public class DataflowActivityService extends ActivityService {
   
   @Inject
   public void onInit(Injector container, DataflowRegistry dataflowRegistry) throws RegistryException {
-    init(container, dataflowRegistry.getActivitiesPath());
+    init(container, dataflowRegistry.getActiveActivitiesNode().getPath());
   }
 }
