@@ -20,7 +20,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/jun
               --dataflow-name kafka-to-kafka \
               --sleep-before-stop 30000 \
               --sleep-before-resume 5000 \
-              --wait-before-start 15000
+              --wait-before-start 15000 \
               --max-wait-for-stop    30000 \
               --max-wait-for-resume  30000 \
               --max-execution 25 \
