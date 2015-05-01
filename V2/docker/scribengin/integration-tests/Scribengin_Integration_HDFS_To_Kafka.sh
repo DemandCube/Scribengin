@@ -31,7 +31,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
              --debug-dataflow-task  \
              --debug-dataflow-vm  \
              --debug-dataflow-activity  \
-             --junit-report HDFS_to_Kafka_IntegrationTest \
+             --junit-report HDFS_to_Kafka_IntegrationTest.xml \
              --dump-registry"
 
 #Get results
