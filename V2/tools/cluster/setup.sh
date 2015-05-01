@@ -1,6 +1,6 @@
 #Need build-essential package to build paramiko dependency
 if [ -n "$(which apt-get)" ] ; then
-  sudo apt-get install python-dev build-essential -y
+  sudo apt-get install python-dev build-essential gcc -y
 fi
 
 if [ -n "$(which yum)" ] ; then
