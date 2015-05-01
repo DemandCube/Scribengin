@@ -1,5 +1,8 @@
 package com.neverwinterdp.scribengin.dataflow.simulation;
 
+import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityStep;
+
 public class FailureConfig {
   static public enum FailurePoint {Before, Middle, After }
   
@@ -28,5 +31,19 @@ public class FailureConfig {
   public FailurePoint getFailurePoint() { return failurePoint; }
   public void setFailurePoint(FailurePoint failurePoint) {
     this.failurePoint = failurePoint;
+  }
+  
+  public boolean matches(Activity activity) {
+    return activity.getType().equals(activityType) ;
+  }
+  
+  public boolean matches(ActivityStep step) {
+    if(activityStepType == null) return true ;
+    return step.getType().equals(activityStepType) ;
+  }
+  
+  public boolean matches(FailurePoint failurePoint) {
+    if(failurePoint == null) return true ;
+    return failurePoint == this.failurePoint ;
   }
 }

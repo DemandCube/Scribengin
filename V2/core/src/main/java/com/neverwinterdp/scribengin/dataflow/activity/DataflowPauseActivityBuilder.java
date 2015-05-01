@@ -28,7 +28,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity() ;
     activity.setDescription("Pause Dataflow Activity");
     activity.setType("pause-dataflow");
-    activity.withCoordinator(PauseActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowPauseActivityStepBuilder.class);
     return activity;
   }
@@ -51,18 +51,6 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
           withType("set-dataflow-pause-status").
           withExecutor(SetPauseDataflowStatusStepExecutor.class));
       return steps;
-    }
-  }
-  
-  
-  @Singleton
-  static public class PauseActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   

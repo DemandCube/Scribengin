@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow;
 
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,7 +10,6 @@ import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig.FailurePoint;
-import com.neverwinterdp.scribengin.dataflow.test.DataflowRandomServerFailureTest;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 
@@ -58,8 +56,8 @@ public class DataflowMasterFailureExperimentTest {
         String command = 
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
           "  --dataflow-name  kafka-to-kafka" +
-          "  --worker 2 --executor-per-worker 2 --duration 180000 --task-max-execute-time 5000" +
-          "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 100000" + 
+          "  --worker 2 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
+          "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 10000" + 
           "  --sink-name output "+
           "  --debug-dataflow-activity" +
           "  --debug-dataflow-task" +

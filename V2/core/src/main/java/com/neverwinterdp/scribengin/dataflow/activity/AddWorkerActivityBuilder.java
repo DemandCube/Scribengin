@@ -11,7 +11,6 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepBuilder;
@@ -34,7 +33,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Add Dataflow Worker Activity");
     activity.setType("add-dataflow-worker");
-    activity.withCoordinator(AddDataflowWorkerActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(AddDataflowWorkerActivityStepBuilder.class) ;
     activity.attribute("num-of-worker-to-add", numOfWorkerToAdd);
     return activity;
@@ -64,17 +63,6 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       withExecutor(AddDataflowWorkerStepExecutor.class).
       attribute("worker.id", idTrackerService.nextDataflowWorkerId());
       return step;
-    }
-  }
-  
-  @Singleton
-  static public class AddDataflowWorkerActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   

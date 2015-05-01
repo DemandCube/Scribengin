@@ -545,7 +545,7 @@ public class RegistryImpl implements Registry {
     return config.getDbDomain() + path; 
   }
   
-  private RegistryException toRegistryException(String message, Throwable t) {
+  static public RegistryException toRegistryException(String message, Throwable t) {
     if(t instanceof InterruptedException) {
       return new RegistryException(ErrorCode.Timeout, message, t) ;
     } else if(t instanceof KeeperException) {

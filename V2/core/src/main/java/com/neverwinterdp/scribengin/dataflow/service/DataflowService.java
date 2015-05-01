@@ -46,6 +46,8 @@ public class DataflowService {
   
   private DataflowTaskMasterEventListenter masterEventListener ;
   
+  private Thread waitForTerminationThread ;
+  
   public VMConfig getVMConfig() { return this.vmConfig ; }
   
   public DataflowRegistry getDataflowRegistry() { return dataflowRegistry; }
@@ -76,7 +78,8 @@ public class DataflowService {
   }
   
   
-  public void waitForTermination() throws Exception {
+  public void waitForTermination(Thread waitForTerminationThread) throws Exception {
+    this.waitForTerminationThread = waitForTerminationThread ;
     System.err.println("DataflowService: waitForTermination()");
     dataflowTaskMonitor.waitForAllTaskFinish();
     dataflowWorkerMonitor.waitForAllWorkerTerminated();
@@ -87,6 +90,9 @@ public class DataflowService {
   
   public void kill() throws Exception {
     activityService.kill();
+    if(waitForTerminationThread != null) {
+      waitForTerminationThread.interrupt();
+    }
   }
   
   public class DataflowTaskMasterEventListenter extends NodeEventWatcher {

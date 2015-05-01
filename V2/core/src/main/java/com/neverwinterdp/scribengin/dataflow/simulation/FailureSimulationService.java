@@ -11,13 +11,15 @@ import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
+import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
+import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig.FailurePoint;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMConfig;
 
 @Singleton
 public class FailureSimulationService {
   @Inject
-  private DataflowRegistry        dflRegistry;
+  private DataflowService        dataflowService;
   
   @Inject
   private VMConfig                vmConfig;
@@ -28,12 +30,14 @@ public class FailureSimulationService {
   
   @PostConstruct
   public void onInit() throws Exception {
-    failureEventNodeWatcher = new FailureEventNodeWatcher(dflRegistry);
+    failureEventNodeWatcher = new FailureEventNodeWatcher(dataflowService.getDataflowRegistry());
   }
   
-  public void checkFailureSimulationRequest(Activity activity, ActivityStep step) throws Exception {
-    if(activity.getType().equals(currentFailureConfig.getActivityType()) &&
-       step.getType().equals(currentFailureConfig.getActivityStepType())) {
+  public void runFailureSimulation(Activity activity, ActivityStep step, FailurePoint failurePoint) throws Exception {
+    if(currentFailureConfig.matches(activity) &&
+       currentFailureConfig.matches(step) && 
+       currentFailureConfig.matches(failurePoint)) {
+      dataflowService.kill();
       currentFailureConfig = null ;
     }
   }

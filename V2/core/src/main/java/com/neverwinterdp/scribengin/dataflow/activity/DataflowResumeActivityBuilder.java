@@ -27,7 +27,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Pause Dataflow Activity");
     activity.setType("resume-dataflow");
-    activity.withCoordinator(DataflowResumeActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowResumeActivityStepBuilder.class) ;
     return activity;
   }
@@ -46,17 +46,6 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
           withType("set-dataflow-run-status").
           withExecutor(SetRunningDataflowStatusStepExecutor.class));
       return steps;
-    }
-  }
-  
-  @Singleton
-  static public class DataflowResumeActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   
