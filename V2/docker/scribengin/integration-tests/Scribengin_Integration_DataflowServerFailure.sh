@@ -18,30 +18,33 @@ MONITOR_PID=$!
 #Run server failure
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
   ./bin/shell.sh dataflow-test random-server-failure \
-    --dataflow-name kafka-to-kafka \
-    --failure-period 30000 --max-failure 30 --print-summary" &
+    --dataflow-id kafka-to-kafka-1 \
+    --dataflow-name kafka-to-kafka \ 
+    --failure-period 30000 --max-failure 30 --simulate-kill" &
+
 
 FAILURE_PID=$!
 
 #Run dataflow
-ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
-   cd /opt/scribengin/scribengin && \
-   ./bin/shell.sh dataflow-test kafka-to-kakfa \
-            --dataflow-name  kafka-to-kafka \
-            --worker 3 --executor-per-worker 2 \
-            --duration 3600000 --task-max-execute-time 10000 \
-            --source-name input --source-num-of-stream 10 \
-            --source-write-period 0 \
-            --source-max-records-per-stream 2500000 \
-            --sink-name output  \
-            --debug-dataflow-activity \
-            --debug-dataflow-task \
-            --debug-dataflow-vm \
-            --dump-registry \
-            --print-dataflow-info -1 \
-            --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
-
-
+ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
+          ./bin/shell.sh dataflow-test kafka-to-kafka \
+             --dataflow-id    kafka-to-kafka-1 \
+             --dataflow-name  kafka-to-kafka \
+             --worker 3 \
+             --executor-per-worker 2 \
+             --duration 3600000 \
+             --task-max-execute-time 10000 \
+             --source-name input \
+             --source-num-of-stream 10 \
+             --source-write-period 0 \
+             --source-max-records-per-stream 2500000 \
+             --sink-name output \
+             --print-dataflow-info -1 \
+             --debug-dataflow-task \
+             --debug-dataflow-vm \
+             --debug-dataflow-activity \
+             --junit-report /opt/junit-reports/KafkaIntegrationTest.xml \
+             --dump-registry "
 
 
 #Print the running processes
