@@ -16,21 +16,22 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.SequenceIdTracker;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 
-public class ActivityService {
+public class ActivityService extends ActivityRegistry {
   static DecimalFormat     ORDER_FORMATER = new DecimalFormat("#000");
 
   private Injector                    container;
-  private Registry                    registry;
-
-  private Node                        activeNode;
-  private Node                        historyNode;
+  private SequenceIdTracker           activityIdTracker ;
+  
+  
   private DistributedQueue            queue;
   private Map<String, ActivityRunner> activeActivities = new ConcurrentHashMap<>();
   private ActivityScheduler           activityScheduler;
   private final Lock                  lock             = new ReentrantLock(true);
+  
 
   public ActivityService() {
   }
@@ -43,9 +44,9 @@ public class ActivityService {
   protected void init(Injector container, String activityPath) throws RegistryException {
     this.container = container;
     registry     = container.getInstance(Registry.class) ;
-    activeNode  = registry.createIfNotExist(activityPath + "/active") ;
-    historyNode = registry.createIfNotExist(activityPath + "/history") ;
+    super.init(registry, activityPath, true);
     queue = new DistributedQueue(registry, activityPath +  "/queue");
+    activityIdTracker  = new SequenceIdTracker(registry, activityPath + "/activity-id-tracker") ;
     activityScheduler = new ActivityScheduler();
     activityScheduler.start();
   }
@@ -82,69 +83,29 @@ public class ActivityService {
     return context;
   }
   
-  public Activity create(Activity activity, List<ActivityStep> activitySteps) throws RegistryException {
-    Node activityNode = activeNode.createChild(activity.getType() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
-    activity.setId(activityNode.getName());
-    Transaction transaction = registry.getTransaction() ;
-    transaction.setData(activityNode, activity);
-    transaction.createChild(activityNode, "activity-steps", NodeCreateMode.PERSISTENT);
-    for(int i = 0; i < activitySteps.size(); i++) {
-      ActivityStep step = activitySteps.get(i) ;
-      String id = ORDER_FORMATER.format(i) + "-" + step.getType();
-      step.setId(id);
-      transaction.createDescendant(activityNode, "activity-steps/" + id, step, NodeCreateMode.PERSISTENT);
-    }
-    transaction.commit();
-    return activity;
-  }
-  
   synchronized public Activity create(Activity activity) throws Exception {
     Class<ActivityStepBuilder> stepBuilderType = 
         (Class<ActivityStepBuilder>)Class.forName(activity.getActivityStepBuilder());
     ActivityStepBuilder stepBuilder = container.getInstance(stepBuilderType);
     List<ActivityStep> activitySteps = stepBuilder.build(activity, container);
-    Node activityNode = activeNode.createChild(activity.getType() + "-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
-    activity.setId(activityNode.getName());
+    
+    String activityId = activity.getType() + "-" + activityIdTracker.nextInt() ;
+    activity.setId(activityId);
+    
     Transaction transaction = registry.getTransaction() ;
-    transaction.setData(activityNode, activity);
-    transaction.createChild(activityNode, "activity-steps", NodeCreateMode.PERSISTENT);
+    transaction.createChild(allNode, activityId, activity, NodeCreateMode.PERSISTENT);
+    transaction.createDescendant(allNode, activityId + "/activity-steps", NodeCreateMode.PERSISTENT);
     for(int i = 0; i < activitySteps.size(); i++) {
       ActivityStep step = activitySteps.get(i) ;
       String id = ORDER_FORMATER.format(i) + "-" + step.getType();
       step.setId(id);
-      transaction.createDescendant(activityNode, "activity-steps/" + id, step, NodeCreateMode.PERSISTENT);
+      transaction.createDescendant(allNode, activityId + "/activity-steps/" + id, step, NodeCreateMode.PERSISTENT);
     }
+    transaction.createChild(activeNode, activityId, NodeCreateMode.PERSISTENT);
     transaction.commit();
     return activity;
   }
 
-  public Activity getActivity(String name) throws RegistryException {
-    return activeNode.getChild(name).getDataAs(Activity.class) ;
-  }
-  
-  public List<Activity> getActiveActivities() throws RegistryException {
-    return activeNode.getChildrenAs(Activity.class) ;
-  }
-  
-  public List<Activity> getHistoryActivities() throws RegistryException {
-    return historyNode.getChildrenAs(Activity.class) ;
-  }
-  
-  public List<ActivityStep> getActivitySteps(Activity activity) throws RegistryException {
-    return getActivitySteps(activity.getId()) ;
-  }
-  
-  
-  public ActivityStep getActivityStep(String activityName, String stepName) throws RegistryException {
-    Node stepNode = activityStepNode(activityName, stepName);
-    return stepNode.getDataAs(ActivityStep.class) ;
-  }
-  
-  public List<ActivityStep> getActivitySteps(String name) throws RegistryException {
-    Node stepsNode = activeNode.getDescendant(name + "/activity-steps");
-    return stepsNode.getChildrenAs(ActivityStep.class) ;
-  }
-  
   public <T> void updateActivityStepAssigned(final Activity activity, final ActivityStep step) throws RegistryException {
     BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
       @Override
@@ -190,43 +151,6 @@ public class ActivityService {
       }
     };
     registry.executeBatch(ops, 3, 1000);
-  }
-  
-  public void finish(final Activity activity, final ActivityStep activityStep) throws RegistryException {
-    BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
-      @Override
-      public Boolean execute(Registry registry) throws RegistryException {
-        Node activityStepNode = getActivityStepNode(activity, activityStep);
-        Transaction transaction = registry.getTransaction() ;
-        activityStep.setStatus(ActivityStep.Status.FINISHED);
-        transaction.setData(activityStepNode, activityStep);
-        transaction.deleteChild(activityStepNode, "heartbeat") ;
-        transaction.commit();
-        return true;
-      }
-    };
-    registry.executeBatch(ops, 3, 1000);
-  }
-  
-  public void history(Activity activity) throws RegistryException {
-    String fromPath = activeNode.getChild(activity.getId()).getPath() ;
-    String toPath   = historyNode.getChild(activity.getId()).getPath() ;
-    Transaction transaction = registry.getTransaction();
-    transaction.rcopy(fromPath, toPath);
-    transaction.rdelete(fromPath);
-    transaction.commit();
-  }
-  
-  public Node getActivityNode(Activity activity) throws RegistryException {
-    return activeNode.getChild(activity.getId());
-  }
-  
-  public Node getActivityStepNode(Activity activity, ActivityStep step) throws RegistryException {
-    return activityStepNode(activity.getId(), step.getId());
-  }
-  
-  private Node activityStepNode(String activityId, String stepId) throws RegistryException {
-    return activeNode.getDescendant(activityId + "/activity-steps/" + stepId);
   }
   
   public class ActivityScheduler extends Thread {

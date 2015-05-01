@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin;
 
 import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,22 +61,39 @@ public class ScribenginClient {
     return vmDescriptors;
   }
   
-  public List<DataflowDescriptor> getRunningDataflowDescriptor() throws RegistryException {
-    List<DataflowDescriptor> holder =
-      vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_RUNNING_PATH, DataflowDescriptor.class) ;
-    holder.removeAll(Collections.singleton(null));
-    return holder;
+  public List<String> getActiveDataflowIds() throws RegistryException {
+    return vmClient.getRegistry().getChildren(ScribenginService.DATAFLOWS_ACTIVE_PATH) ;
   }
   
-  public List<DataflowDescriptor> getHistoryDataflowDescriptor() throws RegistryException {
-    List<DataflowDescriptor> holder = 
-        vmClient.getRegistry().getChildrenAs(ScribenginService.DATAFLOWS_HISTORY_PATH, DataflowDescriptor.class) ;
-    holder.removeAll(Collections.singleton(null));
-    return holder;
+  public List<DataflowDescriptor> getActiveDataflowDescriptors() throws RegistryException {
+    List<String> dataflowIds = getActiveDataflowIds() ;
+    List<DataflowDescriptor> holder = new ArrayList<DataflowDescriptor>() ;
+    for(String dataflowId : dataflowIds) {
+      holder.add(getDataflowDescriptor(dataflowId)) ;
+    }
+    return holder ;
   }
   
-  public DataflowRegistry getRunningDataflowRegistry(String name) throws Exception {
-    String dataflowPath = ScribenginService.DATAFLOWS_RUNNING_PATH + "/" + name;
+  public List<String> getHistoryDataflowIds() throws RegistryException {
+    return vmClient.getRegistry().getChildren(ScribenginService.DATAFLOWS_HISTORY_PATH) ;
+  }
+  
+  public List<DataflowDescriptor> getHistoryDataflowDescriptors() throws RegistryException {
+    List<String> dataflowIds = getHistoryDataflowIds() ;
+    List<DataflowDescriptor> holder = new ArrayList<DataflowDescriptor>() ;
+    for(String dataflowId : dataflowIds) {
+      holder.add(getDataflowDescriptor(dataflowId)) ;
+    }
+    return holder ;
+  }
+  
+  public DataflowDescriptor getDataflowDescriptor(String dataflowId) throws RegistryException {
+    String dataflowPath = ScribenginService.DATAFLOWS_ALL_PATH + "/" + dataflowId;
+    return getRegistry().getDataAs(dataflowPath, DataflowDescriptor.class);
+  }
+  
+  public DataflowRegistry getDataflowRegistry(String dataflowId) throws Exception {
+    String dataflowPath = ScribenginService.DATAFLOWS_ALL_PATH + "/" + dataflowId;
     DataflowRegistry dataflowRegistry = new DataflowRegistry(getRegistry(), dataflowPath);
     return dataflowRegistry;
   }
@@ -95,26 +113,32 @@ public class ScribenginClient {
     return submit(null, descriptor) ;
   }
   
-  public DataflowWaitingEventListener submit(String localDataflowHome, DataflowDescriptor descriptor) throws Exception {
+  public DataflowWaitingEventListener submit(String localDataflowHome, DataflowDescriptor dflDescriptor) throws Exception {
+    if(dflDescriptor.getId() == null) {
+      ScribenginIdTrackerService idTrackerService = new ScribenginIdTrackerService(getRegistry()) ;
+      dflDescriptor.setId(dflDescriptor.getName() + "-" + idTrackerService.nextDataflowId());
+    }
     if(localDataflowHome != null) {
       VMDescriptor vmMaster = getVMClient().getMasterVMDescriptor();
       VMConfig vmConfig = vmMaster.getVmConfig();
-      String dataflowAppHome = vmConfig.getAppHome() + "/dataflows/" + descriptor.getName();
-      descriptor.setDataflowAppHome(dataflowAppHome);
+      String dataflowAppHome = vmConfig.getAppHome() + "/dataflows/" + dflDescriptor.getName();
+      dflDescriptor.setDataflowAppHome(dataflowAppHome);
       getVMClient().uploadApp(localDataflowHome, dataflowAppHome);
     }
-    h1("Submit the dataflow " + descriptor.getName());
-    String name = descriptor.getName() ;
+    h1("Submit the dataflow " + dflDescriptor.getName());
     VMClient vmClient = new VMClient(getRegistry());
     
     DataflowWaitingEventListener waitingEventListener = new DataflowWaitingEventListener(vmClient.getRegistry());
-    waitingEventListener.waitDataflowLeader(format("Expect %s-master-1 as the leader", name), name,  format("%s-master-1", name));
-    waitingEventListener.waitDataflowStatus("Expect dataflow init status", name, DataflowLifecycleStatus.INIT);
-    waitingEventListener.waitDataflowStatus("Expect dataflow running status", name, DataflowLifecycleStatus.RUNNING);
-    waitingEventListener.waitDataflowStatus("Expect dataflow terminated status", name, DataflowLifecycleStatus.TERMINATED);
+    waitingEventListener.waitDataflowLeader(
+        format("Expect %s-master-1 as the leader", 
+        dflDescriptor.getId()), dflDescriptor,  
+        format("%s-master-1", dflDescriptor.getId()));
+    waitingEventListener.waitDataflowStatus("Expect dataflow init status", dflDescriptor, DataflowLifecycleStatus.INIT);
+    waitingEventListener.waitDataflowStatus("Expect dataflow running status", dflDescriptor, DataflowLifecycleStatus.RUNNING);
+    waitingEventListener.waitDataflowStatus("Expect dataflow terminated status", dflDescriptor, DataflowLifecycleStatus.TERMINATED);
    
     VMDescriptor scribenginMaster = getScribenginMaster();
-    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(descriptor) ;
+    Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(dflDescriptor) ;
     CommandResult<Boolean> result = (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
     return waitingEventListener;
   }
@@ -135,12 +159,12 @@ public class ScribenginClient {
     return vmDescriptor;
   }
   
-  public DataflowClient getDataflowClient(String dataflowName) throws Exception {
-    return getDataflowClient(dataflowName, 60000) ;
+  public DataflowClient getDataflowClient(String dataflowId) throws Exception {
+    return getDataflowClient(dataflowId, 60000) ;
   }
   
-  public DataflowClient getDataflowClient(String dataflowName, long timeout) throws Exception {
-    String dataflowPath = ScribenginService.getDataflowPath(dataflowName);
+  public DataflowClient getDataflowClient(String dataflowId, long timeout) throws Exception {
+    String dataflowPath = ScribenginService.getDataflowPath(dataflowId);
     long stopTime = System.currentTimeMillis() + timeout;
     while(System.currentTimeMillis() < stopTime) {
       if(getRegistry().exists(dataflowPath + "/status")) {
@@ -153,25 +177,25 @@ public class ScribenginClient {
       }
       Thread.sleep(500);
     }
-    throw new Exception("The dataflow " + dataflowName + " is not existed after " + timeout + "ms");
+    throw new Exception("The dataflow " + dataflowId + " is not existed after " + timeout + "ms");
   }
   
-  public RegistryDebugger getDataflowTaskDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
-    String taskAssignedPath = ScribenginService.getDataflowPath(dataflowName) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
+  public RegistryDebugger getDataflowTaskDebugger(Appendable out, DataflowDescriptor descriptor, boolean detailedDebugger) throws RegistryException {
+    String taskAssignedPath = ScribenginService.getDataflowPath(descriptor.getId()) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
     debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger(detailedDebugger));
     return debugger ;
   }
   
-  public RegistryDebugger getDataflowActivityDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
-    String activeActivitiesPath = ScribenginService.getDataflowPath(dataflowName) + "/activities/active" ;
+  public RegistryDebugger getDataflowActivityDebugger(Appendable out, DataflowDescriptor descriptor, boolean detailedDebugger) throws RegistryException {
+    String activeActivitiesPath = ScribenginService.getDataflowPath(descriptor.getId()) + "/activities/active" ;
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
     debugger.watchChild(activeActivitiesPath, ".*", new ActiveActivityNodeDebugger(detailedDebugger));
     return debugger ;
   }
   
-  public RegistryDebugger getDataflowVMDebugger(Appendable out, String dataflowName, boolean detailedDebugger) throws RegistryException {
-    String workerActivePath = ScribenginService.getDataflowPath(dataflowName) + "/workers/active";
+  public RegistryDebugger getDataflowVMDebugger(Appendable out,DataflowDescriptor descriptor, boolean detailedDebugger) throws RegistryException {
+    String workerActivePath = ScribenginService.getDataflowPath(descriptor.getId()) + "/workers/active";
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
     debugger.watchChild(workerActivePath,  ".*", new DataflowVMDebugger(detailedDebugger));
     return debugger ;

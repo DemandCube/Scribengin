@@ -27,11 +27,12 @@ public class Formater {
     }
 
     public String format(String title, String ident) {
-      TabularFormater formater = new TabularFormater("Name", "App Home", "Workers", "Executor Per Worker");
+      TabularFormater formater = new TabularFormater("Id", "Name", "App Home", "Workers", "Executor Per Worker");
       formater.setIndent("  ");
       for (int i = 0; i < descriptors.size(); i++) {
         DataflowDescriptor descriptor = descriptors.get(i);
         formater.addRow(
+            descriptor.getId(),
             descriptor.getName(),
             descriptor.getDataflowAppHome(),
             descriptor.getNumberOfWorkers(),

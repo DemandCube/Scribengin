@@ -34,6 +34,7 @@ public class FailureConfig {
   }
   
   public boolean matches(Activity activity) {
+    if(activityType == null) return false;  
     return activity.getType().equals(activityType) ;
   }
   

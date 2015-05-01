@@ -82,7 +82,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       VMConfig vmConfig = new VMConfig();
       vmConfig.
       setEnvironment(service.getVMConfig().getEnvironment()).
-      setName(dflDescriptor.getName() + "-worker-" + step.attribute("worker.id")).
+      setName(dflDescriptor.getId() + "-worker-" + step.attribute("worker.id")).
       addRoles("dataflow-worker").
       setRegistryConfig(registryConfig).
       setVmApplication(VMDataflowWorkerApp.class.getName()).
@@ -109,16 +109,17 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node activeWorkerNodes = dflRegistry.getActiveWorkersNode() ;
+      Node activeWorkerNodes = dflRegistry.getAllWorkersNode() ;
       List<String> workers = activeWorkerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
         String path = activeWorkerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.RUNNING);
+        waitingListener.add(path, DataflowWorkerStatus.RUNNING, "Wait for RUNNING status for worker " + workers.get(i));
       }
       
       waitingListener.waitForEvents(30 * 1000);
       TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo();
+      formater.setTitle("Wait for worker running status");
       System.err.println(formater.getFormatText());
     }
   }

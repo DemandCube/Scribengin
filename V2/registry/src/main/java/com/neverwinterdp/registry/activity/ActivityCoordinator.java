@@ -43,19 +43,15 @@ abstract public class ActivityCoordinator {
     for(int i = 0; i < activitySteps.size(); i++) {
       long startTime = System.currentTimeMillis();
       ActivityStep nextStep = activitySteps.get(i);
-      try {
-        service.updateActivityStepAssigned(activity, nextStep);
-        for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, nextStep);
-        execute(ctx, activity, nextStep);
-        for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, nextStep);
-        if(ctx.isAbort()) break;
-        //TODO: call finish to set the status correctly
-      } finally {
-        long executeTime = System.currentTimeMillis() - startTime ;
-        nextStep.setExecuteTime(executeTime);
-        nextStep.setTryCount(i + 1);
-        service.updateActivityStepFinished(activity, nextStep);
-      }
+      service.updateActivityStepAssigned(activity, nextStep);
+      for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, nextStep);
+      execute(ctx, activity, nextStep);
+      for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, nextStep);
+      if(ctx.isAbort()) break;
+      long executeTime = System.currentTimeMillis() - startTime ;
+      nextStep.setExecuteTime(executeTime);
+      nextStep.setTryCount(i + 1);
+      service.updateActivityStepFinished(activity, nextStep);
     }
     onFinish(ctx, activity);
   }

@@ -88,14 +88,14 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
       Node dataflowDescriptorNode = registry.get(dataflowDescriptorPath) ;
       DataflowDescriptor descriptor = dataflowDescriptorNode.getDataAs(DataflowDescriptor.class);
       String dataflowAppHome = descriptor.getDataflowAppHome();
-      Node dataflowNode = registry.get(ScribenginService.DATAFLOWS_RUNNING_PATH + "/" + descriptor.getName()) ;
+      Node dataflowNode = registry.get(ScribenginService.getDataflowPath(descriptor.getId())) ;
       VMConfig dfVMConfig = new VMConfig() ;
       if(dataflowAppHome != null) {
         dfVMConfig.setAppHome(dataflowAppHome);
         dfVMConfig.addVMResource("dataflow.libs", dataflowAppHome + "/libs");
       }
       dfVMConfig.setEnvironment(vmConfig.getEnvironment());
-      dfVMConfig.setName(descriptor.getName() + "-master-" + step.attribute("master.id"));
+      dfVMConfig.setName(descriptor.getId() + "-master-" + step.attribute("master.id"));
       dfVMConfig.setRoles(Arrays.asList("dataflow-master"));
       dfVMConfig.setRegistryConfig(registry.getRegistryConfig());
       dfVMConfig.setVmApplication(VMDataflowServiceApp.class.getName());
@@ -114,7 +114,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node activeWorkerNodes = dflRegistry.getActiveWorkersNode() ;
+      Node activeWorkerNodes = dflRegistry.getAllWorkersNode() ;
       List<String> workers = activeWorkerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {

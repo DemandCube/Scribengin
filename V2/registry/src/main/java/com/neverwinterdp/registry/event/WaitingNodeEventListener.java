@@ -54,7 +54,7 @@ abstract public class WaitingNodeEventListener {
    * @throws Exception
    */
   synchronized public <T> void add(String path, T expectData, String desc) throws Exception {
-    WaitingNodeEventWatcher watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)expectData.getClass(), expectData, desc);
+    DataChangeNodeWatcher<T> watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)expectData.getClass(), expectData, desc);
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher, true);
     waitingNodeEventCount++;

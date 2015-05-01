@@ -15,7 +15,6 @@ public class ActivityStepWorkerService<T> {
   public void init(T workerDescriptor) throws RegistryException {
     this.workerDescriptor = workerDescriptor;
   }
-
   
   public T getWorkerDescriptor() { return workerDescriptor; }
   

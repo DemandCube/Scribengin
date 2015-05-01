@@ -24,6 +24,7 @@ public class S3ToS3DataflowTest extends DataflowTest {
     sinkValidator.init(scribenginClient);
 
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
+    dflDescriptor.setId(dataflowId);
     dflDescriptor.setName(dataflowName);
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);

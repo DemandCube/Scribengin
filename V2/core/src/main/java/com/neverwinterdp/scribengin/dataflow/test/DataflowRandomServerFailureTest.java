@@ -14,8 +14,8 @@ import com.neverwinterdp.vm.VMDescriptor;
 public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   final static public String TEST_NAME = "random-server-failure";
 
-  @Parameter(names = "--dataflow-name", required=true, description = "The command should repeat in this period of time")
-  String dataflowName ;
+  @Parameter(names = "--dataflow-id", required=true, description = "The command should repeat in this period of time")
+  String dataflowId ;
   
   @Parameter(names = "--wait-for-running-dataflow", description = "The command should repeat in this failurePeriod of time")
   long waitForRunningDataflow = 180000;
@@ -36,7 +36,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
       long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
-      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName, waitForRunningDataflow);
+      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowId, waitForRunningDataflow);
       while(dflClient.countActiveDataflowWorkers() == 0 && System.currentTimeMillis() < stopTime) {
         Thread.sleep(500);
       }
@@ -60,7 +60,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       report(shell, executeLogs);
     } catch(Exception ex) {
       shell.execute("registry dump");
-      shell.execute("dataflow info --running " + dataflowName);
+      shell.execute("dataflow info --id " + dataflowId);
       ex.printStackTrace();
       throw ex ;
     }

@@ -51,9 +51,9 @@ public class ScribenginCommand extends Command {
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
       ScribenginClient client = ((ScribenginShell) shell).getScribenginClient();
       shell.console().h1("Scribengin Info");
-      Formater.DataflowList runningDflFormater = new Formater.DataflowList(client.getRunningDataflowDescriptor());
+      Formater.DataflowList runningDflFormater = new Formater.DataflowList(client.getActiveDataflowDescriptors());
       shell.console().println(runningDflFormater.format("Running Dataflows"));
-      Formater.DataflowList historyDflFormater = new Formater.DataflowList(client.getHistoryDataflowDescriptor());
+      Formater.DataflowList historyDflFormater = new Formater.DataflowList(client.getHistoryDataflowDescriptors());
       shell.console().println(historyDflFormater.format("History Dataflows"));
     }
 
@@ -101,6 +101,6 @@ public class ScribenginCommand extends Command {
   }
   @Override
   public String getDescription() {
-        return "commands for interacting with the scribengin cluster.";
+    return "commands for interacting with the scribengin cluster.";
   }
 }

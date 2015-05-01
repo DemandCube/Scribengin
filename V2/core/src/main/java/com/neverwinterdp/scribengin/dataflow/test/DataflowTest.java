@@ -23,6 +23,9 @@ import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.util.text.TabularFormater;
 
 abstract public class DataflowTest {
+  @Parameter(names = "--dataflow-id", description = "The dataflow id")
+  protected String dataflowId = "hello-1";
+  
   @Parameter(names = "--dataflow-name", description = "The flow dataflow name")
   protected String dataflowName = "hello";
 
@@ -81,6 +84,7 @@ abstract public class DataflowTest {
     sinkValidator.init(scribenginClient);
     
     DataflowDescriptor dflDescriptor = new DataflowDescriptor();
+    dflDescriptor.setId(dataflowId);
     dflDescriptor.setName(dataflowName);
     dflDescriptor.setNumberOfWorkers(numOfWorkers);
     dflDescriptor.setTaskMaxExecuteTime(taskMaxExecuteTime);
@@ -109,7 +113,7 @@ abstract public class DataflowTest {
     report(shell, sourceGenerator, sinkValidator) ;
     if(dumpRegistry) {
       shell.execute("registry dump");
-      shell.execute("dataflow info --running " + dataflowName);
+      shell.execute("dataflow info --dataflow-id " + dataflowId);
     }
   }
   
@@ -135,23 +139,23 @@ abstract public class DataflowTest {
 
   protected void setupDebugger(ScribenginShell shell, ScribenginClient scribenginClient, DataflowDescriptor dflDescriptor) throws Exception {
     if(detailedDebugDataflowTask){
-      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName, true);
+      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dflDescriptor, true);
     }
     else if(debugDataflowTask) {
-      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dataflowName, false);
+      shell.getScribenginClient().getDataflowTaskDebugger(System.out, dflDescriptor, false);
     }
     
     if(detailedDebugDataflowVM){
-      shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, true);
+      shell.getScribenginClient().getDataflowVMDebugger(System.out, dflDescriptor, true);
     } else if(debugDataflowVM) {
-      shell.getScribenginClient().getDataflowVMDebugger(System.out, dataflowName, false);
+      shell.getScribenginClient().getDataflowVMDebugger(System.out, dflDescriptor, false);
     }
     
     if(detailedDebugDataflowActivity){
-      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, true);
+      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dflDescriptor, true);
     }
     else if(debugDataflowActivity) {
-      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dataflowName, false);
+      shell.getScribenginClient().getDataflowActivityDebugger(System.out, dflDescriptor, false);
     }
 
     //TODO: this code should not be here and should not be used this way. If you use the thread like this, it is like
@@ -243,7 +247,7 @@ abstract public class DataflowTest {
           Thread.sleep(period);
           try {
             shell.console().println("#Dataflow Print Thread failurePeriod = " + period + "#");
-            shell.execute("dataflow info --running " + descriptor.getName());
+            shell.execute("dataflow info --running " + descriptor.getId());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());
           }

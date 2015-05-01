@@ -34,6 +34,7 @@ public class FailureSimulationService {
   }
   
   public void runFailureSimulation(Activity activity, ActivityStep step, FailurePoint failurePoint) throws Exception {
+    if(currentFailureConfig == null) return;
     if(currentFailureConfig.matches(activity) &&
        currentFailureConfig.matches(step) && 
        currentFailureConfig.matches(failurePoint)) {

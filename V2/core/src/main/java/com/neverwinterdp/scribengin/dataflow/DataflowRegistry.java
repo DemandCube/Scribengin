@@ -15,8 +15,7 @@ import com.neverwinterdp.registry.RefNode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
-import com.neverwinterdp.registry.activity.Activity;
-import com.neverwinterdp.registry.activity.ActivityStep;
+import com.neverwinterdp.registry.activity.ActivityRegistry;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.registry.util.RegistryDebugger;
@@ -43,13 +42,12 @@ public class DataflowRegistry {
   final static public String WORKER_EVENT_PATH      = "event/worker" ;
   final static public String FAILURE_EVENT_PATH     = "event/failure" ;
   
-  final static public String ACTIVITIES_PATH        = "activities";
-  final static public String ACTIVE_ACTIVITIES_PATH    = ACTIVITIES_PATH +"/active";
-  final static public String HISTORY_ACTIVITIES_PATH   = ACTIVITIES_PATH +"/history";
+  final static public String ACTIVITIES_PATH           = "activities";
   
   final static public String MASTER_PATH            = "master";
   final static public String MASTER_LEADER_PATH     = MASTER_PATH + "/leader";
   
+  final static public String ALL_WORKERS_PATH       = "workers/all";
   final static public String ACTIVE_WORKERS_PATH    = "workers/active";
   final static public String HISTORY_WORKERS_PATH   = "workers/history";
   
@@ -79,6 +77,7 @@ public class DataflowRegistry {
   private Node               tasksLock;
   private Node               activeActivitiesNode;
   
+  private Node               allWorkers;
   private Node               activeWorkers;
   private Node               historyWorkers;
   
@@ -109,6 +108,7 @@ public class DataflowRegistry {
     
     activeActivitiesNode = registry.createIfNotExist(dataflowPath + "/" + ACTIVITIES_PATH);
     
+    allWorkers = registry.createIfNotExist(dataflowPath + "/" + ALL_WORKERS_PATH);
     activeWorkers = registry.createIfNotExist(dataflowPath + "/" + ACTIVE_WORKERS_PATH);
     historyWorkers = registry.createIfNotExist(dataflowPath + "/" + HISTORY_WORKERS_PATH);
   }
@@ -148,34 +148,33 @@ public class DataflowRegistry {
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     Transaction transaction = registry.getTransaction() ;
     RefNode refNode = new RefNode(vmDescriptor.getRegistryPath()) ;
-    transaction.createChild(activeWorkers, vmDescriptor.getId(), refNode, NodeCreateMode.PERSISTENT) ;
-    transaction.createDescendant(activeWorkers, vmDescriptor.getId() + "/status", DataflowWorkerStatus.INIT, NodeCreateMode.PERSISTENT) ;
+    transaction.createChild(allWorkers, vmDescriptor.getId(), refNode, NodeCreateMode.PERSISTENT) ;
+    transaction.createDescendant(allWorkers, vmDescriptor.getId() + "/status", DataflowWorkerStatus.INIT, NodeCreateMode.PERSISTENT) ;
+    transaction.createChild(activeWorkers, vmDescriptor.getId(), NodeCreateMode.PERSISTENT) ;
     transaction.commit();
   }
   
   public void setWorkerStatus(VMDescriptor vmDescriptor, DataflowWorkerStatus status) throws RegistryException {
-    Node workerNode = activeWorkers.getChild(vmDescriptor.getId());
+    Node workerNode = allWorkers.getChild(vmDescriptor.getId());
     Node statusNode = workerNode.getChild("status");
     statusNode.setData(status);
   }
   
   public void historyWorker(String vmId) throws RegistryException {
     Transaction transaction = registry.getTransaction() ;
-    String fromPath = activeWorkers.getChild(vmId).getPath() ;
-    String toPath   = historyWorkers.getChild(vmId).getPath();
-    transaction.rcopy(fromPath, toPath);
-    transaction.rdelete(fromPath);
+    transaction.createChild(historyWorkers, vmId, NodeCreateMode.PERSISTENT) ;
+    transaction.deleteChild(activeWorkers, vmId) ;
     transaction.commit();
   }
   
   public void createWorkerTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
-    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
+    Node worker = allWorkers.getChild(vmDescriptor.getId()) ;
     Node executors = worker.createDescendantIfNotExists("executors");
     executors.createChild(descriptor.getId(), descriptor, NodeCreateMode.PERSISTENT);
   }
   
   public void updateWorkerTaskExecutor(VMDescriptor vmDescriptor, DataflowTaskExecutorDescriptor descriptor) throws RegistryException {
-    Node worker = activeWorkers.getChild(vmDescriptor.getId()) ;
+    Node worker = allWorkers.getChild(vmDescriptor.getId()) ;
     Node executor = worker.getDescendant("executors/" + descriptor.getId()) ;
     executor.setData(descriptor);
   }
@@ -326,18 +325,18 @@ public class DataflowRegistry {
     return registry.getChildren(dataflowPath + "/" + ACTIVE_WORKERS_PATH).size();
   }
   
-  public Node getActiveWorkersNode() { return activeWorkers ; }
+  public Node getAllWorkersNode() { return allWorkers ; }
   
   public List<String> getActiveWorkerNames() throws RegistryException {
-    return activeWorkers.getChildren();
+    return allWorkers.getChildren();
   }
   
   public DataflowWorkerStatus getDataflowWorkerStatus(String vmId) throws RegistryException {
-    return activeWorkers.getChild(vmId).getChild("status").getDataAs(DataflowWorkerStatus.class);
+    return allWorkers.getChild(vmId).getChild("status").getDataAs(DataflowWorkerStatus.class);
   }
   
   public List<DataflowTaskExecutorDescriptor> getActiveExecutors(String worker) throws RegistryException {
-    Node executors = activeWorkers.getDescendant(worker + "/executors") ;
+    Node executors = allWorkers.getDescendant(worker + "/executors") ;
     return executors.getChildrenAs(DataflowTaskExecutorDescriptor.class);
   }
   
@@ -354,23 +353,8 @@ public class DataflowRegistry {
     registry.get(dataflowPath).dump(System.out);
   }
 
-  public List<ActivityStep> getActiveActivitySteps(String activityName) throws RegistryException {
-    return registry.getChildrenAs(
-        dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH+ "/" + activityName + "/" + "activity-steps", 
-        ActivityStep.class);
-  }
-  
-  public List<ActivityStep> getHistoryActivitySteps(String activityName) throws RegistryException {
-    String historyActivityPath = dataflowPath + "/" + HISTORY_ACTIVITIES_PATH + "/" + activityName + "/activity-steps" ; 
-    return registry.getChildrenAs(historyActivityPath, ActivityStep.class);
-  }
-
-  public List<Activity> getActiveActivities() throws RegistryException {
-    return registry.getChildrenAs(dataflowPath + "/" + ACTIVE_ACTIVITIES_PATH, Activity.class, true);
-  }
-
-  public List<Activity> getHistoryActivities() throws RegistryException {
-    return registry.getChildrenAs(dataflowPath + "/" + HISTORY_ACTIVITIES_PATH, Activity.class);
+  public ActivityRegistry getActivityRegistry() throws RegistryException {
+    return new ActivityRegistry(registry, dataflowPath + "/" + ACTIVITIES_PATH) ;
   }
   
   static  public DataflowLifecycleStatus getStatus(Registry registry, String dataflowPath) throws RegistryException {

@@ -98,7 +98,7 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     
     public ActiveDataflowWorkerWatcher(DataflowRegistry dflRegistry, boolean persistent) throws RegistryException {
       super(dflRegistry.getRegistry(), persistent);
-      activeWorkersNode = dflRegistry.getActiveWorkersNode() ;
+      activeWorkersNode = dflRegistry.getAllWorkersNode() ;
       watchChildren(activeWorkersNode.getPath());
     }
 

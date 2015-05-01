@@ -1,13 +1,13 @@
 package com.neverwinterdp.registry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.lock.Lock;
-import com.neverwinterdp.util.JSONSerializer;
 
 public class Node {
   private Registry  registry ;
@@ -125,6 +125,14 @@ public class Node {
   
   public <T> List<T> getChildrenAs(Class<T> type) throws RegistryException {
     return registry.getChildrenAs(path, type) ;
+  }
+  
+  public <T> List<T> getSelectChildrenAs(List<String> names, Class<T> type) throws RegistryException {
+    List<T> holder = new ArrayList<T>() ;
+    for(int i = 0; i < names.size(); i++) {
+      holder.add(registry.getDataAs(path + "/" + names.get(i), type)) ;
+    }
+    return holder ;
   }
   
   public <T> List<T> getChildrenAs(Class<T> type, boolean ignoreNoNodeError) throws RegistryException {

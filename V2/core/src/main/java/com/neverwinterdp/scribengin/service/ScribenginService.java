@@ -11,10 +11,12 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.RegistryListener;
+import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.activity.AddDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
 import com.neverwinterdp.scribengin.activity.ShutdownDataflowMasterActivityBuilder;
@@ -24,26 +26,34 @@ import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 @Singleton
 @JmxBean("role=scribengin-master, type=ScribenginService, dataflowName=ScribenginService")
 public class ScribenginService {
-  final static public String SCRIBENGIN_PATH         = "/scribengin";
-  
-  final static public String EVENTS_PATH             = SCRIBENGIN_PATH + "/events";
-  final static public String ACTIVITIES_PATH          = SCRIBENGIN_PATH + "/activities";
-  final static public String SHUTDOWN_EVENT_PATH     = EVENTS_PATH + "/shutdown";
+  final static public String  SCRIBENGIN_PATH        = "/scribengin";
 
-  final static public String LEADER_PATH             = SCRIBENGIN_PATH + "/master/leader";
-  final static public String DATAFLOWS_HISTORY_PATH  = SCRIBENGIN_PATH + "/dataflows/history";
-  final static public String DATAFLOWS_RUNNING_PATH  = SCRIBENGIN_PATH + "/dataflows/running";
+  final static public String  EVENTS_PATH            = SCRIBENGIN_PATH + "/events";
+  final static public String  SHUTDOWN_EVENT_PATH    = EVENTS_PATH + "/shutdown";
   
-  private Registry registry;
+  final static public String  ACTIVITIES_PATH        = SCRIBENGIN_PATH + "/activities";
+
+  final static public String  LEADER_PATH            = SCRIBENGIN_PATH + "/master/leader";
+
+  final static public String  DATAFLOWS_PATH         = SCRIBENGIN_PATH + "/dataflow";
+  final static public String  DATAFLOWS_ALL_PATH     = DATAFLOWS_PATH  + "/all";
+  final static public String  DATAFLOWS_HISTORY_PATH = DATAFLOWS_PATH  + "/history";
+  final static public String  DATAFLOWS_ACTIVE_PATH  = DATAFLOWS_PATH  + "/active";
   
-  private RegistryListener registryListener ;
-  
-  private Node dataflowsRunningNode ;
-  private Node dataflowsHistoryNode ;
-  private AtomicLong historyIdTracker ;
+  private Registry         registry;
+
+  private RegistryListener registryListener;
+
+  private Node             dataflowsAllNode;
+  private Node             dataflowsActiveNode;
+  private Node             dataflowsHistoryNode;
+  private AtomicLong       historyIdTracker;
   
   @Inject
   private ScribenginActivityService activityService;
+  
+  @Inject
+  private ScribenginIdTrackerService idTrackerService ;
   
   @Inject
   public void onInit(Registry registry) throws Exception {
@@ -51,11 +61,10 @@ public class ScribenginService {
     this.registryListener = new RegistryListener(registry);
 
     registry.createIfNotExist(EVENTS_PATH);
-    registry.createIfNotExist(DATAFLOWS_RUNNING_PATH);
-    dataflowsRunningNode = registry.get(DATAFLOWS_RUNNING_PATH) ;
+    dataflowsAllNode     = registry.createIfNotExist(DATAFLOWS_ALL_PATH);
+    dataflowsActiveNode  = registry.createIfNotExist(DATAFLOWS_ACTIVE_PATH);
+    dataflowsHistoryNode = registry.createIfNotExist(DATAFLOWS_HISTORY_PATH);
 
-    registry.createIfNotExist(DATAFLOWS_HISTORY_PATH);
-    dataflowsHistoryNode = registry.get(DATAFLOWS_HISTORY_PATH) ;
     historyIdTracker = new AtomicLong(dataflowsHistoryNode.getChildren().size());
   }
   
@@ -65,9 +74,10 @@ public class ScribenginService {
   }
   
   public boolean deploy(DataflowDescriptor descriptor) throws Exception {
-    Node dataflowNode = dataflowsRunningNode.createChild(descriptor.getName(), descriptor, NodeCreateMode.PERSISTENT);
+    Node dataflowNode = dataflowsAllNode.createChild(descriptor.getId(), descriptor, NodeCreateMode.PERSISTENT);
+    dataflowsActiveNode.createChild(descriptor.getId(), NodeCreateMode.PERSISTENT);
     dataflowNode.createDescendantIfNotExists("master/leader");
-    String dataflowStatusPath = getDataflowStatusPath(descriptor.getName());
+    String dataflowStatusPath = getDataflowStatusPath(descriptor.getId());
     registryListener.watch(dataflowStatusPath, new DataflowStatusListener(registry));
     
     Activity activity = new AddDataflowMasterActivityBuilder().build(dataflowNode.getPath()) ;
@@ -78,11 +88,10 @@ public class ScribenginService {
   
   //TODO: use transaction
   public void moveToHistory(DataflowDescriptor descriptor) throws Exception {
-    String fromPath = dataflowsRunningNode.getPath() + "/" + descriptor.getName();
-    String toPath   = dataflowsHistoryNode.getPath() + "/" + descriptor.getName() + "-" + historyIdTracker.getAndIncrement();
-    PathFilter ignoreLeader = new PathFilter.IgnorePathFilter(".*/leader/leader-.*") ;
-    registry.rcopy(fromPath, toPath, ignoreLeader);
-    registry.rdelete(fromPath);
+    Transaction transaction = registry.getTransaction();
+    transaction.createChild(dataflowsHistoryNode, descriptor.getId(), NodeCreateMode.PERSISTENT);
+    transaction.deleteChild(dataflowsActiveNode, descriptor.getId());
+    transaction.commit();
   }
   
   class DataflowStatusListener extends DataChangeNodeWatcher<DataflowLifecycleStatus> {
@@ -110,15 +119,15 @@ public class ScribenginService {
     }
   };
   
-  static public String getDataflowPath(String dataflowName) { 
-    return DATAFLOWS_RUNNING_PATH + "/" + dataflowName; 
+  static public String getDataflowPath(String dataflowId) { 
+    return DATAFLOWS_ALL_PATH + "/" + dataflowId; 
   }
   
-  static public String getDataflowStatusPath(String dataflowName) { 
-    return getDataflowPath(dataflowName) + "/status" ; 
+  static public String getDataflowStatusPath(String dataflowId) { 
+    return getDataflowPath(dataflowId) + "/status" ; 
   }
   
-  static public String getDataflowLeaderPath(String dataflowName) { 
-    return getDataflowPath(dataflowName) + "/master/leader" ; 
+  static public String getDataflowLeaderPath(String dataflowId) { 
+    return getDataflowPath(dataflowId) + "/master/leader" ; 
   }
 }
