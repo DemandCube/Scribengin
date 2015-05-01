@@ -23,6 +23,8 @@ public interface Registry {
 
   public Node get(String path) throws RegistryException ;
   public Node getRef(String path) throws RegistryException ;
+  public <T> T getRefAs(String path, Class<T> type) throws RegistryException ;
+  public <T> List<T> getRefAs(List<String> path, Class<T> type) throws RegistryException ;
   public byte[] getData(String path) throws RegistryException ;
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException ;
   public <T> T getDataAs(String path, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException ;

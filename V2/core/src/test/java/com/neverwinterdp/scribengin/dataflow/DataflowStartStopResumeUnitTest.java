@@ -41,13 +41,9 @@ public class DataflowStartStopResumeUnitTest {
     DataflowSubmitter submitter = new DataflowSubmitter();
     submitter.start();
 
-    Thread.sleep(5000);
-    
     ScribenginClient scribenginClient = shell.getScribenginClient();
-    Assert.assertEquals(2, scribenginClient.getScribenginMasters().size());
-    
-    DataflowClient dflClient = scribenginClient.getDataflowClient("kafka-to-kafka");
-    Assert.assertEquals("kafka-to-kafka-master-1", dflClient.getDataflowMaster().getId());
+    DataflowClient dflClient = scribenginClient.getDataflowClient("kafka-to-kafka-1");
+    Assert.assertEquals("kafka-to-kafka-1-master-1", dflClient.getDataflowMaster().getId());
     Assert.assertEquals(1, dflClient.getDataflowMasters().size());
 
     StartStopResumeRunner startStopResumeRunner = new StartStopResumeRunner() ;
@@ -64,6 +60,7 @@ public class DataflowStartStopResumeUnitTest {
       try {
         String command = 
             "dataflow-test " + DataflowCommandStartStopResumeTest.TEST_NAME +
+            "  --dataflow-id kafka-to-kafka-1" +
             "  --dataflow-name kafka-to-kafka" +
             "  --sleep-before-stop 10000 --sleep-before-resume 5000" +
             "  --max-wait-for-stop    10000 " +
@@ -96,6 +93,7 @@ public class DataflowStartStopResumeUnitTest {
       try {
         String command = 
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
+          "  --dataflow-id kafka-to-kafka-1" +
           "  --dataflow-name  kafka-to-kafka" +
           "  --worker 3 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 100000" + 

@@ -59,9 +59,9 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       }
       report(shell, executeLogs);
     } catch(Exception ex) {
+      ex.printStackTrace();
       shell.execute("registry dump");
       shell.execute("dataflow info --id " + dataflowId);
-      ex.printStackTrace();
       throw ex ;
     }
   }

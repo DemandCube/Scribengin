@@ -174,8 +174,26 @@ public class RegistryImpl implements Registry {
   @Override
   public Node getRef(String path) throws RegistryException {
     checkConnected();
-    RefNode refNode = getDataAs(path, RefNode.class);
+    RefNode refNode = retrieveDataAs(path, RefNode.class);
     return new Node(this, refNode.getPath()) ;
+  }
+  
+  @Override
+  public <T> T getRefAs(String path, Class<T> type) throws RegistryException {
+    checkConnected();
+    RefNode refNode = retrieveDataAs(path, RefNode.class);
+    return retrieveDataAs(refNode.getPath(), type);
+  }
+  
+  @Override
+  public <T> List<T> getRefAs(List<String> path, Class<T> type) throws RegistryException {
+    checkConnected();
+    List<T> holder = new ArrayList<T>();
+    for(String selPath : path) {
+      RefNode refNode = retrieveDataAs(selPath, RefNode.class);
+      holder.add(retrieveDataAs(refNode.getPath(), type)) ;
+    }
+    return holder ;
   }
   
   @Override
@@ -191,6 +209,10 @@ public class RegistryImpl implements Registry {
   @Override
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException {
     checkConnected();
+    return retrieveDataAs(path, type);
+  }
+  
+  <T> T retrieveDataAs(String path, Class<T> type) throws RegistryException {
     try {
       byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
       if(bytes == null || bytes.length == 0) return null;

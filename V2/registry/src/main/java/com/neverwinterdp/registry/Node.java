@@ -128,11 +128,19 @@ public class Node {
   }
   
   public <T> List<T> getSelectChildrenAs(List<String> names, Class<T> type) throws RegistryException {
-    List<T> holder = new ArrayList<T>() ;
+    List<String> paths = new ArrayList<String>() ;
     for(int i = 0; i < names.size(); i++) {
-      holder.add(registry.getDataAs(path + "/" + names.get(i), type)) ;
+      paths.add(path + "/" + names.get(i));
     }
-    return holder ;
+    return registry.getDataAs(paths, type) ;
+  }
+  
+  public <T> List<T> getSelectRefChildrenAs(List<String> names, Class<T> type) throws RegistryException {
+    List<String> paths = new ArrayList<String>() ;
+    for(int i = 0; i < names.size(); i++) {
+      paths.add(path + "/" + names.get(i));
+    }
+    return registry.getRefAs(paths, type) ;
   }
   
   public <T> List<T> getChildrenAs(Class<T> type, boolean ignoreNoNodeError) throws RegistryException {
