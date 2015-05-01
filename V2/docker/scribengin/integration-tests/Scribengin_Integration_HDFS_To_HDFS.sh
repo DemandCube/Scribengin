@@ -15,7 +15,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 
 #Run dataflow
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
-          ./bin/shell.sh dataflow-test hdfs \
+          ./bin/shell.sh dataflow-test hdfs-to-hdfs \
                  --dataflow-name  hdfs-to-hdfs \
                  --dataflow-id    hdfs-to-hdfs-1 \
                  --worker 3 \
