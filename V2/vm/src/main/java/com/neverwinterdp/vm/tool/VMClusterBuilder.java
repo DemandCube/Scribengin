@@ -49,7 +49,7 @@ public class VMClusterBuilder {
   }
   
   public void shutdown() throws Exception {
-    List<VMDescriptor> list = vmClient.getRunningVMDescriptors() ;
+    List<VMDescriptor> list = vmClient.getActiveVMDescriptors() ;
     for(VMDescriptor vmDescriptor : list) {
       vmClient.execute(vmDescriptor, new VMCommand.Shutdown());
     }

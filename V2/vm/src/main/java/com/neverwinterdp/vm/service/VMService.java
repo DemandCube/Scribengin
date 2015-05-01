@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -22,8 +23,10 @@ import com.neverwinterdp.vm.event.VMHeartbeatNodeWatcher;
 @Singleton
 @JmxBean("role=vm-manager, type=VMService, name=VMService")
 public class VMService {
-  final static public String ALLOCATED_PATH = "/vm/allocated";
-  final static public String HISTORY_PATH   = "/vm/history";
+  final static public String ALL_PATH       = "/vm/instances/all";
+  final static public String ACTIVE_PATH    = "/vm/instances/active";
+  final static public String HISTORY_PATH   = "/vm/instances/history";
+  
   final static public String MASTER_PATH    = "/vm/master";
   final static public String LEADER_PATH    = MASTER_PATH + "/leader";
   final static public String EVENTS_PATH    = "/vm/events";
@@ -45,7 +48,9 @@ public class VMService {
     registry.createIfNotExist(MASTER_PATH + "/status") ;
     registry.createIfNotExist(LEADER_PATH) ;
     registry.createIfNotExist(EVENTS_PATH) ;
-    registry.createIfNotExist(ALLOCATED_PATH) ;
+    
+    registry.createIfNotExist(ALL_PATH) ;
+    registry.createIfNotExist(ACTIVE_PATH) ;
     registry.createIfNotExist(HISTORY_PATH) ;
     registry.setData(MASTER_PATH + "/status", Status.INIT);
     registryListener = new RegistryListener(registry);
@@ -64,15 +69,18 @@ public class VMService {
     registry.setData(MASTER_PATH + "/status", status);
   }
   
-  public VMDescriptor[] getAllocatedVMDescriptors() throws RegistryException {
-    List<String> names = registry.getChildren(ALLOCATED_PATH) ;
-    VMDescriptor[] descriptor = new VMDescriptor[names.size()];
-    for(int i = 0; i < names.size(); i++) {
-      String name = names.get(i) ;
-      descriptor[i] = registry.getDataAs(ALLOCATED_PATH + "/" + name, VMDescriptor.class) ;
-    }
-    return descriptor;
+  public List<VMDescriptor> getAllVMDescriptors() throws RegistryException {
+    return registry.getChildrenAs(ALL_PATH, VMDescriptor.class) ;
   }
+  
+  public List<VMDescriptor> getActiveVMDescriptors() throws RegistryException {
+    return getActiveVMDescriptors(registry) ;
+  }
+  
+  public List<VMDescriptor> getHistoryVMDescriptors() throws RegistryException {
+    return getHistoryVMDescriptors(registry) ;
+  }
+  
   
   public void register(VMDescriptor descriptor) throws Exception {
     register(registry, descriptor);
@@ -100,21 +108,16 @@ public class VMService {
       //TODO: fix this check by removing the watcher
       return;
     }
-    try {
-      //Copy the vm descriptor to the history path. This is not efficient, 
-      //but zookeeper does not provide the move method
-      Transaction transaction = registry.getTransaction();
-      transaction.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName() + "-",descriptor, NodeCreateMode.PERSISTENT_SEQUENTIAL);
-      transaction.rdelete(descriptor.getRegistryPath());
-      transaction.commit();
-    } catch(Exception ex) {
-      System.err.println("Error when move the vm history, vm = " + descriptor.getId());
-      ex.printStackTrace();
-    }
+    //Copy the vm descriptor to the history path. This is not efficient, 
+    //but zookeeper does not provide the move method
+    Transaction transaction = registry.getTransaction();
+    transaction.create(HISTORY_PATH + "/" + descriptor.getVmConfig().getName(), new byte[0], NodeCreateMode.PERSISTENT);
+    transaction.delete(ACTIVE_PATH + "/" + descriptor.getVmConfig().getName());
+    transaction.commit();
   }
   
   public boolean isRunning(VMDescriptor descriptor) throws Exception {
-    Node statusNode = registry.get(ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
+    Node statusNode = registry.get(ALL_PATH + "/" + descriptor.getVmConfig().getName() + "/status");
     if(!statusNode.exists()) return false;
     VMStatus status = statusNode.getDataAs(VMStatus.class);
     if(statusNode.hasChild("heartbeat")) {
@@ -134,15 +137,35 @@ public class VMService {
     return vmDescriptor;
   }
   
-  static public String getVMStatusPath(String vmName) { return ALLOCATED_PATH + "/" + vmName + "/status" ; }
+  static public String getVMStatusPath(String vmName) { return ALL_PATH + "/" + vmName + "/status" ; }
   
-  static public String getVMHeartbeatPath(String vmName) { return ALLOCATED_PATH + "/" + vmName + "/status/heartbeat" ; }
+  static public String getVMHeartbeatPath(String vmName) { return ALL_PATH + "/" + vmName + "/status/heartbeat" ; }
+  
+  static public List<VMDescriptor> getActiveVMDescriptors(Registry registry) throws RegistryException {
+    List<String> names = registry.getChildren(ACTIVE_PATH) ;
+    List<String> paths = new ArrayList<String>() ;
+    for(int i = 0; i < names.size(); i++) {
+      paths.add(ALL_PATH + "/" + names.get(i)) ;
+    }
+    return registry.getDataAs(paths, VMDescriptor.class);
+  }
+  
+  static public List<VMDescriptor> getHistoryVMDescriptors(Registry registry) throws RegistryException {
+    List<String> names = registry.getChildren(HISTORY_PATH) ;
+    List<String> paths = new ArrayList<String>() ;
+    for(int i = 0; i < names.size(); i++) {
+      paths.add(ALL_PATH + "/" + names.get(i)) ;
+    }
+    return registry.getDataAs(paths, VMDescriptor.class);
+  }
   
   static public void register(Registry registry, VMDescriptor descriptor) throws Exception {
-    registry.createIfNotExist(ALLOCATED_PATH) ;
+    registry.createIfNotExist(ALL_PATH) ;
+    registry.createIfNotExist(ACTIVE_PATH) ;
+    registry.createIfNotExist(HISTORY_PATH) ;
     registry.createIfNotExist(LEADER_PATH) ;
     
-    String vmPath  = ALLOCATED_PATH + "/" + descriptor.getVmConfig().getName();
+    String vmPath  = ALL_PATH + "/" + descriptor.getVmConfig().getName();
     descriptor.setRegistryPath(vmPath);
     
     Transaction transaction = registry.getTransaction() ;
@@ -150,6 +173,7 @@ public class VMService {
     transaction.setData(vmPath, descriptor) ;
     transaction.create(vmPath + "/status", VMStatus.ALLOCATED, NodeCreateMode.PERSISTENT);
     transaction.create(vmPath + "/commands", new byte[0], NodeCreateMode.PERSISTENT) ;
+    transaction.create(ACTIVE_PATH + "/" + descriptor.getVmConfig().getName(), new byte[0], NodeCreateMode.PERSISTENT) ;
     transaction.commit();
   }
 }

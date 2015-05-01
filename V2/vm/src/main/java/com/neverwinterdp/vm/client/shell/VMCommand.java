@@ -54,7 +54,7 @@ public class VMCommand extends Command {
       
       
       shell.console().println("Running VM:");
-      for(VMDescriptor desc : vmClient.getRunningVMDescriptors()){
+      for(VMDescriptor desc : vmClient.getActiveVMDescriptors()){
         Map<String,String> data = regFormatter.getFormattedMap(desc);
         tabFormatter.addRow(data.get("Name"), data.get("Hostname"),
                             data.get("Description"), data.get("Memory"),

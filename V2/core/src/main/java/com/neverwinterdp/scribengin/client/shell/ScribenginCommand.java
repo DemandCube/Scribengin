@@ -82,7 +82,7 @@ public class ScribenginCommand extends Command {
       } else if (shutdown) {
         // shell.console().h1("Shutting down current Scribengin Master");
         VMClient vmClient = shell.getVMClient();
-        for (VMDescriptor desc : vmClient.getRunningVMDescriptors()) {
+        for (VMDescriptor desc : vmClient.getActiveVMDescriptors()) {
           if (desc.getRegistryPath().equals(leaderPath)) {
             shell.console().h1("Shutting down leader " + desc.getId());
             vmClient.shutdown(desc);

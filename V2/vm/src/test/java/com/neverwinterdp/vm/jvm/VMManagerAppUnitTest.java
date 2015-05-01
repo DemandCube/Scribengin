@@ -41,7 +41,7 @@ public class VMManagerAppUnitTest  {
     Thread.sleep(5000);
     
     debugger = new RegistryDebugger(System.err, vmCluster.getVMClient().getRegistry().connect());
-    debugger.watch("/vm/allocated/vm-master-1", new VMNodeDebugger(), true);
+    debugger.watch("/vm/all/vm-master-1", new VMNodeDebugger(), true);
   }
   
   @After
@@ -96,6 +96,8 @@ public class VMManagerAppUnitTest  {
       eventsListener.waitForEvents(10000);
       
       vmClient.shutdown();
+    } catch(Exception ex) {
+      ex.printStackTrace();
     } finally {
       Thread.sleep(1000);
       shell.execute("registry dump");
