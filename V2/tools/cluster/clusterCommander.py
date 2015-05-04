@@ -3,13 +3,12 @@
 exec python $0 ${1+"$@"}
 """
 
-import click, logging, multiprocessing, signal
+import click, logging, multiprocessing, signal, os
 from sys import stdout, exit
 from time import sleep
 
 from failure.FailureSimulator import ZookeeperFailure,KafkaFailure,DataFlowFailure
 from Cluster import Cluster
-
 
 _debug = False
 _logfile = ''
@@ -105,17 +104,22 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
 @click.option('--stop',                is_flag=True, help="stop cluster")
 @click.option('--force-stop',          is_flag=True, help="kill cluster")
 @click.option('--clean',               is_flag=True, help="Clean old cluster data")
-@click.option('--sync',                is_flag=True, help="Sync cluster datas")
+@click.option('--sync',                default="", help="Sync cluster datas from the given hostname")
 @click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
-@click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
-@click.option('--zookeeper-server-config',             default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
+@click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=False))
+@click.option('--zookeeper-server-config',  default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=False))
 @click.option('--execute',             help='execute given command on all nodes')
 def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wait_before_kill, kafka_server_config, zookeeper_server_config, execute):
   cluster = Cluster()
-  
-  if(sync):
-    cluster.sync()
+      
+  if(sync != ""):
+    #Validating hostname
+    hostname = sync
+    if hostname in cluster.getHostnames():
+      cluster.sync(sync)
+    else:
+      raise click.BadParameter("Host \"" + sync + "\" does not exist in the cluster.", param_hint = "--sync")
     
   if(execute is not None):
     cluster.sshExecute(execute)
@@ -152,6 +156,12 @@ def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wa
   
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    if not os.path.exists(kafka_server_config):
+      raise click.BadParameter("Path \"" + kafka_server_config + "\" does not exist.", param_hint = "--kafka-server-config")
+    
+    if not os.path.exists(zookeeper_server_config):
+      raise click.BadParameter("Path \"" + zookeeper_server_config + "\" does not exist.", param_hint = "--zookeeper-server-config")
+  
     sleep(wait_before_start)
     logging.debug("Starting Cluster")
     cluster.paramDict["server_config"] = kafka_server_config

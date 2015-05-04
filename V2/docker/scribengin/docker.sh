@@ -275,7 +275,7 @@ function host_sync() {
   scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
   
-  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync"
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync hadoop-master"
 }
 
 function cluster(){
