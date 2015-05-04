@@ -24,7 +24,6 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/jun
               --max-wait-for-stop    30000 \
               --max-wait-for-resume  30000 \
               --max-execution 25 \
-              --max-execution 3 \
               --print-summary \
               --junit-report /opt/junit-reports/DataflowTestStartStopResume.xml" &
 
