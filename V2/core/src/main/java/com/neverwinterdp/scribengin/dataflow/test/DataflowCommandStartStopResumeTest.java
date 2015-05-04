@@ -57,7 +57,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
-      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
+      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowId);
       DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
       
       if(waitBeforeStart > 0) {

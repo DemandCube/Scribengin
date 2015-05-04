@@ -98,7 +98,7 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     
     public ActiveDataflowWorkerWatcher(DataflowRegistry dflRegistry, boolean persistent) throws RegistryException {
       super(dflRegistry.getRegistry(), persistent);
-      activeWorkersNode = dflRegistry.getAllWorkersNode() ;
+      activeWorkersNode = dflRegistry.getActiveWorkersNode() ;
       watchChildren(activeWorkersNode.getPath());
     }
 
@@ -122,10 +122,12 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     }
     
     public boolean waitForNoMoreWorker(long timeout) throws Exception, InterruptedException {
+      List<String> workers = activeWorkersNode.getChildren();
+      if(workers.size() == 0) return true;
       long waitTime = timeout ;
       while(waitTime > 0) {
         long start = System.currentTimeMillis() ;
-        List<String> workers = waitForActiveWorkerChange(waitTime) ;
+        workers = waitForActiveWorkerChange(waitTime) ;
         if(workers == null) {
           workers = activeWorkersNode.getChildren();
         }

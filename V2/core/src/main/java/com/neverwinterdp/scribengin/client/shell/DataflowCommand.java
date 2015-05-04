@@ -71,10 +71,10 @@ public class DataflowCommand extends Command {
       }
       
       if(workers || showAll){
-        console.println("\nWorkers:");
+        console.println("\nActive Workers:");
         List<String> workers = dRegistry.getActiveWorkerNames();
         for(String worker : workers) {
-          List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getActiveExecutors(worker);
+          List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getWorkerExecutors(worker);
           console.println("  Worker: " + worker);
           Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
           console.println(executorList.format("Executors", "    "));

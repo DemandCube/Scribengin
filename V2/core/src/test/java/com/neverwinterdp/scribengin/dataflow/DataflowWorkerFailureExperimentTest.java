@@ -62,7 +62,7 @@ public class DataflowWorkerFailureExperimentTest {
           "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME + 
           "  --dataflow-id kafka-to-kafka-1" + 
           "  --dataflow-name kafka-to-kafka" + 
-          "  --failure-period 10000 --max-failure 2 --simulate-kill";
+          "  --failure-period 10000 --max-failure 5 --simulate-kill";
         shell.execute(command);
       } catch (Exception e) {
         e.printStackTrace();

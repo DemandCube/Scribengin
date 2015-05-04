@@ -328,15 +328,25 @@ public class DataflowRegistry {
   
   public Node getAllWorkersNode() { return allWorkers ; }
   
-  public List<String> getActiveWorkerNames() throws RegistryException {
+  public Node getActiveWorkersNode() { return activeWorkers ; }
+  
+  public Node getWorkersNode(String vmId) throws RegistryException { 
+    return allWorkers.getChild(vmId) ; 
+  }
+  
+  public List<String> getAllWorkerNames() throws RegistryException {
     return allWorkers.getChildren();
+  }
+  
+  public List<String> getActiveWorkerNames() throws RegistryException {
+    return activeWorkers.getChildren();
   }
   
   public DataflowWorkerStatus getDataflowWorkerStatus(String vmId) throws RegistryException {
     return allWorkers.getChild(vmId).getChild("status").getDataAs(DataflowWorkerStatus.class);
   }
   
-  public List<DataflowTaskExecutorDescriptor> getActiveExecutors(String worker) throws RegistryException {
+  public List<DataflowTaskExecutorDescriptor> getWorkerExecutors(String worker) throws RegistryException {
     Node executors = allWorkers.getDescendant(worker + "/executors") ;
     return executors.getChildrenAs(DataflowTaskExecutorDescriptor.class);
   }

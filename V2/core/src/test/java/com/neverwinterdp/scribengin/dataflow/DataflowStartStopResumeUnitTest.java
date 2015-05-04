@@ -95,7 +95,7 @@ public class DataflowStartStopResumeUnitTest {
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
           "  --dataflow-id kafka-to-kafka-1" +
           "  --dataflow-name  kafka-to-kafka" +
-          "  --worker 3 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
+          "  --worker 2 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 100000" + 
           "  --sink-name output "+
           "  --debug-dataflow-activity-detail" +

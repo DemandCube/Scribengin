@@ -42,7 +42,7 @@ public class DataflowMasterFailureExperimentTest {
     submitter.start();
     
     ScribenginClient scribenginClient = shell.getScribenginClient();
-    DataflowClient dflClient = scribenginClient.getDataflowClient("kafka-to-kafka");
+    DataflowClient dflClient = scribenginClient.getDataflowClient("kafka-to-kafka-1");
     FailureConfig failureConfig = new FailureConfig("run-dataflow", "create-dataflow-worker", FailurePoint.After) ;
     dflClient.getDataflowRegistry().broadcastFailureEvent(failureConfig);
     submitter.waitForTermination(180000);
@@ -55,6 +55,7 @@ public class DataflowMasterFailureExperimentTest {
       try {
         String command = 
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
+          "  --dataflow-id  kafka-to-kafka-1" +
           "  --dataflow-name  kafka-to-kafka" +
           "  --worker 2 --executor-per-worker 2 --duration 180000 --task-max-execute-time 10000" +
           "  --source-name input --source-num-of-stream 10 --source-write-period 0 --source-max-records-per-stream 10000" + 

@@ -114,11 +114,10 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node activeWorkerNodes = dflRegistry.getAllWorkersNode() ;
-      List<String> workers = activeWorkerNodes.getChildren();
+      List<String> workers = dflRegistry.getActiveWorkerNames();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
-        String path = activeWorkerNodes.getPath() + "/" + workers.get(i) + "/status" ;
+        String path = dflRegistry.getWorkersNode(workers.get(i)) + "/status" ;
         waitingListener.add(path, DataflowWorkerStatus.RUNNING);
       }
       
