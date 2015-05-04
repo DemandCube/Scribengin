@@ -95,11 +95,10 @@ class ServerSet(object):
       output[server.getHostname()] = server.sshExecute(command)
     return output 
   
-  def sync(self):
-    print socket.gethostname()
+  def sync(self, hostname):
     for server in self.servers :
-      if server.getHostname() != socket.gethostname():
-        self.printTitle("Sync data with " + server.getHostname())
+      if server.getHostname() != hostname:
+        self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
         command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
         os.system(command)
     
@@ -179,6 +178,12 @@ class ServerSet(object):
       if(server.getRole() == role) :
         serverSet.addServer(server)
     return serverSet
+  
+  def getHostnames(self):
+    hostnames = []
+    for server in self.servers :
+      hostnames.append(server.hostname)
+    return hostnames
   
   def startVmMaster(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
