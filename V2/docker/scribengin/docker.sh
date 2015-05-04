@@ -56,8 +56,8 @@ function h1() {
 function build_image() {
   h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
-  mkdir $DOCKERSCRIBEDIR/tmp
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  mkdir $DOCKERSCRIBEDIR/tmp
 
   if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
     $DOCKERSCRIBEDIR/scribengin.sh build
