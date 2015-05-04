@@ -114,7 +114,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
         String path = activeWorkerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.RUNNING, "Wait for RUNNING status for worker " + workers.get(i));
+        waitingListener.add(path, DataflowWorkerStatus.RUNNING, "Wait for RUNNING status for worker " + workers.get(i), true);
       }
       
       waitingListener.waitForEvents(30 * 1000);

@@ -61,6 +61,15 @@ abstract public class WaitingNodeEventListener {
     if(detectNodeEventCount == 0) estimateLastDetectEventTime = System.currentTimeMillis() ;
   }
   
+  public <T> void add(String path, T expectData, String desc, boolean checkBeforeWatch) throws Exception {
+    Registry registry = registryListener.getRegistry() ;
+    if(checkBeforeWatch && registry.exists(path)) {
+      T data = (T) registry.getDataAs(path, expectData.getClass());
+      if(expectData.equals(data)) return;
+    }
+    add(path, expectData, desc);
+  }
+  
   public <T> void add(String path, NodeEventMatcher matcher) throws Exception {
     add(path, matcher, null);
   }
