@@ -1,9 +1,8 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 from subprocess import call
-import os, socket
-
-
+import os, socket, re
+from time import time
 
 #This function is outside the ServerSet class
 #because otherwise it wouldn't be pickleable 
@@ -15,11 +14,61 @@ def getReportOnServer(server):
   if serverReportDict is not None and serverReportDict["Hostname"] :
     result.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
     procs = server.getProcesses()
-    for process in procs:
-      procDicts = server.getProcess(process).getReportDict()
-      for procDict in procDicts:
+    
+    #processIdentifierMap to filter pid and processname from jps -m output
+    # <process name> = <process name column>
+    processIdentifierMap = {}
+    for procKey in procs:
+      processIdentifierMap[procs[procKey].processIdentifier] = 1
+      
+    processIdentifierMap["-master"] = 3
+    processIdentifierMap["-worker"] = 3
+
+    sshOut = ""
+    runningProcess = {}
+    stdout,stderr = procs.values()[0].sshExecute("jps -m")
+    for line in stdout.splitlines():
+      for processIdentifierKey in processIdentifierMap:
+        if re.match('.*'+processIdentifierKey+'.*', line):
+          processList = line.split(" ")
+          runningProcess[processList[processIdentifierMap[processIdentifierKey]]] = processList[0]
+          break
+   
+    report = []
+    #adding default processes report
+    for procKey in procs:
+      running = "None"
+      pid = ""
+      if procs[procKey].processIdentifier in runningProcess:
+        running = "Running"
+        pid = runningProcess[procs[procKey].processIdentifier]
+        del runningProcess[procs[procKey].processIdentifier]
+      dictionary = {
+      "Role" : procs[procKey].role,
+      "Hostname": procs[procKey].hostname,
+      "HomeDir" : procs[procKey].homeDir,
+      "Status" : running,
+      "ProcessIdentifier" : procs[procKey].processIdentifier,
+      "processID" : pid
+      } 
+      report.append(dictionary)
+      
+    #adding dynamic processes report
+    for runningProcessKey in runningProcess:
+      dictionary = {
+      "Role" : procs.values()[0].role,
+      "Hostname": procs.values()[0].hostname,
+      "HomeDir" : procs.values()[0].homeDir,
+      "Status" : "Running",
+      "ProcessIdentifier" : runningProcessKey,
+      "processID" : runningProcess[runningProcessKey]
+      }
+      report.append(dictionary)
+    
+    for procDict in report:
         if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
           result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+  
   return result
 
 class ServerSet(object):
@@ -279,9 +328,9 @@ class ServerSet(object):
   
   def cleanHadoopWorker(self):
     return self.cleanProcess("datanode")
-  
-  
+    
   def getReport(self):
+    start = time()
     serverReport = []
     asyncresults = []
     pool = Pool(processes=self.numProcessesForStatus)
@@ -298,7 +347,8 @@ class ServerSet(object):
     headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
     pool.close()
     pool.join()
+    print "Got report in " + str(time() - start)
     return tabulate(serverReport, headers=headers)
- 
+
   def report(self) :
     print self.getReport()

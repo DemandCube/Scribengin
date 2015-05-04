@@ -81,18 +81,9 @@ class Server(object):
     return output
     
   def getReportDict(self):
-    procDict= {}
-    for key in self.processes:
-      running = "Running"
-      if not self.processes[key].isRunning():
-        running = "None"  
-      procDict["Status"] = running
-      
     return dict({
             "Hostname" : self.hostname,
-            "Role"     : self.role,
-            "Num processess": len(self.processes.keys())}.items() + procDict.items())
-                
+            "Role"     : self.role})
     
   def report(self):
     report = self.getReportDict()
