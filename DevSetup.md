@@ -138,7 +138,7 @@ Ctrl-c doesn't really kill the yarn app. You'll need to issue a kill command.
 #application_id can be found in the resourcemanager UI
 yarn application -kill  [application_id]
 ```
-
+ 
 
 
 To run ScribeMaster in yarn mode:
