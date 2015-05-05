@@ -41,7 +41,7 @@ abstract public class DataflowTest {
   @Parameter(names = "--duration", description = "Max duration for the test")
   protected long duration = 60000;
 
-  @Parameter(names = "--print-dataflow-info", description = "Max duration for the test")
+  @Parameter(names = "--print-dataflow-info", description = "print data flow info")
   protected long printDataflowInfo = 5000;
 
   @Parameter(names = "--debug-dataflow-task", description = "Enable the debug dataflow task")
@@ -157,12 +157,6 @@ abstract public class DataflowTest {
     else if(debugDataflowActivity) {
       shell.getScribenginClient().getDataflowActivityDebugger(System.out, dflDescriptor, false);
     }
-
-    //TODO: this code should not be here and should not be used this way. If you use the thread like this, it is like
-    //you call start and follow by a stop call.
-//    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
-//    dataflowInfoThread.start();
-//    dataflowInfoThread.interrupt();
   }
 
   protected void junitReport(DataflowTestReport dataFlowTestReport) throws Exception {

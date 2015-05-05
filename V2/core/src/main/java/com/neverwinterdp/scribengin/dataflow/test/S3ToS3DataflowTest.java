@@ -35,6 +35,8 @@ public class S3ToS3DataflowTest extends DataflowTest {
 
     dflDescriptor.addSinkDescriptor("default", sinkValidator.getSinkDescriptor());
 
+    Thread dataflowInfoThread = newPrintDataflowThread(shell, dflDescriptor);
+    dataflowInfoThread.start();
     setupDebugger(shell, scribenginClient, dflDescriptor);
 
     DataflowWaitingEventListener waitingEventListener = scribenginClient.submit(dflDescriptor);
@@ -48,6 +50,7 @@ public class S3ToS3DataflowTest extends DataflowTest {
     sinkValidator.run();
 
     report(shell, sourceGenerator, sinkValidator);
+    dataflowInfoThread.interrupt();
 
     if (dumpRegistry) {
       shell.execute("registry dump");

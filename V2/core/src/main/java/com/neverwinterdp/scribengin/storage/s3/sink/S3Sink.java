@@ -13,51 +13,64 @@ import com.neverwinterdp.scribengin.storage.sink.Sink;
 import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 
 public class S3Sink implements Sink {
-  private StorageDescriptor descriptor ;
-  private S3Folder          sinkFolder ;
-  
-  private int idTracker = 0;
-  private LinkedHashMap<Integer, S3SinkStream> streams = new LinkedHashMap<Integer, S3SinkStream>() ;
-  public S3Sink(StorageDescriptor  descriptor) {
-        String regionName = descriptor.attribute("s3.region.name");
-        S3Client s3Client = new S3Client(regionName);
-        s3Client.onInit();
-        init(s3Client, descriptor);
-  }
+  private StorageDescriptor descriptor;
+  private S3Folder sinkFolder;
 
-  public S3Sink(S3Client s3Client, StorageDescriptor  descriptor) {
+  private int idTracker = 0;
+  private LinkedHashMap<Integer, S3SinkStream> streams = new LinkedHashMap<Integer, S3SinkStream>();
+
+  public S3Sink(StorageDescriptor descriptor) {
+    String regionName = descriptor.attribute("s3.region.name");
+    S3Client s3Client = new S3Client(regionName);
+    s3Client.onInit();
     init(s3Client, descriptor);
   }
-//TODO we should have autocreate boolean as an attribute in descriptor
+
+  public S3Sink(S3Client s3Client, StorageDescriptor descriptor) {
+    init(s3Client, descriptor);
+  }
+  
+  //TODO(tuan) we require that caller specifies bucket and folder, please confirm if we need to require folder also.
+  //currently we throw an exception if s3.bucket.name and s3.storage.path are not specified
   private void init(S3Client s3Client, StorageDescriptor descriptor) {
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");
-    if(!s3Client.hasBucket(bucketName)) {
-      throw new  AmazonServiceException("Bucket " + bucketName + " does not exist");
+    boolean autoCreate = Boolean.valueOf(descriptor.attribute("s3.bucket.autocreate"));
+    if (!s3Client.hasBucket(bucketName)) {
+      if (autoCreate) {
+        s3Client.createBucket(bucketName);
+      }
+      else {
+        throw new AmazonServiceException("Bucket " + bucketName + " does not exist");
+      }
     }
     String folderPath = descriptor.attribute("s3.storage.path");
-    if(!s3Client.hasKey(bucketName, folderPath)) {
-      s3Client.createS3Folder(bucketName, folderPath) ;
+    if (!s3Client.hasKey(bucketName, folderPath)) {
+      s3Client.createS3Folder(bucketName, folderPath);
     }
 
     sinkFolder = s3Client.getS3Folder(bucketName, folderPath);
     List<String> streamNames = sinkFolder.getChildrenNames();
-    for(String streamName : streamNames) {
+    for (String streamName : streamNames) {
       StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
       streamDescriptor.attribute("s3.stream.name", streamName);
       streamDescriptor.setId(S3Util.getStreamId(streamName));
       S3SinkStream stream = new S3SinkStream(sinkFolder, streamDescriptor);
       streams.put(stream.getDescriptor().getId(), stream);
-      if(idTracker < stream.getDescriptor().getId()) {
+      if (idTracker < stream.getDescriptor().getId()) {
         idTracker = stream.getDescriptor().getId();
       }
     }
   }
-  
-  public S3Folder getSinkFolder() { return this.sinkFolder ; }
-  
+
+  public S3Folder getSinkFolder() {
+    return this.sinkFolder;
+  }
+
   @Override
-  public StorageDescriptor getDescriptor() { return descriptor; }
+  public StorageDescriptor getDescriptor() {
+    return descriptor;
+  }
 
   @Override
   synchronized public SinkStream getStream(StreamDescriptor descriptor) throws Exception {
@@ -74,19 +87,19 @@ public class S3Sink implements Sink {
   @Override
   synchronized public void delete(SinkStream stream) throws Exception {
     SinkStream found = streams.remove(stream.getDescriptor().getId());
-    if(found != null) {
+    if (found != null) {
       found.delete();
     }
   }
 
   @Override
   synchronized public SinkStream newStream() throws Exception {
-    int streamId = idTracker++ ;
+    int streamId = idTracker++;
     StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
     streamDescriptor.setId(streamId);
     streamDescriptor.attribute("s3.stream.name", "stream-" + streamId);
     S3SinkStream stream = new S3SinkStream(sinkFolder, streamDescriptor);
-    streams.put(streamId, stream) ;
+    streams.put(streamId, stream);
     return stream;
   }
 

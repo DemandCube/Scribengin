@@ -1,36 +1,39 @@
 package com.neverwinterdp.scribengin.storage.s3.source;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.util.JSONSerializer;
-//TODO(anthony) convert to use a json reader
+
 public class S3ObjectReader implements Closeable {
 
   protected static final Pattern PATTERN = Pattern.compile("(?=<)|(?<=})");
   private InputStream inputStream;
-  private Scanner scanner;
+  private Scanner streamReader;
 
   public S3ObjectReader(InputStream inputStream) {
-    this.scanner = new Scanner(inputStream);
-    scanner.useDelimiter(PATTERN);
+    BufferedInputStream bis = new BufferedInputStream(inputStream);
+    streamReader = new Scanner(bis, StandardCharsets.UTF_8.name());
+    streamReader.useDelimiter(PATTERN);
     this.inputStream = inputStream;
   }
 
   public Record next() {
-    return JSONSerializer.INSTANCE.fromString(scanner.next(), Record.class);
+    return JSONSerializer.INSTANCE.fromString(streamReader.next(), Record.class);
+  }
+
+  public boolean hasNext() {
+    return streamReader.hasNext();
   }
 
   @Override
   public void close() throws IOException {
     inputStream.close();
-  }
-
-  public boolean hasNext() {
-    return scanner.hasNext();
   }
 }

@@ -91,6 +91,8 @@ public class S3Folder {
   
   public S3ObjectWriter createObjectWriter(String name, ObjectMetadata metadata) throws IOException {
     S3ObjectWriter writer = new S3ObjectWriter(s3Client, bucketName, toKey(name), metadata);
+   //TODO (tuan) confirm if this should be here.
+    s3Client.createS3Folder(bucketName, toKey(name));
     return writer;
   }
   
