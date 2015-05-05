@@ -1,6 +1,6 @@
 First things first.  Check out NeverwinterDP on your local machine
 ```
-cd /path/to/your/workspace/
+cd /path/to/your/workspace/ 
 git clone http://github.com/DemandCube/NeverwinterDP
 cd NeverwinterDP
 ./neverwinterdp.sh checkout 
