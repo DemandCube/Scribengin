@@ -5,7 +5,7 @@ git clone http://github.com/DemandCube/NeverwinterDP
 cd NeverwinterDP
 ./neverwinterdp.sh checkout
 ```
-  
+   
 Here's the Vagrantfile to use.  
 #####Note - replace vm.synced_folder with /path/to/your/workspace/
 ```
