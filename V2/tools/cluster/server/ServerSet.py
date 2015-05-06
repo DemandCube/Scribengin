@@ -352,7 +352,6 @@ class ServerSet(object):
     headers = ["Role", "Hostname", "ProcessIdentifier", "ProcessID", "HomeDir", "Status"]
     pool.close()
     pool.join()
-    print "Got report in " + str(time() - start)
     return tabulate(serverReport, headers=headers)
 
   def report(self) :
