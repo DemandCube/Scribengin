@@ -1,7 +1,7 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 from subprocess import call
-import os, socket, re
+import os, socket, re, sys
 from os.path import expanduser, join
 from time import time
 
@@ -373,13 +373,15 @@ class ServerSet(object):
     self.cleanHadoopMaster()
   
   def scribenginBuild(self,with_test):
+    self.printTitle("Build Scribengin")
     command = ""
     if(with_test):
       command="../gradlew clean build install release"
     else:
       command="../gradlew clean build install release -x test"
-    currentWorkingDir = os.getcwd()
-    os.chdir("../../")
+    currentWorkingDir = self.module_path()
+    
+    os.chdir(join(currentWorkingDir,"../../../"))
     os.system(join(os.getcwd(),command))
     
     os.chdir(join(os.getcwd(),"release"))
@@ -387,13 +389,14 @@ class ServerSet(object):
     os.chdir(currentWorkingDir)
     
   def scribenginDeploy(self, hostname, clean):
+    self.printTitle("Deploy Scribengin")
     self.killCluster()
     if(clean):
       self.cleanCluster()
-    currentWorkingDir = os.getcwd()
+    currentWorkingDir = self.module_path()
     self.sshExecute("rm -rf /opt/scribengin")
     self.sshExecute("rm -rf /opt/cluster")
-    os.chdir(join(currentWorkingDir, "../../"))
+    os.chdir(join(currentWorkingDir, "../../../"))
     os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"release/build/release")+" neverwinterdp@"+hostname+":/opt/scribengin")
     os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"tools/cluster")+" neverwinterdp@"+hostname+":/opt/cluster")
     os.chdir(currentWorkingDir)
@@ -420,3 +423,13 @@ class ServerSet(object):
 
   def report(self) :
     print self.getReport()
+
+  def we_are_frozen(self):
+      # All of the modules are built-in to the interpreter, e.g., by py2exe
+      return hasattr(sys, "frozen")
+  
+  def module_path(self):
+      encoding = sys.getfilesystemencoding()
+      if self.we_are_frozen():
+          return os.path.dirname(unicode(sys.executable, encoding))
+      return os.path.dirname(unicode(__file__, encoding))
