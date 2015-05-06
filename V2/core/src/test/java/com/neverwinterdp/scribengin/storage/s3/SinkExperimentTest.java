@@ -75,7 +75,6 @@ public class SinkExperimentTest {
 
     SinkStreamWriter writer = stream.getWriter();
     
-    
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 100; j++) {
         String key = "stream=" + stream.getDescriptor().getId() + ",buffer=" + i + ",record=" + j;

@@ -20,10 +20,13 @@ public class S3Source implements Source {
   private Map<Integer, S3SourceStream> streams = new LinkedHashMap<Integer, S3SourceStream>();
 
   public S3Source(S3Client s3Client, StreamDescriptor streamDescriptor) throws Exception {
+   
     this(s3Client, getSourceDescriptor(streamDescriptor));
+
   }
 
   public S3Source(S3Client s3Client, StorageDescriptor descriptor) throws Exception {
+    System.err.println("stream descritor "+ descriptor);
      this.descriptor = descriptor;
      String bucketName = descriptor.attribute("s3.bucket.name");
 
@@ -37,10 +40,12 @@ public class S3Source implements Source {
     for (S3Folder s3Folder : folders) {
       StreamDescriptor sDescriptor = new StreamDescriptor();
       sDescriptor.setType(descriptor.getType());
+      System.err.println("foler path "+ s3Folder.getFolderPath());
       sDescriptor.setLocation(s3Folder.getFolderPath());
       sDescriptor.setId(id++);
       sDescriptor.attribute("s3.bucket.name", descriptor.attribute("s3.bucket.name"));
       sDescriptor.attribute("s3.storage.path", s3Folder.getFolderPath());
+      System.out.println("mbaya "+ sDescriptor);
       S3SourceStream stream = new S3SourceStream(s3Client, sDescriptor);
       streams.put(sDescriptor.getId(), stream);
     }
@@ -67,13 +72,7 @@ public class S3Source implements Source {
   }
 
   static StorageDescriptor getSourceDescriptor(StreamDescriptor streamDescriptor) {
-    StorageDescriptor descriptor = new StorageDescriptor();
-    descriptor.setType(streamDescriptor.getType());
-    String location = streamDescriptor.getLocation();
-    //TODO (anthony) what if we dont have '/'?
-    System.err.println("locationzzzz "+ location);
-    location = location.substring(0, location.lastIndexOf('/'));
-    descriptor.setLocation(location);
-    return descriptor;
+
+    return streamDescriptor;
   }
 }
