@@ -22,7 +22,7 @@ import com.neverwinterdp.scribengin.storage.sink.Sink;
 import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
-public class SinkExperimentationTest {
+public class SinkExperimentTest {
 
   private static S3Client s3Client;
 
@@ -58,6 +58,8 @@ public class SinkExperimentationTest {
     }
   }
 
+  //TODO: please print out the dump structure , before , at the middle , and after to show that 
+  //you have the writing buffer, none after commit or close. All the buffer should merge to a data file.
   @Test
   public void testSink() throws Exception {
     StorageDescriptor descriptor = new StorageDescriptor();
@@ -87,6 +89,8 @@ public class SinkExperimentationTest {
     S3Util.listObjects(s3Client, bucketName);
   }
   
+  
+  //TODO: for rollback I think you just need to discard the uncommit buffer. Is it hard to implement with S3
   @Test
   @Ignore("rollback not implemented in writer")
   public void testRollback() throws Exception {
@@ -120,7 +124,9 @@ public class SinkExperimentationTest {
       //success
       return;
     }
-  }  @Test
+  }  
+  
+  @Test
   public void testAutoCreateTrue() throws Exception {
     String newBucket = "sink-unittest-" + UUID.randomUUID();
     StorageDescriptor descriptor = new StorageDescriptor();
@@ -136,6 +142,8 @@ public class SinkExperimentationTest {
     }
   }
 
+  //TODO: why ?? when you have multi thread , each thread will write to its own buffer. What do you mean 
+  //correctly implemented
   @Test
   @Ignore // untill writer.commit is correctly implemented
   public void testMultiThread() throws Exception {
