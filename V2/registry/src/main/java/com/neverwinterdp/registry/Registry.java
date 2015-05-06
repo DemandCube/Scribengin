@@ -22,6 +22,7 @@ public interface Registry {
   public Node createIfNotExist(String path) throws RegistryException ;
 
   public Node get(String path) throws RegistryException ;
+  public NodeInfo getInfo(String path) throws RegistryException ;
   public Node getRef(String path) throws RegistryException ;
   public <T> T getRefAs(String path, Class<T> type) throws RegistryException ;
   public <T> List<T> getRefAs(List<String> path, Class<T> type) throws RegistryException ;

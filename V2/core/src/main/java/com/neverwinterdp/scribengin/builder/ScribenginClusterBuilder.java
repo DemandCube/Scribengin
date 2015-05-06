@@ -36,7 +36,7 @@ public class ScribenginClusterBuilder {
   }
   
   public void startVMMasters() throws Exception {
-    vmClusterBuilder.start(); 
+    vmClusterBuilder.start();
   }
   
   public void startScribenginMasters() throws Exception {

@@ -172,6 +172,18 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
+  public NodeInfo getInfo(String path) throws RegistryException {
+    checkConnected();
+    Stat stat;
+    try {
+      stat = zkClient.exists(realPath(path), false);
+      return new ZKNodeInfo(stat);
+    } catch (Exception e) {
+      throw toRegistryException("Cannot retrieve the node info", e) ;
+    }
+  }
+  
+  @Override
   public Node getRef(String path) throws RegistryException {
     checkConnected();
     RefNode refNode = retrieveDataAs(path, RefNode.class);

@@ -12,5 +12,17 @@ public class ZKNodeInfo implements NodeInfo {
   }
   
   @Override
+  public long getCtime() { return stat.getCtime() ; }
+ 
+  @Override
+  public long getMtime() { return stat.getMtime() ; }
+  
+  @Override
   public int getVersion() { return stat.getVersion(); }
+
+  @Override
+  public int getDataLength() { return stat.getDataLength(); }
+  
+  @Override
+  public int getNumOfChildren() { return stat.getNumChildren() ; }
 }
