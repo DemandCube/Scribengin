@@ -1,7 +1,7 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 from subprocess import call
-import os, socket, re
+import os, socket, re, sys
 from os.path import expanduser, join
 from time import time
 
@@ -373,6 +373,8 @@ class ServerSet(object):
     self.cleanHadoopMaster()
   
   def scribenginBuild(self,with_test):
+    print "module_path"
+    print self.module_path()
     command = ""
     if(with_test):
       command="../gradlew clean build install release"
@@ -380,7 +382,6 @@ class ServerSet(object):
       command="../gradlew clean build install release -x test"
     currentWorkingDir = os.path.dirname(os.path.abspath(__file__))
     
-    print currentWorkingDir
     os.chdir("../../")
     print join(os.getcwd(),command)
     os.system(join(os.getcwd(),command))
@@ -423,3 +424,13 @@ class ServerSet(object):
 
   def report(self) :
     print self.getReport()
+
+  def we_are_frozen(self):
+      # All of the modules are built-in to the interpreter, e.g., by py2exe
+      return hasattr(sys, "frozen")
+  
+  def module_path(self):
+      encoding = sys.getfilesystemencoding()
+      if self.we_are_frozen():
+          return os.path.dirname(unicode(sys.executable, encoding))
+      return os.path.dirname(unicode(__file__, encoding))
