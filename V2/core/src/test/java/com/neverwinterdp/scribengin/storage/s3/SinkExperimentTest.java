@@ -42,7 +42,6 @@ public class SinkExperimentTest {
 
   @Before
   public void setup() throws Exception {
-    // delete bucket, create bucket
     bucketName = "sink-unittest-" + UUID.randomUUID();
     folderName = "folder-" + UUID.randomUUID();
     if (s3Client.hasBucket(bucketName)) {
@@ -62,6 +61,8 @@ public class SinkExperimentTest {
   //you have the writing buffer, none after commit or close. All the buffer should merge to a data file.
   @Test
   public void testSink() throws Exception {
+    S3Util.listObjects(s3Client, bucketName);
+    System.out.println("------------------");
     StorageDescriptor descriptor = new StorageDescriptor();
     descriptor.attribute("s3.bucket.name", bucketName);
     descriptor.attribute("s3.storage.path", folderName);
@@ -80,15 +81,14 @@ public class SinkExperimentTest {
         String key = "stream=" + stream.getDescriptor().getId() + ",buffer=" + i + ",record=" + j;
         writer.append(Record.create(key, key));
       }
-      // writer.commit();
+   //    writer.commit();
     }
     writer.commit();
     writer.close();
 
     S3Util.listObjects(s3Client, bucketName);
   }
-  
-  
+
   //TODO: for rollback I think you just need to discard the uncommit buffer. Is it hard to implement with S3
   @Test
   @Ignore("rollback not implemented in writer")

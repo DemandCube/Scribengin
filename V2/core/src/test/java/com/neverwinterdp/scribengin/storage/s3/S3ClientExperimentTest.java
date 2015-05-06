@@ -17,7 +17,7 @@ import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.storage.s3.S3ObjectWriter;
 import com.neverwinterdp.util.IOUtil;
 
-public class S3ClientExperimentationTest {
+public class S3ClientExperimentTest {
   static public String BUCKET_NAME = "s3-client-integration-test-" + UUID.randomUUID();
   
   static S3Client s3Client ;
