@@ -18,7 +18,7 @@ import com.neverwinterdp.scribengin.storage.s3.S3ObjectWriter;
 import com.neverwinterdp.util.IOUtil;
 
 public class S3ClientIntegrationTest {
-  static public String BUCKET_NAME = "scribengin-" + UUID.randomUUID();
+  static public String BUCKET_NAME = "s3-client-integration-test-" + UUID.randomUUID();
   
   static S3Client s3Client ;
   
@@ -52,7 +52,7 @@ public class S3ClientIntegrationTest {
   
   @Test
   public void testUpdateObjectMetadata() throws IOException, InterruptedException {
-    String KEY = "test-update-objec-metadata" ;
+    String KEY = "test-update-object-metadata" ;
     ObjectMetadata metadata = new ObjectMetadata() ;
     metadata.setContentType("text/plain");
     s3Client.createObject(BUCKET_NAME, KEY, new byte[0], metadata);

@@ -56,8 +56,8 @@ function h1() {
 function build_image() {
   h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
-  mkdir $DOCKERSCRIBEDIR/tmp
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  mkdir $DOCKERSCRIBEDIR/tmp
 
   if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
     $DOCKERSCRIBEDIR/scribengin.sh build
@@ -275,7 +275,7 @@ function host_sync() {
   scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
   
-  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync"
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync hadoop-master"
 }
 
 function cluster(){

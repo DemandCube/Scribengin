@@ -19,27 +19,20 @@ public class S3Source implements Source {
   private StorageDescriptor descriptor;
   private Map<Integer, S3SourceStream> streams = new LinkedHashMap<Integer, S3SourceStream>();
 
-  public S3Source(S3Client s3Client, String location) throws Exception {
-    this(s3Client, new StorageDescriptor("s3", location));
-  }
-
   public S3Source(S3Client s3Client, StreamDescriptor streamDescriptor) throws Exception {
     this(s3Client, getSourceDescriptor(streamDescriptor));
   }
 
   public S3Source(S3Client s3Client, StorageDescriptor descriptor) throws Exception {
-    String bucket = descriptor.getLocation();
-    this.descriptor = descriptor;
+     this.descriptor = descriptor;
+     String bucketName = descriptor.attribute("s3.bucket.name");
 
-    //TODO(tuan) do we create the bucket or die? ==> You can have an autocreate boolean parameter.
-    //@tuan I don't think we should attempt to read from a bucket that doesn't exists. We should always throw exception
-    //However for sink we should have autocreate
-    if (!s3Client.hasBucket(bucket)) {
-      throw new Exception("bucket " + bucket + " does not exist!");
+    if (!s3Client.hasBucket(bucketName)) {
+      throw new Exception("bucket " + bucketName + " does not exist!");
     }
 
     // a source stream for every folder in the bucket
-    List<S3Folder> folders = s3Client.getRootFolders(bucket);
+    List<S3Folder> folders = s3Client.getRootFolders(bucketName);
     int id = 0;
     for (S3Folder s3Folder : folders) {
       StreamDescriptor sDescriptor = new StreamDescriptor();
@@ -77,6 +70,8 @@ public class S3Source implements Source {
     StorageDescriptor descriptor = new StorageDescriptor();
     descriptor.setType(streamDescriptor.getType());
     String location = streamDescriptor.getLocation();
+    //TODO (anthony) what if we dont have '/'?
+    System.err.println("locationzzzz "+ location);
     location = location.substring(0, location.lastIndexOf('/'));
     descriptor.setLocation(location);
     return descriptor;

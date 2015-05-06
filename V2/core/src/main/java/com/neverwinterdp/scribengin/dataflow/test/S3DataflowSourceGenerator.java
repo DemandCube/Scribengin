@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.concurrent.TimeUnit;
 
+import com.beust.jcommander.Parameter;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowTestReport.DataflowSourceGeneratorReport;
@@ -13,6 +14,9 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStream;
 import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
+
+  @Parameter(names = "--sink-bucket-auto-create", description = "Auto create bucket if it doesn't exist")
+  private boolean autoCreate = true;
 
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator();
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
@@ -27,6 +31,7 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     storageDescriptor.attribute("s3.bucket.name", sourceLocation);
     storageDescriptor.attribute("s3.storage.path", sourceName);
     storageDescriptor.attribute("s3.region.name", "eu-central-1");
+    storageDescriptor.attribute("s3.bucket.autocreate", Boolean.toString(autoCreate));
     return storageDescriptor;
   }
 

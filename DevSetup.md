@@ -1,11 +1,11 @@
 First things first.  Check out NeverwinterDP on your local machine
 ```
-cd /path/to/your/workspace/
-git clone http://github.com/DemandCube/NeverwinterDP
+cd /path/to/your/workspace/ 
+git clone http://github.com/DemandCube/NeverwinterDP 
 cd NeverwinterDP
-./neverwinterdp.sh checkout
-```
-
+./neverwinterdp.sh checkout 
+``` 
+   
 Here's the Vagrantfile to use.  
 #####Note - replace vm.synced_folder with /path/to/your/workspace/
 ```
@@ -138,7 +138,7 @@ Ctrl-c doesn't really kill the yarn app. You'll need to issue a kill command.
 #application_id can be found in the resourcemanager UI
 yarn application -kill  [application_id]
 ```
-
+ 
 
 
 To run ScribeMaster in yarn mode:

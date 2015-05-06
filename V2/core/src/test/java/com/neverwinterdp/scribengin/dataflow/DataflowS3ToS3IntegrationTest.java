@@ -45,7 +45,7 @@ public class DataflowS3ToS3IntegrationTest {
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
 
     bucketName = "s3-integration-test-" + UUID.randomUUID();
-    folderPath = "dataflow-test";
+    folderPath = "dataflow-test/";
     
     s3Client = new S3Client();
     s3Client.onInit();
@@ -58,6 +58,7 @@ public class DataflowS3ToS3IntegrationTest {
 
   @After
   public void teardown() throws Exception {
+    System.err.println("shutting down zookeeper ");
     clusterBuilder.shutdown();
 
     s3Client.deleteBucket(bucketName, true);
@@ -70,7 +71,7 @@ public class DataflowS3ToS3IntegrationTest {
 
   @Test
   public void testDataflows() throws Exception {
-    int numStreams = 2;
+    int numStreams = 1;
 
     for (int i = 1; i <= numStreams; i++) {
       s3Client.createS3Folder(bucketName, folderPath + "/stream-" + i);
@@ -83,7 +84,7 @@ public class DataflowS3ToS3IntegrationTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      Thread.sleep(3000);
+      Thread.sleep(5000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
       shell.execute("dataflow   info --history hello-s3-dataflow-0");
@@ -91,6 +92,7 @@ public class DataflowS3ToS3IntegrationTest {
       throw err;
     } finally {
       if (submitter.isAlive())
+      Thread.sleep(5000);
         submitter.interrupt();
     }
   }

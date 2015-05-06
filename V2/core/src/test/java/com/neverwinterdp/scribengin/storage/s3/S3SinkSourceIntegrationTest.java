@@ -11,9 +11,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.sink.S3Sink;
@@ -24,7 +21,7 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
-//TODO: 1. dump info like s3 hierachy structure, lock or fail buffer...
+//TODO(anthony): 1. dump info like lock or fail buffer...
 public class S3SinkSourceIntegrationTest {
 
   private static S3Client s3Client;
@@ -80,7 +77,7 @@ public class S3SinkSourceIntegrationTest {
       assertNotNull(sinkStream.getWriter());
     }
 
-    listObjects(bucketName);
+    S3Util.listObjects(s3Client,bucketName);
     sink.close();
   }
 
@@ -106,7 +103,7 @@ public class S3SinkSourceIntegrationTest {
         recordCount++;
       }
       reader.close();
-      listObjects(bucketName);
+      S3Util.listObjects(s3Client, bucketName);
       int expected = sink.getStreams().length * recordsPerStream;
       assertEquals(expected, recordCount);
     }
@@ -129,14 +126,5 @@ public class S3SinkSourceIntegrationTest {
       writer.close();
     }
     return s3Sink;
-  }
-
-  private void listObjects(String bucketName) {
-    System.out.println("Listing objects in bucket " + bucketName);
-    ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName);
-    ObjectListing objectListing = s3Client.getAmazonS3Client().listObjects(request);
-    for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-      System.out.println(" - " + objectSummary.getKey() + "  " + "(size = " + objectSummary.getSize() + ")");
-    }
   }
 }

@@ -204,6 +204,7 @@ public class S3FeaturesDemoTest {
      */
     System.out.println("Deleting bucket " + bucketName + "\n");
     s3Client.deleteBucket(bucketName);
+
   }
   
   public void multipartUpload(String bucketName, String keyName, String filePath) throws IOException {

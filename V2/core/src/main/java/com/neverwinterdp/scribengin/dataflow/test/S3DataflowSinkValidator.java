@@ -2,6 +2,7 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.concurrent.TimeUnit;
 
+import com.beust.jcommander.Parameter;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
@@ -19,15 +20,21 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
   private S3Client s3Client;
   private MessageTracker messageTracker;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
+  
+  //TODO(anthoy)  is this the best name/ location for this?
+  @Parameter(names = "--s3-bucket-region", description = "The amazon region where the bucket is located")
+  private String region = "eu-central-1";
 
   @Override
   public StorageDescriptor getSinkDescriptor() {
-    //bucket is sink name
+    //bucket is sink location
+    //folder is sink name
     StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sinkLocation);
     storageDescriptor.attribute("s3.bucket.name", sinkLocation);
     storageDescriptor.attribute("s3.storage.path", sinkName);
-    //TODO get a way to externalize this
-    storageDescriptor.attribute("s3.region.name", "eu-central-1");
+
+    storageDescriptor.attribute("s3.region.name", region);
+    
     return storageDescriptor;
   }
 
