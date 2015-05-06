@@ -373,8 +373,7 @@ class ServerSet(object):
     self.cleanHadoopMaster()
   
   def scribenginBuild(self,with_test):
-    print "module_path"
-    print self.module_path()
+    self.printTitle("Build Scribengin")
     command = ""
     if(with_test):
       command="../gradlew clean build install release"
@@ -383,15 +382,14 @@ class ServerSet(object):
     currentWorkingDir = self.module_path()
     
     os.chdir(join(currentWorkingDir,"../../../"))
-    print join(os.getcwd(),command)
     os.system(join(os.getcwd(),command))
     
-    print join(os.getcwd(),"release")
     os.chdir(join(os.getcwd(),"release"))
     os.system(join(os.getcwd(), "../../gradlew clean release"))
     os.chdir(currentWorkingDir)
     
   def scribenginDeploy(self, hostname, clean):
+    self.printTitle("Deploy Scribengin")
     self.killCluster()
     if(clean):
       self.cleanCluster()
