@@ -77,9 +77,19 @@ def vmmaster(restart, start, stop,force_stop, wait_before_start, wait_before_rep
 @click.option('--force-stop',        is_flag=True, help="kill Scribengin")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting Scribengin (seconds)")
 @click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
-def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report):
+@click.option('--build',   is_flag=True, help="Build Scribengin")
+@click.option('--with-test',   is_flag=True, help="Build Scribengin with test")
+@click.option('--deploy',   is_flag=True, help="Deploy Scribengin")
+@click.option('--clean',   is_flag=True, help="Clean cluster")
+def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report, build, with_test, deploy, clean):
   cluster = Cluster()
   
+  if(build):
+    cluster.scribenginBuild(with_test)
+    
+  if(deploy):
+    cluster.scribenginDeploy("hadoop-master", clean)
+      
   if(restart or stop):
     logging.debug("Shutting down Scribengin")
     cluster.shutdownScribengin()
@@ -104,12 +114,12 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
 @click.option('--stop',                is_flag=True, help="stop cluster")
 @click.option('--force-stop',          is_flag=True, help="kill cluster")
 @click.option('--clean',               is_flag=True, help="Clean old cluster data")
-@click.option('--sync',                default="", help="Sync cluster datas from the given hostname")
+@click.option('--sync',                default="",   help="Sync cluster datas from the given hostname")
 @click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
 @click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=False))
 @click.option('--zookeeper-server-config',  default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=False))
-@click.option('--execute',             help='execute given command on all nodes')
+@click.option('--execute',                           help='execute given command on all nodes')
 def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wait_before_kill, kafka_server_config, zookeeper_server_config, execute):
   cluster = Cluster()
       
@@ -126,34 +136,18 @@ def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wa
     
   if(restart or stop):
     logging.debug("Shutting down Cluster")
-    cluster.killScribengin()
-    cluster.killVmMaster()
-    cluster.shutdownKafka()
-    cluster.shutdownSpareKafka()
-    cluster.shutdownZookeeper()
-    cluster.shutdownHadoopWorker()
-    cluster.shutdownHadoopMaster()
+    cluster.shutdownCluster()
   
   if(force_stop):
     logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
     sleep(wait_before_kill)
     logging.debug("Force Killing Cluster")
-    cluster.shutdownScribengin()
-    cluster.shutdownVmMaster()
-    cluster.killKafka()
-    cluster.killSpareKafka()
-    cluster.killZookeeper()
-    cluster.killHadoopWorker()
-    cluster.killHadoopMaster()
+    cluster.killCluster()
   
   if(clean):
     logging.debug("Cleaning Kafka")
-    cluster.cleanKafka()
-    cluster.cleanSpareKafka()
-    cluster.cleanZookeeper()
-    cluster.cleanHadoopWorker()
-    cluster.cleanHadoopMaster()
-  
+    cluster.cleanCluster()
+
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
     if not os.path.exists(kafka_server_config):
@@ -166,13 +160,7 @@ def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wa
     logging.debug("Starting Cluster")
     cluster.paramDict["server_config"] = kafka_server_config
     cluster.paramDict["zoo_cfg"] = zookeeper_server_config
-    cluster.startZookeeper()
-    cluster.startKafka()
-    cluster.cleanHadoopDataAtFirst()
-    cluster.startHadoopMaster()
-    cluster.startHadoopWorker()
-    cluster.startVmMaster()
-    cluster.startScribengin()
+    cluster.startCluster()
     
   #click.echo(cluster.getReport())  
   
