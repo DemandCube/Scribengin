@@ -378,8 +378,11 @@ class ServerSet(object):
       command="../gradlew clean build install release"
     else:
       command="../gradlew clean build install release -x test"
-    currentWorkingDir = os.getcwd()
+    currentWorkingDir = os.path.dirname(os.path.abspath(__file__))
+    
+    print currentWorkingDir
     os.chdir("../../")
+    print join(os.getcwd(),command)
     os.system(join(os.getcwd(),command))
     
     os.chdir(join(os.getcwd(),"release"))
@@ -390,7 +393,7 @@ class ServerSet(object):
     self.killCluster()
     if(clean):
       self.cleanCluster()
-    currentWorkingDir = os.getcwd()
+    currentWorkingDir = os.path.dirname(os.path.abspath(__file__))
     self.sshExecute("rm -rf /opt/scribengin")
     self.sshExecute("rm -rf /opt/cluster")
     os.chdir(join(currentWorkingDir, "../../"))
