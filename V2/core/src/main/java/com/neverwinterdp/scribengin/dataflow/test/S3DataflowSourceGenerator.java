@@ -15,13 +15,13 @@ import com.neverwinterdp.scribengin.storage.sink.SinkStreamWriter;
 
 public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
 
-  @Parameter(names = "--sink-bucket-auto-create", description = "Auto create bucket if it doesn't exist")
+  @Parameter(names = "--bucket-auto-create", description = "Auto create bucket if it doesn't exist")
   private boolean autoCreate = true;
 
-  private RecordMessageGenerator recordGenerator = new RecordMessageGenerator();
+  private RecordMessageGenerator recordGenerator = new RecordMessageGenerator() ;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
-  private S3Client s3Client;
-
+  private S3Client s3Client  ;
+  
   private int numOfFilesPerFolder;
   private int numOfRecordsPerFile;
 
@@ -30,6 +30,7 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sourceLocation);
     storageDescriptor.attribute("s3.bucket.name", sourceLocation);
     storageDescriptor.attribute("s3.storage.path", sourceName);
+    //TODO externalize this
     storageDescriptor.attribute("s3.region.name", "eu-central-1");
     storageDescriptor.attribute("s3.bucket.autocreate", Boolean.toString(autoCreate));
     return storageDescriptor;
@@ -39,14 +40,16 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   public void init(ScribenginClient scribenginClient) throws Exception {
     s3Client = new S3Client();
     s3Client.onInit();
-    numOfFilesPerFolder = 1;
-    numOfRecordsPerFile = maxRecordsPerStream / numOfFilesPerFolder;
-  }
+    
+    numOfFilesPerFolder=1;
+    numOfRecordsPerFile = maxRecordsPerStream/numOfFilesPerFolder;
+    }
 
   @Override
   public void run() {
     stopwatch.start();
     try {
+      //TODO this is faulty
       String location = sourceLocation + "/" + sourceName;
       generateSource(s3Client, location);
       stopwatch.stop();
@@ -57,33 +60,33 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
 
   @Override
   public void runInBackground() {
-    throw new RuntimeException("this method is not supported for the s3 due to the nature of the storage");
+    throw new RuntimeException("this method is not supported for the s3 due to the nature of the storage") ;
   }
 
   @Override
   public void populate(DataflowTestReport report) {
-    DataflowSourceGeneratorReport sourceReport = report.getSourceGeneratorReport();
+    DataflowSourceGeneratorReport sourceReport = report.getSourceGeneratorReport() ;
     sourceReport.setSourceName(sourceName);
     sourceReport.setNumberOfStreams(numberOfStream);
     sourceReport.setWriteCount(RecordMessageGenerator.idTracker.get());
     sourceReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
-
-  void generateSource(S3Client s3Client, String bucket) throws Exception {
+  
+  void generateSource(S3Client s3Client, String sourceDir) throws Exception {
     SinkFactory sinkFactory = new SinkFactory(s3Client);
-    Sink sink = sinkFactory.create(getSourceDescriptor());
 
-    for (int i = 0; i < numberOfStream; i++) {
+    Sink sink = sinkFactory.create(getSourceDescriptor());;
+    for(int i = 0; i < numberOfStream; i++) {
       generateStream(sink);
     }
   }
 
   void generateStream(Sink sink) throws Exception {
     SinkStream stream = sink.newStream();
-    int partition = stream.getDescriptor().getId();
+    int partition = stream.getDescriptor().getId() ;
     SinkStreamWriter writer = stream.getWriter();
-    for (int i = 0; i < numOfFilesPerFolder; i++) {
-      for (int j = 0; j < numOfRecordsPerFile; j++) {
+    for(int i = 0; i < numOfFilesPerFolder; i++) {
+      for(int j = 0; j < numOfRecordsPerFile; j ++) {
         writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();

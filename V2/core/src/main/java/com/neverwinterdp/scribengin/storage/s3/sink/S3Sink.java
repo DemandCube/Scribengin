@@ -30,20 +30,14 @@ public class S3Sink implements Sink {
     init(s3Client, descriptor);
   }
   
-  //TODO(tuan) we require that caller specifies bucket and folder, please confirm if we need to require folder also.
-  //currently we throw an exception if s3.bucket.name and s3.storage.path are not specified
   private void init(S3Client s3Client, StorageDescriptor descriptor) {
     this.descriptor = descriptor;
     String bucketName = descriptor.attribute("s3.bucket.name");
-    boolean autoCreate = Boolean.valueOf(descriptor.attribute("s3.bucket.autocreate"));
+ 
     if (!s3Client.hasBucket(bucketName)) {
-      if (autoCreate) {
-        s3Client.createBucket(bucketName);
-      }
-      else {
-        throw new AmazonServiceException("Bucket " + bucketName + " does not exist");
-      }
+       throw new AmazonServiceException("Bucket " + bucketName + " does not exist");
     }
+
     String folderPath = descriptor.attribute("s3.storage.path");
     if (!s3Client.hasKey(bucketName, folderPath)) {
       s3Client.createS3Folder(bucketName, folderPath);

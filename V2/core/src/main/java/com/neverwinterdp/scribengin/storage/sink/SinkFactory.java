@@ -38,7 +38,7 @@ public class SinkFactory {
     }else if("s3".equalsIgnoreCase(descriptor.getType())) {  
          return new S3Sink(s3Client, descriptor);
     }
-    throw new Exception("Unknown source type " + descriptor.getType());
+    throw new Exception("Unknown sink type " + descriptor.getType());
   }
   
   public Sink create(StreamDescriptor descriptor) throws Exception {
@@ -49,6 +49,6 @@ public class SinkFactory {
     }else if("s3".equalsIgnoreCase(descriptor.getType())) { 
          return new S3Sink(s3Client,descriptor);
     }
-    throw new Exception("Unknown source type " + descriptor.getType());
+    throw new Exception("Unknown sink type " + descriptor.getType());
   }
 }

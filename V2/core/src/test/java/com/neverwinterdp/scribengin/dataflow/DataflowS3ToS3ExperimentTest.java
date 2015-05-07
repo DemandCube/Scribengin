@@ -11,17 +11,14 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.test.S3ToS3DataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
+import com.neverwinterdp.scribengin.dataflow.test.S3DataflowTest;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-/*
- * A unit test that shouldn't run all the time
- * */
-
-public class DataflowS3ToS3IntegrationTest {
+public class DataflowS3ToS3ExperimentTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
@@ -29,7 +26,7 @@ public class DataflowS3ToS3IntegrationTest {
 
   protected ScribenginClusterBuilder clusterBuilder;
   protected ScribenginShell shell;
-
+  
   private S3Client s3Client;
 
   private String folderPath;
@@ -58,7 +55,6 @@ public class DataflowS3ToS3IntegrationTest {
 
   @After
   public void teardown() throws Exception {
-    System.err.println("shutting down zookeeper ");
     clusterBuilder.shutdown();
 
     s3Client.deleteBucket(bucketName, true);
@@ -84,20 +80,21 @@ public class DataflowS3ToS3IntegrationTest {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
 
-      Thread.sleep(5000);
+      Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      shell.execute("dataflow   info --history hello-s3-dataflow-0");
+      
+      shell.execute("dataflow   info --history "+HDFSDataflowTest.TEST_NAME+"-0");
     } catch (Throwable err) {
       throw err;
     } finally {
       if (submitter.isAlive())
-      Thread.sleep(5000);
         submitter.interrupt();
     }
   }
 
   public class DataflowSubmitter extends Thread {
+
     private String bucketName;
     private String folderPath;
     private int numStreams;
@@ -111,7 +108,7 @@ public class DataflowS3ToS3IntegrationTest {
     public void run() {
       try {
         String command =
-            "dataflow-test " + S3ToS3DataflowTest.TEST_NAME +
+            "dataflow-test " + S3DataflowTest.TEST_NAME +
                 " --dataflow-name  s3-to-s3" +
                 " --worker 1" +
                 " --executor-per-worker 1" +

@@ -35,7 +35,6 @@ public class SourceFactory {
     } else if ("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSource(descriptor);
     } else if ("s3".equalsIgnoreCase(descriptor.getType())) {
-      System.out.println("descriptor location "+ descriptor.getLocation());
       return new S3Source(s3Client, descriptor);
     }
     throw new Exception("Unknown source type " + descriptor.getType());

@@ -60,7 +60,7 @@ function build_image() {
   mkdir $DOCKERSCRIBEDIR/tmp
 
   if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
-    $DOCKERSCRIBEDIR/scribengin.sh build
+    $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build
   fi
   
   #Move release/build/release to $DOCKERSCRIBEDIR/tmp
@@ -264,7 +264,8 @@ function container_clean() {
 }
 
 function host_sync() {
-  ./scribengin.sh build
+  DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build  
   
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir /opt/scribengin"
   
@@ -313,9 +314,7 @@ function cluster(){
   fi
   
   if [ $DEPLOY_SCRIBENGIN == "true" ] || [ $LAUNCH == "true" ] ; then
-    #$DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py cluster deploy
-    $DOCKERSCRIBEDIR/scribengin.sh build
-    $DOCKERSCRIBEDIR/scribengin.sh deploy
+    $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build --deploy
   fi
   
   if [ $START_CLUSTER == "true" ] || [ $LAUNCH == "true" ] ; then

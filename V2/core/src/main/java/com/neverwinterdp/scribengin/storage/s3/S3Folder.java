@@ -83,6 +83,10 @@ public class S3Folder {
   
   public void createObject(String name, InputStream is, ObjectMetadata metadata) throws IOException {
     s3Client.createObject(bucketName, toKey(name), is, metadata);
+  } 
+  
+  public void deleteObject(String name) throws IOException {
+    s3Client.deleteS3Folder(bucketName, toKey(name));
   }
   
   public void updateObjectMetadata(String name, ObjectMetadata metadata) throws IOException {
@@ -90,9 +94,9 @@ public class S3Folder {
   }
   
   public S3ObjectWriter createObjectWriter(String name, ObjectMetadata metadata) throws IOException {
+    //TODO (tuan) confirm if this should be here.
+    createFolder(toKey(name));
     S3ObjectWriter writer = new S3ObjectWriter(s3Client, bucketName, toKey(name), metadata);
-   //TODO (tuan) confirm if this should be here.
-    s3Client.createS3Folder(bucketName, toKey(name));
     return writer;
   }
   
@@ -102,7 +106,7 @@ public class S3Folder {
   }
   
   
-  String toKey(String name) { return folderPath + "/" + name; }
+  public String toKey(String name) { return folderPath + "/" + name; }
   
   public String toString() {
     return bucketName + ":" + folderPath;

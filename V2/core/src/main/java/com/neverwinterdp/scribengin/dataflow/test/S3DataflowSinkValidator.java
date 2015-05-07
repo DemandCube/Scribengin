@@ -2,7 +2,6 @@ package com.neverwinterdp.scribengin.dataflow.test;
 
 import java.util.concurrent.TimeUnit;
 
-import com.beust.jcommander.Parameter;
 import com.google.common.base.Stopwatch;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.ScribenginClient;
@@ -17,47 +16,40 @@ import com.neverwinterdp.tool.message.MessageExtractor;
 import com.neverwinterdp.tool.message.MessageTracker;
 
 public class S3DataflowSinkValidator extends DataflowSinkValidator {
-  private S3Client s3Client;
+  private S3Client     s3Client;
   private MessageTracker messageTracker;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   
-  //TODO(anthoy)  is this the best name/ location for this?
-  @Parameter(names = "--s3-bucket-region", description = "The amazon region where the bucket is located")
-  private String region = "eu-central-1";
-
   @Override
   public StorageDescriptor getSinkDescriptor() {
-    //bucket is sink location
-    //folder is sink name
     StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sinkLocation);
     storageDescriptor.attribute("s3.bucket.name", sinkLocation);
     storageDescriptor.attribute("s3.storage.path", sinkName);
+    //TODO externalize this
+    storageDescriptor.attribute("s3.region.name", "eu-central-1");
 
-    storageDescriptor.attribute("s3.region.name", region);
-    
     return storageDescriptor;
   }
 
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
-    s3Client = new S3Client();
+    s3Client= new S3Client();
     s3Client.onInit();
-   // scribenginClient.getVMClient().getS3Client();
   }
 
   @Override
   public void run() {
     stopwatch.start();
-    messageTracker = new MessageTracker();
-    MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR;
+    messageTracker = new MessageTracker() ;
+    MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR ;
     try {
-      S3Source source = new S3Source(s3Client, getSinkDescriptor());
+      S3Source source = new S3Source(s3Client, getSinkDescriptor()) ;
       SourceStream[] streams = source.getStreams();
-      for (SourceStream sourceStream : streams) {
-        SourceStreamReader streamReader = sourceStream.getReader("S3DataflowSinkValidator");
-        Record record = null;
-        while ((record = streamReader.next()) != null) {
-          Message message = messageExtractor.extract(record.getData());
+      for(SourceStream selStream : streams) {
+        SourceStreamReader streamReader = selStream.getReader("S3DataflowSinkValidator") ;
+        Record record = null ;
+        while((record = streamReader.next()) != null) {
+          Message message = messageExtractor.extract(record.getData()) ;
           messageTracker.log(message);
         }
         streamReader.close();
@@ -72,17 +64,17 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
 
   @Override
   public void runInBackground() {
-    throw new RuntimeException("Due to the nature of s3 storage, this method is not avaialable");
+    throw new RuntimeException("Due to the nature of s3 storage, this method is not avaialable") ;
   }
 
   @Override
   public boolean waitForTermination() throws InterruptedException {
-    throw new RuntimeException("Due to the nature of s3 storage, this method is not avaialable");
+    throw new RuntimeException("Due to the nature of s3 storage, this method is not avaialable") ;
   }
 
   @Override
   public boolean waitForTermination(long timeout) throws InterruptedException {
-    throw new RuntimeException("Due to the nature of s3 storage, this method is not avaialable");
+    throw new RuntimeException("Due to the nature of  storage, this method is not avaialable") ;
   }
 
   @Override
