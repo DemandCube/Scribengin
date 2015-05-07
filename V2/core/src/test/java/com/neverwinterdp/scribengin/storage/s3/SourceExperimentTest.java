@@ -74,13 +74,11 @@ public class SourceExperimentTest {
 
     SourceStream[] streams = source.getStreams();
     assertEquals(1, streams.length);
-    int recordCount = 0;
     for (SourceStream stream : streams) {
       SourceStreamReader reader = stream.getReader("test");
       Record record;
       System.out.println("stream " + stream.getDescriptor().getId());
       while ((record = reader.next()) != null) {
-        recordCount++;
         Message message = messageExtractor.extract(record.getData());
         messageTracker.log(message);
       }
@@ -88,8 +86,8 @@ public class SourceExperimentTest {
     }
     messageTracker.optimize();
     messageTracker.dump(System.out);
-    
-   assertEquals(numStreams * numOfBuffersPerStream * numRecordsPerBuffer, recordCount);
+    int totalRecords= numStreams * numOfBuffersPerStream * numRecordsPerBuffer;
+   assertEquals(totalRecords, messageTracker.getLogCount());
    assertTrue(messageTracker.isInSequence());
     
     S3Util.listObjects(s3Client, bucketName);
