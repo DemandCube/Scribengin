@@ -1,0 +1,24 @@
+archivesBaseName = 'scribengin.client.swingui'
+
+eclipse {
+  project {
+    name = 'scribengin.client.swingui'
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+test {
+  exclude '**'
+}
+
+dependencies {
+  compile project(':core')
+
+  compile group: 'org.swinglabs.swingx', name: 'swingx-all', version: '1.6.5'
+  compile group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9'
+  compile group: 'org.easytesting', name: 'fest-swing', version: '1.2.1'
+}

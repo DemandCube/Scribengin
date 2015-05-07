@@ -9,6 +9,8 @@ include 'dataflow/kafka'
 include 'dataflow/s3'
 include 'release'
 
+include 'client/swingui'
+
 include 'jvmagent/bootstrap'
 include 'jvmagent/registry'
 include 'jvmagent/DemoApp'

@@ -22,7 +22,7 @@ import com.neverwinterdp.scribengin.storage.source.SourceStream;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 //TODO(anthony): 1. dump info like lock or fail buffer...
-public class S3SinkSourceIntegrationTest {
+public class S3SinkSourceExperimentTest {
 
   private static S3Client s3Client;
 

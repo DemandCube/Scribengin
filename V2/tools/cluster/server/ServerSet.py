@@ -1,7 +1,8 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 from subprocess import call
-import os, socket, re
+import os, socket, re, sys
+from os.path import expanduser, join
 from time import time
 
 #This function is outside the ServerSet class
@@ -96,11 +97,14 @@ class ServerSet(object):
     return output 
   
   def sync(self, hostname):
-    for server in self.servers :
-      if server.getHostname() != hostname:
-        self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
-        command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
-        os.system(command)
+    for hostmachine in self.servers :
+      if hostmachine.getHostname() == hostname:
+        for server in self.servers :
+          if server.getHostname() != hostname:
+            self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
+            command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
+            hostmachine.sshExecute(command)
+        break
     
   def startProcessOnHost(self, processName, hostname, setupClusterEnv = False):
     for server in self.servers :
@@ -234,6 +238,15 @@ class ServerSet(object):
   def startHadoopWorker(self):
     return self.startProcess("datanode,nodemanager")
   
+  def startCluster(self):
+    self.startZookeeper()
+    self.startKafka()
+    self.cleanHadoopDataAtFirst()
+    self.startHadoopMaster()
+    self.startHadoopWorker()
+    self.startVmMaster()
+    self.startScribengin()
+    
   def shutdownVmMaster(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:
@@ -277,6 +290,15 @@ class ServerSet(object):
   def shutdownHadoopWorker(self):
     return self.shutdownProcess("datanode,nodemanager")
   
+  def shutdownCluster(self):
+    self.killScribengin()
+    self.killVmMaster()
+    self.shutdownKafka()
+    self.shutdownSpareKafka()
+    self.shutdownZookeeper()
+    self.shutdownHadoopWorker()
+    self.shutdownHadoopMaster()
+    
   def killScribengin(self):
     return self.killProcess("scribengin")
   
@@ -316,6 +338,15 @@ class ServerSet(object):
   def killHadoopWorker(self):
     return self.killProcess("datanode,nodemanager")  
   
+  def killCluster(self):
+    self.shutdownScribengin()
+    self.shutdownVmMaster()
+    self.killKafka()
+    self.killSpareKafka()
+    self.killZookeeper()
+    self.killHadoopWorker()
+    self.killHadoopMaster()
+    
   def cleanKafka(self):
     return self.cleanProcess("kafka")
   
@@ -333,9 +364,45 @@ class ServerSet(object):
   
   def cleanHadoopWorker(self):
     return self.cleanProcess("datanode")
+
+  def cleanCluster(self):
+    self.cleanKafka()
+    self.cleanSpareKafka()
+    self.cleanZookeeper()
+    self.cleanHadoopWorker()
+    self.cleanHadoopMaster()
+  
+  def scribenginBuild(self,with_test):
+    self.printTitle("Build Scribengin")
+    command = ""
+    if(with_test):
+      command="../gradlew clean build install release"
+    else:
+      command="../gradlew clean build install release -x test"
+    currentWorkingDir = self.module_path()
+    
+    os.chdir(join(currentWorkingDir,"../../../"))
+    os.system(join(os.getcwd(),command))
+    
+    os.chdir(join(os.getcwd(),"release"))
+    os.system(join(os.getcwd(), "../../gradlew clean release"))
+    os.chdir(currentWorkingDir)
+    
+  def scribenginDeploy(self, hostname, clean):
+    self.printTitle("Deploy Scribengin")
+    self.killCluster()
+    if(clean):
+      self.cleanCluster()
+    currentWorkingDir = self.module_path()
+    self.sshExecute("rm -rf /opt/scribengin")
+    self.sshExecute("rm -rf /opt/cluster")
+    os.chdir(join(currentWorkingDir, "../../../"))
+    os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"release/build/release")+" neverwinterdp@"+hostname+":/opt/scribengin")
+    os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"tools/cluster")+" neverwinterdp@"+hostname+":/opt/cluster")
+    os.chdir(currentWorkingDir)
+    self.sync(hostname)
     
   def getReport(self):
-    start = time()
     serverReport = []
     asyncresults = []
     pool = Pool(processes=self.numProcessesForStatus)
@@ -356,3 +423,13 @@ class ServerSet(object):
 
   def report(self) :
     print self.getReport()
+
+  def we_are_frozen(self):
+      # All of the modules are built-in to the interpreter, e.g., by py2exe
+      return hasattr(sys, "frozen")
+  
+  def module_path(self):
+      encoding = sys.getfilesystemencoding()
+      if self.we_are_frozen():
+          return os.path.dirname(unicode(sys.executable, encoding))
+      return os.path.dirname(unicode(__file__, encoding))
