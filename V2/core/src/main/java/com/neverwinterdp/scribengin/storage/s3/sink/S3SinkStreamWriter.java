@@ -79,7 +79,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public void close() throws Exception {
+  synchronized public void close() throws Exception {
     writer.waitAndClose(TIMEOUT);
   }
 }
