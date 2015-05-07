@@ -1,7 +1,6 @@
 package com.neverwinterdp.scribengin.storage.s3;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.Random;
 import java.util.UUID;
@@ -12,7 +11,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.neverwinterdp.scribengin.Record;
@@ -57,8 +55,6 @@ public class SinkExperimentTest {
     }
   }
 
-  //TODO: please print out the dump structure , before , at the middle , and after to show that 
-  //you have the writing buffer, none after commit or close. All the buffer should merge to a data file.
   @Test
   public void testSink() throws Exception {
     S3Util.listObjects(s3Client, bucketName);
@@ -75,23 +71,25 @@ public class SinkExperimentTest {
     assertEquals(1, sink.getStreams().length);
 
     SinkStreamWriter writer = stream.getWriter();
-    
+
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 100; j++) {
         String key = "stream=" + stream.getDescriptor().getId() + ",buffer=" + i + ",record=" + j;
         writer.append(Record.create(key, key));
       }
-   //    writer.commit();
+      writer.commit();
+      System.out.println("during the write.");
+      S3Util.listObjects(s3Client, bucketName);
+      System.out.println("----------------------");
     }
-    writer.commit();
     writer.close();
 
+    System.out.println("At the end of it all");
     S3Util.listObjects(s3Client, bucketName);
+    System.out.println("-------------------");
   }
 
-  //TODO: for rollback I think you just need to discard the uncommit buffer. Is it hard to implement with S3
   @Test
-  @Ignore("rollback not implemented in writer")
   public void testRollback() throws Exception {
     StorageDescriptor descriptor = new StorageDescriptor();
     descriptor.attribute("s3.bucket.name", bucketName);
@@ -101,50 +99,25 @@ public class SinkExperimentTest {
 
     SinkStream stream0 = sink.newStream();
     SinkStreamWriter writer = stream0.getWriter();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
       writer.append(Record.create("key-" + i, "record " + i));
     }
-    writer.rollback();
-    writer.close();
+    System.out.println("\nbefore roll back");
     S3Util.listObjects(s3Client, bucketName);
+
+    writer.rollback();
+
+    System.out.println("\nafter roll back");
+    S3Util.listObjects(s3Client, bucketName);
+    System.out.println();
+
+    writer.close();
+    System.out.println("at the end of it all");
+    S3Util.listObjects(s3Client, bucketName);
+    System.out.println("-------------------");
   }
 
   @Test
-  public void testAutoCreateFalse() throws Exception {
-   String newBucket = "sink-unittest-" + UUID.randomUUID();
-    StorageDescriptor descriptor = new StorageDescriptor();
-    descriptor.attribute("s3.bucket.name", newBucket);
-    descriptor.attribute("s3.storage.path", folderName);
-    try {
-      S3Sink sink = new S3Sink(s3Client, descriptor);
-      sink.close();
-      fail("Auto create is false. Test should fail");
-    } catch (Exception e) {
-      //success
-      return;
-    }
-  }  
-  
-  @Test
-  public void testAutoCreateTrue() throws Exception {
-    String newBucket = "sink-unittest-" + UUID.randomUUID();
-    StorageDescriptor descriptor = new StorageDescriptor();
-    descriptor.attribute("s3.bucket.name", newBucket);
-    descriptor.attribute("s3.bucket.autocreate", String.valueOf(true));
-    descriptor.attribute("s3.storage.path", folderName);
-    try {
-      S3Sink sink = new S3Sink(s3Client, descriptor);
-      System.out.println(sink.hashCode());
-      s3Client.deleteBucket(newBucket, true);
-    } catch (Exception e) {
-       fail("Auto create is true. Bucket should have been created.");
-    }
-  }
-
-  //TODO: why ?? when you have multi thread , each thread will write to its own buffer. What do you mean 
-  //correctly implemented
-  @Test
-  @Ignore // untill writer.commit is correctly implemented
   public void testMultiThread() throws Exception {
     StorageDescriptor descriptor = new StorageDescriptor();
     descriptor.attribute("s3.bucket.name", bucketName);
@@ -158,6 +131,7 @@ public class SinkExperimentTest {
     }
     service.shutdown();
     while (!service.isTerminated()) {
+      S3Util.listObjects(s3Client, bucketName);
       System.out.println("----------------------------------------");
       Thread.sleep(2000);
     }

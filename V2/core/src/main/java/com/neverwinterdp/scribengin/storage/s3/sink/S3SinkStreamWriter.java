@@ -15,14 +15,16 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   private String segmentName;
   private S3ObjectWriter writer;
 
+  private final int TIMEOUT = 1 * 60 * 1000;
+
   public S3SinkStreamWriter(S3Folder streamS3Folder) throws IOException {
     this.streamS3Folder = streamS3Folder;
     segmentName = "segment-" + UUID.randomUUID().toString();
-    
+
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentType("application/binary");
     metadata.addUserMetadata("transaction", "prepare");
-    //TODO(Tuan) why we don't check to see if segmentName exists?
+
     writer = streamS3Folder.createObjectWriter(segmentName, metadata);
   }
 
@@ -32,38 +34,52 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
     writer.write(bytes);
   }
 
-  //TODO(Tuan) shouldn't we create another writer segment here?
+  // finish up with the previous segment writer
   @Override
   public void prepareCommit() throws Exception {
-       writer.waitAndClose(1 * 60 * 1000);
-  }
-
-  @Override
-  public void completeCommit() throws Exception {
     ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
+
+    writer.waitAndClose(TIMEOUT);
+  }
+
+  //start of writing to a new segment
+  @Override
+  public void completeCommit() throws Exception {
+    segmentName = "segment-" + UUID.randomUUID().toString();
+
+    ObjectMetadata metadata = writer.getObjectMetadata();
+    metadata.addUserMetadata("transaction", "prepare");
+
+    writer = streamS3Folder.createObjectWriter(segmentName, metadata);
   }
 
   @Override
   public void commit() throws Exception {
     try {
-    prepareCommit();
-    completeCommit();
-    } catch(Exception ex) {
+      prepareCommit();
+      completeCommit();
+    } catch (Exception ex) {
       rollback();
       throw ex;
     }
   }
 
+  //discard the uncommited buffer
   @Override
   public void rollback() throws Exception {
+    streamS3Folder.deleteObject(segmentName);
 
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.setContentType("application/binary");
+    metadata.addUserMetadata("transaction", "prepare");
+
+    writer = streamS3Folder.createObjectWriter(segmentName, metadata);
   }
-  
-//TODO writer.close() here?
+
   @Override
   public void close() throws Exception {
-    
+    writer.waitAndClose(TIMEOUT);
   }
 }

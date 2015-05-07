@@ -18,7 +18,7 @@ import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.util.FileUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
-public class DataflowS3ToS3UnitTest {
+public class DataflowS3ToS3ExperimentTest {
   static {
     System.setProperty("java.net.preferIPv4Stack", "true");
     System.setProperty("log4j.configuration", "file:src/test/resources/test-log4j.properties");
