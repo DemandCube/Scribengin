@@ -35,7 +35,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   //TODO(Tuan) shouldn't we create another writer segment here?
   @Override
   public void prepareCommit() throws Exception {
-       writer.waitAndClose(1 * 60 * 1000);
+    writer.waitAndClose(1 * 60 * 1000);
   }
 
   @Override
@@ -48,8 +48,8 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   @Override
   public void commit() throws Exception {
     try {
-    prepareCommit();
-    completeCommit();
+      prepareCommit();
+      completeCommit();
     } catch(Exception ex) {
       rollback();
       throw ex;

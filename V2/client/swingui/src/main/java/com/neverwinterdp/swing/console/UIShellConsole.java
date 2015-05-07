@@ -13,6 +13,7 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -25,7 +26,7 @@ import com.neverwinterdp.swing.widget.Fonts;
 public class UIShellConsole extends JPanel {
 
   private Map<String, AbstractCommand> commands;
-  private JTextPane                    textPane;
+  private JTextArea                    textArea;
   private JTextField                   input;
 
   public UIShellConsole() throws Exception {
@@ -47,27 +48,26 @@ public class UIShellConsole extends JPanel {
       }
     });
     
-    textPane = new JTextPane();
-    textPane.setEditable(false);
-    textPane.setFont(Fonts.FIXED) ;
-    JPanel noWrapPanel = new JPanel(new BorderLayout());
-    noWrapPanel.add(textPane);
-    add(new JScrollPane(noWrapPanel), BorderLayout.CENTER);
+    textArea = new JTextArea();
+    textArea.setEditable(false);
+    textArea.setFont(Fonts.FIXED) ;
+    textArea.setRows(15);
+    add(new JScrollPane(textArea), BorderLayout.CENTER);
     add(input, BorderLayout.SOUTH);
     
     redirectSystemStreams();
   }
 
   public void print(String msg) {
-    String text = textPane.getText();
+    String text = textArea.getText();
     if (text == null) {
-      textPane.setText(msg);
+      textArea.setText(msg);
     } else {
-      textPane.setText(text + msg);
+      textArea.setText(text + msg);
     }
   }
 
-  public void clear() { textPane.setText(""); }
+  public void clear() { textArea.setText(""); }
 
   public void println(String[] msg, int[] width) {
     for(int i = 0; i < msg.length; i++) {
@@ -94,7 +94,7 @@ public class UIShellConsole extends JPanel {
   }
 
   public void runScript() {
-    runScript(textPane.getText());
+    runScript(textArea.getText());
   }
 
   public void runScript(String script) {
@@ -182,7 +182,7 @@ public class UIShellConsole extends JPanel {
     }
 
     public void execute() {
-      textPane.setText("");
+      textArea.setText("");
     }
   }
 

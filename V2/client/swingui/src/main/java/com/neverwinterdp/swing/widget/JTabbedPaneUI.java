@@ -17,10 +17,10 @@ public class JTabbedPaneUI  extends JPanel {
   private JTabbedPane tabbedPane ;
   
   public JTabbedPaneUI() {
-    setLayout(new BorderLayout()) ;
     tabbedPane = new JTabbedPane();
     tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     
+    setLayout(new BorderLayout()) ;
     add(tabbedPane, BorderLayout.CENTER) ;
   }
   
@@ -28,6 +28,11 @@ public class JTabbedPaneUI  extends JPanel {
   
   public JTabbedPaneUI withVerticalTabPlacement() {
     tabbedPane.setTabPlacement(JTabbedPane.LEFT);
+    return this ;
+  }
+  
+  public JTabbedPaneUI withBottomTabPlacement() {
+    tabbedPane.setTabPlacement(JTabbedPane.BOTTOM);
     return this ;
   }
   

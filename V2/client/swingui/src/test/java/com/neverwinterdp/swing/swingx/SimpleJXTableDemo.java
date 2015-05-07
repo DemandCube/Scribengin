@@ -135,14 +135,14 @@ public class SimpleJXTableDemo {
     // takes place
     
     //TODO: fix JDK8
-//    Comparator<String> numberComparator = new Comparator<String>() {
-//      public int compare(String o1, String o2) {
-//        Double d1 = Double.valueOf(o1 == null ? "0" : (String) o1) ;
-//        Double d2 = Double.valueOf(o2 == null ? "0" : (String) o2) ;
-//        return d1.compareTo(d2);
-//      }
-//    };
-    Comparator<String> numberComparator = null;
+    Comparator<String> numberComparator = new Comparator<String>() {
+      public int compare(String o1, String o2) {
+        Double d1 = Double.valueOf(o1 == null ? "0" : (String) o1) ;
+        Double d2 = Double.valueOf(o2 == null ? "0" : (String) o2) ;
+        return d1.compareTo(d2);
+      }
+    };
+//    Comparator<String> numberComparator = null;
 
     // comparators are good for special situations where the default comparator
     // doesn't
@@ -155,12 +155,9 @@ public class SimpleJXTableDemo {
     // We'll add a highlighter to offset different row numbers
     // Note the setHighlighters() takes an array parameter; you can chain these
     // together.
-    jxTable.setHighlighters(
-        HighlighterFactory.createSimpleStriping());
-
+    jxTable.setHighlighters(HighlighterFactory.createSimpleStriping());
     // ...oops! we forgot one
-    jxTable.addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK,
-                                                Color.WHITE));
+    jxTable.addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
 
     // add a filter: include countries starting with a only
     int col = jxTable.getColumn("COUNTRY").getModelIndex();
@@ -382,8 +379,8 @@ public class SimpleJXTableDemo {
           addRow(line.split("\t"));
         }
       } catch (Exception e) {
-        e.printStackTrace();
-        loadDefaultData();
+        //e.printStackTrace();
+        //loadDefaultData();
       }
     }
 

@@ -3,6 +3,7 @@ package com.neverwinterdp.swing.tool;
 import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.widget.JAccordionPanel;
@@ -13,6 +14,8 @@ public class UITools extends JPanel implements UILifecycle {
  
   public UITools() {
     setLayout(new BorderLayout()) ;
+    setOpaque(false);
+    setBorder(new EmptyBorder(0, 0, 5, 0) );
   }
 
   @Override
