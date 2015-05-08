@@ -41,6 +41,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
     //Review and think carefully about your code. 
     ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
+    
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
     writer.waitAndClose(TIMEOUT);
   }

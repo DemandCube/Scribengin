@@ -11,6 +11,7 @@ import javax.swing.SpringLayout;
 
 import com.neverwinterdp.swing.util.SpringUtilities;
 
+@SuppressWarnings("serial")
 public class SpringLayoutGridJPanel extends JPanel {
   private int numberOfRow = 0;
   private int numberOfColumn = -1 ;
@@ -29,7 +30,9 @@ public class SpringLayoutGridJPanel extends JPanel {
   }
   
   public void addCell(Object comp) {
-    if(comp instanceof String || comp instanceof Integer || comp instanceof Long || comp instanceof Boolean) {
+    if(comp == null) {
+      add(new JLabel("")) ;
+    } else if(comp instanceof String || comp instanceof Integer || comp instanceof Long || comp instanceof Boolean) {
       add(new JLabel(comp.toString())) ;
     } else if(comp instanceof Action) {
       Action action = (Action) comp ;
