@@ -1,9 +1,14 @@
 #Requires:
-#sudo pip install kazoo
+#sudo pip install kazoo py4j
 from kazoo.client import KazooClient,KazooState
-import kazoo.exceptions 
+import kazoo.exceptions
 from os.path import basename
-import logging, textwrap
+import logging, textwrap, json
+from sys import path
+from os.path import dirname, abspath
+
+path.insert(0, dirname(dirname(abspath(__file__))))
+from descriptors import DataflowDescriptor  #@UnresolvedImport
 
 
 
@@ -59,11 +64,49 @@ class ZookeeperClient():
     except kazoo.exceptions.NodeExistsError:
       return self.zk.set(path, data)
   
+  #Converts data to json object and calls setNode
+  def setNodeAsJson(self, path, data, ephemeral=False, acl=None, sequence=False):
+    self.setNode(path, json.dumps(data), ephemeral, acl, sequence)
+  
+  #Deletes node if it exists
   def deleteNode(self, path, recursive=True):
     if self.nodeExists(path):
       return self.zk.delete(path, recursive=recursive)
     else:
       return None
+  
+  #Returns true if path exists, False if not
+  def nodeExists(self, path):
+    return self.zk.exists(path) != None
+  
+  #Path is the path to watch for when children are created
+  #Callback is a function - with parameters path, data, and stat
+  #I.E. 
+  #def nodeCallback(path, data, stat):
+  #  print "Node watcher"
+  #  print "  Path: " + path
+  #  print "  Stats: "+ str(stat)
+  #  print "  Data: " + str(data)
+  def watchNode(self, path, callback):
+    @kazoo.client.DataWatch(self.zk, path)
+    def watcher(data, stats):
+      callback(path, data, stats)
+    return watcher
+  
+  #Path is the path to watch for when children are created
+  #Callback is a function - with parameters path and children
+  #I.E. 
+  #def childrenCallback(path, children):
+  #  print path
+  #  for child in children:
+  #    print path+"/"+children
+  #NOTE: The callback is ONLY triggered on child node creation and deletion
+  #      It will NOT trigger on a data change in the children
+  def watchChildren(self, path, callback):
+    @kazoo.client.ChildrenWatch(self.zk, path)
+    def watcher(children):
+      callback(path, children)
+    return watcher
   
   #Recursively print out zookeeper tree structure
   def dump(self, path="/", indent="", multiLine=False, wrapLength=100):
@@ -98,16 +141,57 @@ class ZookeeperClient():
       childPath = (path+"/"+child).replace("//","/")
       self.dump(childPath, indent+"  ", multiLine, wrapLength)
     
-  #Returns true if path exists, False if not
-  def nodeExists(self, path):
-    return self.zk.exists(path) != None
-        
+  
+#################################################
+
+#Example callback for watchNode()
+def nodeCallback(path, data, stat):
+  print "Node watcher"
+  print "  Path: " + path
+  print "  Stats: "+ str(stat)
+  print "  Data: " + str(data)
+  
+#Example callback for watchChildren()
+def childrenCallback(path, children):
+  print "Child watcher"
+  for child in children:
+    print "  "+path+"/"+child
+
+
+
+#################################################
+
+
+#The following is just sample code.  Assumes you have zookeeper up and running
 if __name__ == '__main__':
   zkc = ZookeeperClient("zookeeper-1",2181)
   
-  #print zkc.setNode("/testing/banana/peel", "yellow", ephemeral=True)
-  #print zkc.nodeExists("/testing/banana/peel")
-  #print zkc.nodeExists("/testing/banana/peels")
-  #print zkc.getData("/testing/banana/peel")
-  zkc.dump("/NeverwinterDP", multiLine=False)
+  zkc.deleteNode("/X")
+  
+  zkc.watchNode("/X", nodeCallback)
+  zkc.setNode("/X", "data", False,)
+  assert zkc.nodeExists("/X")
+  assert not zkc.nodeExists("/XXXXXX")
+  zkc.setNode("/X", "data1")
+  assert zkc.getData("/X") == "data1"
+  
+  zkc.watchChildren("/X", childrenCallback)
+  zkc.setNode("/X/Y", "data2")
+  zkc.setNode("/X/Z", "data3")
+  zkc.deleteNode("/X/Y")
+  
+  zkc.setNodeAsJson("/X/Json", {u'foo': [u'bar', None, 1.0, 2]})
+  
+    
+  desc = DataflowDescriptor.DataflowDescriptor("id", "name", "appHome", "storageDescriptor", 
+                                               "sinkDescriptor", "scribe", "numWorkers", 
+                                               "numExecutors", "maxExecuteTime")
+  zkc.setNode("/X/DataflowDescriptor", desc.getJson())
+  zkc.dump("/X", multiLine=True)
+  #zkc.dump("/NeverwinterDP", multiLine=False)
+  zkc.deleteNode("/X")
+  
   zkc.disconnect()
+
+
+
