@@ -30,7 +30,7 @@ public class SourceExperimentTest {
   private String bucketName;
   private int numStreams = 1;
   private int numOfBuffersPerStream =10;
-  private int numRecordsPerBuffer = 10;
+  private int numRecordsPerBuffer = 100;
 
   @BeforeClass
   public static void setupClass() {

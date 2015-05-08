@@ -28,8 +28,8 @@ import com.neverwinterdp.swing.widget.LazyLoadJTree.LazyLoadTreeNode;
 @SuppressWarnings("serial")
 public class UIRegistryTree extends JPanel implements UILifecycle {
   private RegistryNodeSelector registryTree ;
-  private String rootPath  = "/vm";
-  private String rootName  = "VM";
+  private String rootPath  = "/";
+  private String rootName  = "/";
   
   public UIRegistryTree(String rootPath, String rootName) throws Exception {
     setLayout(new BorderLayout());
@@ -38,6 +38,8 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     this.rootPath = rootPath ;
     this.rootName = rootName ;
   }
+  
+  public String getRootPath() { return this.rootPath; }
   
   @Override
   public void onInit() {
@@ -59,7 +61,6 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     });
     add(toolbar, BorderLayout.NORTH);
 
-    System.out.println("UIRegistry onActivate(), vmClient = " + Cluster.getInstance().getVMClient());
     DefaultTreeModel model = new DefaultTreeModel(new RegistryTreeNode(rootPath, rootName));
     registryTree = new RegistryNodeSelector(model);
     registryTree.setShowsRootHandles(true);
@@ -111,10 +112,8 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     public String getNodeName() { return this.nodeName ; }
     
     protected void loadChildren(final DefaultTreeModel model, final PropertyChangeListener progressListener) {
-      //do not check loaded, force reload the children every time
-      //if (loaded) return; 
       final Registry registry = Cluster.getInstance().getRegistry();
-      if(registry == null) {
+      if(registry == null || !registry.isConnect()) {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;
       }

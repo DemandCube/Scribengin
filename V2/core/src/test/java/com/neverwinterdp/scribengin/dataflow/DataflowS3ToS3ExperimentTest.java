@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
-import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
 import com.neverwinterdp.scribengin.dataflow.test.S3DataflowTest;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
@@ -42,7 +41,7 @@ public class DataflowS3ToS3ExperimentTest {
     shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
 
     bucketName = "s3-integration-test-" + UUID.randomUUID();
-    folderPath = "dataflow-test/";
+    folderPath = "dataflow-test";
     
     s3Client = new S3Client();
     s3Client.onInit();
@@ -84,7 +83,7 @@ public class DataflowS3ToS3ExperimentTest {
       shell.execute("vm         info");
       shell.execute("scribengin info");
       
-      shell.execute("dataflow   info --history "+HDFSDataflowTest.TEST_NAME+"-0");
+      shell.execute("dataflow   info --history "+S3DataflowTest.TEST_NAME+"-0");
     } catch (Throwable err) {
       throw err;
     } finally {
@@ -117,7 +116,7 @@ public class DataflowS3ToS3ExperimentTest {
                 " --source-location " + bucketName +
                 " --source-name " + folderPath +
                 " --source-num-of-stream " + numStreams +
-                " --source-max-records-per-stream 100" +
+                " --source-max-records-per-stream 5000" +
                 " --sink-location " + bucketName +
                 " --sink-name " + folderPath +
                 " --print-dataflow-info -1" +

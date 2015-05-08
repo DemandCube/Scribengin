@@ -45,12 +45,6 @@ public class TaskPaneDemo extends JPanel {
   public TaskPaneDemo() {
     super(new BorderLayout());
 
-    createTaskPaneDemo();
-
-    bind();
-  }
-
-  private void createTaskPaneDemo() {
     JXTaskPaneContainer tpc = new JXTaskPaneContainer();
 
     // "System" GROUP
@@ -93,8 +87,7 @@ public class TaskPaneDemo extends JPanel {
     if (area.getDocument() instanceof HTMLDocument) {
       HTMLDocument doc = (HTMLDocument) area.getDocument();
       try {
-        doc.getStyleSheet().loadRules(new java.io.StringReader(stylesheet),
-                                      null);
+        doc.getStyleSheet().loadRules(new java.io.StringReader(stylesheet), null);
       } catch (Exception e) {
         // TODO: handle exception
       }
@@ -104,7 +97,9 @@ public class TaskPaneDemo extends JPanel {
 
     tpc.add(detailsGroup);
 
-    add(new JScrollPane(tpc));
+    add(new JScrollPane(tpc), BorderLayout.CENTER);
+    
+    bind();
   }
 
   private void bind() {

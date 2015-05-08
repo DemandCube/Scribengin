@@ -299,7 +299,7 @@ public class RegistryImpl implements Registry {
       List<String> names = zkClient.getChildren(realPath(path), false);
       return names ;
     } catch (KeeperException | InterruptedException e) {
-      throw toRegistryException("Get node children error", e) ;
+      throw toRegistryException("Error get node children for " + path, e) ;
     }
   }
   

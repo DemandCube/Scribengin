@@ -190,10 +190,14 @@ public class JAccordionPanel extends JPanel implements ActionListener {
         // Found the selected button
         this.visibleBar = currentBar;
         render();
+        onSelectBarInfo(barInfo.component) ;
         return;
       }
       currentBar++;
     }
+  }
+  
+  public void onSelectBarInfo(JComponent newPanel) {
   }
 
   /**
