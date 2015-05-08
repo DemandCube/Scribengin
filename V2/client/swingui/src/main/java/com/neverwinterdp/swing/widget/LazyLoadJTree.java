@@ -25,18 +25,18 @@ import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
-public class JTreeItemSelector  extends JTree {
+public class LazyLoadJTree  extends JTree {
   private static final long serialVersionUID = 1L;
 
-  public JTreeItemSelector(DefaultMutableTreeNode root) throws Exception {
+  public LazyLoadJTree(DefaultMutableTreeNode root) throws Exception {
     this(new DefaultTreeModel(root)) ;
   }
   
-  public JTreeItemSelector(final DefaultTreeModel model) throws Exception {
+  public LazyLoadJTree(final DefaultTreeModel model) throws Exception {
     setModel(model) ;
     this.addTreeSelectionListener(new  TreeSelectionListener() {
       public void valueChanged(TreeSelectionEvent evt) {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode) JTreeItemSelector.this.getLastSelectedPathComponent();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) LazyLoadJTree.this.getLastSelectedPathComponent();
         if (node == null) return;
         onSelect(node) ;
       }
@@ -53,8 +53,8 @@ public class JTreeItemSelector  extends JTree {
       @Override
       public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
         TreePath path = event.getPath();
-        if (path.getLastPathComponent() instanceof TreeNodeItem) {
-          TreeNodeItem node = (TreeNodeItem) path.getLastPathComponent();
+        if (path.getLastPathComponent() instanceof LazyLoadTreeNode) {
+          LazyLoadTreeNode node = (LazyLoadTreeNode) path.getLastPathComponent();
           node.loadChildren(model, progressListener);
         }
       }
@@ -63,7 +63,7 @@ public class JTreeItemSelector  extends JTree {
       public void treeWillCollapse(TreeExpansionEvent evt) throws ExpandVetoException {
       }
     });
-    TreeNodeItem root = (TreeNodeItem) model.getRoot() ;
+    LazyLoadTreeNode root = (LazyLoadTreeNode) model.getRoot() ;
     root.loadChildren(model, progressListener);
   }
 
@@ -71,18 +71,18 @@ public class JTreeItemSelector  extends JTree {
     System.out.println("Select " + node.getUserObject()) ;
   }
 
-  static public class TreeNodeItem extends DefaultMutableTreeNode {
+  static public class LazyLoadTreeNode extends DefaultMutableTreeNode {
     private static final long serialVersionUID = 1L;
 
     protected boolean loaded = false;
 
-    public TreeNodeItem(Object userObj) {
+    public LazyLoadTreeNode(Object userObj) {
       add(new DefaultMutableTreeNode("Loading...", false));
       setAllowsChildren(true);
       setUserObject(userObj);
     }
 
-    protected void setChildren(List<? extends TreeNodeItem> children) {
+    protected void setChildren(List<? extends LazyLoadTreeNode> children) {
       removeAllChildren();
       setAllowsChildren(children.size() > 0);
       for (MutableTreeNode node : children) {
@@ -93,15 +93,15 @@ public class JTreeItemSelector  extends JTree {
     
     protected void loadChildren(final DefaultTreeModel model, final PropertyChangeListener progressListener) {
       if (loaded) return;
-      SwingWorker<List<TreeNodeItem>, Void> worker = new SwingWorker<List<TreeNodeItem>, Void>() {
+      SwingWorker<List<LazyLoadTreeNode>, Void> worker = new SwingWorker<List<LazyLoadTreeNode>, Void>() {
         @Override
-        protected List<TreeNodeItem> doInBackground() throws Exception {
+        protected List<LazyLoadTreeNode> doInBackground() throws Exception {
           setProgress(0);
-          List<TreeNodeItem> children = new ArrayList<TreeNodeItem>();
+          List<LazyLoadTreeNode> children = new ArrayList<LazyLoadTreeNode>();
           for (int i = 0; i < 5; i++) {
             // Simulate DB access time
             Thread.sleep(100);
-            children.add(new TreeNodeItem("Child " + i + " at level " + 1));
+            children.add(new LazyLoadTreeNode("Child " + i + " at level " + 1));
             setProgress((i + 1) * 20);
           }
           setProgress(0);
@@ -112,7 +112,7 @@ public class JTreeItemSelector  extends JTree {
         protected void done() {
           try {
             setChildren(get());
-            model.nodeStructureChanged(TreeNodeItem.this);
+            model.nodeStructureChanged(LazyLoadTreeNode.this);
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -130,8 +130,8 @@ public class JTreeItemSelector  extends JTree {
   //--------------------------------------TEST------------------------------------------------
   
   public static void main(String[] args) throws Exception {
-    final DefaultTreeModel model = new DefaultTreeModel(new TreeNodeItem("Root"));
-    JTreeItemSelector tree = new JTreeItemSelector(model);
+    final DefaultTreeModel model = new DefaultTreeModel(new LazyLoadTreeNode("Root"));
+    LazyLoadJTree tree = new LazyLoadJTree(model);
     tree.setShowsRootHandles(true);
     
     JFrame frame = new JFrame("Creating a Simple JTree");

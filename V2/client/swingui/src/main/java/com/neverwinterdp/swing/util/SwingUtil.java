@@ -37,20 +37,20 @@ public class SwingUtil {
     return null;
   }
 
-  static public <T> List<T> findDescentdantsOfType(Container acomp, Class<T> type) {
+  static public <T> List<T> findDescentdantsOfType(Container acomp, Class<T> type, boolean selfInclude) {
     List<T> holder = new ArrayList<T>();
-    findDescentdantsOfType(holder, acomp, type);
+    findDescentdantsOfType(holder, acomp, type, selfInclude);
     return holder;
   }
 
-  static public <T> void findDescentdantsOfType(List<T> holder, Container acomp, Class<T> type) {
-    if (type.isInstance(acomp)) {
+  static public <T> void findDescentdantsOfType(List<T> holder, Container acomp, Class<T> type, boolean selfInclude) {
+    if (selfInclude && type.isInstance(acomp)) {
       holder.add((T) acomp);
     }
     for (int i = 0; i < acomp.getComponentCount(); i++) {
       Component child = acomp.getComponent(i);
       if (child instanceof Container) {
-        findDescentdantsOfType(holder, (Container) child, type);
+        findDescentdantsOfType(holder, (Container) child, type, true);
       }
     }
   }

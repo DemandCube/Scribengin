@@ -54,7 +54,7 @@ public class UIMain extends JPanel {
     
     uiShellConsole = new UIShellConsole() ;
     msp.add(uiShellConsole, "main.ui.console");
-    msp.setDividerSize(2);
+    //msp.setDividerSize(2);
     
     // ADDING A BORDER TO THE MULTISPLITPANE CAUSES ALL SORTS OF ISSUES
     msp.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));

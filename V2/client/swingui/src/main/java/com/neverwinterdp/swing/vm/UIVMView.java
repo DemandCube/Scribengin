@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.registry;
+package com.neverwinterdp.swing.vm;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -11,23 +11,22 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.neverwinterdp.registry.NodeInfo;
+import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.util.MessageUtil;
-import com.neverwinterdp.swing.util.text.DateUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.JSONSerializer;
 
 @SuppressWarnings("serial")
-public class UIRegistryNodeTextView extends SpringLayoutGridJPanel {
-  private String  path ;
+public class UIVMView extends SpringLayoutGridJPanel {
+  private String  vmId ;
   private JTextArea nodeDataTextArea ;
   private NodeInfoPanel nodeInfoPanel;
   
-  public UIRegistryNodeTextView(String path) {
-    this.path = path ;
+  public UIVMView(String vmId) {
+    this.vmId = vmId ;
     Registry registry = Cluster.getInstance().getRegistry();
     if(registry == null) {
       initNoConnection() ;
@@ -55,31 +54,16 @@ public class UIRegistryNodeTextView extends SpringLayoutGridJPanel {
       public void actionPerformed(ActionEvent e) {
       }
     });
-    toolbar.add(new AbstractAction("Delete") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    toolbar.add(new AbstractAction("Watch Create") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    toolbar.add(new AbstractAction("Watch Modify") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    toolbar.add(new AbstractAction("Watch Delete") {
+    toolbar.add(new AbstractAction("Shutdown") {
       @Override
       public void actionPerformed(ActionEvent e) {
       }
     });
     addRow(toolbar) ;
 
-    NodeInfo nodeInfo = registry.getInfo(path);
+    Node vmNode = registry.get("/vm/instances/all/" + vmId);
     
-    nodeInfoPanel = new NodeInfoPanel(path, nodeInfo);
+    nodeInfoPanel = new NodeInfoPanel(vmNode);
     addRow(nodeInfoPanel);
     
     nodeDataTextArea = new JTextArea();
@@ -87,11 +71,9 @@ public class UIRegistryNodeTextView extends SpringLayoutGridJPanel {
     nodeDataTextArea.setEditable(false);
     nodeDataTextArea.setVisible(true);
 
-    byte[] data = registry.getData(path);
-    String text  = "" ;
-    if(data != null && data.length > 0) {
+    String text  = vmNode.getDataAsString();
+    if(text.length() > 0) {
       try {
-        text  = new String(data) ;
         JsonNode jsonNode = JSONSerializer.INSTANCE.fromString(text) ;
         text = JSONSerializer.INSTANCE.toString(jsonNode);
       } catch (IOException e) {
@@ -107,18 +89,15 @@ public class UIRegistryNodeTextView extends SpringLayoutGridJPanel {
   }
   
   static public class NodeInfoPanel extends SpringLayoutGridJPanel {
-    public NodeInfoPanel(String path, NodeInfo nodeInfo) {
-      update(path, nodeInfo);
+    public NodeInfoPanel(Node vmNode) throws RegistryException {
+      update(vmNode);
     }
     
-    public void update(String path, NodeInfo nodeInfo) {
+    public void update(Node vmNode) throws RegistryException {
       createBorder("Node Info");
-      addRow("Path         : ", path);
-      addRow("Created Time : ", DateUtil.COMPACT_DATE_TIME.format(nodeInfo.getCtime()));
-      addRow("Modified Time: ", DateUtil.COMPACT_DATE_TIME.format(nodeInfo.getMtime()));
-      addRow("Version      : ", nodeInfo.getVersion());
-      addRow("Data Length  : ", nodeInfo.getDataLength());
-      addRow("Children Size: ", nodeInfo.getNumOfChildren());
+      addRow("Path        : ", vmNode.getPath());
+      addRow("VM Status   : ", new String(vmNode.getChild("status").getDataAsString()));
+      addRow("VM Heartbeat: ", vmNode.getDescendant("status/heartbeat").exists());
       makeCompactGrid(); 
     }
   }

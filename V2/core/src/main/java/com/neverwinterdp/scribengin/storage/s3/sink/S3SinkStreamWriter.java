@@ -37,21 +37,21 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   // finish up with the previous segment writer
   @Override
   public void prepareCommit() throws Exception {
+    //TODO: You have a bug here, if you cannot figure out then I cannot let you continue this task. 
+    //Review and think carefully about your code. 
     ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
-
     writer.waitAndClose(TIMEOUT);
   }
 
   //start of writing to a new segment
   @Override
   public void completeCommit() throws Exception {
+    //TODO: do you think this code and the code in the constructor are duplicated?
     segmentName = "segment-" + UUID.randomUUID().toString();
-
     ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "prepare");
-
     writer = streamS3Folder.createObjectWriter(segmentName, metadata);
   }
 
@@ -79,7 +79,7 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   }
 
   @Override
-  public void close() throws Exception {
+  synchronized public void close() throws Exception {
     writer.waitAndClose(TIMEOUT);
   }
 }

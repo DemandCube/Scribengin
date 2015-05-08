@@ -55,6 +55,12 @@ public class Node {
     return registry.getData(path); 
   }
   
+  public String getDataAsString() throws RegistryException {
+    byte[] data = getData() ;
+    if(data == null || data.length == 0) return "" ;
+    return new String(data);
+  }
+  
   public <T> T getDataAs(Class<T> type) throws RegistryException { 
     return registry.getDataAs(path, type);
   }

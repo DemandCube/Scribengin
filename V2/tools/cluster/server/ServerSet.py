@@ -189,11 +189,13 @@ class ServerSet(object):
       hostnames.append(server.hostname)
     return hostnames
   
+  #TODO: I do not think you can start vm master this way
   def startVmMaster(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:
       return self.startProcessOnHost("vmmaster", hadoopMasterServers.servers[0].getHostname())
   
+  #TODO: I do not think you can start vm master this way
   def startScribengin(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:

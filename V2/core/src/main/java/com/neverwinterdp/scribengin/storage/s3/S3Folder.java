@@ -95,7 +95,7 @@ public class S3Folder {
   
   public S3ObjectWriter createObjectWriter(String name, ObjectMetadata metadata) throws IOException {
     //TODO (tuan) confirm if this should be here.
-    s3Client.createS3Folder(bucketName, toKey(name));
+    createFolder(toKey(name));
     S3ObjectWriter writer = new S3ObjectWriter(s3Client, bucketName, toKey(name), metadata);
     return writer;
   }
@@ -106,7 +106,7 @@ public class S3Folder {
   }
   
   
-  String toKey(String name) { return folderPath + "/" + name; }
+  public String toKey(String name) { return folderPath + "/" + name; }
   
   public String toString() {
     return bucketName + ":" + folderPath;

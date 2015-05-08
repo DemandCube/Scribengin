@@ -71,8 +71,8 @@ public class SinkExperimentTest {
     assertEquals(1, sink.getStreams().length);
 
     SinkStreamWriter writer = stream.getWriter();
-
-    for (int i = 0; i < 5; i++) {
+    int numBuffers = 5;
+    for (int i = 0; i < numBuffers; i++) {
       for (int j = 0; j < 100; j++) {
         String key = "stream=" + stream.getDescriptor().getId() + ",buffer=" + i + ",record=" + j;
         writer.append(Record.create(key, key));
@@ -83,6 +83,9 @@ public class SinkExperimentTest {
       System.out.println("----------------------");
     }
     writer.close();
+
+    //numBuffers + 1  because of an empty buffer created at the end
+    assertEquals(numBuffers + 1, s3Client.createS3Folder(bucketName, folderName).getDescendants().size());
 
     System.out.println("At the end of it all");
     S3Util.listObjects(s3Client, bucketName);

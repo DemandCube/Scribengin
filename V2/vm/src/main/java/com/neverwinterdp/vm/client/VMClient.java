@@ -43,6 +43,9 @@ public class VMClient {
   public List<VMDescriptor> getHistoryVMDescriptors() throws RegistryException {
     return VMService.getHistoryVMDescriptors(registry) ;
   }
+  public List<VMDescriptor> getAllVMDescriptors() throws RegistryException {
+    return VMService.getAllVMDescriptors(registry) ;
+  }
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 
     Node vmNode = registry.getRef(VMService.LEADER_PATH);

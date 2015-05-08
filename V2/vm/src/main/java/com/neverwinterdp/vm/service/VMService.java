@@ -159,6 +159,10 @@ public class VMService {
     return registry.getDataAs(paths, VMDescriptor.class);
   }
   
+  static public List<VMDescriptor> getAllVMDescriptors(Registry registry) throws RegistryException {
+    return registry.getChildrenAs(ALL_PATH, VMDescriptor.class);
+  }
+  
   static public void register(Registry registry, VMDescriptor descriptor) throws Exception {
     registry.createIfNotExist(ALL_PATH) ;
     registry.createIfNotExist(ACTIVE_PATH) ;

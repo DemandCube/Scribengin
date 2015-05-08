@@ -5,11 +5,14 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingWorker;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -19,15 +22,21 @@ import com.neverwinterdp.swing.UIMain;
 import com.neverwinterdp.swing.UIWorkspace;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.util.SwingUtil;
-import com.neverwinterdp.swing.widget.JTreeItemSelector;
-import com.neverwinterdp.swing.widget.JTreeItemSelector.TreeNodeItem;
+import com.neverwinterdp.swing.widget.LazyLoadJTree;
+import com.neverwinterdp.swing.widget.LazyLoadJTree.LazyLoadTreeNode;
 
 @SuppressWarnings("serial")
 public class UIRegistryTree extends JPanel implements UILifecycle {
-  private RegistryNodeSelector tree ;
+  private RegistryNodeSelector registryTree ;
+  private String rootPath  = "/vm";
+  private String rootName  = "VM";
   
-  public UIRegistryTree() throws Exception {
+  public UIRegistryTree(String rootPath, String rootName) throws Exception {
     setLayout(new BorderLayout());
+    setOpaque(false);
+    setBorder(new EmptyBorder(0, 0, 5, 0) );
+    this.rootPath = rootPath ;
+    this.rootName = rootName ;
   }
   
   @Override
@@ -51,35 +60,47 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     add(toolbar, BorderLayout.NORTH);
 
     System.out.println("UIRegistry onActivate(), vmClient = " + Cluster.getInstance().getVMClient());
-    DefaultTreeModel model = new DefaultTreeModel(new RegistryNodeItem("/", "/"));
-    tree = new RegistryNodeSelector(model);
-    tree.setShowsRootHandles(true);
-    add(tree, BorderLayout.CENTER);
+    DefaultTreeModel model = new DefaultTreeModel(new RegistryTreeNode(rootPath, rootName));
+    registryTree = new RegistryNodeSelector(model);
+    registryTree.setShowsRootHandles(true);
+    add(new JScrollPane(registryTree), BorderLayout.CENTER);
   }
 
   public void onDeactivate() {
     removeAll();
   }
   
-  static public class RegistryNodeSelector extends JTreeItemSelector {
+  public void onSelect(RegistryTreeNode node) {
+    UIMain uiScribengin = SwingUtil.findAncestorOfType(this, UIMain.class) ;
+    UIWorkspace uiWorkspace = uiScribengin.getUiWorkspace();
+    UIRegistryNodeView view = new UIRegistryNodeView(node.getNodePath(), node.getNodeName()) ;
+    onCustomNodeView(node, view);
+    uiWorkspace.addTab(view.getLabel(), view, true);
+  }
+  
+  protected void onCustomNodeView(RegistryTreeNode node, UIRegistryNodeView view) {
+  }
+  
+  public RegistryTreeNode onCustomTreeNode(RegistryTreeNode node) {
+    return node ;
+  }
+  
+  public class RegistryNodeSelector extends LazyLoadJTree {
     public RegistryNodeSelector(final DefaultTreeModel model) throws Exception {
       super(model);
     }
     
     public void onSelect(DefaultMutableTreeNode node) {
-      RegistryNodeItem selectNode = (RegistryNodeItem) node ;
-      UIMain uiScribengin = SwingUtil.findAncestorOfType(this, UIMain.class) ;
-      UIWorkspace uiWorkspace = uiScribengin.getUiWorkspace();
-      uiWorkspace.addTab("registry[" + selectNode.getNodeName() + "]", new UIRegistryNodeTextView(selectNode.getNodePath()), true);
+      UIRegistryTree.this.onSelect((RegistryTreeNode) node) ;
     }
   }
   
-  static public class RegistryNodeItem extends TreeNodeItem {
+  public class RegistryTreeNode extends LazyLoadTreeNode {
     private static final long serialVersionUID = 1L;
     private String nodePath;
     private String nodeName ;
     
-    public RegistryNodeItem(String path, String nodeName) {
+    public RegistryTreeNode(String path, String nodeName) {
       super(nodeName) ;
       this.nodePath = path;
       this.nodeName = nodeName;
@@ -92,24 +113,26 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     protected void loadChildren(final DefaultTreeModel model, final PropertyChangeListener progressListener) {
       //do not check loaded, force reload the children every time
       //if (loaded) return; 
-      final Registry registry = Cluster.getInstance().getVMClient().getRegistry();
+      final Registry registry = Cluster.getInstance().getRegistry();
       if(registry == null) {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;
       }
-      SwingWorker<List<RegistryNodeItem>, Void> worker = new SwingWorker<List<RegistryNodeItem>, Void>() {
+      SwingWorker<List<RegistryTreeNode>, Void> worker = new SwingWorker<List<RegistryTreeNode>, Void>() {
         @Override
-        protected List<RegistryNodeItem> doInBackground() throws Exception {
+        protected List<RegistryTreeNode> doInBackground() throws Exception {
           setProgress(0);
           List<String> childrenNames = registry.getChildren(nodePath) ;
-          List<RegistryNodeItem> children = new ArrayList<RegistryNodeItem>();
+          List<RegistryTreeNode> children = new ArrayList<RegistryTreeNode>();
           int size = childrenNames.size();
           for (int i = 0; i < size; i++) {
             String childName = childrenNames.get(i) ;
             String childPath = null ;
             if(nodePath.equals("/")) childPath = "/" + childName ;
             else childPath = nodePath + "/" + childName;
-            children.add(new RegistryNodeItem(childPath, childName));
+            RegistryTreeNode nodeItem = new RegistryTreeNode(childPath, childName) ; 
+            nodeItem = onCustomTreeNode(nodeItem);
+            if(nodeItem != null) children.add(nodeItem);
             setProgress((i + 1)/size * 100);
           }
           setProgress(0);
@@ -120,7 +143,7 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
         protected void done() {
           try {
             setChildren(get());
-            model.nodeStructureChanged(RegistryNodeItem.this);
+            model.nodeStructureChanged(RegistryTreeNode.this);
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -132,6 +155,26 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
         worker.getPropertyChangeSupport().addPropertyChangeListener("progress", progressListener);
       }
       worker.execute();
+    }
+  }
+  
+  static public class RegistryTreeNodePathMatcher {
+    private List<Pattern> ignorePathPatterns = new ArrayList<>() ;
+    
+    public void add(String pathRegex) {
+      Pattern pattern = Pattern.compile(pathRegex);
+      ignorePathPatterns.add(pattern);
+    }
+    
+    public boolean matches(RegistryTreeNode node) {
+      String path = node.getNodePath();
+      for(int i = 0; i < ignorePathPatterns.size(); i++) {
+        Pattern pattern = ignorePathPatterns.get(i);
+        if(pattern.matcher(path).matches()) {
+          return true;
+        }
+      }
+      return false ;
     }
   }
 }
