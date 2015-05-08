@@ -36,10 +36,10 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
     writer.waitAndClose(TIMEOUT);
   }
 
-  //start of writing to a new segment
+  //start writing to a new segment
   @Override
   public void completeCommit() throws Exception {
-    ObjectMetadata metadata = new ObjectMetadata();
+    ObjectMetadata metadata = writer.getObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
     
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
