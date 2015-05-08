@@ -33,21 +33,17 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   // finish up with the previous segment writer
   @Override
   public void prepareCommit() throws Exception {
-    //TODO: (Tuan) how about this now?
-    //First we finish writing to the segment, then we update the transaction metadata.
-    //we will not update the transaction metadata if we didn't finish writing 
     writer.waitAndClose(TIMEOUT);
-
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.addUserMetadata("transaction", "complete");
-    
-    streamS3Folder.updateObjectMetadata(segmentName, metadata);
-
   }
 
   //start of writing to a new segment
   @Override
   public void completeCommit() throws Exception {
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.addUserMetadata("transaction", "complete");
+    
+    streamS3Folder.updateObjectMetadata(segmentName, metadata);
+
     writer = createNewWriter();
   }
 
