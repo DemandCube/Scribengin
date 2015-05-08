@@ -20,7 +20,7 @@ public class S3SourceGenerator {
   public void generateSource(S3Client s3Client, String bucketName, int numStreams, int numBufferPerStream,
       int numRecordsPerBuffer) throws Exception {
     stopwatch.start();
-    System.out.println("generating test Data. ");
+    System.out.println("generating test Data...");
     this.numOfStream = numStreams;
     this.numOfBufferPerStream = numBufferPerStream;
     this.numOfRecordPerBuffer = numRecordsPerBuffer;
@@ -43,7 +43,7 @@ public class S3SourceGenerator {
     SinkStreamWriter writer = stream.getWriter();
     for (int i = 0; i < numOfBufferPerStream; i++) {
       for (int j = 0; j < numOfRecordPerBuffer; j++) {
-        writer.append(recordGenerator.nextRecord(i, 5));
+        writer.append(recordGenerator.nextRecord(i, 2));
       }
       writer.commit();
     }
