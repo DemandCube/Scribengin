@@ -15,17 +15,13 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   private String segmentName;
   private S3ObjectWriter writer;
 
-  private final int TIMEOUT = 1 * 60 * 1000;
+  private final int TIMEOUT = 1 * 60 * 10000;
 
   public S3SinkStreamWriter(S3Folder streamS3Folder) throws IOException {
     this.streamS3Folder = streamS3Folder;
     segmentName = "segment-" + UUID.randomUUID().toString();
 
-    ObjectMetadata metadata = new ObjectMetadata();
-    metadata.setContentType("application/binary");
-    metadata.addUserMetadata("transaction", "prepare");
-
-    writer = streamS3Folder.createObjectWriter(segmentName, metadata);
+    writer = createNewWriter();
   }
 
   @Override
@@ -37,22 +33,21 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
   // finish up with the previous segment writer
   @Override
   public void prepareCommit() throws Exception {
-    //TODO: You have a bug here, if you cannot figure out then I cannot let you continue this task. 
-    //Review and think carefully about your code. 
-    ObjectMetadata metadata = writer.getObjectMetadata();
+    //TODO: (Tuan) how about this now?
+    //First we finish writing to the segment, then we update the transaction metadata.
+    //we will not update the transaction metadata if we didn't finish writing 
+    writer.waitAndClose(TIMEOUT);
+
+    ObjectMetadata metadata = new ObjectMetadata();
     metadata.addUserMetadata("transaction", "complete");
     streamS3Folder.updateObjectMetadata(segmentName, metadata);
-    writer.waitAndClose(TIMEOUT);
+
   }
 
   //start of writing to a new segment
   @Override
   public void completeCommit() throws Exception {
-    //TODO: do you think this code and the code in the constructor are duplicated?
-    segmentName = "segment-" + UUID.randomUUID().toString();
-    ObjectMetadata metadata = writer.getObjectMetadata();
-    metadata.addUserMetadata("transaction", "prepare");
-    writer = streamS3Folder.createObjectWriter(segmentName, metadata);
+    writer = createNewWriter();
   }
 
   @Override
@@ -78,8 +73,16 @@ public class S3SinkStreamWriter implements SinkStreamWriter {
     writer = streamS3Folder.createObjectWriter(segmentName, metadata);
   }
 
+  private S3ObjectWriter createNewWriter() throws IOException {
+    segmentName = "segment-" + UUID.randomUUID().toString();
+    ObjectMetadata metadata = new ObjectMetadata();
+    metadata.addUserMetadata("transaction", "prepare");
+    writer = streamS3Folder.createObjectWriter(segmentName, metadata);
+    return writer;
+  }
+
   @Override
-  synchronized public void close() throws Exception {
+  public void close() throws Exception {
     writer.waitAndClose(TIMEOUT);
   }
 }

@@ -71,7 +71,7 @@ public class SinkExperimentTest {
     assertEquals(1, sink.getStreams().length);
 
     SinkStreamWriter writer = stream.getWriter();
-    int numBuffers = 5;
+    int numBuffers = 10;
     for (int i = 0; i < numBuffers; i++) {
       for (int j = 0; j < 100; j++) {
         String key = "stream=" + stream.getDescriptor().getId() + ",buffer=" + i + ",record=" + j;
