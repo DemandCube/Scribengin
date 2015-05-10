@@ -89,7 +89,10 @@ class Process(object):
     pids = self.getRunningPid()
     for pid in pids.split(","):
       self.sshExecute("kill -9 "+pid)
-    
+   
+  def getProcessCommand(self):
+    return "jps -m | grep -w '"+self.processIdentifier+"' | awk '{print $1 \" \" $2}'"
+  
   def getRunningPid(self):
     command = "ps ax | grep -w '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
     stdout,stderr = self.sshExecute(command)
@@ -312,6 +315,9 @@ class VmMasterProcess(Process):
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
   
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
     stdout,stderr = self.sshExecute(command)
@@ -347,6 +353,9 @@ class ScribenginProcess(Process):
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
   
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"\|dataflow-master-*\|dataflow-worker-*' | awk '{print $1 \" \" $4}'"
     stdout,stderr = self.sshExecute(command)
@@ -367,5 +376,64 @@ class ScribenginProcess(Process):
   
   def kill(self):
     return self.shutdown()
+
+############
+class DataflowMasterProcess(Process):
+  def __init__(self, role, hostname, processIdentifier):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
+    self.hostname = hostname
+    
+  def setupClusterEnv(self, paramDict = {}):
+    pass
   
+  def getReportDict(self):
+    pass
+  
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
+  def getRunningPid(self):
+    pass
+  
+  def start(self):
+    pass
+    
+  def shutdown(self):
+    pass
+  
+  def clean(self):
+    pass 
+  
+  def kill(self):
+    pass
+
+############
+class DataflowWorkerProcess(Process):
+  def __init__(self, role, hostname, processIdentifier):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
+    self.hostname = hostname
+    
+  def setupClusterEnv(self, paramDict = {}):
+    pass
+  
+  def getReportDict(self):
+    pass
+  
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
+  def getRunningPid(self):
+    pass
+  
+  def start(self):
+    pass
+    
+  def shutdown(self):
+    pass
+  
+  def clean(self):
+    pass 
+  
+  def kill(self):
+    pass
   

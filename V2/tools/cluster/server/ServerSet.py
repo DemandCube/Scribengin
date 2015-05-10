@@ -8,67 +8,71 @@ from time import time
 #This function is outside the ServerSet class
 #because otherwise it wouldn't be pickleable 
 #http://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-pythons-multiprocessing-pool-ma
+
+def frameDictionary(process, processID, processIdentifier, running):
+  dictionary = {
+            "Role" : process.role,
+            "Hostname": process.hostname,
+            "HomeDir" : process.homeDir,
+            "Status" : running,
+            "ProcessIdentifier" : processIdentifier,
+            "processID" : processID
+            }
+  return dictionary
+
 def getReportOnServer(server):
-  omitStoppedProcesses = ["scribengin-master-*", "vm-master-*"]
-  result = []
+  omitStoppedProcesses = ["scribengin-master-*", "vm-master-*", "dataflow-master-*", "dataflow-worker-*"]
+  scribenginRoles = ["vmmaster", "scribengin", "dataflow-master", "dataflow-worker"]
+  
+  result = [] #list for individual process report
+  report = [] #list for server report
   serverReportDict = server.getReportDict()
   if serverReportDict is not None and serverReportDict["Hostname"] :
     result.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
     procs = server.getProcesses()
     
-    #processIdentifierMap to filter pid and processname from jps -m output
-    # <process name> = <process name column>
-    processIdentifierMap = {}
-    for procKey in procs:
-      processIdentifierMap[procs[procKey].processIdentifier] = 1
-      
-    processIdentifierMap["-master"] = 3
-    processIdentifierMap["-worker"] = 3
-
-    sshOut = ""
-    runningProcess = {}
-    stdout,stderr = procs.values()[0].sshExecute("jps -m")
+    #collecting process commands from all available processes from server
+    processCommand = []
+    for proc in procs:
+      processCommand.append(procs[proc].getProcessCommand())
+    
+    #ssh to run process command and get pid and process name
+    stdout,stderr = procs.values()[0].sshExecute(";".join(processCommand))
+    
+    #extract pid and process name from stdout
+    runningProcesses = {}
     for line in stdout.splitlines():
-      for processIdentifierKey in processIdentifierMap:
-        if re.match('.*'+processIdentifierKey+'.*', line):
-          processList = line.split(" ")
-          runningProcess[processList[processIdentifierMap[processIdentifierKey]]] = processList[0]
-          break
-   
-    report = []
-    #adding default processes report
-    for procKey in procs:
-      running = "None"
-      pid = ""
-      if procs[procKey].processIdentifier in runningProcess:
-        running = "Running"
-        pid = runningProcess[procs[procKey].processIdentifier]
-        del runningProcess[procs[procKey].processIdentifier]
-      dictionary = {
-      "Role" : procs[procKey].role,
-      "Hostname": procs[procKey].hostname,
-      "HomeDir" : procs[procKey].homeDir,
-      "Status" : running,
-      "ProcessIdentifier" : procs[procKey].processIdentifier,
-      "processID" : pid
-      } 
-      report.append(dictionary)
-      
-    #adding dynamic processes report
-    for runningProcessKey in runningProcess:
-      dictionary = {
-      "Role" : procs.values()[0].role,
-      "Hostname": procs.values()[0].hostname,
-      "HomeDir" : procs.values()[0].homeDir,
-      "Status" : "Running",
-      "ProcessIdentifier" : runningProcessKey,
-      "processID" : runningProcess[runningProcessKey]
-      }
-      report.append(dictionary)
+      pid_and_name = line.split(" ")
+      runningProcesses[pid_and_name[0]] = pid_and_name[1]
+    
+    #adding none running process status
+    for proc in procs:
+      process = procs[proc]
+      if process.processIdentifier not in runningProcesses.values():
+        report.append(frameDictionary(process, "", process.processIdentifier, "None"))
+    
+    #adding running process status
+    addedPids = [] #list to keep added pid's to report
+    for proc in procs:
+      process = procs[proc] 
+      #filter process with the same name
+      filtered_dict = {k:v for (k,v) in runningProcesses.items() if process.processIdentifier in v}
+      for pid in filtered_dict:
+        report.append(frameDictionary(process, pid, filtered_dict[pid], "Running"))
+        addedPids.append(pid)
+     
+    #adding scribengin related process 
+    for proc in procs:
+      process = procs[proc]  
+      if process.role in scribenginRoles:
+        for pid in runningProcesses:
+          if pid not in addedPids:
+            report.append(frameDictionary(process, pid, runningProcesses[pid], "Running"))
+            addedPids.append(pid)
     
     for procDict in report:
-        if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
-          result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+      if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
+        result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
   
   return result
 
