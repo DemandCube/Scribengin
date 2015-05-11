@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
@@ -13,38 +15,45 @@ import com.neverwinterdp.scribengin.storage.source.SourceStream;
 
 /**
  * @author Anthony Musyoki
+ * 
+ * For Consistency with S3Sink a Source is a folder in a bucket, a SourceStream is a file in the folder, a SourceStreamReader read the file
  */
 public class S3Source implements Source {
 
+  private S3Folder sourceFolder;
   private StorageDescriptor descriptor;
+  private int streamId = 0;
   private Map<Integer, S3SourceStream> streams = new LinkedHashMap<Integer, S3SourceStream>();
 
   public S3Source(S3Client s3Client, StreamDescriptor streamDescriptor) throws Exception {
-   
+
     this(s3Client, getSourceDescriptor(streamDescriptor));
 
   }
 
   public S3Source(S3Client s3Client, StorageDescriptor descriptor) throws Exception {
-      this.descriptor = descriptor;
-     String bucketName = descriptor.attribute("s3.bucket.name");
+    this.descriptor = descriptor;
+    String bucketName = descriptor.attribute("s3.bucket.name");
 
     if (!s3Client.hasBucket(bucketName)) {
-      throw new Exception("bucket " + bucketName + " does not exist!");
+      throw new AmazonServiceException("Bucket " + bucketName + " does not exist.");
     }
 
-    // a source stream for every folder in the bucket
-    List<S3Folder> folders = s3Client.getRootFolders(bucketName);
-    int id = 0;
-    for (S3Folder s3Folder : folders) {
-      StreamDescriptor sDescriptor = new StreamDescriptor();
-      sDescriptor.setType(descriptor.getType());
-      sDescriptor.setLocation(s3Folder.getFolderPath());
-      sDescriptor.setId(id++);
-      sDescriptor.attribute("s3.bucket.name", descriptor.attribute("s3.bucket.name"));
-      sDescriptor.attribute("s3.storage.path", s3Folder.getFolderPath());
-      S3SourceStream stream = new S3SourceStream(s3Client, sDescriptor);
-      streams.put(sDescriptor.getId(), stream);
+    String folderPath = descriptor.attribute("s3.storage.path");
+    if (!s3Client.hasKey(bucketName, folderPath)) {
+      throw new AmazonServiceException("Folder " + folderPath + " does not exist.");
+    }
+
+    sourceFolder = s3Client.getS3Folder(bucketName, folderPath);
+    List<S3ObjectSummary> streamNames = sourceFolder.getDescendants();
+    for (S3ObjectSummary streamName : streamNames) {
+      if (Long.valueOf(streamName.getSize()).compareTo(0l) > -0) {
+        StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
+        streamDescriptor.attribute("s3.stream.name", streamName.getKey());
+        streamDescriptor.setId(streamId++);
+        S3SourceStream stream = new S3SourceStream(s3Client, streamDescriptor);
+        streams.put(stream.getDescriptor().getId(), stream);
+      }
     }
   }
 

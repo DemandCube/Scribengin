@@ -5,12 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.neverwinterdp.scribengin.Record;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.scribengin.storage.s3.S3Client;
-import com.neverwinterdp.scribengin.storage.s3.S3Folder;
 import com.neverwinterdp.scribengin.storage.source.CommitPoint;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
@@ -18,28 +17,23 @@ public class S3SourceStreamReader implements SourceStreamReader {
 
   private String name;
   private S3Client s3Client;
-  private List<S3ObjectSummary> s3Objects = new ArrayList<>();
-  private int currentObject = -1;
+  private S3Object s3Object;
   private S3ObjectReader recordObjectReader;
 
   private int commitPoint;
   private int currPosition;
   private CommitPoint lastCommitInfo;
-  private StreamDescriptor descriptor;
 
   public S3SourceStreamReader(String name, S3Client client, StreamDescriptor descriptor) throws FileNotFoundException,
       IllegalArgumentException, IOException {
     this.name = name;
     this.s3Client = client;
-    this.descriptor = descriptor;
-    S3Folder folder = new S3Folder(s3Client, descriptor.attribute("s3.bucket.name"), descriptor.attribute("s3.storage.path"));
 
-    //get all files in folder
-    List<S3ObjectSummary> status = folder.getDescendants();
-    for (S3ObjectSummary s3Object : status) {
-      s3Objects.add(s3Object);
-    }
-    recordObjectReader = nextObjectReader();
+    GetObjectRequest objectRequest = new GetObjectRequest(descriptor.attribute("s3.bucket.name"),
+        descriptor.attribute("s3.stream.name"));
+    s3Object = s3Client.getAmazonS3Client().getObject(objectRequest);
+
+    recordObjectReader = getObjectReader();
   }
 
   public String getName() {
@@ -47,17 +41,13 @@ public class S3SourceStreamReader implements SourceStreamReader {
   }
 
   public Record next() throws Exception {
-    if(recordObjectReader==null) {
+    if (recordObjectReader == null) {
       return null;
     }
-    if (!recordObjectReader.hasNext()) {
-      recordObjectReader.close();
-      recordObjectReader = nextObjectReader();
-    }
-    if (recordObjectReader !=null && recordObjectReader.hasNext())
+    if(recordObjectReader.hasNext()) {
       return recordObjectReader.next();
-    else
-      return next();
+    }
+    else return null;
   }
 
   public Record[] next(int size) throws Exception {
@@ -81,11 +71,12 @@ public class S3SourceStreamReader implements SourceStreamReader {
 
   @Override
   public void prepareCommit() {
+    
   }
 
   @Override
   public void completeCommit() {
-    // TODO Auto-generated method stub
+   
   }
 
   public void commit() throws Exception {
@@ -101,13 +92,9 @@ public class S3SourceStreamReader implements SourceStreamReader {
   public void close() throws Exception {
   }
 
-  private S3ObjectReader nextObjectReader() throws IOException {
-    currentObject++;
-        if (currentObject >= s3Objects.size()) {
-          return null;
-        }
-    S3Object object = s3Client.getObject(descriptor.get("s3.bucket.name"), s3Objects.get(currentObject).getKey());
-    S3ObjectReader reader = new S3ObjectReader(object.getObjectContent());
+  private S3ObjectReader getObjectReader() throws IOException {
+    S3ObjectReader reader = new S3ObjectReader(s3Object.getObjectContent());
+
     return reader;
   }
 }

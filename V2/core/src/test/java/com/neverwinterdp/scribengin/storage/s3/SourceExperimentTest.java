@@ -28,8 +28,8 @@ public class SourceExperimentTest {
   private static S3Client s3Client;
 
   private String bucketName;
-  private int numStreams = 1;
-  private int numOfBuffersPerStream =10;
+  private String folderPath;
+  private int numOfBuffersPerStream =5;
   private int numRecordsPerBuffer = 100;
 
   @BeforeClass
@@ -46,11 +46,12 @@ public class SourceExperimentTest {
   @Before
   public void setup() throws Exception {
     bucketName = "source-experimenttest-" + UUID.randomUUID();
+    folderPath ="data-folder-1";
     if (s3Client.hasBucket(bucketName)) {
       s3Client.deleteBucket(bucketName, true);
     }
     s3Client.createBucket(bucketName);
-    new S3SourceGenerator().generateSource(s3Client, bucketName, numStreams, numOfBuffersPerStream, numRecordsPerBuffer);
+    new S3SourceGenerator().generateSource(s3Client, bucketName, folderPath, numOfBuffersPerStream, numRecordsPerBuffer);
   }
 
   @After
@@ -67,17 +68,18 @@ public class SourceExperimentTest {
 
     StorageDescriptor descriptor = new StorageDescriptor();
     descriptor.attribute("s3.bucket.name", bucketName);
+    descriptor.attribute("s3.storage.path", folderPath);
     S3Source source = new S3Source(s3Client, descriptor);
 
     MessageTracker messageTracker = new MessageTracker();
     MessageExtractor messageExtractor = MessageExtractor.DEFAULT_MESSAGE_EXTRACTOR;
 
     SourceStream[] streams = source.getStreams();
-    assertEquals(1, streams.length);
+
+    assertEquals(numOfBuffersPerStream, streams.length);
     for (SourceStream stream : streams) {
       SourceStreamReader reader = stream.getReader("test");
       Record record;
-      System.out.println("stream " + stream.getDescriptor().getId());
       while ((record = reader.next()) != null) {
         Message message = messageExtractor.extract(record.getData());
         messageTracker.log(message);
@@ -86,10 +88,9 @@ public class SourceExperimentTest {
     }
     messageTracker.optimize();
     messageTracker.dump(System.out);
-    int totalRecords= numStreams * numOfBuffersPerStream * numRecordsPerBuffer;
-   assertEquals(totalRecords, messageTracker.getLogCount());
-   assertTrue(messageTracker.isInSequence());
-    
+    int totalRecords = numOfBuffersPerStream * numRecordsPerBuffer;
+    assertEquals(totalRecords, messageTracker.getLogCount());
+    assertTrue(messageTracker.isInSequence());
     S3Util.listObjects(s3Client, bucketName);
   }
 }

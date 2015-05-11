@@ -17,7 +17,7 @@ public class S3SourceStream implements SourceStream {
     this.s3Client= s3Client;
     this.descriptor = descriptor;
   }
-  
+
   public StreamDescriptor getDescriptor() { return descriptor ; }
   
   @Override
