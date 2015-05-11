@@ -19,6 +19,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.tool.EmbeddedCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.util.text.StringUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
@@ -32,7 +33,7 @@ public class UIVMListView extends SpringLayoutGridJPanel {
   
   public UIVMListView(String path) {
     this.path = path ;
-    Registry registry = Cluster.getInstance().getRegistry();
+    Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       initNoConnection() ;
     } else {
@@ -92,7 +93,7 @@ public class UIVMListView extends SpringLayoutGridJPanel {
     }
     
     void loadData() throws Exception {
-      VMClient vmClient = Cluster.getInstance().getVMClient() ;
+      VMClient vmClient = Cluster.getCurrentInstance().getVMClient() ;
       
       List<VMDescriptor> vmDescriptors = null ;
       if(path.endsWith("active")) vmDescriptors = vmClient.getActiveVMDescriptors();

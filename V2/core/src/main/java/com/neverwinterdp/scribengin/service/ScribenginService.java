@@ -9,7 +9,6 @@ import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
-import com.neverwinterdp.registry.PathFilter;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.activity.Activity;
@@ -47,13 +46,9 @@ public class ScribenginService {
   private Node             dataflowsAllNode;
   private Node             dataflowsActiveNode;
   private Node             dataflowsHistoryNode;
-  private AtomicLong       historyIdTracker;
   
   @Inject
   private ScribenginActivityService activityService;
-  
-  @Inject
-  private ScribenginIdTrackerService idTrackerService ;
   
   @Inject
   public void onInit(Registry registry) throws Exception {
@@ -64,8 +59,6 @@ public class ScribenginService {
     dataflowsAllNode     = registry.createIfNotExist(DATAFLOWS_ALL_PATH);
     dataflowsActiveNode  = registry.createIfNotExist(DATAFLOWS_ACTIVE_PATH);
     dataflowsHistoryNode = registry.createIfNotExist(DATAFLOWS_HISTORY_PATH);
-
-    historyIdTracker = new AtomicLong(dataflowsHistoryNode.getChildren().size());
   }
   
   @PreDestroy

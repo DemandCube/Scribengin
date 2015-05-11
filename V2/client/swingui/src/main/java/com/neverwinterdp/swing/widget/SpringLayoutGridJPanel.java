@@ -29,20 +29,20 @@ public class SpringLayoutGridJPanel extends JPanel {
     numberOfRow++ ;
   }
   
-  public void addCell(Object comp) {
-    if(comp == null) {
+  public void addCell(Object object) {
+    if(object == null) {
       add(new JLabel("")) ;
-    } else if(comp instanceof String || comp instanceof Integer || comp instanceof Long || comp instanceof Boolean) {
-      add(new JLabel(comp.toString())) ;
-    } else if(comp instanceof Action) {
-      Action action = (Action) comp ;
+    } else if(object instanceof String || object instanceof Integer || object instanceof Long || object instanceof Boolean) {
+      add(new JLabel(object.toString())) ;
+    } else if(object instanceof Action) {
+      Action action = (Action) object ;
       JButton button = new JButton() ;
       button.setAction(action) ;
       add(button) ;
-    } else if(comp instanceof Component) {
-      add((Component) comp) ;
+    } else if(object instanceof Component) {
+      add((Component) object) ;
     } else {
-      throw new RuntimeException("Not support type " + comp.getClass()) ;
+      throw new RuntimeException("Not support type " + object.getClass()) ;
     }
   }
   

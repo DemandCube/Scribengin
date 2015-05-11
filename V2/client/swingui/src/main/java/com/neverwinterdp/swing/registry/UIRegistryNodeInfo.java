@@ -25,7 +25,7 @@ public class UIRegistryNodeInfo extends SpringLayoutGridJPanel {
   
   public UIRegistryNodeInfo(String path) {
     this.path = path ;
-    Registry registry = Cluster.getInstance().getRegistry();
+    Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       initNoConnection() ;
     } else {

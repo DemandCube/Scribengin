@@ -1,8 +1,8 @@
 package com.neverwinterdp.swing.tool;
 
-public class ClusterConfig {
-  private ZookeeperConfig zookeeperConfig ;
-  private KafkaConfig     kafkaConfig ;
+public class EmbeddedClusterConfig {
+  private ZookeeperConfig zookeeperConfig = new ZookeeperConfig();
+  private KafkaConfig     kafkaConfig = new KafkaConfig();
   
   public ZookeeperConfig getZookeeperConfig() { return zookeeperConfig; }
   public void setZookeeperConfig(ZookeeperConfig zookeeperConfig) {
@@ -15,36 +15,24 @@ public class ClusterConfig {
   }
 
   static public class KafkaConfig {
-    private int     numOfInstances;
-    private boolean launchEmbedded;
-    private int     startPort ;
+    private int     numOfInstances = 3;
+    private int     startPort = 9092;
     
     public int getNumOfInstances() { return numOfInstances; }
     public void setNumOfInstances(int numOfInstances) { this.numOfInstances = numOfInstances; }
-    
-    public boolean isLaunchEmbedded() { return launchEmbedded; }
-    public void setLaunchEmbedded(boolean launchEmbedded) { this.launchEmbedded = launchEmbedded; }
     
     public int getStartPort() { return startPort; }
     public void setStartPort(int startPort) { this.startPort = startPort; }
   }
 
   static public class ZookeeperConfig {
-    private int     numOfInstances;
-    private boolean launchEmbedded;
-    private int     startPort ;
-    private String  zkConnects ;
+    private int     numOfInstances = 1;
+    private int     startPort = 2181;
     
     public int getNumOfInstances() { return numOfInstances; }
     public void setNumOfInstances(int numOfInstances) { this.numOfInstances = numOfInstances; }
     
-    public boolean isLaunchEmbedded() { return launchEmbedded; }
-    public void setLaunchEmbedded(boolean launchEmbedded) { this.launchEmbedded = launchEmbedded; }
-    
     public int getStartPort() { return startPort; }
     public void setStartPort(int startPort) { this.startPort = startPort; }
-    
-    public String getZkConnects() { return zkConnects; }
-    public void setZkConnects(String zkConnects) { this.zkConnects = zkConnects; }
   }
 }
