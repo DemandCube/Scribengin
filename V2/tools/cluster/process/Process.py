@@ -306,6 +306,11 @@ class HadoopDaemonProcess(Process):
 
 ############
 class ScribenginProcess(Process):
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
+############
+class ScribenginMasterProcess(ScribenginProcess):
   def __init__(self, role, hostname):
     Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*")
     self.hostname = hostname
@@ -315,9 +320,6 @@ class ScribenginProcess(Process):
   
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"\|dataflow-master-*\|dataflow-worker-*' | awk '{print $1 \" \" $4}'"
