@@ -22,7 +22,6 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.tool.EmbeddedCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
