@@ -34,7 +34,7 @@ public class UIActivityStepsView extends JPanel {
   }
 
   public void onActivate() throws RegistryException {
-    Registry registry = Cluster.getInstance().getRegistry();
+    Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
     }

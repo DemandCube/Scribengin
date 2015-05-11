@@ -112,7 +112,7 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     public String getNodeName() { return this.nodeName ; }
     
     protected void loadChildren(final DefaultTreeModel model, final PropertyChangeListener progressListener) {
-      final Registry registry = Cluster.getInstance().getRegistry();
+      final Registry registry = Cluster.getCurrentInstance().getRegistry();
       if(registry == null || !registry.isConnect()) {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;

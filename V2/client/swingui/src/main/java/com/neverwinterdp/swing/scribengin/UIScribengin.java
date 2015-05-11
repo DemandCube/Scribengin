@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.registry.UIActivityTree;
+import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowTree;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.util.SwingUtil;
 import com.neverwinterdp.swing.widget.JAccordionPanel;

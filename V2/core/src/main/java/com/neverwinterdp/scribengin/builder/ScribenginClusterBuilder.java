@@ -67,7 +67,7 @@ public class ScribenginClusterBuilder {
   }
 
   public void shutdown() throws Exception {
-    scribenginClient.shutdown(); 
+    scribenginClient.shutdown();
     Thread.sleep(2000);
     vmClusterBuilder.shutdown();
   }

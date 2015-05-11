@@ -1,53 +1,41 @@
 package com.neverwinterdp.swing.tool;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
-import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class Cluster {
-  static private Cluster INSTANCE = new Cluster() ;
+abstract public class Cluster {
+  static private Cluster CURRENT_INSTANCE ;
   
-  
-  private ScribenginClusterBuilder clusterBuilder;
-  private ClusterConfig            config = new ClusterConfig();
-  private ScribenginShell          shell;
-
-  public ClusterConfig getClusterConfig() { return this.config ; }
-  
-  public ScribenginClusterBuilder getClusterBuilder() {
-    return clusterBuilder;
-  }
-
-  public ClusterConfig getConfig() {
-    return config;
-  }
-
-  public VMClient getVMClient() {
-    if(clusterBuilder != null) {
-      return clusterBuilder.getVMClusterBuilder().getVMClient();
-    }
-    return null ;
+  public void start() throws Exception {
   }
   
-  public Registry getRegistry() {
-    if(clusterBuilder != null) {
-      return clusterBuilder.getVMClusterBuilder().getVMClient().getRegistry();
-    }
-    return null ;
+  public void shutdown() throws Exception {
   }
   
-  public ScribenginShell getScribenginShell() { return shell;}
+  public void startDependencySevers() throws Exception {
+  }
+  
+  public void shutdownDependencySevers() throws Exception {
+  }
+  
+  abstract public void startVMMaster() throws Exception ;
+  abstract public void shutdownVMMaster() throws Exception ;
+  
+  abstract public void startScribenginMaster() throws Exception ;
+  abstract public void shutdownScribenginMaster() throws Exception ;
+  
+  
+  abstract public ScribenginShell getScribenginShell() ;
+  
+  abstract public VMClient getVMClient() ;
+  
+  abstract public Registry getRegistry() ;
 
-  public void launch() throws Exception {
-    clusterBuilder = new ScribenginClusterBuilder(new EmbededVMClusterBuilder());
-    clusterBuilder.clean();
-    clusterBuilder.startVMMasters();
-    clusterBuilder.startScribenginMasters();
-
-    shell = new ScribenginShell(clusterBuilder.getVMClusterBuilder().getVMClient());
+  
+  public void runKafkaToKafkaDataflow() throws Exception {
+    ScribenginShell shell = getScribenginShell() ;
     String command =
         "dataflow-test " + KafkaDataflowTest.TEST_NAME +
         " --dataflow-id    kafka-to-kafka-1" +
@@ -69,12 +57,10 @@ public class Cluster {
         " --dump-registry";
     shell.execute(command);
   }
-
-  public void shutdown() throws Exception {
-    clusterBuilder.shutdown();
-    clusterBuilder = null ;
-    shell = null ;
+  
+  static public Cluster getCurrentInstance() { return CURRENT_INSTANCE;  }
+  
+  static public void setCurrentInstance(Cluster instance) { 
+    CURRENT_INSTANCE = instance ; 
   }
-
-  static public Cluster getInstance() { return INSTANCE; }
 }

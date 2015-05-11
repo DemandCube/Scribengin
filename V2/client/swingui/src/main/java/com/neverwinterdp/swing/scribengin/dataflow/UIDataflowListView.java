@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.registry;
+package com.neverwinterdp.swing.scribengin.dataflow;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -20,19 +20,17 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.tool.EmbeddedCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIActivityListView extends SpringLayoutGridJPanel {
-  private String activityRootPath ;
+public class UIDataflowListView extends SpringLayoutGridJPanel {
   private String listPath ;
   
-  public UIActivityListView(String activityRootPath, String path) {
-    this.activityRootPath = activityRootPath;
+  public UIDataflowListView(String path) {
     this.listPath = path ;
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
@@ -47,8 +45,6 @@ public class UIActivityListView extends SpringLayoutGridJPanel {
     makeCompactGrid(); 
   }
 
-  public String getActivityRootPath() { return this.activityRootPath ; }
-  
   public String getListPath() { return this.listPath; }
   
   private void initNoConnection() {
@@ -67,21 +63,21 @@ public class UIActivityListView extends SpringLayoutGridJPanel {
     });
     addRow(toolbar) ;
     
-    ActivityJXTable activityTable = new  ActivityJXTable(getActivities(registry)) ;
-    addRow(new JScrollPane(activityTable)) ;
+    DataflowJXTable dataflowTable = new  DataflowJXTable(getDescriptors(registry)) ;
+    addRow(new JScrollPane(dataflowTable)) ;
   }
   
-  protected List<Activity> getActivities(Registry registry) throws RegistryException {
-    List<String> activityPaths = new ArrayList<>() ;
-    for(String id : registry.getChildren(listPath)) activityPaths.add(activityRootPath + "/all/" + id) ;
-    List<Activity> activities = registry.getDataAs(activityPaths, Activity.class) ;
-    return activities ;
+  protected List<DataflowDescriptor> getDescriptors(Registry registry) throws RegistryException {
+    List<String> dataflowPaths = new ArrayList<>() ;
+    for(String id : registry.getChildren(listPath)) dataflowPaths.add(ScribenginService.DATAFLOWS_ALL_PATH + "/" + id) ;
+    List<DataflowDescriptor> dataflows = registry.getDataAs(dataflowPaths, DataflowDescriptor.class) ;
+    return dataflows ;
   }
   
-  static public class ActivityJXTable extends JXTable {
-    public ActivityJXTable(List<Activity> activities) throws Exception {
+  static public class DataflowJXTable extends JXTable {
+    public DataflowJXTable(List<DataflowDescriptor> activities) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      ActivityTableModel model = new ActivityTableModel(activities);
+      DataflowTableModel model = new DataflowTableModel(activities);
       setModel(model);
       model.loadData();
       
@@ -98,21 +94,23 @@ public class UIActivityListView extends SpringLayoutGridJPanel {
   }
 
   
-  static class ActivityTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Id", "Coordinator", "Step Builder"} ;
+  static class DataflowTableModel extends DefaultTableModel {
+    static String[] COLUMNS = {"Id", "Name", "Workers", "Executors Per Worker", "Scribe"} ;
 
-    List<Activity> activities;
+    List<DataflowDescriptor> dataflows;
     
-    public ActivityTableModel(List<Activity> activities) {
+    public DataflowTableModel(List<DataflowDescriptor> dataflows) {
       super(COLUMNS, 0) ;
-      this.activities = activities ;
+      this.dataflows = dataflows ;
     }
     
     void loadData() throws Exception {
-      for(int i = 0; i < activities.size(); i++) {
-        Activity activity = activities.get(i) ;
+      for(int i = 0; i < dataflows.size(); i++) {
+        DataflowDescriptor dataflow = dataflows.get(i) ;
         Object[] cells = {
-          activity.getId(), activity.getCoordinator(), activity.getActivityStepBuilder()
+          dataflow.getId(), dataflow.getName(), 
+          dataflow.getNumberOfWorkers(), dataflow.getNumberOfExecutorsPerWorker(),
+          dataflow.getScribe()
         };
         addRow(cells);
       }

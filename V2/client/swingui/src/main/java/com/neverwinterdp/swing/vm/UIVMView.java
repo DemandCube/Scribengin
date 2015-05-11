@@ -27,7 +27,7 @@ public class UIVMView extends SpringLayoutGridJPanel {
   
   public UIVMView(String vmId) {
     this.vmId = vmId ;
-    Registry registry = Cluster.getInstance().getRegistry();
+    Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       initNoConnection() ;
     } else {
