@@ -9,13 +9,12 @@ path.insert(0, dirname(dirname(abspath(__file__))))
 from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Process(object):
-  def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa"), isScribenginProcess=False):
+  def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.role = role ;
     self.hostname = hostname;
     self.homeDir = homeDir;
     self.processIdentifier = processIdentifier;
     self.sshKeyPath = sshKeyPath
-    self.isScribenginProcess = isScribenginProcess
     
   def sshExecute(self, command, user = "neverwinterdp"):
     """
@@ -92,10 +91,7 @@ class Process(object):
       self.sshExecute("kill -9 "+pid)
    
   def getProcessCommand(self):
-    if(self.isScribenginProcess):
-      return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
-    else:
-      return "jps -m | grep -w '"+self.processIdentifier+"' | awk '{print $1 \" \" $2}'"
+    return "jps -m | grep -w '"+self.processIdentifier+"' | awk '{print $1 \" \" $2}'"
   
   def getRunningPid(self):
     command = "ps ax | grep -w '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
@@ -309,9 +305,14 @@ class HadoopDaemonProcess(Process):
     return self.sshExecute("rm -rf "+ join(self.homeDir, "data") +" && rm -rf " + join(self.homeDir, "logs") +" && "+ join(self.homeDir, "bin/hdfs") + " namenode -format") 
 
 ############
-class VmMasterProcess(Process):
+class ScribenginProcess(Process):
+  def getProcessCommand(self):
+    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+  
+############
+class VmMasterProcess(ScribenginProcess):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*", isScribenginProcess=True)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*")
     
   def setupClusterEnv(self, paramDict = {}):
     pass
@@ -340,12 +341,10 @@ class VmMasterProcess(Process):
   def kill(self):
     return self.shutdown()
   
-    
-  
 ############
-class ScribenginProcess(Process):
+class ScribenginProcess(ScribenginProcess):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*", isScribenginProcess=True)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*")
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
@@ -376,9 +375,9 @@ class ScribenginProcess(Process):
     return self.shutdown()
 
 ############
-class DataflowMasterProcess(Process):
+class DataflowMasterProcess(ScribenginProcess):
   def __init__(self, role, hostname, processIdentifier):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier, isScribenginProcess=True)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
@@ -403,9 +402,9 @@ class DataflowMasterProcess(Process):
     pass
 
 ############
-class DataflowWorkerProcess(Process):
+class DataflowWorkerProcess(ScribenginProcess):
   def __init__(self, role, hostname, processIdentifier):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier, isScribenginProcess=True)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
