@@ -13,4 +13,5 @@ fi
 wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python
 
 #Install required modules
-sudo easy_install nose==1.3.4 tabulate paramiko junit-xml click requests
+sudo easy_install nose==1.3.4 tabulate paramiko junit-xml click requests pip
+sudo pip install kazoo
