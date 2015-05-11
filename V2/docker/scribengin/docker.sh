@@ -104,7 +104,7 @@ function launch_containers() {
   
   
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
-  NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 2 $@)
+  NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
   NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
   
   NUM_SPARE_KAFKA_BROKER=$(get_opt --spare-kafka '0' $@)
@@ -129,7 +129,7 @@ function launch_containers() {
   for (( i=1; i<="$NUM_ZOOKEEPER_SERVER"; i++ ))
   do
     NAME="zookeeper-"$i
-    docker run -d -p 22 -p 2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+    docker run -d -p 22 -p 2181:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done  
 
   h1 "Launch spare zookeeper containers"
