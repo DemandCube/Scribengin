@@ -46,7 +46,6 @@ public class DataflowKafkaToKafkaUnitTest {
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient();
       assertEquals(2, scribenginClient.getScribenginMasters().size());
-
       submitter.waitForTermination(90000);
     } catch(Throwable err) {
       throw err;
@@ -61,6 +60,7 @@ public class DataflowKafkaToKafkaUnitTest {
       try {
         String command =
             "dataflow-test " + KafkaDataflowTest.TEST_NAME +
+            " --dataflow-id    kafka-to-kafka-1" +
             " --dataflow-name  kafka-to-kafka" +
             " --worker 3" +
             " --executor-per-worker 1" +

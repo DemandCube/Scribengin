@@ -10,7 +10,6 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepBuilder;
@@ -27,7 +26,7 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Stop Dataflow Activity");
     activity.setType("stop-dataflow");
-    activity.withCoordinator(StopActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowStopActivityStepBuilder.class);
     return activity;
   }
@@ -52,17 +51,6 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
   }
 
   @Singleton
-  static public class StopActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
-    }
-  }
-  
-  @Singleton
   static public class CheckDataflowStatusStepExecutor implements ActivityStepExecutor {
     @Inject
     private DataflowRegistry dflRegistry ;
@@ -85,7 +73,7 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
       ActiveDataflowWorkerWatcher workerWatcher = new ActiveDataflowWorkerWatcher(dflRegistry, true) ;
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.STOP);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.STOP);
       if(!workerWatcher.waitForNoMoreWorker(45 * 1000)) {
        throw new Exception("Wait for no more workers, but there is still " + dflRegistry.countActiveDataflowWorkers() + " workers") ; 
       }
@@ -134,10 +122,12 @@ public class DataflowStopActivityBuilder extends ActivityBuilder {
     }
     
     public boolean waitForNoMoreWorker(long timeout) throws Exception, InterruptedException {
+      List<String> workers = activeWorkersNode.getChildren();
+      if(workers.size() == 0) return true;
       long waitTime = timeout ;
       while(waitTime > 0) {
         long start = System.currentTimeMillis() ;
-        List<String> workers = waitForActiveWorkerChange(waitTime) ;
+        workers = waitForActiveWorkerChange(waitTime) ;
         if(workers == null) {
           workers = activeWorkersNode.getChildren();
         }

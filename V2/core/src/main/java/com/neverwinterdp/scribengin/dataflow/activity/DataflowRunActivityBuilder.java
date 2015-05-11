@@ -6,7 +6,6 @@ import java.util.List;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import com.neverwinterdp.registry.SequenceNumberTrackerService;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
@@ -24,7 +23,7 @@ public class DataflowRunActivityBuilder extends AddWorkerActivityBuilder {
     Activity activity = new Activity() ;
     activity.setDescription("Run Dataflow Activity");
     activity.setType("run-dataflow");
-    activity.withCoordinator(RunActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowRunActivityStepBuilder.class);
     return activity;
   }
@@ -53,17 +52,6 @@ public class DataflowRunActivityBuilder extends AddWorkerActivityBuilder {
           withType("set-dataflow-run-status").
           withExecutor(SetRunningDataflowStatusStepExecutor.class));
       return steps;
-    }
-  }
-  
-  @Singleton
-  static public class RunActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   

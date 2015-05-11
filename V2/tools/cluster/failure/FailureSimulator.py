@@ -3,26 +3,35 @@ from time import sleep,time
 from random import randint, sample
 from junit_xml import TestSuite, TestCase
 import logging
-import os
+import os, re
 
 from Cluster import Cluster  #@UnresolvedImport
 
 class FailureSimulator():
   def __init__(self, role=None):
     self.roleName = role
+    self.mainCluster = Cluster()
+    self.spareCluster = None
+    self.cluster = None
+    
+  def getRoleName(self, hostname):
+    if re.match('.*spare-.*', hostname):
+      return "spare-"+self.roleName
+    else:
+      return self.roleName
   
-  
-  def failureSimulation(self,failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
+  def getExecutionCluster(self, hostname):
+    if re.match('.*spare-.*', hostname):
+      return self.spareCluster
+    else:
+      return self.cluster
+    
+  def failureSimulation(self,failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, config_path, use_spare, junit_report):
     """
     Run the failure loop for a given role
     """
-    if(servers == ""):
-      print "--servers not specified!\n\n"
-      return
-    
     logging.debug("Failure interval: " + str(failure_interval))
     logging.debug("Wait before start: " + str(wait_before_start)) 
-    logging.debug("Server list: " + servers)
     logging.debug("Minimum number of servers: " + str(min_servers))
     logging.debug("Number of servers to fail simultaneously: " + str(servers_to_fail_simultaneously)) 
     logging.debug("Kill method: " + kill_method)
@@ -32,22 +41,46 @@ class FailureSimulator():
     
     testCases = []
     testNum = 0
+    spareRoleName = "spare-"+self.roleName
     
-    cluster = Cluster()
-    serverArray = servers.split(",")
-    cluster = cluster.getServersByHostname(serverArray)
-    
-    if min_servers >= cluster.getNumServers():
+    ''' 
+    Set config path
+    '''
+    if self.roleName == "kafka":
+      self.mainCluster.paramDict["server_config"] = config_path
+    elif self.roleName == "zookeeper":
+      self.mainCluster.paramDict["zoo_cfg"] = config_path
+        
+    serverArray = []
+    if(servers == ""):
+      self.cluster = self.mainCluster.getServersByRole(self.roleName)
+      for server in self.cluster.servers:
+        serverArray.append(server.getHostname())
+      logging.debug("Server list: " + ",".join(serverArray))
+    else:
+      serverArray = servers.split(",")
+      self.cluster = self.mainCluster.getServersByHostname(serverArray)
+      logging.debug("Server list: " + servers)
+      
+    if min_servers >= self.cluster.getNumServers():
       raise ValueError("Minimum Number of servers is too high!\nMinimum Servers to stay up: "
-                       +str(min_servers)+"\nNumber of "+self.roleName+" servers in cluster: "+str(cluster.getNumServers()))
+                       +str(min_servers)+"\nNumber of "+self.roleName+" servers in cluster: "+str(self.cluster.getNumServers()))
       exit(-1)
     
-    if servers_to_fail_simultaneously > cluster.getNumServers() - min_servers:
+    if servers_to_fail_simultaneously > self.cluster.getNumServers() - min_servers:
       raise ValueError("--servers_to_fail_simultaneously is set too high")
       exit(-1)   
-      
+    
     if initial_clean:
-      cluster.cleanProcess(self.roleName)
+      self.cluster.cleanProcess(self.roleName)
+      if use_spare:
+        self.spareCluster.cleanProcess(spareRoleName)
+    
+    spareServersArray = []
+    if use_spare:
+      self.spareCluster = self.mainCluster.getServersByRole(spareRoleName)
+      for server in self.spareCluster.servers:
+        spareServersArray.append(server.getHostname())
     
     while True:
       start = time()
@@ -59,49 +92,113 @@ class FailureSimulator():
       logging.debug("Servers selected to kill: "+ ','.join(serversToKill))
       
       #Stop the running process based on kill_method
+      currentExecutingCluster = None
       for hostname in serversToKill:
+        roleName = self.getRoleName(hostname)
+        currentExecutingCluster = self.getExecutionCluster(hostname)
+          
         if kill_method == "restart" :
-          logging.debug("Shutting down "+self.roleName + " on " +hostname)
-          cluster.shutdownProcessOnHost(self.roleName, hostname)
+          logging.debug("Shutting down "+roleName + " on " +hostname)
+          currentExecutingCluster.shutdownProcessOnHost(roleName, hostname)
         elif kill_method == "kill":
-          logging.debug("Killing "+self.roleName + " on " +hostname)
-          cluster.killProcessOnHost(self.roleName, hostname)
+          logging.debug("Killing "+roleName + " on " +hostname)
+          currentExecutingCluster.killProcessOnHost(roleName, hostname)
         else:
           if randint(0,1) == 0:
-            logging.debug("Shutting down "+self.roleName + " on " +hostname)
-            cluster.shutdownProcessOnHost(self.roleName, hostname)
+            logging.debug("Shutting down "+roleName + " on " +hostname)
+            currentExecutingCluster.shutdownProcessOnHost(roleName, hostname)
           else:
-            logging.debug("Killing "+self.roleName + " on " +hostname)
-            cluster.killProcessOnHost(self.roleName, hostname)
+            logging.debug("Killing "+roleName + " on " +hostname)
+            currentExecutingCluster.killProcessOnHost(roleName, hostname)
       
       #Ensure the process has stopped
       for hostname in serversToKill:
+        roleName = self.getRoleName(hostname)
+        currentExecutingCluster = self.getExecutionCluster(hostname)
+          
         #Create basis for test case
-        tc = TestCase('Test'+str(testNum), self.roleName+'FailureSimulator', time()-start, 
-                      'Shutting down '+self.roleName+" with kill_method "+kill_method+" on host "+hostname, '')
+        tc = TestCase('Test'+str(testNum), roleName+'FailureSimulator', time()-start, 
+                      'Shutting down '+roleName+" with kill_method "+kill_method+" on host "+hostname, '')
         #If the process is still running, then try killing it one more time
-        if(cluster.isProcessRunningOnHost(self.roleName, hostname)):
-          logging.debug("Killing "+self.roleName + " on " +hostname+" one last time")
-          cluster.killProcessOnHost(self.roleName, hostname)
+        if(currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
+          logging.debug("Killing "+roleName + " on " +hostname+" one last time")
+          currentExecutingCluster.killProcessOnHost(roleName, hostname)
           #If the process is *still* running then report a failure
-          if(cluster.isProcessRunningOnHost(self.roleName, hostname)):
-            tc.add_failure_info(self.roleName+" process is still running on"+hostname, "")
+          if(currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
+            tc.add_failure_info(roleName+" process is still running on"+hostname, "")
         testCases.append(tc)
         testNum+=1
-        
+
       #Start the process again
       start = time()
       sleep(wait_before_start)
-      for hostname in serversToKill:
-        logging.debug("Starting " + self.roleName + " on " + hostname)
-        cluster.startProcessOnHost(self.roleName, hostname)
+      newServers = []
+      oldServerArray  = serverArray[:]
       
+      if use_spare:
+        serversToStart = []
+        availableServers = []
+        availableServers = spareServersArray + serversToKill
+        
+        while len(serversToStart) < len(serversToKill):
+          tempHostname = sample(availableServers, 1)
+          serversToStart.append(tempHostname[0])
+          availableServers.remove(tempHostname[0])
+        
+        for hostname in serversToKill:
+          serverArray.remove(hostname)
+          spareServersArray.append(hostname)
+          
+        for hostname in serversToStart:
+          serverArray.append(hostname)
+          spareServersArray.remove(hostname)
+        
+        serversToKill = serversToStart
+           
+      for hostname in serversToKill:
+        setupClusterEnv = False
+        if hostname not in oldServerArray:
+          newServers.append(hostname)
+          currentExecutingCluster.cleanProcessOnHost(roleName, hostname)
+          setupClusterEnv = True
+          
+        roleName = self.getRoleName(hostname)
+        currentExecutingCluster = self.getExecutionCluster(hostname)
+        
+        logging.debug("Starting " + roleName + " on " + hostname)
+        currentExecutingCluster.startProcessOnHost(roleName, hostname, setupClusterEnv)
+      
+      if len(newServers) > 0:
+        if self.roleName == "kafka":
+          newBrokers = []
+          for hostname in newServers:
+            roleName = self.getRoleName(hostname)
+            currentExecutingCluster = self.getExecutionCluster(hostname)
+            brokerID = int(re.search(r'\d+', hostname).group())
+            if roleName == "spare-kafka":
+              brokerID = brokerID + len(currentExecutingCluster.paramDict["kafkaServers"])
+            newBrokers.append(str(brokerID))
+            
+
+          serverToRunReassignReplicasScript = sample(serverArray, 1)
+          roleName = self.getRoleName(serverToRunReassignReplicasScript[0])
+          currentExecutingCluster = self.getExecutionCluster(serverToRunReassignReplicasScript[0])
+          logging.debug("Reassigning replicas for "+",".join(newBrokers))
+          currentExecutingCluster.servers[0].getProcess(roleName).reassignReplicas(currentExecutingCluster.paramDict["zkList"], ",".join(newBrokers))
+        elif self.roleName == "zookeeper":
+          '''
+          TODO if any required
+          '''
+          
       #Ensure the process has started, otherwise report a failure
       for hostname in serversToKill:
-        tc = TestCase('Test'+str(testNum), self.roleName+'FailureSimulator', time()-start, 
-                      'Starting '+self.roleName+" on host: "+hostname, '')
-        if( not cluster.isProcessRunningOnHost(self.roleName, hostname)):
-          tc.add_failure_info(self.roleName+" process is still running on"+hostname, "")
+        roleName = self.getRoleName(hostname)
+        currentExecutingCluster = self.getExecutionCluster(hostname)
+          
+        tc = TestCase('Test'+str(testNum), roleName+'FailureSimulator', time()-start, 
+                      'Starting '+roleName+" on host: "+hostname, '')
+        if( not currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
+          tc.add_failure_info(roleName+" process is still running on"+hostname, "")
         testCases.append(tc)
         testNum+=1
       
@@ -113,7 +210,6 @@ class FailureSimulator():
         ts = TestSuite(self.roleName+" Test Suite", testCases)
         f.write(TestSuite.to_xml_string([ts]))
         f.close()
-        
 
 class KafkaFailure(FailureSimulator):
   def __init__(self):
@@ -189,7 +285,6 @@ class DataFlowFailure(FailureSimulator):
       
       for hostname in killedProcesses.keys():
         processName = killedProcesses[hostname]
-        print self.isProcessRunningOnHost(cluster, hostname, processName)
         #Create basis for test case
         tc = TestCase('Test'+str(testNum), processName+'FailureSimulator', time()-start, 
                       'Killing '+processName+" on host "+hostname, '')

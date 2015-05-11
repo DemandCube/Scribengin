@@ -70,7 +70,7 @@ public class VM {
   private Injector createVMContainer(final VMConfig vmConfig) {
     logger.info("Start createVMContainer(...)");
     Map<String, String> props = new HashMap<String, String>();
-    props.put("vm.registry.allocated.path", VMService.ALLOCATED_PATH + "/" + vmConfig.getName());
+    props.put("vm.registry.allocated.path", VMService.ALL_PATH + "/" + vmConfig.getName());
     AppModule module = new AppModule(props) {
       @Override
       protected void configure(Map<String, String> props) {

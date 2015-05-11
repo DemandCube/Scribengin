@@ -133,7 +133,7 @@ public class TransactionImpl implements Transaction {
     try {
       List<OpResult> results = zkTransaction.commit();
     } catch (InterruptedException | KeeperException e) {
-      throw new RegistryException(ErrorCode.Unknown, e);
+      throw RegistryImpl.toRegistryException("Commit Error", e);
     }
   }
 }

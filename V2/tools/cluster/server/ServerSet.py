@@ -1,25 +1,79 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 from subprocess import call
-import os, socket
-
-
+import os, socket, re, sys
+from os.path import expanduser, join
+from time import time
 
 #This function is outside the ServerSet class
 #because otherwise it wouldn't be pickleable 
 #http://stackoverflow.com/questions/1816958/cant-pickle-type-instancemethod-when-using-pythons-multiprocessing-pool-ma
+
+def frameDictionary(process, processID, processIdentifier, running):
+  dictionary = {
+            "Role" : process.role,
+            "Hostname": process.hostname,
+            "HomeDir" : process.homeDir,
+            "Status" : running,
+            "ProcessIdentifier" : processIdentifier,
+            "processID" : processID
+            }
+  return dictionary
+
 def getReportOnServer(server):
-  omitStoppedProcesses = ["scribengin-master-*", "vm-master-*"]
-  result = []
+  omitStoppedProcesses = ["scribengin-master-*", "vm-master-*", "dataflow-master-*", "dataflow-worker-*"]
+  scribenginRoles = ["vmmaster", "scribengin", "dataflow-master", "dataflow-worker"]
+  
+  result = [] #list for individual process report
+  report = [] #list for server report
   serverReportDict = server.getReportDict()
   if serverReportDict is not None and serverReportDict["Hostname"] :
     result.append([serverReportDict["Role"], serverReportDict["Hostname"], "", "", "",""])
     procs = server.getProcesses()
-    for process in procs:
-      procDicts = server.getProcess(process).getReportDict()
-      for procDict in procDicts:
-        if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
-          result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+    
+    #collecting process commands from all available processes from server
+    processCommand = []
+    for proc in procs:
+      processCommand.append(procs[proc].getProcessCommand())
+    
+    #ssh to run process command and get pid and process name
+    stdout,stderr = procs.values()[0].sshExecute(";".join(processCommand))
+    
+    #extract pid and process name from stdout
+    runningProcesses = {}
+    for line in stdout.splitlines():
+      pid_and_name = line.split(" ")
+      runningProcesses[pid_and_name[0]] = pid_and_name[1]
+    
+    #adding none running process status
+    for proc in procs:
+      process = procs[proc]
+      if process.processIdentifier not in runningProcesses.values():
+        report.append(frameDictionary(process, "", process.processIdentifier, "None"))
+    
+    #adding running process status
+    addedPids = [] #list to keep added pid's to report
+    for proc in procs:
+      process = procs[proc] 
+      #filter process with the same name
+      filtered_dict = {k:v for (k,v) in runningProcesses.items() if process.processIdentifier in v}
+      for pid in filtered_dict:
+        report.append(frameDictionary(process, pid, filtered_dict[pid], "Running"))
+        addedPids.append(pid)
+     
+    #adding scribengin related process 
+    for proc in procs:
+      process = procs[proc]  
+      if process.role in scribenginRoles:
+        for pid in runningProcesses:
+          if pid not in addedPids:
+            report.append(frameDictionary(process, pid, runningProcesses[pid], "Running"))
+            addedPids.append(pid)
+    
+    for procDict in report:
+      if not (procDict["Status"] == "None" and procDict["ProcessIdentifier"] in omitStoppedProcesses):
+        result.append(["","",procDict["ProcessIdentifier"], procDict["processID"], procDict["HomeDir"], procDict["Status"]])
+  
   return result
 
 class ServerSet(object):
@@ -46,18 +100,20 @@ class ServerSet(object):
       output[server.getHostname()] = server.sshExecute(command)
     return output 
   
-  def sync(self):
-    print socket.gethostname()
-    for server in self.servers :
-      if server.getHostname() != socket.gethostname():
-        self.printTitle("Sync data with " + server.getHostname())
-        command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
-        os.system(command)
+  def sync(self, hostname):
+    for hostmachine in self.servers :
+      if hostmachine.getHostname() == hostname:
+        for server in self.servers :
+          if server.getHostname() != hostname:
+            self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
+            command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
+            hostmachine.sshExecute(command)
+        break
     
-  def startProcessOnHost(self, processName, hostname):
+  def startProcessOnHost(self, processName, hostname, setupClusterEnv = False):
     for server in self.servers :
       if server.getHostname() == hostname:
-        server.startProcess(processName, self.paramDict, setupClusterEnv = False)
+        server.startProcess(processName, self.paramDict, setupClusterEnv)
     
   def cleanProcessOnHost(self, processName, hostname):
     for server in self.servers :
@@ -125,16 +181,25 @@ class ServerSet(object):
     Returns a subset of the ServerSet that has the role passed in
     """
     serverSet = ServerSet(role)
+    serverSet.paramDict = self.paramDict
     for server in self.servers :
       if(server.getRole() == role) :
         serverSet.addServer(server)
     return serverSet
   
+  def getHostnames(self):
+    hostnames = []
+    for server in self.servers :
+      hostnames.append(server.hostname)
+    return hostnames
+  
+  #TODO: I do not think you can start vm master this way
   def startVmMaster(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:
       return self.startProcessOnHost("vmmaster", hadoopMasterServers.servers[0].getHostname())
   
+  #TODO: I do not think you can start vm master this way
   def startScribengin(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:
@@ -143,8 +208,14 @@ class ServerSet(object):
   def startZookeeper(self):
     return self.startProcess("zookeeper")
   
+  def startSpareZookeeper(self):
+    return self.startProcess("spare-zookeeper")
+  
   def startKafka(self):
     return self.startProcess("kafka")
+  
+  def startSpareKafka(self):
+    return self.startProcess("spare-kafka")
   
   def cleanHadoopDataAtFirst(self):
     serverSet = self.getServersByRole("hadoop-worker")
@@ -173,6 +244,15 @@ class ServerSet(object):
   def startHadoopWorker(self):
     return self.startProcess("datanode,nodemanager")
   
+  def startCluster(self):
+    self.startZookeeper()
+    self.startKafka()
+    self.cleanHadoopDataAtFirst()
+    self.startHadoopMaster()
+    self.startHadoopWorker()
+    self.startVmMaster()
+    self.startScribengin()
+    
   def shutdownVmMaster(self):
     hadoopMasterServers = self.getServersByRole("hadoop-worker")
     if hadoopMasterServers.servers:
@@ -186,8 +266,14 @@ class ServerSet(object):
   def shutdownZookeeper(self):
     return self.shutdownProcess("zookeeper")
   
+  def shutdownSpareZookeeper(self):
+    return self.shutdownProcess("spare-zookeeper")
+  
   def shutdownKafka(self):
     return self.shutdownProcess("kafka")
+  
+  def shutdownSpareKafka(self):
+    return self.shutdownProcess("spare-kafka")
   
   def shutdownNameNode(self):
     return self.shutdownProcess("namenode")
@@ -210,6 +296,15 @@ class ServerSet(object):
   def shutdownHadoopWorker(self):
     return self.shutdownProcess("datanode,nodemanager")
   
+  def shutdownCluster(self):
+    self.killScribengin()
+    self.killVmMaster()
+    self.shutdownKafka()
+    self.shutdownSpareKafka()
+    self.shutdownZookeeper()
+    self.shutdownHadoopWorker()
+    self.shutdownHadoopMaster()
+    
   def killScribengin(self):
     return self.killProcess("scribengin")
   
@@ -219,8 +314,14 @@ class ServerSet(object):
   def killZookeeper(self):
     return self.killProcess("zookeeper")
   
+  def killSpareZookeeper(self):
+    return self.killProcess("spare-zookeeper")
+  
   def killKafka(self):
     return self.killProcess("kafka")
+  
+  def killSpareKafka(self):
+    return self.killProcess("spare-kafka")
   
   def killNameNode(self):
     return self.killProcess("namenode")
@@ -243,19 +344,70 @@ class ServerSet(object):
   def killHadoopWorker(self):
     return self.killProcess("datanode,nodemanager")  
   
+  def killCluster(self):
+    self.shutdownScribengin()
+    self.shutdownVmMaster()
+    self.killKafka()
+    self.killSpareKafka()
+    self.killZookeeper()
+    self.killHadoopWorker()
+    self.killHadoopMaster()
+    
   def cleanKafka(self):
     return self.cleanProcess("kafka")
   
+  def cleanSpareKafka(self):
+    return self.cleanProcess("spare-kafka")
+  
   def cleanZookeeper(self):
     return self.cleanProcess("zookeeper")
+  
+  def cleanSpareZookeeper(self):
+    return self.cleanProcess("spare-zookeeper")
   
   def cleanHadoopMaster(self):
     return self.cleanProcess("namenode")
   
   def cleanHadoopWorker(self):
     return self.cleanProcess("datanode")
+
+  def cleanCluster(self):
+    self.cleanKafka()
+    self.cleanSpareKafka()
+    self.cleanZookeeper()
+    self.cleanHadoopWorker()
+    self.cleanHadoopMaster()
   
-  
+  def scribenginBuild(self,with_test):
+    self.printTitle("Build Scribengin")
+    command = ""
+    if(with_test):
+      command="../gradlew clean build install release"
+    else:
+      command="../gradlew clean build install release -x test"
+    currentWorkingDir = self.module_path()
+    
+    os.chdir(join(currentWorkingDir,"../../../"))
+    os.system(join(os.getcwd(),command))
+    
+    os.chdir(join(os.getcwd(),"release"))
+    os.system(join(os.getcwd(), "../../gradlew clean release"))
+    os.chdir(currentWorkingDir)
+    
+  def scribenginDeploy(self, hostname, clean):
+    self.printTitle("Deploy Scribengin")
+    self.killCluster()
+    if(clean):
+      self.cleanCluster()
+    currentWorkingDir = self.module_path()
+    self.sshExecute("rm -rf /opt/scribengin")
+    self.sshExecute("rm -rf /opt/cluster")
+    os.chdir(join(currentWorkingDir, "../../../"))
+    os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"release/build/release")+" neverwinterdp@"+hostname+":/opt/scribengin")
+    os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"tools/cluster")+" neverwinterdp@"+hostname+":/opt/cluster")
+    os.chdir(currentWorkingDir)
+    self.sync(hostname)
+    
   def getReport(self):
     serverReport = []
     asyncresults = []
@@ -274,6 +426,16 @@ class ServerSet(object):
     pool.close()
     pool.join()
     return tabulate(serverReport, headers=headers)
- 
+
   def report(self) :
     print self.getReport()
+
+  def we_are_frozen(self):
+      # All of the modules are built-in to the interpreter, e.g., by py2exe
+      return hasattr(sys, "frozen")
+  
+  def module_path(self):
+      encoding = sys.getfilesystemencoding()
+      if self.we_are_frozen():
+          return os.path.dirname(unicode(sys.executable, encoding))
+      return os.path.dirname(unicode(__file__, encoding))

@@ -29,9 +29,9 @@ public class DataflowVMSimpleFormatter extends NodeFormatter{
       Node master = dataflowNode.getChild("master").getChild("leader");
       b.append("  DataflowMaster: "+master.getDataAs(Map.class).get("path")+"\n");
       b.append("  Workers: ");
-      List<String> workerIds = dataflowNode.getDescendant("workers/active").getChildren();
+      List<String> workerIds = dataflowNode.getDescendant("workers/all").getChildren();
       for(String workerId : workerIds){
-        Node worker = dataflowNode.getDescendant("workers/active/" + workerId);
+        Node worker = dataflowNode.getDescendant("workers/all/" + workerId);
         b.append(worker.getName() + ": " + worker.getDataAs(Map.class).get("path") + ", ");
       }
       

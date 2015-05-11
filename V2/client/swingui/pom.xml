@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                            http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>com.hkt</groupId>
+    <artifactId>config</artifactId>
+    <version>1.0</version>
+  </parent> 
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>hkt.client.swingui</artifactId>
+  <name>HKT :: Swing UI</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+      <version>${org.springframework.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+      <version>${org.springframework.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+      <version>${org.springframework.version}</version>
+		</dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.core.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.account.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.accounting2.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.cms.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.hr.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.warehouse.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.school.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.partner.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.module.restaurant.service</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.hkt</groupId>
+      <artifactId>hkt.client.shell</artifactId>
+      <version>${com.hkt.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.swinglabs.swingx</groupId>
+      <artifactId>swingx-all</artifactId>
+      <version>1.6.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jdesktop.bsaf</groupId>
+      <artifactId>bsaf</artifactId>
+      <version>1.9</version>
+    </dependency>
+
+
+
+    <dependency>
+      <groupId>org.easytesting</groupId>
+      <artifactId>fest-swing</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+  </dependencies>
+</project>

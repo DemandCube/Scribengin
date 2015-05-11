@@ -28,7 +28,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity() ;
     activity.setDescription("Pause Dataflow Activity");
     activity.setType("pause-dataflow");
-    activity.withCoordinator(PauseActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowPauseActivityStepBuilder.class);
     return activity;
   }
@@ -54,18 +54,6 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     }
   }
   
-  
-  @Singleton
-  static public class PauseActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
-    }
-  }
-  
   @Singleton
   static public class CheckDataflowStatusStepExecutor implements ActivityStepExecutor {
     @Inject
@@ -87,7 +75,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
+      Node workerNodes = dflRegistry.getAllWorkersNode() ;
       List<String> workers = workerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
@@ -95,7 +83,7 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
         waitingListener.add(path, DataflowWorkerStatus.PAUSE);
       }
       
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.PAUSE);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.PAUSE);
       
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {

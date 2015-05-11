@@ -25,7 +25,6 @@ import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 
-
 public class VMDataflowServiceApp extends VMApp {
   private String         dataflowRegistryPath;
   private LeaderElection election;
@@ -113,7 +112,7 @@ public class VMDataflowServiceApp extends VMApp {
     public void run() {
       try {
         service.run();
-        service. waitForTermination();
+        service. waitForTermination(this);
       } catch (Exception e) {
         e.printStackTrace();
       } finally {

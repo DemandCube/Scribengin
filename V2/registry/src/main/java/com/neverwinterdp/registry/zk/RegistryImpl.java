@@ -172,10 +172,40 @@ public class RegistryImpl implements Registry {
   }
   
   @Override
+  public NodeInfo getInfo(String path) throws RegistryException {
+    checkConnected();
+    Stat stat;
+    try {
+      stat = zkClient.exists(realPath(path), false);
+      return new ZKNodeInfo(stat);
+    } catch (Exception e) {
+      throw toRegistryException("Cannot retrieve the node info", e) ;
+    }
+  }
+  
+  @Override
   public Node getRef(String path) throws RegistryException {
     checkConnected();
-    RefNode refNode = getDataAs(path, RefNode.class);
+    RefNode refNode = retrieveDataAs(path, RefNode.class);
     return new Node(this, refNode.getPath()) ;
+  }
+  
+  @Override
+  public <T> T getRefAs(String path, Class<T> type) throws RegistryException {
+    checkConnected();
+    RefNode refNode = retrieveDataAs(path, RefNode.class);
+    return retrieveDataAs(refNode.getPath(), type);
+  }
+  
+  @Override
+  public <T> List<T> getRefAs(List<String> path, Class<T> type) throws RegistryException {
+    checkConnected();
+    List<T> holder = new ArrayList<T>();
+    for(String selPath : path) {
+      RefNode refNode = retrieveDataAs(selPath, RefNode.class);
+      holder.add(retrieveDataAs(refNode.getPath(), type)) ;
+    }
+    return holder ;
   }
   
   @Override
@@ -191,6 +221,10 @@ public class RegistryImpl implements Registry {
   @Override
   public <T> T getDataAs(String path, Class<T> type) throws RegistryException {
     checkConnected();
+    return retrieveDataAs(path, type);
+  }
+  
+  <T> T retrieveDataAs(String path, Class<T> type) throws RegistryException {
     try {
       byte[] bytes =  zkClient.getData(realPath(path), null, new Stat()) ;
       if(bytes == null || bytes.length == 0) return null;
@@ -265,7 +299,7 @@ public class RegistryImpl implements Registry {
       List<String> names = zkClient.getChildren(realPath(path), false);
       return names ;
     } catch (KeeperException | InterruptedException e) {
-      throw toRegistryException("Get node children error", e) ;
+      throw toRegistryException("Error get node children for " + path, e) ;
     }
   }
   
@@ -496,7 +530,7 @@ public class RegistryImpl implements Registry {
       } catch (RegistryException e) {
         if(e.getErrorCode() != ErrorCode.Timeout) throw e;
       } catch (Exception e) {
-        throw new RegistryException(ErrorCode.Unknown, e);
+        throw toRegistryException("Cannot execute the batch operations", e);
       }
     }
     throw new RegistryException(ErrorCode.Unknown, "Fail after " + retry + "tries");
@@ -545,7 +579,7 @@ public class RegistryImpl implements Registry {
     return config.getDbDomain() + path; 
   }
   
-  private RegistryException toRegistryException(String message, Throwable t) {
+  static public RegistryException toRegistryException(String message, Throwable t) {
     if(t instanceof InterruptedException) {
       return new RegistryException(ErrorCode.Timeout, message, t) ;
     } else if(t instanceof KeeperException) {

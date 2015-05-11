@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.registry.activity.ActivityRegistry;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -22,8 +23,6 @@ public class DataflowCommand extends Command {
   public DataflowCommand() {
     add("info",   Info.class) ;
     add("submit", Submit.class) ;
-    //add("hdfs",   Hdfs.class) ;
-    //add("kafka",  Kafka.class) ;
   }
   
   @Override
@@ -32,11 +31,8 @@ public class DataflowCommand extends Command {
   }
   
   static public class Info extends SubCommand {
-    @Parameter(names = "--running", description = "The running dataflow dataflowName")
-    private String running ;
-    
-    @Parameter(names = "--history", description = "The history dataflow id")
-    private String history ;
+    @Parameter(names = "--dataflow-id", description = "The dataflow id")
+    private String dataflowId ;
     
     @Parameter(names = "--show-tasks", description = "The history dataflow id")
     private boolean tasks = false;
@@ -59,12 +55,7 @@ public class DataflowCommand extends Command {
       
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       ScribenginClient scribenginClient= scribenginShell.getScribenginClient();
-      DataflowRegistry dRegistry = null;
-      if(running != null) {
-        dRegistry = scribenginClient.getRunningDataflowRegistry(running);
-      } else if(history != null) {
-        dRegistry = scribenginClient.getHistoryDataflowRegistry(history);
-      }
+      DataflowRegistry dRegistry = scribenginClient.getDataflowRegistry(dataflowId);
       
       Console console = shell.console();
       console.h1("Dataflow " + dRegistry.getDataflowPath());
@@ -80,10 +71,10 @@ public class DataflowCommand extends Command {
       }
       
       if(workers || showAll){
-        console.println("\nWorkers:");
+        console.println("\nActive Workers:");
         List<String> workers = dRegistry.getActiveWorkerNames();
         for(String worker : workers) {
-          List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getActiveExecutors(worker);
+          List<DataflowTaskExecutorDescriptor> descriptors = dRegistry.getWorkerExecutors(worker);
           console.println("  Worker: " + worker);
           Formater.ExecutorList executorList = new Formater.ExecutorList(descriptors);
           console.println(executorList.format("Executors", "    "));
@@ -93,18 +84,20 @@ public class DataflowCommand extends Command {
       if(activities || showAll){
         console.println("\nActivities:");
         console.println("  Active Activities:");
-        List<Activity> ActiveActivities = dRegistry.getActiveActivities();
+        
+        ActivityRegistry activityRegistry = dRegistry.getActivityRegistry() ;
+        List<Activity> ActiveActivities = activityRegistry.getActiveActivities();
         for(Activity activity : ActiveActivities) {
-          List<ActivityStep> steps = dRegistry.getActiveActivitySteps(activity.getId());
+          List<ActivityStep> steps = activityRegistry.getActivitySteps(activity);
           Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps, verbose);
           console.println(activityFormatter.format("    "));
           console.println("");
         }
         
         console.println("  History Activities:");
-        List<Activity> historyActivities = dRegistry.getHistoryActivities();
+        List<Activity> historyActivities = activityRegistry.getHistoryActivities();
         for(Activity activity : historyActivities) {
-          List<ActivityStep> steps = dRegistry.getHistoryActivitySteps(activity.getId());
+          List<ActivityStep> steps = activityRegistry.getActivitySteps(activity);
           Formater.ActivityFormatter activityFormatter = new Formater.ActivityFormatter(activity, steps, verbose);
           console.println(activityFormatter.format("    "));
         }
@@ -150,74 +143,4 @@ public class DataflowCommand extends Command {
       return "submit a dataflow";
     }
   }
-  
-  /*
-  static public class Kafka extends SubCommand {
-    @Parameter(names = "--create-source", description = "Create kafka source")
-    private boolean createSource ;
-    
-    @Parameter(names = "--submit", description = "Launch the submit dataflow(hdfs, kafka)")
-    private boolean submit ;
-    
-    @Override
-    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      ScribenginShell scribenginShell = (ScribenginShell) shell;
-      HelloKafkaDataflowBuilder kafkaDataflowBuilder = 
-        new HelloKafkaDataflowBuilder(scribenginShell.getScribenginClient());
-      
-      if(submit || createSource) {
-        String zkConnect = scribenginShell.getScribenginClient().getRegistry().getRegistryConfig().getConnect();
-        KafkaSourceGenerator generator = new KafkaSourceGenerator("hello", zkConnect);
-        generator.generateAndWait("hello.source");
-      }
-      
-      if(submit) {
-        DataflowWaitingEventListener sribenginAssert = kafkaDataflowBuilder.submit();
-        sribenginAssert.waitForEvents(60000);
-      }
-    }
-
-    @Override
-    public String getDescription() {
-      return "submit a kafka dataflow";
-    }
-  }
-  
-  static public class Hdfs extends SubCommand {
-    @Parameter(names = "--data-dir", description = "Submit hello hdfs dataflow")
-    private String dataDir = "/data";
-    
-    @Parameter(names = "--create-source", description = "Submit hello hdfs dataflow")
-    private boolean createSource ;
-    
-    @Parameter(names = "--submit", description = "Submit hello hdfs dataflow")
-    private boolean submit ;
-    
-    @Override
-    public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      ScribenginShell scribenginShell = (ScribenginShell) shell;
-      HadoopProperties hadoopProperties = shell.attribute(HadoopProperties.class);
-      FileSystem fs = FileSystem.get(hadoopProperties.getConfiguration());
-      if(fs.exists(new Path(dataDir))) {
-        fs.delete(new Path(dataDir), true) ;
-      }
-      HelloHDFSDataflowBuilder dataflowBuilder = new HelloHDFSDataflowBuilder(scribenginShell.getScribenginClient(), dataDir);
-      dataflowBuilder.setNumOfWorkers(1);
-      dataflowBuilder.setNumOfExecutorPerWorker(2);
-      if(submit || createSource) {
-        new HDFSSourceGenerator().generateSource(fs, dataDir + "/source");
-      }
-      if(submit) {
-        DataflowWaitingEventListener sribenginAssert = dataflowBuilder.submit();
-        sribenginAssert.waitForEvents(90000);
-      }
-    }
-
-    @Override
-    public String getDescription() {
-      return "submit a HDFS dataflow";
-    }
-  }
-  */
-  
 }

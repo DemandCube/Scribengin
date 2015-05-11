@@ -10,6 +10,7 @@ sleep 5
 
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
+ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/"
 
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
 
@@ -18,36 +19,40 @@ MONITOR_PID=$!
 #Run server failure
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
   ./bin/shell.sh dataflow-test random-server-failure \
-    --dataflow-name kafka-to-kafka \
-    --failure-period 30000 --max-failure 30 --print-summary" &
+    --dataflow-id kafka-to-kafka-1 \
+    --dataflow-name kafka-to-kafka \ 
+    --failure-period 30000 --max-failure 30 --simulate-kill" &
+
 
 FAILURE_PID=$!
 
 #Run dataflow
-ssh  -o StrictHostKeyChecking=no neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/ && \
-   cd /opt/scribengin/scribengin && \
-   ./bin/shell.sh dataflow-test kafka-to-kakfa \
-            --dataflow-name  kafka-to-kafka \
-            --worker 3 --executor-per-worker 2 \
-            --duration 1800000 --task-max-execute-time 10000 \
-            --source-name input --source-num-of-stream 10 \
-            --source-write-period 0 \
-            --source-max-records-per-stream 500000 \
-            --sink-name output  \
-            --debug-dataflow-activity \
-            --debug-dataflow-task \
-            --debug-dataflow-vm \
-            --dump-registry \
-            --print-dataflow-info -1 \
-            --junit-report /opt/junit-reports/KafkaIntegrationTest.xml"
-
-
+ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
+          ./bin/shell.sh dataflow-test kafka-to-kafka \
+             --dataflow-id    kafka-to-kafka-1 \
+             --dataflow-name  kafka-to-kafka \
+             --worker 3 \
+             --executor-per-worker 2 \
+             --duration 3600000 \
+             --task-max-execute-time 10000 \
+             --source-name input \
+             --source-num-of-stream 10 \
+             --source-write-period 0 \
+             --source-max-records-per-stream 2500000 \
+             --sink-name output \
+             --print-dataflow-info -1 \
+             --debug-dataflow-task \
+             --debug-dataflow-vm \
+             --debug-dataflow-activity \
+             --junit-report /opt/junit-reports/KafkaIntegrationTest.xml \
+             --dump-registry "
 
 
 #Print the running processes
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py status"
 
-kill -9 $MONITOR_PID $FAILURE_PID
+kill -9 $FAILURE_PID
+kill -9 $MONITOR_PID 
 
 #Get results
 scp -o stricthostkeychecking=no neverwinterdp@hadoop-master:/opt/junit-reports/*.xml ./testresults/

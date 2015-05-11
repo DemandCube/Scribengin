@@ -6,25 +6,24 @@ import java.util.Map;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
 
 public class DataflowDescriptor {
-  private String                      name;
-  private String                      dataflowAppHome;
-  private StorageDescriptor            storageDescriptor;
+  private String                         id  ;
+  private String                         name;
+  private String                         dataflowAppHome;
+  private StorageDescriptor              storageDescriptor;
   private Map<String, StorageDescriptor> sinkDescriptors;
-  private int                         numberOfWorkers =  1;
-  private int                         numberOfExecutorsPerWorker = 1;
-  private long                        taskMaxExecuteTime = -1;
-  
-  private String                      scribe;
+  private int                            numberOfWorkers            =  1;
+  private int                            numberOfExecutorsPerWorker =  1;
+  private long                           taskMaxExecuteTime         = -1;
+  private String                         scribe;
+
+  public String getId() { return id; }
+  public void setId(String id)  { this.id = id; }
   
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
   
-  public String getDataflowAppHome() {
-    return dataflowAppHome;
-  }
-  public void setDataflowAppHome(String dataflowAppHome) {
-    this.dataflowAppHome = dataflowAppHome;
-  }
+  public String getDataflowAppHome() { return dataflowAppHome; }
+  public void setDataflowAppHome(String dataflowAppHome) { this.dataflowAppHome = dataflowAppHome;  }
 
   public StorageDescriptor getSourceDescriptor() { return storageDescriptor;}
   public void setSourceDescriptor(StorageDescriptor storageDescriptor) { this.storageDescriptor = storageDescriptor;}

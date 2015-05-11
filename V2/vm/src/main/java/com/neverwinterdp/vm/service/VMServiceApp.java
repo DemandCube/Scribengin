@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.inject.Guice;
@@ -88,8 +89,8 @@ public class VMServiceApp extends VMApp {
       appContainer = Guice.createInjector(Stage.PRODUCTION, modules);
       vmService = appContainer.getInstance(VMService.class);
       vmService.setStatus(VMService.Status.RUNNING);
-      VMDescriptor[] vmDescriptor = vmService.getAllocatedVMDescriptors();
-      for(VMDescriptor sel : vmDescriptor) {
+      List<VMDescriptor> vmDescriptors = vmService.getActiveVMDescriptors();
+      for(VMDescriptor sel : vmDescriptors) {
         if(vmService.isRunning(sel)) vmService.watch(sel);
         else vmService.unregister(sel);
       }

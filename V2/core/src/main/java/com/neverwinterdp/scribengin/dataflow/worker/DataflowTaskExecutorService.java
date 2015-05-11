@@ -138,7 +138,7 @@ public class DataflowTaskExecutorService {
   public class DataflowWorkerEventListenter extends NodeEventWatcher {
     public DataflowWorkerEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
       super(dflRegistry.getRegistry(), true/*persistent*/);
-      watchModify(dflRegistry.getDataflowTasksWorkerEventNode().getPath());
+      watchModify(dflRegistry.getWorkerEventNode().getPath());
     }
 
     @Override

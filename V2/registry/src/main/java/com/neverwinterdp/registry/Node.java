@@ -1,13 +1,13 @@
 package com.neverwinterdp.registry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.election.LeaderElection;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.lock.Lock;
-import com.neverwinterdp.util.JSONSerializer;
 
 public class Node {
   private Registry  registry ;
@@ -53,6 +53,12 @@ public class Node {
   
   public byte[] getData() throws RegistryException { 
     return registry.getData(path); 
+  }
+  
+  public String getDataAsString() throws RegistryException {
+    byte[] data = getData() ;
+    if(data == null || data.length == 0) return "" ;
+    return new String(data);
   }
   
   public <T> T getDataAs(Class<T> type) throws RegistryException { 
@@ -125,6 +131,22 @@ public class Node {
   
   public <T> List<T> getChildrenAs(Class<T> type) throws RegistryException {
     return registry.getChildrenAs(path, type) ;
+  }
+  
+  public <T> List<T> getSelectChildrenAs(List<String> names, Class<T> type) throws RegistryException {
+    List<String> paths = new ArrayList<String>() ;
+    for(int i = 0; i < names.size(); i++) {
+      paths.add(path + "/" + names.get(i));
+    }
+    return registry.getDataAs(paths, type) ;
+  }
+  
+  public <T> List<T> getSelectRefChildrenAs(List<String> names, Class<T> type) throws RegistryException {
+    List<String> paths = new ArrayList<String>() ;
+    for(int i = 0; i < names.size(); i++) {
+      paths.add(path + "/" + names.get(i));
+    }
+    return registry.getRefAs(paths, type) ;
   }
   
   public <T> List<T> getChildrenAs(Class<T> type, boolean ignoreNoNodeError) throws RegistryException {

@@ -11,7 +11,6 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.registry.activity.ActivityStepBuilder;
@@ -34,7 +33,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Add Dataflow Worker Activity");
     activity.setType("add-dataflow-worker");
-    activity.withCoordinator(AddDataflowWorkerActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(AddDataflowWorkerActivityStepBuilder.class) ;
     activity.attribute("num-of-worker-to-add", numOfWorkerToAdd);
     return activity;
@@ -68,17 +67,6 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class AddDataflowWorkerActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
-    }
-  }
-  
-  @Singleton
   static public class AddDataflowWorkerStepExecutor implements ActivityStepExecutor {
     @Inject
     private DataflowService service ;
@@ -94,7 +82,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       VMConfig vmConfig = new VMConfig();
       vmConfig.
       setEnvironment(service.getVMConfig().getEnvironment()).
-      setName(dflDescriptor.getName() + "-worker-" + step.attribute("worker.id")).
+      setName(dflDescriptor.getId() + "-worker-" + step.attribute("worker.id")).
       addRoles("dataflow-worker").
       setRegistryConfig(registryConfig).
       setVmApplication(VMDataflowWorkerApp.class.getName()).
@@ -121,16 +109,17 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node activeWorkerNodes = dflRegistry.getActiveWorkersNode() ;
+      Node activeWorkerNodes = dflRegistry.getAllWorkersNode() ;
       List<String> workers = activeWorkerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
         String path = activeWorkerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.RUNNING);
+        waitingListener.add(path, DataflowWorkerStatus.RUNNING, "Wait for RUNNING status for worker " + workers.get(i), true);
       }
       
       waitingListener.waitForEvents(30 * 1000);
       TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo();
+      formater.setTitle("Wait for worker running status");
       System.err.println(formater.getFormatText());
     }
   }

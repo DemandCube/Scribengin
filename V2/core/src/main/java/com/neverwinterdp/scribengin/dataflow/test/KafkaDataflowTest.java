@@ -5,7 +5,7 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 
 public class KafkaDataflowTest extends DataflowTest {
   
-  final static public String TEST_NAME = "kafka-to-kakfa" ;
+  final static public String TEST_NAME = "kafka-to-kafka" ;
   
   @ParametersDelegate
   private DataflowSourceGenerator sourceGenerator = new KafkaDataflowSourceGenerator();

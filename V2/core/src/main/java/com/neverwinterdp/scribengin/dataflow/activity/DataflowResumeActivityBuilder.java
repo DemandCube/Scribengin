@@ -27,7 +27,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Pause Dataflow Activity");
     activity.setType("resume-dataflow");
-    activity.withCoordinator(DataflowResumeActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowResumeActivityStepBuilder.class) ;
     return activity;
   }
@@ -50,17 +50,6 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
   }
   
   @Singleton
-  static public class DataflowResumeActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
-    }
-  }
-  
-  @Singleton
   static public class BroadcastResumeWorkerStepExecutor implements ActivityStepExecutor {
     @Inject
     private DataflowService service ;
@@ -68,7 +57,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
+      Node workerNodes = dflRegistry.getAllWorkersNode() ;
       List<String> workers = workerNodes.getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
@@ -76,7 +65,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
         waitingListener.add(path, DataflowWorkerStatus.RUNNING);
       }
       
-      dflRegistry.broadcastDataflowWorkerEvent(DataflowEvent.RESUME);
+      dflRegistry.broadcastWorkerEvent(DataflowEvent.RESUME);
       
       waitingListener.waitForEvents(30 * 1000);
       if(waitingListener.getUndetectNodeEventCount() > 0) {

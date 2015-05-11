@@ -41,7 +41,7 @@ public class DataflowClient {
   }
   
   public void setDataflowEvent(DataflowEvent event) throws RegistryException {
-    dflRegistry.broadcastDataflowEvent(event);
+    dflRegistry.broadcastMasterEvent(event);
   }
   
   public DataflowLifecycleStatus getStatus() throws RegistryException {

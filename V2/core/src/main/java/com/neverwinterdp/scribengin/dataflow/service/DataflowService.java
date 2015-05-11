@@ -5,7 +5,6 @@ import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
-import com.neverwinterdp.registry.activity.ActivityCoordinator;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
@@ -47,6 +46,8 @@ public class DataflowService {
   
   private DataflowTaskMasterEventListenter masterEventListener ;
   
+  private Thread waitForTerminationThread ;
+  
   public VMConfig getVMConfig() { return this.vmConfig ; }
   
   public DataflowRegistry getDataflowRegistry() { return dataflowRegistry; }
@@ -77,7 +78,8 @@ public class DataflowService {
   }
   
   
-  public void waitForTermination() throws Exception {
+  public void waitForTermination(Thread waitForTerminationThread) throws Exception {
+    this.waitForTerminationThread = waitForTerminationThread ;
     System.err.println("DataflowService: waitForTermination()");
     dataflowTaskMonitor.waitForAllTaskFinish();
     dataflowWorkerMonitor.waitForAllWorkerTerminated();
@@ -86,10 +88,17 @@ public class DataflowService {
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
   }
   
+  public void kill() throws Exception {
+    activityService.kill();
+    if(waitForTerminationThread != null) {
+      waitForTerminationThread.interrupt();
+    }
+  }
+  
   public class DataflowTaskMasterEventListenter extends NodeEventWatcher {
     public DataflowTaskMasterEventListenter(DataflowRegistry dflRegistry) throws RegistryException {
       super(dflRegistry.getRegistry(), true/*persistent*/);
-      watchModify(dflRegistry.getDataflowTasksMasterEventNode().getPath());
+      watchModify(dflRegistry.getMasterEventNode().getPath());
     }
 
     @Override

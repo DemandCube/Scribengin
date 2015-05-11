@@ -24,7 +24,7 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
     this.dataflowRegistry = dflRegistry;
     finishedTaskCount = dflRegistry.getTasksFinishedNode().getChildren().size() ;
     numOfTasks = dflRegistry.getTaskDescriptors().size();
-    watchChildren(dflRegistry.getTasksAssignedPath());
+    watchChildren(dflRegistry.getTasksAssignedNode().getPath());
   }
   
   
@@ -45,7 +45,7 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
   synchronized public void onChildrenChange(NodeEvent event) {
     try {
       Registry registry = getRegistry();
-      List<String> assignedTaskNames = registry.getChildren(dataflowRegistry.getTasksAssignedPath());
+      List<String> assignedTaskNames = registry.getChildren(dataflowRegistry.getTasksAssignedNode().getPath());
       for(String taskName : assignedTaskNames) {
         if(assignedTaskListeners.containsKey(taskName)) continue;
         addHeartbeatListener(taskName);
@@ -94,7 +94,7 @@ public class DataflowTaskMonitor extends NodeChildrenWatcher {
   public class DataflowTaskHeartbeatListener extends NodeEventWatcher {
     public DataflowTaskHeartbeatListener(DataflowRegistry dataflowRegistry, String taskName) throws RegistryException {
       super(dataflowRegistry.getRegistry(), true);
-      String heartbeatPath = dataflowRegistry.getTasksAssignedPath() + "/" + taskName + "/heartbeat";
+      String heartbeatPath = dataflowRegistry.getTasksAssignedNode().getPath() + "/" + taskName + "/heartbeat";
       watchExists(heartbeatPath);
     }
     

@@ -3,13 +3,12 @@ from sys import path
 from os.path import join, dirname, abspath, expanduser
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
-from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginProcess  #@UnresolvedImport
+from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginProcess, DataflowMasterProcess, DataflowWorkerProcess  #@UnresolvedImport
 #from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Server(object):
   def __init__(self, hostname, role = 'unknown', sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
     self.hostname = hostname 
-    #self.role = 'unknown' 
     self.role = role 
     self.processes = {} 
     self.sshKeyPath=sshKeyPath
@@ -82,18 +81,9 @@ class Server(object):
     return output
     
   def getReportDict(self):
-    procDict= {}
-    for key in self.processes:
-      running = "Running"
-      if not self.processes[key].isRunning():
-        running = "None"  
-      procDict["Status"] = running
-      
     return dict({
             "Hostname" : self.hostname,
-            "Role"     : self.role,
-            "Num processess": len(self.processes.keys())}.items() + procDict.items())
-                
+            "Role"     : self.role})
     
   def report(self):
     report = self.getReportDict()
@@ -120,6 +110,8 @@ class HadoopWorkerServer(Server):
     Server.addProcess(self, HadoopDaemonProcess('nodemanager',hostname, 'NodeManager', "sbin/yarn-daemon.sh"))
     Server.addProcess(self, VmMasterProcess('vmmaster',hostname))
     Server.addProcess(self, ScribenginProcess('scribengin',hostname))
+    Server.addProcess(self, DataflowMasterProcess('dataflow-master',hostname,'dataflow-master-*'))
+    Server.addProcess(self, DataflowWorkerProcess('dataflow-worker',hostname,'dataflow-worker-*'))
 
 class HadoopMasterServer(Server):
   def __init__(self, hostname):

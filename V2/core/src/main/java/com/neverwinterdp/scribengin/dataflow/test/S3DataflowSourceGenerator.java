@@ -17,7 +17,6 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator();
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   private S3Client s3Client;
-
   private int numOfFilesPerFolder;
   private int numOfRecordsPerFile;
 
@@ -26,6 +25,7 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     StorageDescriptor storageDescriptor = new StorageDescriptor("s3", sourceLocation);
     storageDescriptor.attribute("s3.bucket.name", sourceLocation);
     storageDescriptor.attribute("s3.storage.path", sourceName);
+    //TODO externalize this
     storageDescriptor.attribute("s3.region.name", "eu-central-1");
     return storageDescriptor;
   }
@@ -34,14 +34,17 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   public void init(ScribenginClient scribenginClient) throws Exception {
     s3Client = new S3Client();
     s3Client.onInit();
-    numOfFilesPerFolder = 1;
-    numOfRecordsPerFile = maxRecordsPerStream / numOfFilesPerFolder;
+    //TODO externalize this
+    numOfRecordsPerFile = 1000; 
+    numOfFilesPerFolder = maxRecordsPerStream/numOfRecordsPerFile;
+    
   }
 
   @Override
   public void run() {
     stopwatch.start();
     try {
+
       String location = sourceLocation + "/" + sourceName;
       generateSource(s3Client, location);
       stopwatch.stop();
@@ -64,10 +67,11 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     sourceReport.setDuration(stopwatch.elapsed(TimeUnit.MILLISECONDS));
   }
 
-  void generateSource(S3Client s3Client, String bucket) throws Exception {
+  void generateSource(S3Client s3Client, String sourceDir) throws Exception {
     SinkFactory sinkFactory = new SinkFactory(s3Client);
-    Sink sink = sinkFactory.create(getSourceDescriptor());
 
+    Sink sink = sinkFactory.create(getSourceDescriptor());
+    ;
     for (int i = 0; i < numberOfStream; i++) {
       generateStream(sink);
     }

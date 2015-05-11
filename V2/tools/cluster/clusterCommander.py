@@ -3,13 +3,12 @@
 exec python $0 ${1+"$@"}
 """
 
-import click, logging, multiprocessing, signal
+import click, logging, multiprocessing, signal, os
 from sys import stdout, exit
 from time import sleep
 
 from failure.FailureSimulator import ZookeeperFailure,KafkaFailure,DataFlowFailure
 from Cluster import Cluster
-
 
 _debug = False
 _logfile = ''
@@ -78,9 +77,19 @@ def vmmaster(restart, start, stop,force_stop, wait_before_start, wait_before_rep
 @click.option('--force-stop',        is_flag=True, help="kill Scribengin")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting Scribengin (seconds)")
 @click.option('--wait-before-report', default=5,    help="Time to wait before restarting reporting cluster status (seconds)")
-def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report):
+@click.option('--build',   is_flag=True, help="Build Scribengin")
+@click.option('--with-test',   is_flag=True, help="Build Scribengin with test")
+@click.option('--deploy',   is_flag=True, help="Deploy Scribengin")
+@click.option('--clean',   is_flag=True, help="Clean cluster")
+def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report, build, with_test, deploy, clean):
   cluster = Cluster()
   
+  if(build):
+    cluster.scribenginBuild(with_test)
+    
+  if(deploy):
+    cluster.scribenginDeploy("hadoop-master", clean)
+      
   if(restart or stop):
     logging.debug("Shutting down Scribengin")
     cluster.shutdownScribengin()
@@ -105,61 +114,53 @@ def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_
 @click.option('--stop',                is_flag=True, help="stop cluster")
 @click.option('--force-stop',          is_flag=True, help="kill cluster")
 @click.option('--clean',               is_flag=True, help="Clean old cluster data")
-@click.option('--sync',                is_flag=True, help="Sync cluster datas")
+@click.option('--sync',                default="",   help="Sync cluster datas from the given hostname")
 @click.option('--wait-before-start',   default=0,    help="Time to wait before restarting cluster (seconds)")
 @click.option('--wait-before-kill',    default=0,    help="Time to wait before force killing cluster (seconds)")
-@click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
-@click.option('--zookeeper-server-config',             default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
-@click.option('--execute',             help='execute given command on all nodes')
+@click.option('--kafka-server-config', default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=False))
+@click.option('--zookeeper-server-config',  default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=False))
+@click.option('--execute',                           help='execute given command on all nodes')
 def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wait_before_kill, kafka_server_config, zookeeper_server_config, execute):
   cluster = Cluster()
-  
-  if(sync):
-    cluster.sync()
+      
+  if(sync != ""):
+    #Validating hostname
+    hostname = sync
+    if hostname in cluster.getHostnames():
+      cluster.sync(sync)
+    else:
+      raise click.BadParameter("Host \"" + sync + "\" does not exist in the cluster.", param_hint = "--sync")
     
   if(execute is not None):
     cluster.sshExecute(execute)
     
   if(restart or stop):
     logging.debug("Shutting down Cluster")
-    cluster.killScribengin()
-    cluster.killVmMaster()
-    cluster.shutdownKafka()
-    cluster.shutdownZookeeper()
-    cluster.shutdownHadoopWorker()
-    cluster.shutdownHadoopMaster()
+    cluster.shutdownCluster()
   
   if(force_stop):
     logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
     sleep(wait_before_kill)
     logging.debug("Force Killing Cluster")
-    cluster.shutdownScribengin()
-    cluster.shutdownVmMaster()
-    cluster.killKafka()
-    cluster.killZookeeper()
-    cluster.killHadoopWorker()
-    cluster.killHadoopMaster()
+    cluster.killCluster()
   
   if(clean):
     logging.debug("Cleaning Kafka")
-    cluster.cleanKafka()
-    cluster.cleanZookeeper()
-    cluster.cleanHadoopWorker()
-    cluster.cleanHadoopMaster()
-  
+    cluster.cleanCluster()
+
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
+    if not os.path.exists(kafka_server_config):
+      raise click.BadParameter("Path \"" + kafka_server_config + "\" does not exist.", param_hint = "--kafka-server-config")
+    
+    if not os.path.exists(zookeeper_server_config):
+      raise click.BadParameter("Path \"" + zookeeper_server_config + "\" does not exist.", param_hint = "--zookeeper-server-config")
+  
     sleep(wait_before_start)
     logging.debug("Starting Cluster")
     cluster.paramDict["server_config"] = kafka_server_config
     cluster.paramDict["zoo_cfg"] = zookeeper_server_config
-    cluster.startZookeeper()
-    cluster.startKafka()
-    cluster.cleanHadoopDataAtFirst()
-    cluster.startHadoopMaster()
-    cluster.startHadoopWorker()
-    cluster.startVmMaster()
-    cluster.startScribengin()
+    cluster.startCluster()
     
   #click.echo(cluster.getReport())  
   
@@ -169,11 +170,12 @@ def cluster(restart, start, stop, force_stop, clean, sync, wait_before_start, wa
 @click.option('--stop',              is_flag=True, help="stop kafka brokers")
 @click.option('--force-stop',        is_flag=True, help="kill -9 kafka on brokers")
 @click.option('--clean',             is_flag=True, help="Clean old kafka data")
+@click.option('--start-with-spare',  is_flag=True, help="Start zookeeper cluster with spare zookeeper nodes")
 @click.option('--brokers',           default="",   help="Which kafka brokers to effect (command separated list)")
 @click.option('--wait-before-start', default=0,    help="Time to wait before restarting kafka server (seconds)")
 @click.option('--wait-before-kill',  default=0,    help="Time to wait before force killing Kafka process (seconds)")
 @click.option('--server-config',     default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
-def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, wait_before_kill, server_config):
+def kafka(restart, start, stop, force_stop, clean, start_with_spare, brokers, wait_before_start, wait_before_kill, server_config):
   cluster = Cluster()
   
   if len(brokers) > 0 :
@@ -183,16 +185,19 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, w
   if(restart or stop):
     logging.debug("Shutting down Kafka")
     cluster.shutdownKafka()
-  
+    cluster.shutdownSpareKafka()
+    
   if(force_stop):
     logging.debug("Waiting for "+str(wait_before_kill)+" seconds")
     sleep(wait_before_kill)
     logging.debug("Force Killing Kafka")
     cluster.killKafka()
+    cluster.killSpareKafka()
   
   if(clean):
     logging.debug("Cleaning Kafka")
     cluster.cleanKafka()
+    cluster.cleanSpareKafka()
   
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
@@ -200,6 +205,8 @@ def kafka(restart, start, stop, force_stop, clean, brokers, wait_before_start, w
     logging.debug("Starting Kafka")
     cluster.paramDict["server_config"] = server_config
     cluster.startKafka()
+    if start_with_spare:
+      cluster.startSpareKafka()
   #click.echo(cluster.getReport())  
   
 
@@ -228,6 +235,7 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
   if(clean):
     logging.debug("Cleaning Zookeeper")
     cluster.cleanZookeeper()
+    cluster.cleanSpareZookeeper()
   
   if(restart or start):
     logging.debug("Waiting for "+str(wait_before_start)+" seconds")
@@ -235,7 +243,6 @@ def zookeeper(restart, start, stop, force_stop, clean, zk_servers, wait_before_s
     logging.debug("Starting Zookeeper")
     cluster.paramDict["zoo_cfg"] = zoo_cfg
     cluster.startZookeeper()
-  
   #click.echo(cluster.getReport())
 
 @mastercommand.command("hadoop",help="Hadoop commands")
@@ -284,19 +291,18 @@ def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_st
 @click.option('--servers-to-fail-simultaneously', default=1,    help="Number of servers to kill simultaneously")
 @click.option('--kill-method',                    default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
 @click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
+@click.option('--server-config',     default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
+@click.option('--use-spare',                      is_flag=True, help="If enabled, will select spare-kafka server to run in the cluster")
 @click.option('--junit-report',                   default="",   help="If set, will write the junit-report to the specified file")
-def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
+def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report):
   global _jobs
-  if len(servers) < 1:
-    raise ValueError("--servers is not specified!")
-    return
   
   kf = KafkaFailure()
   
   p = multiprocessing.Process(name="KafkaFailure",
                               target=kf.failureSimulation, 
                               args=(failure_interval, wait_before_start, servers, min_servers, 
-                                    servers_to_fail_simultaneously, kill_method, initial_clean, junit_report))
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report))
   _jobs.append(p)
   p.start()
   
@@ -309,18 +315,16 @@ def kafkafailure(failure_interval, wait_before_start, servers, min_servers, serv
 @click.option('--servers-to-fail-simultaneously', default=1,    help="Number of servers to kill simultaneously")
 @click.option('--kill-method',                    default='kill', type=click.Choice(['restart', 'kill', "random"]), help="Server kill method.  Restart is clean, kill uses kill -9, random switches randomly")
 @click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
+@click.option('--zoo-cfg',                        default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
 @click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
-def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, junit_report):
+def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, junit_report):
   global _jobs
-  if len(servers) < 1:
-    raise ValueError("--servers is not specified!")
-    return
   
   zf = ZookeeperFailure()
   p = multiprocessing.Process(name="ZookeeperFailure",
                               target=zf.failureSimulation, 
                               args=(failure_interval, wait_before_start, servers, min_servers, 
-                                    servers_to_fail_simultaneously, kill_method, initial_clean, junit_report))
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, None, junit_report))
   _jobs.append(p)
   p.start()
   

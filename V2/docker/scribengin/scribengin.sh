@@ -53,9 +53,9 @@ function deploy(){
   #Copy
   ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
   ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
-  scp -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
-  scp -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
-  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync"
+  scp -q -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
+  scp -q -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
+  ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync hadoop-master"
 }
 
 # get command

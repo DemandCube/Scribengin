@@ -36,12 +36,15 @@ public class VMClient {
   
   public Registry getRegistry() { return this.registry ; }
   
-  public List<VMDescriptor> getRunningVMDescriptors() throws RegistryException {
-    return registry.getChildrenAs(VMService.ALLOCATED_PATH, VMDescriptor.class) ;
+  public List<VMDescriptor> getActiveVMDescriptors() throws RegistryException {
+    return VMService.getActiveVMDescriptors(registry) ;
   }
   
   public List<VMDescriptor> getHistoryVMDescriptors() throws RegistryException {
-    return registry.getChildrenAs(VMService.HISTORY_PATH, VMDescriptor.class) ;
+    return VMService.getHistoryVMDescriptors(registry) ;
+  }
+  public List<VMDescriptor> getAllVMDescriptors() throws RegistryException {
+    return VMService.getAllVMDescriptors(registry) ;
   }
   
   public VMDescriptor getMasterVMDescriptor() throws RegistryException { 

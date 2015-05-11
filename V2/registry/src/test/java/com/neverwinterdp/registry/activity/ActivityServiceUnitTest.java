@@ -84,12 +84,12 @@ public class ActivityServiceUnitTest {
         ActivityStep.Status.EXECUTING,
         service.getActivityStep(activityCreate.getId(), activityStep0.getId()).getStatus());
 
-    service.finish(activityCreate, activityStep0);
+    service.updateActivityStepFinished(activityCreate, activityStep0);
     Assert.assertEquals(
         ActivityStep.Status.FINISHED,
         service.getActivityStep(activityCreate.getId(), activityStep0.getId()).getStatus());
     
-    Assert.assertEquals(1, service.getActiveActivities().size());
+    Assert.assertEquals(1, service.getActivities().size());
     registry.get("/").dump(System.out);
     
     service.history(activityGet);

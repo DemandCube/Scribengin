@@ -73,7 +73,10 @@ public class WaitingNodeEventListenerUnitTest {
   public void testListener() throws Exception {
     WaitingOrderNodeEventListener listener = new WaitingOrderNodeEventListener(registry);
     listener.add(EVENTS_PATH, NodeEvent.Type.CREATE);
-    listener.add(EVENTS_PATH + "/hello", new NodeEvent.Type[] {NodeEvent.Type.CREATE, NodeEvent.Type.MODIFY});
+    listener.add(
+        EVENTS_PATH + "/hello", 
+        new NodeEvent.Type[] {NodeEvent.Type.CREATE, NodeEvent.Type.MODIFY}, 
+        "Expect CREATE or MODIFY");
     listener.add(EVENTS_PATH + "/hello", new HelloBean("hello"));
     listener.add(EVENTS_PATH + "/dummy", new NodeEventMatcher() {
       @Override

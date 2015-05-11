@@ -56,31 +56,31 @@ function h1() {
 function build_image() {
   h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
-  mkdir ./tmp
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  mkdir $DOCKERSCRIBEDIR/tmp
 
-  if [ ! -d ../../release/build/release ] ; then
-    $DOCKERSCRIBEDIR/scribengin.sh build
+  if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
+    $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build
   fi
   
-  #Move release/build/release to ./tmp
-  cp -R -f ../../release/build/release ./tmp/release
-  cp -R -f ../../tools/cluster ./tmp/cluster
+  #Move release/build/release to $DOCKERSCRIBEDIR/tmp
+  cp -R -f $DOCKERSCRIBEDIR/../../release/build/release $DOCKERSCRIBEDIR/tmp/release
+  cp -R -f $DOCKERSCRIBEDIR/../../tools/cluster $DOCKERSCRIBEDIR/tmp/cluster
   
   
   #Use existing key if it already exists
   if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
-    cat ~/.ssh/id_rsa > ./tmp/id_rsa
-    cat ~/.ssh/id_rsa.pub > ./tmp/id_rsa.pub
+    cat ~/.ssh/id_rsa > $DOCKERSCRIBEDIR/tmp/id_rsa
+    cat ~/.ssh/id_rsa.pub > $DOCKERSCRIBEDIR/tmp/id_rsa.pub
   #Otherwise generate a new one
   else
-    ssh-keygen -t rsa  -P "" -f tmp/id_rsa
+    ssh-keygen -t rsa  -P "" -f $DOCKERSCRIBEDIR/tmp/id_rsa
   fi
-  cat ~/.ssh/id_rsa.pub > ./tmp/authorized_keys
+  cat ~/.ssh/id_rsa.pub > $DOCKERSCRIBEDIR/tmp/authorized_keys
 
   docker build -t ubuntu:scribengin $BIN_DIR
   echo "Clean the temporary configuration files"
-  rm -rf ./tmp
+  rm -rf $DOCKERSCRIBEDIR/tmp
   
 }
 
@@ -264,7 +264,8 @@ function container_clean() {
 }
 
 function host_sync() {
-  ./scribengin.sh build
+  DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build  
   
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir /opt/scribengin"
   
@@ -275,7 +276,7 @@ function host_sync() {
   scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
   
-  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync"
+  ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync hadoop-master"
 }
 
 function cluster(){
@@ -313,9 +314,7 @@ function cluster(){
   fi
   
   if [ $DEPLOY_SCRIBENGIN == "true" ] || [ $LAUNCH == "true" ] ; then
-    #$DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py cluster deploy
-    $DOCKERSCRIBEDIR/scribengin.sh build
-    $DOCKERSCRIBEDIR/scribengin.sh deploy
+    $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build --deploy
   fi
   
   if [ $START_CLUSTER == "true" ] || [ $LAUNCH == "true" ] ; then

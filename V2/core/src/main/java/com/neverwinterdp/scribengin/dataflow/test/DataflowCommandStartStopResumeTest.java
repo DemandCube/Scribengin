@@ -17,6 +17,9 @@ import com.neverwinterdp.util.text.TabularFormater;
 public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   final static public String TEST_NAME = "start-stop-resume";
 
+  @Parameter(names = "--dataflow-id", description = "The command should repeat in this failurePeriod of time")
+  String dataflowId = "kafka-to-kafka-1";
+  
   @Parameter(names = "--dataflow-name", description = "The command should repeat in this failurePeriod of time")
   String dataflowName = "kafka-to-kafka";
   
@@ -54,7 +57,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
-      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowName);
+      DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowId);
       DataflowLifecycleStatus dataflowStatus = dflClient.getStatus();
       
       if(waitBeforeStart > 0) {
@@ -95,9 +98,9 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
         resumeCompleteCount++ ;
       }
     } catch(Exception ex) {
-      shell.execute("registry dump");
-      shell.execute("dataflow info --running " + dataflowName);
       ex.printStackTrace();
+      shell.execute("registry dump");
+      shell.execute("dataflow info --dataflow-id " + dataflowId);
     }
     
     if(printSummary) {

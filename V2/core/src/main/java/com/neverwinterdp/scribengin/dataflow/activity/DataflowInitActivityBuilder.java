@@ -31,7 +31,7 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
     Activity activity = new Activity();
     activity.setDescription("Init Dataflow Activity");
     activity.setType("init-dataflow");
-    activity.withCoordinator(InitActivityCoordinator.class);
+    activity.withCoordinator(DataflowActivityCoordinator.class);
     activity.withActivityStepBuilder(DataflowInitActivityStepBuilder.class) ;
     return activity;
   }
@@ -46,17 +46,6 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
           withType("init-dataflow-task").
           withExecutor(InitDataflowTaskExecutor.class));
       return steps;
-    }
-  }
-  
-  @Singleton
-  static public class InitActivityCoordinator extends ActivityCoordinator {
-    @Inject
-    DataflowActivityStepWorkerService activityStepWorkerService;
-   
-    @Override
-    protected <T> void execute(ActivityExecutionContext context, Activity activity, ActivityStep step) throws Exception {
-      activityStepWorkerService.exectute(context, activity, step);
     }
   }
   

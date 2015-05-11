@@ -33,7 +33,7 @@ public class DataflowWorkerMonitor {
     Node heartbeatNode = new Node(dataflowRegistry.getRegistry(), heartbeatPath);
     Node vmNode = heartbeatNode.getParentNode().getParentNode();
     workerHeartbeatListeners.remove(vmNode.getPath());
-    Node dataflowWorkerNode = dataflowRegistry.getActiveWorkersNode().getChild(vmNode.getName());
+    Node dataflowWorkerNode = dataflowRegistry.getAllWorkersNode().getChild(vmNode.getName());
     DataflowWorkerStatus dataflowWorkerStatus = dataflowWorkerNode.getChild("status").getDataAs(DataflowWorkerStatus.class);
     dataflowRegistry.historyWorker(vmNode.getName());
     

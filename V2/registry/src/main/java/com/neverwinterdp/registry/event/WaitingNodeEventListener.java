@@ -54,11 +54,33 @@ abstract public class WaitingNodeEventListener {
    * @throws Exception
    */
   synchronized public <T> void add(String path, T expectData, String desc) throws Exception {
-    WaitingNodeEventWatcher watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)expectData.getClass(), expectData, desc);
+    DataChangeNodeWatcher<T> watcher = new DataChangeNodeWatcher<T>(path, (Class<T>)expectData.getClass(), expectData, desc);
     watcherQueue.addLast(watcher);
     registryListener.watch(path, watcher, true);
     waitingNodeEventCount++;
     if(detectNodeEventCount == 0) estimateLastDetectEventTime = System.currentTimeMillis() ;
+  }
+  
+  /**
+   * @param path
+   * @param expectData
+   * @param desc
+   * @param checkBeforeWatch
+   * @throws Exception
+   */
+  public <T> void add(String path, T expectData, String desc, boolean checkBeforeWatch) throws Exception {
+    //TODO: The flag to check the data before register the watcher is a temporary fix and it not a perfect solution.
+    //In the cluster , it can happen that an event is produced before a client or another process can watch or listen for
+    //the event. The current fix is try to check the data is already matches the expect data before watching for the data
+    //change, but it is not a perfect solution. In the future , zookeeper will allow to remove a watcher and for the critical
+    //code, we need to register the watcher first, then check the current data and remove the watcher if the data is already 
+    //as expected.
+    Registry registry = registryListener.getRegistry() ;
+    if(checkBeforeWatch && registry.exists(path)) {
+      T data = (T) registry.getDataAs(path, expectData.getClass());
+      if(expectData.equals(data)) return;
+    }
+    add(path, expectData, desc);
   }
   
   public <T> void add(String path, NodeEventMatcher matcher) throws Exception {
