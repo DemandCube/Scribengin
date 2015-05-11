@@ -305,56 +305,21 @@ class HadoopDaemonProcess(Process):
     return self.sshExecute("rm -rf "+ join(self.homeDir, "data") +" && rm -rf " + join(self.homeDir, "logs") +" && "+ join(self.homeDir, "bin/hdfs") + " namenode -format") 
 
 ############
-class VmMasterProcess(Process):
-  def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*")
-    
-  def setupClusterEnv(self, paramDict = {}):
-    pass
-  
-  def getReportDict(self):
-    return self.getReportDictForVMAndScribengin()
-  
+class ScribenginProcess(Process):
   def getProcessCommand(self):
     return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
-  def getRunningPid(self):
-    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
-    stdout,stderr = self.sshExecute(command)
-    return stdout.strip().replace("\n",",")
-  
-  def start(self):
-    self.printProgress("Starting ")
-    stdout,stderr = self.sshExecute(join(self.homeDir, "shell.sh")+" vm start")
-    print "STDOUT from vm start: \n"+stdout
-    print "STDERR from vm start: \n"+stderr
-    
-  def shutdown(self):
-    self.printProgress("Stopping ")
-    self.sshExecute(join(self.homeDir, "shell.sh")+" vm shutdown")
-  
-  def clean(self):
-    pass 
-  
-  def kill(self):
-    return self.shutdown()
-  
-    
-  
 ############
-class ScribenginProcess(Process):
+class ScribenginMasterProcess(ScribenginProcess):
   def __init__(self, role, hostname):
     Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*")
     self.hostname = hostname
-    
+  
   def setupClusterEnv(self, paramDict = {}):
     pass
   
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"\|dataflow-master-*\|dataflow-worker-*' | awk '{print $1 \" \" $4}'"
@@ -378,7 +343,39 @@ class ScribenginProcess(Process):
     return self.shutdown()
 
 ############
-class DataflowMasterProcess(Process):
+class VmMasterProcess(ScribenginProcess):
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*")
+    
+  def setupClusterEnv(self, paramDict = {}):
+    pass
+  
+  def getReportDict(self):
+    return self.getReportDictForVMAndScribengin()
+  
+  def getRunningPid(self):
+    command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+    stdout,stderr = self.sshExecute(command)
+    return stdout.strip().replace("\n",",")
+  
+  def start(self):
+    self.printProgress("Starting ")
+    stdout,stderr = self.sshExecute(join(self.homeDir, "shell.sh")+" vm start")
+    print "STDOUT from vm start: \n"+stdout
+    print "STDERR from vm start: \n"+stderr
+    
+  def shutdown(self):
+    self.printProgress("Stopping ")
+    self.sshExecute(join(self.homeDir, "shell.sh")+" vm shutdown")
+  
+  def clean(self):
+    pass 
+  
+  def kill(self):
+    return self.shutdown()
+
+############
+class DataflowMasterProcess(ScribenginProcess):
   def __init__(self, role, hostname, processIdentifier):
     Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
     self.hostname = hostname
@@ -388,9 +385,6 @@ class DataflowMasterProcess(Process):
   
   def getReportDict(self):
     pass
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     pass
@@ -408,7 +402,7 @@ class DataflowMasterProcess(Process):
     pass
 
 ############
-class DataflowWorkerProcess(Process):
+class DataflowWorkerProcess(ScribenginProcess):
   def __init__(self, role, hostname, processIdentifier):
     Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
     self.hostname = hostname
@@ -418,10 +412,7 @@ class DataflowWorkerProcess(Process):
   
   def getReportDict(self):
     pass
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
-  
+
   def getRunningPid(self):
     pass
   
