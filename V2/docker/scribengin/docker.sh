@@ -129,14 +129,16 @@ function launch_containers() {
   for (( i=1; i<="$NUM_ZOOKEEPER_SERVER"; i++ ))
   do
     NAME="zookeeper-"$i
-    docker run -d -p 22 -p 2181:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+    PORT_NUM=`expr 2181 - 1 + $i`
+    docker run -d -p 22 -p $PORT_NUM:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done  
 
   h1 "Launch spare zookeeper containers"
   for (( i=1; i<="$NUM_SPARE_ZOOKEEPER_SERVER"; i++ ))
   do
     NAME="spare-zookeeper-"$i
-    docker run -d -p 22 -p 2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+    PORT_NUM=`expr 2181 - 1 + $i + $NUM_ZOOKEEPER_SERVER`
+    docker run -d -p 22 -p $PORT_NUM:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done  
 
   h1 "Remove hadoop-master entry in the $HOME/.ssh/known_hosts"
