@@ -9,12 +9,13 @@ path.insert(0, dirname(dirname(abspath(__file__))))
 from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Process(object):
-  def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
+  def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa"), isScribenginProcess=False):
     self.role = role ;
     self.hostname = hostname;
     self.homeDir = homeDir;
     self.processIdentifier = processIdentifier;
     self.sshKeyPath = sshKeyPath
+    self.isScribenginProcess = isScribenginProcess
     
   def sshExecute(self, command, user = "neverwinterdp"):
     """
@@ -91,7 +92,10 @@ class Process(object):
       self.sshExecute("kill -9 "+pid)
    
   def getProcessCommand(self):
-    return "jps -m | grep -w '"+self.processIdentifier+"' | awk '{print $1 \" \" $2}'"
+    if(self.isScribenginProcess):
+      return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
+    else:
+      return "jps -m | grep -w '"+self.processIdentifier+"' | awk '{print $1 \" \" $2}'"
   
   def getRunningPid(self):
     command = "ps ax | grep -w '"+self.processIdentifier+"' | grep java | grep -v grep | awk '{print $1}'"
@@ -307,16 +311,13 @@ class HadoopDaemonProcess(Process):
 ############
 class VmMasterProcess(Process):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*")
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "vm-master-*", isScribenginProcess=True)
     
   def setupClusterEnv(self, paramDict = {}):
     pass
   
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
@@ -344,7 +345,7 @@ class VmMasterProcess(Process):
 ############
 class ScribenginProcess(Process):
   def __init__(self, role, hostname):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*")
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "scribengin-master-*", isScribenginProcess=True)
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
@@ -352,9 +353,6 @@ class ScribenginProcess(Process):
   
   def getReportDict(self):
     return self.getReportDictForVMAndScribengin()
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     command = "jps -m | grep '"+self.processIdentifier+"\|dataflow-master-*\|dataflow-worker-*' | awk '{print $1 \" \" $4}'"
@@ -380,7 +378,7 @@ class ScribenginProcess(Process):
 ############
 class DataflowMasterProcess(Process):
   def __init__(self, role, hostname, processIdentifier):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier, isScribenginProcess=True)
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
@@ -388,9 +386,6 @@ class DataflowMasterProcess(Process):
   
   def getReportDict(self):
     pass
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     pass
@@ -410,7 +405,7 @@ class DataflowMasterProcess(Process):
 ############
 class DataflowWorkerProcess(Process):
   def __init__(self, role, hostname, processIdentifier):
-    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier)
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", processIdentifier, isScribenginProcess=True)
     self.hostname = hostname
     
   def setupClusterEnv(self, paramDict = {}):
@@ -418,9 +413,6 @@ class DataflowWorkerProcess(Process):
   
   def getReportDict(self):
     pass
-  
-  def getProcessCommand(self):
-    return "jps -m | grep '"+self.processIdentifier+"' | awk '{print $1 \" \" $4}'"
   
   def getRunningPid(self):
     pass
