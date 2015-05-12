@@ -77,9 +77,6 @@ dependencies {
   scribenginDeployJars group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.3.3'
   scribenginDeployJars group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.3'
 
-  // this is a hack before we change -Djava.ext.dirs in shell.sh
-  scribenginDeployJars group: 'sun.jdk', name: 'sunjce_provider', version: '1.5'
-
 
   scribenginDeployJars group: 'com.google.guava', name: 'guava', version: '18.0'
   scribenginDeployJars group: 'com.google.inject', name: 'guice', version: '3.0'
