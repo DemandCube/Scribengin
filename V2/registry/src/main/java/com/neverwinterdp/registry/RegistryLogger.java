@@ -1,5 +1,7 @@
 package com.neverwinterdp.registry;
 
+import com.neverwinterdp.util.text.DateUtil;
+
 
 public class RegistryLogger {
   private Node     logNode ;
@@ -10,12 +12,12 @@ public class RegistryLogger {
   
   public void info(String name, String mesg) throws RegistryException {
     Log log = new Log("INFO", mesg) ;
-    logNode.createChild("INFO-" + name, log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    logNode.createChild(DateUtil.asCompactDate(log.getTimestamp()) + "-INFO-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
   
   public void error(String name, String mesg) throws RegistryException {
-    Log log = new Log("INFO", mesg) ;
-    logNode.createChild("INFO-" + name, log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    Log log = new Log("ERROR", mesg) ;
+    logNode.createChild(DateUtil.asCompactDate(log.getTimestamp()) +  "-ERROR-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
   
   static public class Log {
