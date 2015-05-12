@@ -15,7 +15,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   final static public String TEST_NAME = "random-server-failure";
 
   @Parameter(names = "--dataflow-id", required=true, description = "The command should repeat in this period of time")
-  String dataflowId ;
+  String dataflowId = "DataflowRandomServerFailureTest-unknown";
   
   @Parameter(names = "--wait-for-running-dataflow", description = "The command should repeat in this failurePeriod of time")
   long waitForRunningDataflow = 180000;
@@ -61,7 +61,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     } catch(Exception ex) {
       ex.printStackTrace();
       shell.execute("registry dump");
-      shell.execute("dataflow info --id " + dataflowId);
+      shell.execute("dataflow info --dataflow-id " + dataflowId);
       throw ex ;
     }
   }

@@ -32,7 +32,7 @@ public class DataflowCommand extends Command {
   
   static public class Info extends SubCommand {
     @Parameter(names = "--dataflow-id", description = "The dataflow id")
-    private String dataflowId ;
+    private String dataflowId = "DataflowCommand-unknown";
     
     @Parameter(names = "--show-tasks", description = "The history dataflow id")
     private boolean tasks = false;

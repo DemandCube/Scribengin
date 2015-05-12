@@ -10,6 +10,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.SequenceIdTracker;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.registry.util.RegistryDebugger;
@@ -115,6 +116,8 @@ public class ScribenginClient {
   
   public DataflowWaitingEventListener submit(String localDataflowHome, DataflowDescriptor dflDescriptor) throws Exception {
     if(dflDescriptor.getId() == null) {
+      SequenceIdTracker dataflowIdTracker = new SequenceIdTracker(getRegistry(), "path") ;
+      
       ScribenginIdTrackerService idTrackerService = new ScribenginIdTrackerService(getRegistry()) ;
       dflDescriptor.setId(dflDescriptor.getName() + "-" + idTrackerService.nextDataflowId());
     }
@@ -126,7 +129,7 @@ public class ScribenginClient {
       getVMClient().uploadApp(localDataflowHome, dataflowAppHome);
     }
     h1("Submit the dataflow " + dflDescriptor.getName());
-    VMClient vmClient = new VMClient(getRegistry());
+    VMClient vmClient = getVMClient();
     
     DataflowWaitingEventListener waitingEventListener = new DataflowWaitingEventListener(vmClient.getRegistry());
     waitingEventListener.waitDataflowLeader(
@@ -139,7 +142,7 @@ public class ScribenginClient {
    
     VMDescriptor scribenginMaster = getScribenginMaster();
     Command deployCmd = new VMScribenginServiceCommand.DataflowDeployCommand(dflDescriptor) ;
-    CommandResult<Boolean> result = (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd, 35000);
+    CommandResult<Boolean> result = (CommandResult<Boolean>)vmClient.execute(scribenginMaster, deployCmd);
     return waitingEventListener;
   }
   

@@ -68,12 +68,16 @@ abstract public class DataflowTest {
   @Parameter(names = "--junit-report", description = "The junit report output file")
   protected String junitReport;
 
+  @Parameter(names = "--vm-client-wait-for-result-timeout", description = "Max duration for the test")
+  protected long vmClientWaitForResultTimeout = 60000;
+  
   public void run(ScribenginShell shell) throws Exception {
+    shell.getVMClient().setWaitForResultTimeout(vmClientWaitForResultTimeout);
     doRun(shell);
   }
 
   public void sourceToSinkDataflowTest(ScribenginShell shell, DataflowSourceGenerator sourceGenerator, 
-      DataflowSinkValidator sinkValidator) throws Exception{
+                                       DataflowSinkValidator sinkValidator) throws Exception{
     ScribenginClient scribenginClient = shell.getScribenginClient();
     sourceGenerator.init(scribenginClient);
     if(sourceGenerator.canRunInBackground()){
@@ -241,7 +245,7 @@ abstract public class DataflowTest {
           Thread.sleep(period);
           try {
             shell.console().println("#Dataflow Print Thread failurePeriod = " + period + "#");
-            shell.execute("dataflow info --running " + descriptor.getId());
+            shell.execute("dataflow info --dataflow-id " + descriptor.getId());
           } catch (Exception ex) {
             System.err.println(ex.getMessage());
           }
