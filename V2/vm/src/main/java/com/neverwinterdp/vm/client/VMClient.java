@@ -70,7 +70,7 @@ public class VMClient {
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {
     CommandPayload payload = new CommandPayload(command, null) ;
-    Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.EPHEMERAL_SEQUENTIAL);
+    Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.PERSISTENT_SEQUENTIAL);
     CommandReponseWatcher responseWatcher = new CommandReponseWatcher(registry, node.getPath(), command);
     node.watchModify(responseWatcher);
     return responseWatcher.waitForResult(timeout);
