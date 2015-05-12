@@ -104,7 +104,7 @@ function launch_containers() {
   
   
   NUM_KAFKA_BROKER=$(get_opt --kafka-server '3' $@)
-  NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 2 $@)
+  NUM_ZOOKEEPER_SERVER=$(get_opt --zk-server 1 $@)
   NUM_HADOOP_WORKER=$(get_opt --hadoop-worker 3 $@)
   
   NUM_SPARE_KAFKA_BROKER=$(get_opt --spare-kafka '0' $@)
@@ -129,14 +129,16 @@ function launch_containers() {
   for (( i=1; i<="$NUM_ZOOKEEPER_SERVER"; i++ ))
   do
     NAME="zookeeper-"$i
-    docker run -d -p 22 -p 2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+    PORT_NUM=`expr 2181 - 1 + $i`
+    docker run -d -p 22 -p $PORT_NUM:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done  
 
   h1 "Launch spare zookeeper containers"
   for (( i=1; i<="$NUM_SPARE_ZOOKEEPER_SERVER"; i++ ))
   do
     NAME="spare-zookeeper-"$i
-    docker run -d -p 22 -p 2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+    PORT_NUM=`expr 2181 - 1 + $i + $NUM_ZOOKEEPER_SERVER`
+    docker run -d -p 22 -p $PORT_NUM:2181 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done  
 
   h1 "Remove hadoop-master entry in the $HOME/.ssh/known_hosts"
