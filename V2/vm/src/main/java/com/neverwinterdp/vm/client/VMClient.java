@@ -176,7 +176,7 @@ public class VMClient {
       }
       if(error != null) throw error;
       if(result == null) {
-        String errorMsg = "Cannot get the result after " + timeout + "ms, command = " + command.getClass() +", path = " + pathl
+        String errorMsg = "Cannot get the result after " + timeout + "ms, command = " + command.getClass() +", path = " + path ;
         throw new TimeoutException(errorMsg) ;
       }
       return result ;
