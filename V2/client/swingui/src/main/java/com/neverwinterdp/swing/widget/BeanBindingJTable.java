@@ -323,10 +323,9 @@ abstract public class BeanBindingJTable<T> extends JTable {
     btn3.setName("btnBottom");
     btn3.setPreferredSize(new Dimension(94, 50));
     panel2.add(btn3);
-    JButton btn4 = new JButton("Cập nhật");
+    JButton btn4 = new JButton("Update");
     btn4.setMargin(new Insets(0, 0, 0, 0));
     btn4.addActionListener(new ActionListener() {
-
       @Override
       public void actionPerformed(ActionEvent e) {
         edit = false;
@@ -339,7 +338,6 @@ abstract public class BeanBindingJTable<T> extends JTable {
   }
 
   public void saveIndex() {
-
   }
 
   public boolean isEdit() {
