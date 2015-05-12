@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.SequenceIdTracker;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityExecutionContext;
@@ -23,6 +24,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.scribengin.dataflow.worker.VMDataflowWorkerApp;
+import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
@@ -42,14 +44,14 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
   @Singleton
   static public class AddDataflowWorkerActivityStepBuilder implements ActivityStepBuilder {
     @Inject
-    private ScribenginIdTrackerService idTrackerService ;
+    private Registry registry ;
     
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       List<ActivityStep> steps = new ArrayList<>() ;
       int numOfWorkerToAdd = activity.attributeAsInt("num-of-worker-to-add", 0);
       for(int i = 0; i < numOfWorkerToAdd; i++) {
-        steps.add(createAddDataflowWorkerStep(idTrackerService));
+        steps.add(createAddDataflowWorkerStep(registry));
       }
       steps.add(new ActivityStep().
           withType("wait-for-worker-run-status").
@@ -57,11 +59,12 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       return steps;
     }
     
-    static public ActivityStep createAddDataflowWorkerStep(ScribenginIdTrackerService idTrackerService) throws Exception {
+    static public ActivityStep createAddDataflowWorkerStep(Registry registry) throws Exception {
+      SequenceIdTracker dataflowMasterIdTracker = new SequenceIdTracker(registry, ScribenginService.DATAFLOW_WORKER_ID_TRACKER);
       ActivityStep step = new ActivityStep().
       withType("create-dataflow-worker").
       withExecutor(AddDataflowWorkerStepExecutor.class).
-      attribute("worker.id", idTrackerService.nextDataflowWorkerId());
+      attribute("worker.id", dataflowMasterIdTracker.nextInt());
       return step;
     }
   }

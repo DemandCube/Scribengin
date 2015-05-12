@@ -10,6 +10,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.SequenceIdTracker;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.activity.ActivityBuilder;
 import com.neverwinterdp.registry.activity.ActivityCoordinator;
@@ -19,7 +20,6 @@ import com.neverwinterdp.registry.activity.ActivityStepBuilder;
 import com.neverwinterdp.registry.activity.ActivityStepExecutor;
 import com.neverwinterdp.registry.event.WaitingNodeEventListener;
 import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
-import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.service.DataflowService;
@@ -47,18 +47,16 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
   @Singleton
   static public class AddDataflowMasterActivityStepBuilder implements ActivityStepBuilder {
     @Inject
-    private ScribenginIdTrackerService idTrackerService ;
+    private Registry registry ;
     
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
+      SequenceIdTracker dataflowMasterIdTracker = new SequenceIdTracker(registry, ScribenginService.DATAFLOW_MASTER_ID_TRACKER);
       List<ActivityStep> steps = new ArrayList<>() ;
       steps.add(new ActivityStep().
           withType("create-dataflow-master").
           withExecutor(AddDataflowMasterStepExecutor.class).
-          attribute("master.id", idTrackerService.nextDataflowMasterId()));
-//      steps.add(new ActivityStep().
-//          withType("wait-for-master-run-status").
-//          withExecutor(WaitForDataflowMasterRunningStatus.class));
+          attribute("master.id", dataflowMasterIdTracker.nextInt()));
       return steps;
     }
   }

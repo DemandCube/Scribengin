@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.service;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.annotation.PreDestroy;
 
 import com.google.inject.Inject;
@@ -15,7 +13,6 @@ import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.DataChangeNodeWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.RegistryListener;
-import com.neverwinterdp.scribengin.ScribenginIdTrackerService;
 import com.neverwinterdp.scribengin.activity.AddDataflowMasterActivityBuilder;
 import com.neverwinterdp.scribengin.activity.ScribenginActivityService;
 import com.neverwinterdp.scribengin.activity.ShutdownDataflowMasterActivityBuilder;
@@ -38,8 +35,10 @@ public class ScribenginService {
   final static public String  DATAFLOWS_ALL_PATH     = DATAFLOWS_PATH  + "/all";
   final static public String  DATAFLOWS_HISTORY_PATH = DATAFLOWS_PATH  + "/history";
   final static public String  DATAFLOWS_ACTIVE_PATH  = DATAFLOWS_PATH  + "/active";
-  final static public String  DATAFLOWS_ID_TRACKERS  = DATAFLOWS_PATH   + "/id-trackers/";
-  final static public String  DATAFLOW_ID_TRACKER    = DATAFLOWS_ID_TRACKERS + "/dataflow-id";
+  final static public String  DATAFLOWS_ID_TRACKERS       = DATAFLOWS_PATH   + "/id-trackers";
+  final static public String  DATAFLOW_ID_TRACKER         = DATAFLOWS_ID_TRACKERS + "/dataflow-id";
+  final static public String  DATAFLOW_MASTER_ID_TRACKER  = DATAFLOWS_ID_TRACKERS + "/dataflow-master-id";
+  final static public String  DATAFLOW_WORKER_ID_TRACKER  = DATAFLOWS_ID_TRACKERS + "/dataflow-worker-id";
   
   private Registry         registry;
 

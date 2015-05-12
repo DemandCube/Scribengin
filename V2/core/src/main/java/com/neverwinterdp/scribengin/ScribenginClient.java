@@ -116,10 +116,8 @@ public class ScribenginClient {
   
   public DataflowWaitingEventListener submit(String localDataflowHome, DataflowDescriptor dflDescriptor) throws Exception {
     if(dflDescriptor.getId() == null) {
-      SequenceIdTracker dataflowIdTracker = new SequenceIdTracker(getRegistry(), "path") ;
-      
-      ScribenginIdTrackerService idTrackerService = new ScribenginIdTrackerService(getRegistry()) ;
-      dflDescriptor.setId(dflDescriptor.getName() + "-" + idTrackerService.nextDataflowId());
+      SequenceIdTracker dataflowIdTracker = new SequenceIdTracker(getRegistry(), ScribenginService.DATAFLOW_ID_TRACKER) ;
+      dflDescriptor.setId(dflDescriptor.getName() + "-" + dataflowIdTracker.nextInt());
     }
     if(localDataflowHome != null) {
       VMDescriptor vmMaster = getVMClient().getMasterVMDescriptor();

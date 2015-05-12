@@ -33,15 +33,13 @@ public class DataflowRunActivityBuilder extends AddWorkerActivityBuilder {
     @Inject
     private DataflowService service ;
     
-    @Inject
-    private ScribenginIdTrackerService idTrackerService ;
-    
     @Override
     public List<ActivityStep> build(Activity activity, Injector container) throws Exception {
       DataflowDescriptor dflDescriptor = service.getDataflowRegistry().getDataflowDescriptor();
       List<ActivityStep> steps = new ArrayList<>() ;
       for(int i = 0; i < dflDescriptor.getNumberOfWorkers(); i++) {
-        ActivityStep addWorkerStep = AddDataflowWorkerActivityStepBuilder.createAddDataflowWorkerStep(idTrackerService);
+        ActivityStep addWorkerStep = 
+          AddDataflowWorkerActivityStepBuilder.createAddDataflowWorkerStep(service.getDataflowRegistry().getRegistry());
         steps.add(addWorkerStep);
       }
       steps.add(new ActivityStep().
