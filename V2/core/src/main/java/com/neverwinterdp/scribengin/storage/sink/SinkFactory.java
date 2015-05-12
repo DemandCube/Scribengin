@@ -36,6 +36,7 @@ public class SinkFactory {
     } else if("kafka".equalsIgnoreCase(descriptor.getType())) {
       return new KafkaSink(descriptor);
     }else if("s3".equalsIgnoreCase(descriptor.getType())) {  
+      System.err.println("desccriptor "+ descriptor);
          return new S3Sink(s3Client, descriptor);
     }
     throw new Exception("Unknown sink type " + descriptor.getType());
