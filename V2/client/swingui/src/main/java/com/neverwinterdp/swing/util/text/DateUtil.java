@@ -25,6 +25,10 @@ public class DateUtil {
     return COMPACT_DATE_ID.format(time) ;
   }
   
+  static public String asCompactDateId(long time) {
+    return COMPACT_DATE_ID.format(new Date(time)) ;
+  }
+  
   static public String asCompactDate(Calendar cal) {
     return COMPACT_DATE.format(cal.getTime()) ;
   }
