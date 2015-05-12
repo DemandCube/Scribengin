@@ -1,9 +1,11 @@
 package com.neverwinterdp.registry;
 
-import com.neverwinterdp.util.text.DateUtil;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RegistryLogger {
+  final static public SimpleDateFormat COMPACT_DATE_TIME_ID = new SimpleDateFormat("yyyyMMddHHmmss") ;
+  
   private Node     logNode ;
   
   public RegistryLogger(Registry registry, String path) throws RegistryException {
@@ -12,12 +14,12 @@ public class RegistryLogger {
   
   public void info(String name, String mesg) throws RegistryException {
     Log log = new Log("INFO", mesg) ;
-    logNode.createChild(DateUtil.asCompactDate(log.getTimestamp()) + "-INFO-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    logNode.createChild(log.getTimestampId() + "-INFO-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
   
   public void error(String name, String mesg) throws RegistryException {
     Log log = new Log("ERROR", mesg) ;
-    logNode.createChild(DateUtil.asCompactDate(log.getTimestamp()) +  "-ERROR-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    logNode.createChild(log.getTimestampId() +  "-ERROR-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
   
   static public class Log {
@@ -41,6 +43,10 @@ public class RegistryLogger {
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
+    
+    public String getTimestampId() {
+      return COMPACT_DATE_TIME_ID.format(new Date(timestamp)) ;
+    }
   }
 }
 

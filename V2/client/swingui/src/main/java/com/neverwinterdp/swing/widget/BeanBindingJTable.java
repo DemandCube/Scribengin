@@ -323,7 +323,7 @@ abstract public class BeanBindingJTable<T> extends JTable {
     btn3.setName("btnBottom");
     btn3.setPreferredSize(new Dimension(94, 50));
     panel2.add(btn3);
-    JButton btn4 = new JButton("Update");
+    JButton btn4 = new JButton("Save");
     btn4.setMargin(new Insets(0, 0, 0, 0));
     btn4.addActionListener(new ActionListener() {
       @Override
