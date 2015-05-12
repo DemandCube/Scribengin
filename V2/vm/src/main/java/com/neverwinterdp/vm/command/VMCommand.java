@@ -4,6 +4,7 @@ import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMApp.TerminateEvent;
+import com.neverwinterdp.vm.VMRegistryLogger;
 
 public class VMCommand {
   static public class Terminate extends Command {
@@ -56,7 +57,7 @@ public class VMCommand {
     @Override
     public CommandResult<?> execute(VM vm) {
       try {
-        RegistryLogger logger = new RegistryLogger(vm.getVMRegistry().getRegistry(), "/logger/kill") ;
+        VMRegistryLogger logger = new VMRegistryLogger(vm.getVMRegistry().getRegistry(), vm.getDescriptor(), "kill") ;
         logger.info("kill", "call System.exit(0) to kill the vm " + vm.getDescriptor().getId());
       } catch(Exception ex) {
         ex.printStackTrace();

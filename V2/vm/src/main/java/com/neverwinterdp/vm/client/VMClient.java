@@ -20,6 +20,7 @@ import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMRegistryLogger;
 import com.neverwinterdp.vm.command.Command;
 import com.neverwinterdp.vm.command.CommandPayload;
 import com.neverwinterdp.vm.command.CommandResult;
@@ -108,7 +109,7 @@ public class VMClient {
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
-    RegistryLogger logger = new RegistryLogger(getRegistry(), "/logger/kill") ;
+    VMRegistryLogger logger = new VMRegistryLogger(getRegistry(), vmDescriptor, "kill") ;
     logger.info("send-kill-command", "send kill command for vm " + vmDescriptor.getId());
     
     //CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
