@@ -112,6 +112,13 @@ public class VMClient {
     return result.getResultAs(Boolean.class);
   }
   
+  public boolean kill(VMDescriptor vmDescriptor, long timeout) throws Exception {
+    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill(), timeout);
+    if(result.isDiscardResult()) return true;
+    return result.getResultAs(Boolean.class);
+  }
+  
+  
   public FileSystem getFileSystem() throws IOException {
     return FileSystem.get(new Configuration());
   }
