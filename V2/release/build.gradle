@@ -75,6 +75,7 @@ dependencies {
   scribenginDeployJars group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.9.6'
   scribenginDeployJars group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.9.6'
   scribenginDeployJars group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.3.3'
+  scribenginDeployJars group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.3'
 
 
 
