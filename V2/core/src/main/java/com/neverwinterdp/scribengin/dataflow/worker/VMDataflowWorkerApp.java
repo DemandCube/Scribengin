@@ -24,6 +24,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMRegistryLogger;
 
 
 public class VMDataflowWorkerApp extends VMApp {
@@ -74,7 +75,7 @@ public class VMDataflowWorkerApp extends VMApp {
           } else if(terminateEvent == TerminateEvent.SimulateKill) {
             dataflowTaskExecutorService.simulateKill();
           } else if(terminateEvent == TerminateEvent.Kill) {
-            RegistryLogger logger = new RegistryLogger(getVM().getVMRegistry().getRegistry(), "/logger/kill") ;
+            VMRegistryLogger logger = new VMRegistryLogger(getVM().getVMRegistry().getRegistry(), vmApp.getVM().getDescriptor(), "kill") ;
             logger.info("kill", "call System.exit(0) to kill the vm " + vmApp.getVM().getDescriptor().getId());
             System.exit(0);
           }
