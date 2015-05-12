@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow.test;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
@@ -45,6 +46,7 @@ public class S3DataflowSinkValidator extends DataflowSinkValidator {
     try {
       S3Source source = new S3Source(s3Client, getSinkDescriptor()) ;
       SourceStream[] streams = source.getStreams();
+      System.out.println("Streams "+Arrays.toString(streams));
       for(SourceStream selStream : streams) {
         SourceStreamReader streamReader = selStream.getReader("S3DataflowSinkValidator") ;
         Record record = null ;

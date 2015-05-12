@@ -22,13 +22,13 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                  --worker 3 \
                  --executor-per-worker 1 \
                  --duration 90000 \
-                 --task-max-execute-time 1000 \
-                 --source-location s3-integration-test-$UUID \
+                 --task-max-execute-time 10000 \
+                 --source-location jenkins-dataflow-test-+$UUID \
                  --source-name dataflow-test \
-                 --source-num-of-stream 5 \
+                 --source-num-of-stream 1
                  --source-max-records-per-stream 100 \
-                 --sink-location s3-integration-test-$UUID \
-                 --sink-name dataflow-test \
+                 --sink-location jenkins-dataflow-test-+$UUID \
+                 --sink-name dataflow-test  \
                  --print-dataflow-info -1 \
                  --debug-dataflow-task  \
                  --debug-dataflow-vm  \

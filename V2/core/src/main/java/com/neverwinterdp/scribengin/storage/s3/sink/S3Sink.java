@@ -45,9 +45,12 @@ public class S3Sink implements Sink {
 
     sinkFolder = s3Client.getS3Folder(bucketName, folderPath);
     List<String> streamNames = sinkFolder.getChildrenNames();
+    System.err.println("sinkFolder "+ sinkFolder);
+    System.out.println("stream names "+ streamNames);
     for (String streamName : streamNames) {
       StreamDescriptor streamDescriptor = new StreamDescriptor(descriptor);
       streamDescriptor.attribute("s3.stream.name", streamName);
+      System.err.println("stream name "+ streamName);
       streamDescriptor.setId(S3Util.getStreamId(streamName));
       S3SinkStream stream = new S3SinkStream(sinkFolder, streamDescriptor);
       streams.put(stream.getDescriptor().getId(), stream);
