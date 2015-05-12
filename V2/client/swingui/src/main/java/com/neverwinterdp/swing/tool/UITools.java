@@ -32,8 +32,7 @@ public class UITools extends JPanel implements UILifecycle {
     accordionPanel = new JAccordionPanel();
     accordionPanel.addBar("Embedded Cluster", new UIEmbeddedCluster());
     accordionPanel.addBar("Remote Cluster", new UIRemoteCluster());
-    accordionPanel.addBar("script", JAccordionPanel.getDummyPanel("Script"));
-    accordionPanel.setVisibleBar(2);
+    accordionPanel.addBar("Tests", new UITests());
     add(accordionPanel, BorderLayout.CENTER);
   }
 

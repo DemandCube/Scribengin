@@ -29,13 +29,20 @@ import com.neverwinterdp.vm.service.VMServiceCommand;
 @JmxBean("role=vm-client, type=VMClient, name=VMClient")
 public class VMClient {
   private Registry registry;
+  private long     waitForResultTimeout = 30000;
 
   public VMClient(Registry registry) {
     this.registry = registry;
   }
   
   public Registry getRegistry() { return this.registry ; }
-  
+
+  public long getWaitForResultTimeout() { return waitForResultTimeout; }
+
+  public void setWaitForResultTimeout(long waitForResultTimeout) {
+    this.waitForResultTimeout = waitForResultTimeout;
+  }
+
   public List<VMDescriptor> getActiveVMDescriptors() throws RegistryException {
     return VMService.getActiveVMDescriptors(registry) ;
   }
@@ -58,7 +65,7 @@ public class VMClient {
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
-    return execute(vmDescriptor, command, 60000);
+    return execute(vmDescriptor, command, waitForResultTimeout);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command, long timeout) throws Exception {

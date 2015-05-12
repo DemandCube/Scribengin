@@ -1,5 +1,7 @@
 package com.neverwinterdp.swing.tool;
 
+import java.util.Random;
+
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
@@ -54,7 +56,8 @@ abstract public class Cluster {
         " --debug-dataflow-vm " +
         " --debug-dataflow-activity " +
         " --junit-report build/junit-report.xml" + 
-        " --dump-registry";
+        " --dump-registry" + 
+        " --vm-client-wait-for-result-timeout 60000";
     shell.execute(command);
   }
   
