@@ -106,7 +106,7 @@ class ServerSet(object):
         for server in self.servers :
           if server.getHostname() != hostname:
             self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
-            command = "rsync -a -r -c -P --delete --ignore-errors /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
+            command = "rsync -a -r -c -P --delete /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
             hostmachine.sshExecute(command)
         break
     

@@ -1,7 +1,5 @@
 package com.neverwinterdp.scribengin.client.shell;
 
-import java.util.Arrays;
-
 import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandStartStopResumeTest;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandTest;
 import com.neverwinterdp.scribengin.dataflow.test.DataflowRandomServerFailureTest;
@@ -108,11 +106,6 @@ public class DataflowTestCommand extends Command {
     
     @Override
     public void execute(Shell shell, CommandInput cmdInput) throws Exception {
-      System.err.println("command input command line "+ cmdInput.getCommandLine());
-      System.err.println("command input command "+ cmdInput.getCommand());
-      System.err.println("command input subcommand "+ cmdInput.getSubCommand());
-      System.err.println("command input remaining args "+ Arrays.toString(cmdInput.getRemainArgs()));
-      
       ScribenginShell scribenginShell = (ScribenginShell) shell;
       DataflowTest test = testClass.newInstance() ;
       cmdInput.mapRemainArgs(test);
