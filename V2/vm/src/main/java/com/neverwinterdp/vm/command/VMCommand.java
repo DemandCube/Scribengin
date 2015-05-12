@@ -58,7 +58,7 @@ public class VMCommand {
     public CommandResult<?> execute(VM vm) {
       try {
         VMRegistryLogger logger = new VMRegistryLogger(vm.getVMRegistry().getRegistry(), vm.getDescriptor(), "kill") ;
-        logger.info("kill", "call System.exit(0) to kill the vm " + vm.getDescriptor().getId());
+        logger.info("server-got-kill-command", "The server got the kill command, server = " + vm.getDescriptor().getId());
       } catch(Exception ex) {
         ex.printStackTrace();
       }
