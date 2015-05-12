@@ -15,6 +15,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 import com.neverwinterdp.vm.VMConfig;
@@ -107,9 +108,27 @@ public class VMClient {
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
-    CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
-    if(result.isDiscardResult()) return true;
-    return result.getResultAs(Boolean.class);
+    RegistryLogger logger = new RegistryLogger(getRegistry(), "/logger/kill") ;
+    logger.info("send-kill-command", "send kill command for vm " + vmDescriptor.getId());
+    
+    //CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
+    
+    Command command = new VMCommand.Kill();
+    CommandPayload payload = new CommandPayload(command, null) ;
+    Node node = registry.create(vmDescriptor.getRegistryPath() + "/commands/command-", payload, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+    CommandReponseWatcher responseWatcher = new CommandReponseWatcher(registry, node.getPath(), command);
+    node.watchModify(responseWatcher);
+    
+    logger.info("before-wait-for-kill-command-result", "Before wait for the kill command result for vm " + vmDescriptor.getId());
+    try {
+      CommandResult<?> result = responseWatcher.waitForResult(60000);
+      logger.info("success-wait-for-kill-command-result", "Success wait for the kill command result for vm " + vmDescriptor.getId());
+      if(result.isDiscardResult()) return true;
+      return result.getResultAs(Boolean.class);
+    } catch(Exception ex) {
+      logger.info("fail-wait-for-kill-command-result", "Success wait for the kill command result for vm " + vmDescriptor.getId());
+      throw ex ;
+    }
   }
   
   public boolean kill(VMDescriptor vmDescriptor, long timeout) throws Exception {

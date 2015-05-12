@@ -1,5 +1,6 @@
 package com.neverwinterdp.vm.command;
 
+import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMApp.TerminateEvent;
@@ -50,6 +51,17 @@ public class VMCommand {
   static public class Kill extends Terminate {
     public Kill() {
       super("kill", TerminateEvent.Kill, 3000) ; 
+    }
+    
+    @Override
+    public CommandResult<?> execute(VM vm) {
+      try {
+        RegistryLogger logger = new RegistryLogger(vm.getVMRegistry().getRegistry(), "/logger/kill") ;
+        logger.info("kill", "call System.exit(0) to kill the vm " + vm.getDescriptor().getId());
+      } catch(Exception ex) {
+        ex.printStackTrace();
+      }
+      return super.execute(vm) ;
     }
   }
 }

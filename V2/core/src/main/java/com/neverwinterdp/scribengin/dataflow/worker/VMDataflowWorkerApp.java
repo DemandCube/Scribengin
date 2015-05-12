@@ -19,6 +19,7 @@ import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.module.MycilaJmxModuleExt;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
@@ -73,7 +74,9 @@ public class VMDataflowWorkerApp extends VMApp {
           } else if(terminateEvent == TerminateEvent.SimulateKill) {
             dataflowTaskExecutorService.simulateKill();
           } else if(terminateEvent == TerminateEvent.Kill) {
-            System.exit(0);;
+            RegistryLogger logger = new RegistryLogger(getVM().getVMRegistry().getRegistry(), "/logger/kill") ;
+            logger.info("kill", "call System.exit(0) to kill the vm " + vmApp.getVM().getDescriptor().getId());
+            System.exit(0);
           }
         } catch (Exception e) {
           e.printStackTrace();
