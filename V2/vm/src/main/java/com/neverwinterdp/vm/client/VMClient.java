@@ -124,11 +124,14 @@ public class VMClient {
     logger.info("before-wait-for-kill-command-result", "Before wait for the kill command result for vm " + vmDescriptor.getId());
     try {
       CommandResult<?> result = responseWatcher.waitForResult(60000);
-      logger.info("success-wait-for-kill-command-result", "Success wait for the kill command result for vm " + vmDescriptor.getId());
+      String msg = "Success wait for the kill command result for vm " + vmDescriptor.getId() ;
+      msg += "\npath = " + node.getPath();
+      logger.info("success-wait-for-kill-command-result", msg);
       if(result.isDiscardResult()) return true;
       return result.getResultAs(Boolean.class);
     } catch(Exception ex) {
       String message = "Fail wait for the kill command result for vm " + vmDescriptor.getId() ;
+      message += "\npath = " + node.getPath();
       message += "\n" + ExceptionUtil.getStackTrace(ex) ;
       logger.info("fail-wait-for-kill-command-result", message);
       throw ex ;
