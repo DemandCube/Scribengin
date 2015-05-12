@@ -29,7 +29,6 @@ public class VMCommandWatcher extends NodeWatcher {
           Command command = payload.getCommand();
           CommandResult<?> result = null ;
           try {
-            command.setPath(cmdPath);
             result = command.execute(vm);
           } catch(Throwable t) {
             result = new CommandResult() ;
