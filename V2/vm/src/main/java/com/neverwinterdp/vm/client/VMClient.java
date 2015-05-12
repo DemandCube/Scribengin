@@ -130,13 +130,15 @@ public class VMClient {
   static public class CommandReponseWatcher extends NodeWatcher {
     private Registry         registry;
     private String           path;
+    private Command          command ;
     private CommandResult<?> result;
     private Exception        error;
     private boolean          discardResult = false;
     
-    public CommandReponseWatcher(Registry registry, String path) {
+    public CommandReponseWatcher(Registry registry, String path, Command command) {
       this.registry = registry;
       this.path = path;
+      this.command = command ;
     }
     
     @Override
@@ -174,7 +176,8 @@ public class VMClient {
       }
       if(error != null) throw error;
       if(result == null) {
-        throw new TimeoutException("Cannot get the result after " + timeout + "ms") ;
+        String errorMsg = "Cannot get the result after " + timeout + "ms, command = " + command.getClass() +", path = " + path ;
+        throw new TimeoutException(errorMsg) ;
       }
       return result ;
     }

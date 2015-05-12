@@ -15,7 +15,6 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 
 #Run dataflow
 UUID=$(cat /proc/sys/kernel/random/uuid)
-echo "jenkins-dataflow-test-+$UUID"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
           ./bin/shell.sh dataflow-test s3-to-s3 \
                  --dataflow-name  s3-to-s3 \
@@ -28,8 +27,8 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
                  --source-name dataflow-test \
                  --source-num-of-stream 1
                  --source-max-records-per-stream 100 \
-                 --sink-location "jenkins-dataflow-test-+$UUID" \
                  --sink-name dataflow-test  \
+                 --sink-location "jenkins-dataflow-test-+$UUID" \
                  --print-dataflow-info -1 \
                  --debug-dataflow-task  \
                  --debug-dataflow-vm  \

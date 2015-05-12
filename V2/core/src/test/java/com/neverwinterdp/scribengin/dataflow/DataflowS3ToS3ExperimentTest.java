@@ -117,7 +117,7 @@ public class DataflowS3ToS3ExperimentTest {
                 " --source-location " + bucketName +
                 " --source-name " + folderPath +
                 " --source-num-of-stream " + numStreams +
-                " --source-max-records-per-stream 100" +
+                " --source-max-records-per-stream 1000" +
                 " --sink-location " + bucketName +
                 " --sink-name " + folderPath +
                 " --print-dataflow-info -1" +

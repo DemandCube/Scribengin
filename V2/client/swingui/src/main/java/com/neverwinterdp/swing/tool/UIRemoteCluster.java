@@ -16,7 +16,7 @@ import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 @SuppressWarnings("serial")
 public class UIRemoteCluster extends JPanel {
   static private String[]  REMOTE_ZKS = {
-    "128.199.113.190:2181", "test.scribengin:2181"
+    "test.scribengin:2181"
   };
   
   private RegistryConfig registryConfig = RegistryConfig.getDefault();
@@ -30,6 +30,7 @@ public class UIRemoteCluster extends JPanel {
     BeanBindingJComboBox<RegistryConfig, String> selector = 
         new BeanBindingJComboBox<>(registryConfig, "connect", REMOTE_ZKS);
     selector.setEditable(true);
+    selector.setSelectedIndex(0);
     configPanel.addRow(selector);
     configPanel.makeCompactGrid();
     
