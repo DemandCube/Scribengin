@@ -51,9 +51,10 @@ public class UIDataflowTree extends UIRegistryTree {
     if(dataflowListNodeMatcher.matches(node)) {
       view.addView("Dataflow List", new UIDataflowListView(node.getNodePath()), false) ;
     } else if(dataflowNodeMatcher.matches(node)) {
-      view.addView("Descriptor", new UIDataflowDescriptorView(node.getNodeName()), false) ;
-      view.addView("Tasks", new UIDataflowTaskView(node.getNodeName()), false) ;
-      view.addView("Workers", new UIDataflowWorkerView(node.getNodeName()), false) ;
+      String dataflowRootPath = ScribenginService.DATAFLOWS_ALL_PATH+"/"+node.getNodeName();
+      view.addView("Descriptor", new UIDataflowDescriptorView(dataflowRootPath), false) ;
+      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath+"/tasks"), false) ;
+      view.addView("Workers", new UIDataflowWorkerView(dataflowRootPath+"/workers"), false) ;
       
     } else if(activityNodeMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
