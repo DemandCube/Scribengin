@@ -37,8 +37,6 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     //TODO improve this. We want maybe 1000 records per file
     numOfRecordsPerFile = Math.min(1000, maxRecordsPerStream); 
     numOfFilesPerFolder = maxRecordsPerStream/numOfRecordsPerFile;
-    System.err.println("streams ni ngapi  "+ numberOfStream);
-    
   }
 
   @Override
@@ -78,7 +76,6 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   }
 
   void generateStream(Sink sink) throws Exception {
-    System.err.println(" generate streams files: "+ numOfFilesPerFolder + " records per file "+ numOfRecordsPerFile);
     SinkStream stream = sink.newStream();
     int partition = stream.getDescriptor().getId();
     SinkStreamWriter writer = stream.getWriter();
