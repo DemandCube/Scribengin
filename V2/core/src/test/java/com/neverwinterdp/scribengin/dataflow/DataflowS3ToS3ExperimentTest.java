@@ -25,7 +25,7 @@ public class DataflowS3ToS3ExperimentTest {
 
   protected ScribenginClusterBuilder clusterBuilder;
   protected ScribenginShell shell;
-  
+
   private S3Client s3Client;
 
   private String folderPath;
@@ -42,7 +42,7 @@ public class DataflowS3ToS3ExperimentTest {
 
     bucketName = "s3-integration-test-" + UUID.randomUUID();
     folderPath = "dataflow-test";
-    
+
     s3Client = new S3Client();
     s3Client.onInit();
 
@@ -69,8 +69,9 @@ public class DataflowS3ToS3ExperimentTest {
     int numStreams = 1;
 
     for (int i = 1; i <= numStreams; i++) {
-      s3Client.createS3Folder(bucketName, folderPath + "/stream-" + i);
+      s3Client.createS3Folder(bucketName, folderPath + "/");
     }
+    Thread.sleep(1000);
     DataflowSubmitter submitter = new DataflowSubmitter(bucketName, folderPath, numStreams);
     submitter.start();
     Thread.sleep(5000); // make sure that the dataflow start and running;
@@ -82,8 +83,8 @@ public class DataflowS3ToS3ExperimentTest {
       Thread.sleep(3000);
       shell.execute("vm         info");
       shell.execute("scribengin info");
-      
-      shell.execute("dataflow   info --history "+S3DataflowTest.TEST_NAME+"-0");
+
+      shell.execute("dataflow   info --history " + S3DataflowTest.TEST_NAME + "-0");
     } catch (Throwable err) {
       throw err;
     } finally {
@@ -116,7 +117,7 @@ public class DataflowS3ToS3ExperimentTest {
                 " --source-location " + bucketName +
                 " --source-name " + folderPath +
                 " --source-num-of-stream " + numStreams +
-                " --source-max-records-per-stream 5000" +
+                " --source-max-records-per-stream 100" +
                 " --sink-location " + bucketName +
                 " --sink-name " + folderPath +
                 " --print-dataflow-info -1" +

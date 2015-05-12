@@ -35,8 +35,9 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     s3Client = new S3Client();
     s3Client.onInit();
     //TODO externalize this
-    numOfRecordsPerFile = 1000; 
+    numOfRecordsPerFile = Math.max(1000, maxRecordsPerStream); 
     numOfFilesPerFolder = maxRecordsPerStream/numOfRecordsPerFile;
+    System.err.println("streams ni ngapi  "+ numberOfStream);
     
   }
 
@@ -44,7 +45,6 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   public void run() {
     stopwatch.start();
     try {
-
       String location = sourceLocation + "/" + sourceName;
       generateSource(s3Client, location);
       stopwatch.stop();
@@ -78,11 +78,13 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   }
 
   void generateStream(Sink sink) throws Exception {
+    System.err.println(" generate streams files: "+ numOfFilesPerFolder + " records per file "+ numOfRecordsPerFile);
     SinkStream stream = sink.newStream();
     int partition = stream.getDescriptor().getId();
     SinkStreamWriter writer = stream.getWriter();
     for (int i = 0; i < numOfFilesPerFolder; i++) {
       for (int j = 0; j < numOfRecordsPerFile; j++) {
+        System.out.println("i "+ i + " j "+ j);
         writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();

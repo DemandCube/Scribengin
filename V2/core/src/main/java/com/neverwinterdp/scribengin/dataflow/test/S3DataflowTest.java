@@ -8,10 +8,10 @@ public class S3DataflowTest extends DataflowTest {
   final static public String TEST_NAME = "s3-to-s3";
 
   @ParametersDelegate
-  private DataflowSourceGenerator sourceGenerator = new S3DataflowSourceGenerator();
+  private DataflowSourceGenerator sourceGenerator = new HDFSDataflowSourceGenerator();
 
   @ParametersDelegate
-  private DataflowSinkValidator sinkValidator = new S3DataflowSinkValidator();
+  private DataflowSinkValidator sinkValidator = new HDFSDataflowSinkValidator();
 
   protected void doRun(ScribenginShell shell) throws Exception {
     sourceToSinkDataflowTest(shell, sourceGenerator, sinkValidator);
