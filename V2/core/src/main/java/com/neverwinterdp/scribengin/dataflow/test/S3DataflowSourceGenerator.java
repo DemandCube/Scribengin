@@ -84,7 +84,6 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
     SinkStreamWriter writer = stream.getWriter();
     for (int i = 0; i < numOfFilesPerFolder; i++) {
       for (int j = 0; j < numOfRecordsPerFile; j++) {
-        System.out.println("i "+ i + " j "+ j);
         writer.append(recordGenerator.nextRecord(partition, recordSize));
       }
       writer.commit();
