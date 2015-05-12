@@ -18,6 +18,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
+import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMRegistryLogger;
@@ -127,7 +128,9 @@ public class VMClient {
       if(result.isDiscardResult()) return true;
       return result.getResultAs(Boolean.class);
     } catch(Exception ex) {
-      logger.info("fail-wait-for-kill-command-result", "Success wait for the kill command result for vm " + vmDescriptor.getId());
+      String message = "Fail wait for the kill command result for vm " + vmDescriptor.getId() ;
+      message += "\n" + ExceptionUtil.getStackTrace(ex) ;
+      logger.info("fail-wait-for-kill-command-result", message);
       throw ex ;
     }
   }
