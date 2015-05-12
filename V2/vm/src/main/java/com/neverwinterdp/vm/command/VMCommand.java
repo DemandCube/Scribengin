@@ -49,7 +49,7 @@ public class VMCommand {
   
   static public class Kill extends Terminate {
     public Kill() {
-      super("kill", TerminateEvent.Kill, 1000) ; 
+      super("kill", TerminateEvent.Kill, 3000) ; 
     }
   }
 }
