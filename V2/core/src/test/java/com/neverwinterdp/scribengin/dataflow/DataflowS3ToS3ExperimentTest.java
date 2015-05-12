@@ -69,7 +69,7 @@ public class DataflowS3ToS3ExperimentTest {
     int numStreams = 1;
 
     for (int i = 1; i <= numStreams; i++) {
-      s3Client.createS3Folder(bucketName, folderPath + "/");
+      s3Client.createS3Folder(bucketName, folderPath + "/stream-"+i);
     }
     Thread.sleep(1000);
     DataflowSubmitter submitter = new DataflowSubmitter(bucketName, folderPath, numStreams);
