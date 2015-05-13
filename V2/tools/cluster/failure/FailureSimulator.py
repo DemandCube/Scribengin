@@ -89,7 +89,7 @@ class FailureSimulator():
         self.spareCluster.cleanProcess(spareRoleName)
     
     
-    #Find runngin and ideal servers initially    
+    #Find running and Idle servers initially    
     runningServers = []
     idealServers = []
     for server in self.cluster.servers + self.spareCluster.servers:
@@ -101,7 +101,7 @@ class FailureSimulator():
 
     while True:
       logging.debug("Running servers before kill/shutdown: " + str(runningServers))
-      logging.debug("Ideal servers before kill/shutdown: "+str(idealServers))
+      logging.debug("Idle servers before kill/shutdown: "+str(idealServers))
       start = time()
       logging.debug("Sleeping for "+str(failure_interval)+" seconds")
       sleep(failure_interval)
@@ -150,16 +150,18 @@ class FailureSimulator():
           if(currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
             tc.add_failure_info(roleName+" process is still running on"+hostname, "")
           else:
+            #update running and idle server list
             runningServers.remove(hostname)
             idealServers.append(hostname)
         else:
+          #update running and idle server list
           runningServers.remove(hostname)
           idealServers.append(hostname)
           
         testCases.append(tc)
         testNum+=1
         logging.debug("Running servers after kill/shutdown: " + str(runningServers))
-        logging.debug("Ideal servers after kill/shutdown: "+str(idealServers))
+        logging.debug("Idle servers after kill/shutdown: "+str(idealServers))
       #Start the process again
       start = time()
       sleep(wait_before_start)
@@ -197,7 +199,10 @@ class FailureSimulator():
         logging.debug("Starting " + roleName + " on " + hostname)
         currentExecutingCluster.startProcessOnHost(roleName, hostname, setupClusterEnv)
       
+      
+      #Reassign replicas processes
       if len(newServers) > 0:
+        #Getting new broker list
         if self.roleName == "kafka":
           newBrokers = []
           for hostname in newServers:
@@ -208,12 +213,13 @@ class FailureSimulator():
               brokerID = brokerID + len(currentExecutingCluster.paramDict["kafkaServers"])
             newBrokers.append(str(brokerID))
             
-
+          #Select random server to run reassigning replicas script
           serverToRunReassignReplicasScript = sample(newServers, 1)
           roleName = self.getRoleName(serverToRunReassignReplicasScript[0])
           
           currentExecutingCluster = self.getExecutionCluster(serverToRunReassignReplicasScript[0])
           logging.debug("Reassigning replicas for "+",".join(newBrokers))
+          #start run reassigning replicas
           currentExecutingCluster.servers[0].getProcess(roleName).reassignReplicas(currentExecutingCluster.paramDict["zkList"], ",".join(newBrokers))
         elif self.roleName == "zookeeper":
           '''
@@ -230,13 +236,14 @@ class FailureSimulator():
         if( not currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
           tc.add_failure_info(roleName+" process is still running on"+hostname, "")
         else:
+          #update running and idle server list
           runningServers.append(hostname)
           idealServers.remove(hostname)
         testCases.append(tc)
         testNum+=1
       
       logging.debug("Running servers after started: " + str(runningServers))
-      logging.debug("Ideal servers after started: "+str(idealServers))
+      logging.debug("Idle servers after started: "+str(idealServers))
       if(not junit_report == "" ):
         logging.debug("Writing junit report to: "+junit_report)
         if(not os.path.exists(os.path.dirname(junit_report))):
