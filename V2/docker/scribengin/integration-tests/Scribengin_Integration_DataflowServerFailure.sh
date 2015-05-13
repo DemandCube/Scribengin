@@ -12,7 +12,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/junit-reports/"
 
-ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
+#ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
 
 MONITOR_PID=$!
 
@@ -27,6 +27,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 FAILURE_PID=$!
 
 #Run dataflow
+# --debug-dataflow-activity \
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
           ./bin/shell.sh dataflow-test kafka-to-kafka \
              --dataflow-id    kafka-to-kafka-1 \
@@ -43,7 +44,6 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
              --print-dataflow-info -1 \
              --debug-dataflow-task \
              --debug-dataflow-vm \
-             --debug-dataflow-activity \
              --junit-report /opt/junit-reports/KafkaIntegrationTest.xml \
              --dump-registry "
 
