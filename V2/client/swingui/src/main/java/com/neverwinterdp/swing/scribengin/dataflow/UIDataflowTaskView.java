@@ -27,6 +27,8 @@ import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 
+//TODO: look at the worker view and display the detail inforation for each selected task
+//TODO: use DateUtil object to format time 
 @SuppressWarnings("serial")
 public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILifecycle {
   private String tasksPath;
@@ -108,9 +110,8 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   }
   
   static class DataflowTaskTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Id", "Status", "Process Count", 
-                              "Commit Process Count", "Start Time", 
-                              "Finish Time"} ;
+    static String[] COLUMNS = {
+      "Id", "Status", "Process Count",  "Commit Process Count", "Start Time",  "Finish Time"} ;
 
     List<TaskAndReport> tasksAndReports;
     
@@ -125,7 +126,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
         DataflowTaskDescriptor desc = tar.getTaskDescriptor();
         
         Object[] cells = {
-          tar.getID(), desc.getStatus(), report.getProcessCount(),
+          tar.getId(), desc.getStatus(), report.getProcessCount(),
           report.getCommitProcessCount(), report.getStartTime(), report.getFinishTime()
         };
         addRow(cells);
@@ -135,17 +136,17 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   
   //Simple class to help map taskDescriptor with its Report and ID
   public class TaskAndReport{
-    public String ID;
-    public DataflowTaskDescriptor dataflowTaskDesc;
+    public String id;
+    public DataflowTaskDescriptor taskDescriptor;
     public DataflowTaskReport report;
     public TaskAndReport(String ID, DataflowTaskDescriptor dataflowTaskDesc, DataflowTaskReport report){
-      this.ID = ID;
-      this.dataflowTaskDesc = dataflowTaskDesc;
+      this.id = ID;
+      this.taskDescriptor = dataflowTaskDesc;
       this.report = report;
     }
     
-    public String getID(){
-      return ID;
+    public String getId(){
+      return id;
     }
     
     public DataflowTaskReport getReport(){
@@ -153,7 +154,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
     }
     
     public DataflowTaskDescriptor getTaskDescriptor(){
-      return dataflowTaskDesc;
+      return taskDescriptor;
     }
   }
 }

@@ -22,6 +22,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
@@ -58,6 +59,24 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
         public void actionPerformed(ActionEvent e) {
         }
       });
+      toolbar.add(new AbstractAction("All Workers") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onChangeWorkerListPath(workersPath + "/all");
+        }
+      });
+      toolbar.add(new AbstractAction("Active Workers") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onChangeWorkerListPath(workersPath + "/active");
+        }
+      });
+      toolbar.add(new AbstractAction("History Workers") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          onChangeWorkerListPath(workersPath + "/history");
+        }
+      });
       addRow(toolbar) ;
       
       workerTable = new  DataflowWorkersJXTable(workersPath + "/all", workersPath + "/all") ;
@@ -76,6 +95,15 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
   @Override
   public void onDeactivate() throws Exception {
     clear();    
+  }
+  
+  public void onChangeWorkerListPath(String listPath) {
+    try {
+      DataflowWorkersTableModel model = (DataflowWorkersTableModel) workerTable.getModel() ;
+      model.setWorkerListPath(listPath);
+    } catch (Exception e) {
+      MessageUtil.handleError(e);
+    }
   }
   
   public class DataflowWorkersJXTable extends JXTable {
@@ -137,6 +165,13 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
       super(COLUMNS, 0) ;
       this.workerAllPath = workerAllPath;
       this.workerListPath = workerListPath;
+    }
+    
+    public void setWorkerListPath(String listPath) throws Exception {
+      this.workerListPath = listPath;
+      getDataVector().clear();
+      loadData() ;
+      fireTableDataChanged();
     }
     
     public DataflowWorkerInfo getDataflowWorkerInfoAt(int row) {
