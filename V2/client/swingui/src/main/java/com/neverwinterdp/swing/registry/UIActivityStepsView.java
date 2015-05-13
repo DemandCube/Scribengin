@@ -11,14 +11,13 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.ActivityStep;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIActivityStepsView extends JPanel {
+public class UIActivityStepsView extends JPanel implements UILifecycle {
   private String  activitiesRootPath ;
   private String  activityId ;
   
@@ -26,14 +25,19 @@ public class UIActivityStepsView extends JPanel {
     setLayout(new BorderLayout()) ;
     this.activitiesRootPath = activitiesPath ;
     this.activityId = activityId ;
-    try {
-      onActivate() ;
-    } catch(Throwable e) {
-      MessageUtil.handleError(e);
-    }
   }
 
-  public void onActivate() throws RegistryException {
+  @Override
+  public void onInit() throws Exception {
+  }
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+  
+  @Override
+  public void onActivate() throws Exception {
+    removeAll() ;
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
@@ -51,6 +55,11 @@ public class UIActivityStepsView extends JPanel {
     }
     
     add(new JScrollPane(tpc), BorderLayout.CENTER) ;
+  }
+  
+  @Override
+  public void onDeactivate() throws Exception {
+    removeAll() ;
   }
   
   static public class ActivityStepInfo extends SpringLayoutGridJPanel {

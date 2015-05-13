@@ -10,7 +10,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 
-import com.neverwinterdp.swing.script.ScriptRunner;
+import com.neverwinterdp.swing.ScriptRunner;
 import com.neverwinterdp.swing.widget.fexplorer.FileTreeNode;
 import com.neverwinterdp.swing.widget.fexplorer.FileTreePanel;
 

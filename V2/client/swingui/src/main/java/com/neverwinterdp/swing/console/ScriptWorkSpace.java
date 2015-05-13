@@ -9,8 +9,8 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import com.neverwinterdp.swing.ScriptRunner;
 import com.neverwinterdp.swing.console.robot.FrameUI;
-import com.neverwinterdp.swing.script.ScriptRunner;
 
 public class ScriptWorkSpace extends JPanel {
   private ScriptRunner      scriptRunner;

@@ -18,6 +18,7 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.tool.EmbeddedCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
@@ -28,7 +29,7 @@ import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.client.VMClient;
 
 @SuppressWarnings("serial")
-public class UIVMListView extends SpringLayoutGridJPanel {
+public class UIVMListView extends SpringLayoutGridJPanel implements UILifecycle {
   private String  path ;
   
   public UIVMListView(String path) {
@@ -113,5 +114,30 @@ public class UIVMListView extends SpringLayoutGridJPanel {
         addRow(cells);
       }
     }
+  }
+
+
+  @Override
+  public void onInit() throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onDestroy() throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onActivate() throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onDeactivate() throws Exception {
+    // TODO Auto-generated method stub
+    
   }
 }

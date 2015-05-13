@@ -53,8 +53,8 @@ public class UIDataflowTree extends UIRegistryTree {
     } else if(dataflowNodeMatcher.matches(node)) {
       String dataflowRootPath = ScribenginService.DATAFLOWS_ALL_PATH+"/"+node.getNodeName();
       view.addView("Descriptor", new UIDataflowDescriptorView(dataflowRootPath), false) ;
-      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath+"/tasks"), false) ;
-      view.addView("Workers", new UIDataflowWorkerView(dataflowRootPath+"/workers"), false) ;
+      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath + "/tasks"), false) ;
+      view.addView("Workers", new UIDataflowWorkerView(dataflowRootPath + "/workers"), false) ;
       
     } else if(activityNodeMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
@@ -68,6 +68,7 @@ public class UIDataflowTree extends UIRegistryTree {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
       view.addView("Queue Activities", new UIActivityQueueView(activitiesRootPath, node.getNodePath()), false) ;
     }
+    view.setSelectedView(0);
   }
   
   public RegistryTreeNode onCustomTreeNode(RegistryTreeNode node) {

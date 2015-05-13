@@ -28,6 +28,7 @@ public class UITools extends JPanel implements UILifecycle {
 
   @Override
   public void onActivate() {
+    System.err.println("call activate UITools.........................");
     removeAll();
     accordionPanel = new JAccordionPanel();
     accordionPanel.addBar("Embedded Cluster", new UIEmbeddedCluster());

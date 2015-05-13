@@ -22,45 +22,54 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 
+//TODO: look at the worker view and display the detail inforation for each selected task
+//TODO: use DateUtil object to format time 
 @SuppressWarnings("serial")
-public class UIDataflowTaskView extends SpringLayoutGridJPanel {
+public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILifecycle {
   private String tasksPath;
   
   public UIDataflowTaskView(String tasksPath) {
     this.tasksPath = tasksPath;
-    
+  }
+  
+  @Override
+  public void onInit() throws Exception {
+  }
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+  @Override
+  public void onActivate() throws Exception {
+    clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
-      JPanel infoPanel = new JPanel();
-      infoPanel.add(new JLabel("No Registry Connection"));
-      addRow(infoPanel);
+      addRow("No Registry Connection");
     } else {
-      try {
-        init(registry) ;
-      } catch(Throwable e) {
-        MessageUtil.handleError(e);
-      }
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbar.add(new AbstractAction("Reload") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+      });
+      addRow(toolbar) ;
+      
+      DataflowTasksJXTable dataflowTaskTable = new  DataflowTasksJXTable(getTasks(registry)) ;
+      addRow(new JScrollPane(dataflowTaskTable)) ;
     }
     makeCompactGrid(); 
   }
-  
-  private void init(Registry registry) throws Exception {
-    JToolBar toolbar = new JToolBar();
-    toolbar.setFloatable(false);
-    toolbar.add(new AbstractAction("Reload") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    addRow(toolbar) ;
-    
-    DataflowTasksJXTable dataflowTaskTable = new  DataflowTasksJXTable(getTasks(registry)) ;
-    addRow(new JScrollPane(dataflowTaskTable)) ;
+
+  @Override
+  public void onDeactivate() throws Exception {
+    clear();
   }
   
   protected List<TaskAndReport> getTasks(Registry registry) throws RegistryException {
@@ -76,10 +85,8 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel {
           new TaskAndReport(id,
               registry.getDataAs(tasksPath+"/descriptors/" + id, DataflowTaskDescriptor.class),
               registry.getDataAs(tasksPath+"/descriptors/" + id+"/report", DataflowTaskReport.class) 
-            ));
+           ));
     }
-    
-    
     return tasksAndReports;
   }
   
@@ -103,9 +110,8 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel {
   }
   
   static class DataflowTaskTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Id", "Status", "Process Count", 
-                              "Commit Process Count", "Start Time", 
-                              "Finish Time"} ;
+    static String[] COLUMNS = {
+      "Id", "Status", "Process Count",  "Commit Process Count", "Start Time",  "Finish Time"} ;
 
     List<TaskAndReport> tasksAndReports;
     
@@ -120,7 +126,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel {
         DataflowTaskDescriptor desc = tar.getTaskDescriptor();
         
         Object[] cells = {
-          tar.getID(), desc.getStatus(), report.getProcessCount(),
+          tar.getId(), desc.getStatus(), report.getProcessCount(),
           report.getCommitProcessCount(), report.getStartTime(), report.getFinishTime()
         };
         addRow(cells);
@@ -130,17 +136,17 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel {
   
   //Simple class to help map taskDescriptor with its Report and ID
   public class TaskAndReport{
-    public String ID;
-    public DataflowTaskDescriptor dataflowTaskDesc;
+    public String id;
+    public DataflowTaskDescriptor taskDescriptor;
     public DataflowTaskReport report;
     public TaskAndReport(String ID, DataflowTaskDescriptor dataflowTaskDesc, DataflowTaskReport report){
-      this.ID = ID;
-      this.dataflowTaskDesc = dataflowTaskDesc;
+      this.id = ID;
+      this.taskDescriptor = dataflowTaskDesc;
       this.report = report;
     }
     
-    public String getID(){
-      return ID;
+    public String getId(){
+      return id;
     }
     
     public DataflowTaskReport getReport(){
@@ -148,9 +154,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel {
     }
     
     public DataflowTaskDescriptor getTaskDescriptor(){
-      return dataflowTaskDesc;
+      return taskDescriptor;
     }
   }
-  
-  
 }
