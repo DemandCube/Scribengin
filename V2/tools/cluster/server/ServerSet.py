@@ -1,9 +1,7 @@
 from tabulate import tabulate
 from multiprocessing import Pool
-from subprocess import call
-import os, socket, re, sys
-from os.path import expanduser, join
-from time import time
+import os, sys
+from os.path import join
 
 #This function is outside the ServerSet class
 #because otherwise it wouldn't be pickleable 

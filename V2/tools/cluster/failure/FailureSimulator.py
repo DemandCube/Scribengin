@@ -14,19 +14,25 @@ class FailureSimulator():
     self.spareCluster = None
     self.cluster = None
     
-  def getRoleName(self, hostname):
+  def isSpareNode(self, hostname):
     if re.match('.*spare-.*', hostname):
+      return True
+    else:
+      return False
+  
+  def getRoleName(self, hostname):
+    if(self.isSpareNode(hostname)):
       return "spare-"+self.roleName
     else:
       return self.roleName
   
   def getExecutionCluster(self, hostname):
-    if re.match('.*spare-.*', hostname):
+    if(self.isSpareNode(hostname)):
       return self.spareCluster
     else:
       return self.cluster
     
-  def failureSimulation(self,failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, config_path, use_spare, junit_report):
+  def failureSimulation(self,failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, config_path, use_spare, junit_report, restart_method):
     """
     Run the failure loop for a given role
     """
@@ -71,25 +77,42 @@ class FailureSimulator():
       raise ValueError("--servers_to_fail_simultaneously is set too high")
       exit(-1)   
     
-    if initial_clean:
-      self.cluster.cleanProcess(self.roleName)
-      if use_spare:
-        self.spareCluster.cleanProcess(spareRoleName)
-    
     spareServersArray = []
     if use_spare:
       self.spareCluster = self.mainCluster.getServersByRole(spareRoleName)
       for server in self.spareCluster.servers:
         spareServersArray.append(server.getHostname())
     
+    if initial_clean:
+      self.cluster.cleanProcess(self.roleName)
+      if use_spare:
+        self.spareCluster.cleanProcess(spareRoleName)
+    
+    
+    #Find runngin and ideal servers initially    
+    runningServers = []
+    idealServers = []
+    for server in self.cluster.servers + self.spareCluster.servers:
+      hostname = server.getHostname()
+      if server.getProcess(self.getRoleName(hostname)).isRunning():
+        runningServers.append(hostname)
+      else:
+        idealServers.append(hostname)
+
     while True:
+      logging.debug("Running servers before kill/shutdown: " + str(runningServers))
+      logging.debug("Ideal servers before kill/shutdown: "+str(idealServers))
       start = time()
       logging.debug("Sleeping for "+str(failure_interval)+" seconds")
       sleep(failure_interval)
       
+      serversToStart = []
       #pick random servers to kill
-      serversToKill = sample(serverArray, servers_to_fail_simultaneously)
+      serversToKill = sample(runningServers, randint(1,servers_to_fail_simultaneously))
       logging.debug("Servers selected to kill: "+ ','.join(serversToKill))
+      
+      #assigning servers to start with servers to kill
+      serversToStart = serversToKill[:]
       
       #Stop the running process based on kill_method
       currentExecutingCluster = None
@@ -110,7 +133,7 @@ class FailureSimulator():
           else:
             logging.debug("Killing "+roleName + " on " +hostname)
             currentExecutingCluster.killProcessOnHost(roleName, hostname)
-      
+        
       #Ensure the process has stopped
       for hostname in serversToKill:
         roleName = self.getRoleName(hostname)
@@ -126,38 +149,44 @@ class FailureSimulator():
           #If the process is *still* running then report a failure
           if(currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
             tc.add_failure_info(roleName+" process is still running on"+hostname, "")
+          else:
+            runningServers.remove(hostname)
+            idealServers.append(hostname)
+        else:
+          runningServers.remove(hostname)
+          idealServers.append(hostname)
+          
         testCases.append(tc)
         testNum+=1
-
+        logging.debug("Running servers after kill/shutdown: " + str(runningServers))
+        logging.debug("Ideal servers after kill/shutdown: "+str(idealServers))
       #Start the process again
       start = time()
       sleep(wait_before_start)
       newServers = []
-      oldServerArray  = serverArray[:]
       
       if use_spare:
         serversToStart = []
-        availableServers = []
-        availableServers = spareServersArray + serversToKill
-        
-        while len(serversToStart) < len(serversToKill):
-          tempHostname = sample(availableServers, 1)
-          serversToStart.append(tempHostname[0])
-          availableServers.remove(tempHostname[0])
-        
+        tempList = idealServers[:]
         for hostname in serversToKill:
-          serverArray.remove(hostname)
-          spareServersArray.append(hostname)
-          
-        for hostname in serversToStart:
-          serverArray.append(hostname)
-          spareServersArray.remove(hostname)
+          if restart_method == "flipflop":
+            if self.isSpareNode(hostname):
+              filtered_list = filter(lambda i: not re.match('.*spare-.*', i), tempList)
+            else:
+              filtered_list = filter(lambda i: re.match('.*spare-.*', i), tempList)
+            
+            if not filtered_list:
+              tempHostname = sample(tempList,1)
+            else:
+              tempHostname =  sample(filtered_list,1)
+          else:
+            tempHostname = sample(tempList, 1)
+          serversToStart.append(tempHostname[0])
+          tempList.remove(tempHostname[0])
         
-        serversToKill = serversToStart
-           
-      for hostname in serversToKill:
+      for hostname in serversToStart:
         setupClusterEnv = False
-        if hostname not in oldServerArray:
+        if hostname not in serversToKill:
           newServers.append(hostname)
           currentExecutingCluster.cleanProcessOnHost(roleName, hostname)
           setupClusterEnv = True
@@ -180,8 +209,9 @@ class FailureSimulator():
             newBrokers.append(str(brokerID))
             
 
-          serverToRunReassignReplicasScript = sample(serverArray, 1)
+          serverToRunReassignReplicasScript = sample(newServers, 1)
           roleName = self.getRoleName(serverToRunReassignReplicasScript[0])
+          
           currentExecutingCluster = self.getExecutionCluster(serverToRunReassignReplicasScript[0])
           logging.debug("Reassigning replicas for "+",".join(newBrokers))
           currentExecutingCluster.servers[0].getProcess(roleName).reassignReplicas(currentExecutingCluster.paramDict["zkList"], ",".join(newBrokers))
@@ -191,7 +221,7 @@ class FailureSimulator():
           '''
           
       #Ensure the process has started, otherwise report a failure
-      for hostname in serversToKill:
+      for hostname in serversToStart:
         roleName = self.getRoleName(hostname)
         currentExecutingCluster = self.getExecutionCluster(hostname)
           
@@ -199,9 +229,14 @@ class FailureSimulator():
                       'Starting '+roleName+" on host: "+hostname, '')
         if( not currentExecutingCluster.isProcessRunningOnHost(roleName, hostname)):
           tc.add_failure_info(roleName+" process is still running on"+hostname, "")
+        else:
+          runningServers.append(hostname)
+          idealServers.remove(hostname)
         testCases.append(tc)
         testNum+=1
       
+      logging.debug("Running servers after started: " + str(runningServers))
+      logging.debug("Ideal servers after started: "+str(idealServers))
       if(not junit_report == "" ):
         logging.debug("Writing junit report to: "+junit_report)
         if(not os.path.exists(os.path.dirname(junit_report))):

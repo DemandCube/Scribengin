@@ -294,7 +294,8 @@ def hadoop(restart, start, stop, force_stop, clean, hadoop_nodes, wait_before_st
 @click.option('--server-config',     default='/opt/kafka/config/default.properties', help='Kafka server configuration template path, default is /opt/kafka/config/default.properties', type=click.Path(exists=True))
 @click.option('--use-spare',                      is_flag=True, help="If enabled, will select spare-kafka server to run in the cluster")
 @click.option('--junit-report',                   default="",   help="If set, will write the junit-report to the specified file")
-def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report):
+@click.option('--restart-method',                 default='random', type=click.Choice(["flipflop", "random"]), help="Server restart method. 'flipflop' - it starts spare node if normal node killed and vise versa, 'random' - it starts any random node when failure occurs")
+def kafkafailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report, restart_method):
   global _jobs
   
   kf = KafkaFailure()
@@ -302,7 +303,7 @@ def kafkafailure(failure_interval, wait_before_start, servers, min_servers, serv
   p = multiprocessing.Process(name="KafkaFailure",
                               target=kf.failureSimulation, 
                               args=(failure_interval, wait_before_start, servers, min_servers, 
-                                    servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report))
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, server_config, use_spare, junit_report, restart_method))
   _jobs.append(p)
   p.start()
   
@@ -317,14 +318,15 @@ def kafkafailure(failure_interval, wait_before_start, servers, min_servers, serv
 @click.option('--initial-clean',                  is_flag=True, help="If enabled, will run a clean operation before starting the failure simulation")
 @click.option('--zoo-cfg',                        default='/opt/zookeeper/conf/zoo_sample.cfg', help='Zookeeper configuration template path, default is /opt/zookeeper/conf/zoo_sample.cfg', type=click.Path(exists=True))
 @click.option('--junit-report',                   default="",    help="If set, will write the junit-report to the specified file")
-def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, junit_report):
+@click.option('--restart-method',                 default='random', type=click.Choice(["random"]), help="Server restart method. 'random' - it starts any random node when failure occurs")
+def zookeeperfailure(failure_interval, wait_before_start, servers, min_servers, servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, junit_report, restart_method):
   global _jobs
   
   zf = ZookeeperFailure()
   p = multiprocessing.Process(name="ZookeeperFailure",
                               target=zf.failureSimulation, 
                               args=(failure_interval, wait_before_start, servers, min_servers, 
-                                    servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, None, junit_report))
+                                    servers_to_fail_simultaneously, kill_method, initial_clean, zoo_cfg, None, junit_report, restart_method))
   _jobs.append(p)
   p.start()
   
