@@ -2,10 +2,14 @@ package com.neverwinterdp.swing.registry;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -19,11 +23,14 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.widget.Fonts;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
 public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
   private String logPath ;
+  private LogJXTable logTable ;
+  private  LogDetailPanel logDetailPanel;
   
   public UILogView(String logPath) {
     this.logPath = logPath ;
@@ -53,8 +60,13 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       });
       addRow(toolbar) ;
       
-      LogJXTable logTable = new  LogJXTable(logPath) ;
-      addRow(new JScrollPane(logTable)) ;
+      logTable = new  LogJXTable(logPath) ;
+      logDetailPanel = new LogDetailPanel() ;
+      JSplitPane splitPane =
+          new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(logTable), new JScrollPane(logDetailPanel));
+      splitPane.setOneTouchExpandable(true);
+      splitPane.setDividerLocation(150);
+      addRow(splitPane) ;
     }
     makeCompactGrid(); 
   }
@@ -64,7 +76,7 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
     clear();
   }
   
-  static public class LogJXTable extends JXTable {
+  public class LogJXTable extends JXTable {
     public LogJXTable(String logPath) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       RegistryLogTableModel model = new RegistryLogTableModel(logPath);
@@ -75,11 +87,18 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       setVisibleColumnCount(8);
       setHorizontalScrollEnabled(true);
       setColumnControlVisible(true);
-
+      
       setHighlighters(HighlighterFactory.createSimpleStriping());
       // ...oops! we forgot one
       addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
-    
+      
+      addMouseListener(new MouseAdapter() {
+        public void mouseClicked(MouseEvent e) {
+          RegistryLogTableModel model = (RegistryLogTableModel) getModel() ;
+          RegistryLogger.Log log = model.getLogAt(getSelectedRow());
+          logDetailPanel.updateLogDetail(log);
+        }
+      });
     }
   }
 
@@ -92,6 +111,10 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
     public RegistryLogTableModel(String logPath) {
       super(COLUMNS, 0) ;
       this.logPath = logPath ;
+    }
+    
+    public RegistryLogger.Log getLogAt(int row) {
+      return logs.get(row) ;
     }
     
     void loadData() throws Exception {
@@ -108,6 +131,27 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
     List<RegistryLogger.Log> loadLogs() throws Exception{
       Registry registry = Cluster.getCurrentInstance().getRegistry();
       return registry.getChildrenAs(logPath, RegistryLogger.Log.class) ;
+    }
+  }
+  
+  public class LogDetailPanel extends SpringLayoutGridJPanel {
+    public LogDetailPanel() {
+      updateLogDetail(null);
+    }
+    
+    public void updateLogDetail(RegistryLogger.Log log) {
+      clear() ;
+      createBorder("Log Detail");
+      if(log != null) {
+        addRow("Timestamp", log.getTimestamp());
+        addRow("Level",     log.getLevel());
+        JTextArea text = new JTextArea() ;
+        text.setFont(Fonts.FIXED);
+        text.setText(log.getMessage());
+        addRow("Message", text);
+        makeCompactGrid();
+      }
+      revalidate();
     }
   }
 }

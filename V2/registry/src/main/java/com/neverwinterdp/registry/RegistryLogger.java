@@ -3,6 +3,8 @@ package com.neverwinterdp.registry;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class RegistryLogger {
   final static public SimpleDateFormat COMPACT_DATE_TIME_ID = new SimpleDateFormat("dd-MM-yyyy@HH:mm:ss") ;
   
@@ -44,6 +46,7 @@ public class RegistryLogger {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     
+    @JsonIgnore
     public String getTimestampId() {
       return COMPACT_DATE_TIME_ID.format(new Date(timestamp)) ;
     }
