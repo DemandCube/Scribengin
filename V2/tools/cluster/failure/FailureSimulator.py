@@ -91,24 +91,24 @@ class FailureSimulator():
     
     #Find running and Idle servers initially    
     runningServers = []
-    idealServers = []
+    idleServers = []
     for server in self.cluster.servers + self.spareCluster.servers:
       hostname = server.getHostname()
       if server.getProcess(self.getRoleName(hostname)).isRunning():
         runningServers.append(hostname)
       else:
-        idealServers.append(hostname)
+        idleServers.append(hostname)
 
     while True:
       logging.debug("Running servers before kill/shutdown: " + str(runningServers))
-      logging.debug("Idle servers before kill/shutdown: "+str(idealServers))
+      logging.debug("Idle servers before kill/shutdown: "+str(idleServers))
       start = time()
       logging.debug("Sleeping for "+str(failure_interval)+" seconds")
       sleep(failure_interval)
       
       serversToStart = []
       #pick random servers to kill
-      serversToKill = sample(runningServers, randint(1,servers_to_fail_simultaneously))
+      serversToKill = sample(runningServers, servers_to_fail_simultaneously)
       logging.debug("Servers selected to kill: "+ ','.join(serversToKill))
       
       #assigning servers to start with servers to kill
@@ -121,17 +121,17 @@ class FailureSimulator():
         currentExecutingCluster = self.getExecutionCluster(hostname)
           
         if kill_method == "restart" :
-          logging.debug("Shutting down "+roleName + " on " +hostname)
+          #Shutting down process
           currentExecutingCluster.shutdownProcessOnHost(roleName, hostname)
         elif kill_method == "kill":
-          logging.debug("Killing "+roleName + " on " +hostname)
+          #Killing process
           currentExecutingCluster.killProcessOnHost(roleName, hostname)
         else:
           if randint(0,1) == 0:
-            logging.debug("Shutting down "+roleName + " on " +hostname)
+            #Shutting down process
             currentExecutingCluster.shutdownProcessOnHost(roleName, hostname)
           else:
-            logging.debug("Killing "+roleName + " on " +hostname)
+            #Killing process
             currentExecutingCluster.killProcessOnHost(roleName, hostname)
         
       #Ensure the process has stopped
@@ -152,16 +152,18 @@ class FailureSimulator():
           else:
             #update running and idle server list
             runningServers.remove(hostname)
-            idealServers.append(hostname)
+            idleServers.append(hostname)
         else:
           #update running and idle server list
           runningServers.remove(hostname)
-          idealServers.append(hostname)
+          idleServers.append(hostname)
           
         testCases.append(tc)
         testNum+=1
-        logging.debug("Running servers after kill/shutdown: " + str(runningServers))
-        logging.debug("Idle servers after kill/shutdown: "+str(idealServers))
+        
+      logging.debug("Running servers after kill/shutdown: " + str(runningServers))
+      logging.debug("Idle servers after kill/shutdown: "+str(idleServers))
+      
       #Start the process again
       start = time()
       sleep(wait_before_start)
@@ -169,7 +171,7 @@ class FailureSimulator():
       
       if use_spare:
         serversToStart = []
-        tempList = idealServers[:]
+        tempList = idleServers[:]
         for hostname in serversToKill:
           if restart_method == "flipflop":
             if self.isSpareNode(hostname):
@@ -196,7 +198,7 @@ class FailureSimulator():
         roleName = self.getRoleName(hostname)
         currentExecutingCluster = self.getExecutionCluster(hostname)
         
-        logging.debug("Starting " + roleName + " on " + hostname)
+        #starting process
         currentExecutingCluster.startProcessOnHost(roleName, hostname, setupClusterEnv)
       
       
@@ -238,12 +240,12 @@ class FailureSimulator():
         else:
           #update running and idle server list
           runningServers.append(hostname)
-          idealServers.remove(hostname)
+          idleServers.remove(hostname)
         testCases.append(tc)
         testNum+=1
       
       logging.debug("Running servers after started: " + str(runningServers))
-      logging.debug("Idle servers after started: "+str(idealServers))
+      logging.debug("Idle servers after started: "+str(idleServers))
       if(not junit_report == "" ):
         logging.debug("Writing junit report to: "+junit_report)
         if(not os.path.exists(os.path.dirname(junit_report))):
