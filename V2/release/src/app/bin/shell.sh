@@ -43,4 +43,7 @@ APP_OPT="$APP_OPT -Dshell.zk-connect=zookeeper-1:2181 -Dshell.hadoop-master=hado
 
 MAIN_CLASS="com.neverwinterdp.scribengin.ShellMain"
 # first basic attempt to make sunjce_provider available
+echo "why oh why2"
+echo "$JAVA_HOME"
+echo $JAVA_HOME
 $JAVACMD -Djava.ext.dirs=$APP_DIR/libs:/usr/java/jdk1.7.0_45/jre/lib/ext $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
