@@ -17,6 +17,8 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
   private RecordMessageGenerator recordGenerator = new RecordMessageGenerator();
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
   private S3Client s3Client;
+  private String bucketName;
+  private String folderPath;
   private int numOfFilesPerFolder;
   private int numOfRecordsPerFile;
 
@@ -32,11 +34,27 @@ public class S3DataflowSourceGenerator extends DataflowSourceGenerator {
 
   @Override
   public void init(ScribenginClient scribenginClient) throws Exception {
+    this.bucketName= sourceLocation;
+    this.folderPath= sourceName;
     s3Client = new S3Client();
     s3Client.onInit();
+    
+    createBucket();
     //TODO improve this. We want maybe 1000 records per file
     numOfRecordsPerFile = Math.min(1000, maxRecordsPerStream); 
     numOfFilesPerFolder = maxRecordsPerStream/numOfRecordsPerFile;
+  }
+
+  private void createBucket() {
+    if (s3Client.hasBucket(bucketName)) {
+      s3Client.deleteS3Folder(bucketName, folderPath);
+    }else {
+      s3Client.createBucket(bucketName);  
+    }
+
+    for (int i = 1; i <= numberOfStream; i++) {
+      s3Client.createS3Folder(bucketName, folderPath + "/stream-"+i);
+    }
   }
 
   @Override
