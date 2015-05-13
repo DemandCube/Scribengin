@@ -1,12 +1,11 @@
 from os.path import expanduser, join, abspath, dirname
 from sys import path
-from time import sleep,time
-from random import randint, sample
+from time import sleep
+from random import sample
 from tabulate import tabulate
-import paramiko, re, os, string, logging
+import paramiko, re, string, logging
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
-from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Process(object):
   def __init__(self, role, hostname, homeDir, processIdentifier, sshKeyPath=join(expanduser("~"),".ssh/id_rsa")):
