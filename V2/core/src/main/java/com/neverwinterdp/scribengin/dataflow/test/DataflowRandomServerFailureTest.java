@@ -21,7 +21,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   long waitForRunningDataflow = 180000;
   
   @Parameter(names = "--failure-period", description = "The command should repeat in this period of time")
-  long failurePeriod = 5000;
+  long failurePeriod = 15000;
   
   @Parameter(names = "--max-failure", description = "The command should repeat in this period of time")
   int maxFailure = 100;
