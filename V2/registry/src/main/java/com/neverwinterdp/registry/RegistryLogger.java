@@ -9,7 +9,7 @@ public class RegistryLogger {
   private Node     logNode ;
   
   public RegistryLogger(Registry registry, String path) throws RegistryException {
-    logNode = registry.createIfNotExist(path) ;
+    logNode = registry.createIfNotExist("/logger/" + path) ;
   }
   
   public void info(String name, String mesg) throws RegistryException {

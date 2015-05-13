@@ -7,7 +7,7 @@ import com.neverwinterdp.registry.RegistryLogger;
 public class VMRegistryLogger extends RegistryLogger {
 
   public VMRegistryLogger(Registry registry, VMDescriptor vmDescriptor, String name) throws RegistryException {
-    super(registry, "/logger/vm/" + vmDescriptor.getId() + "/" + name);
+    super(registry, "vm/" + vmDescriptor.getId() + "/" + name);
   }
 
 }

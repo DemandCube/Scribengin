@@ -16,6 +16,9 @@ import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
+//TODO: add a toolbar on top with the table view and detail view button. The detail view button is the current view 
+//while the table view should show the view in the table format, some time it easier to view as table format for 
+//example you want to see  the status of the step and you just need to look at the status column.
 @SuppressWarnings("serial")
 public class UIActivityStepsView extends JPanel implements UILifecycle {
   private String  activitiesRootPath ;
