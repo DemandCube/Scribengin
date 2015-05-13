@@ -10,6 +10,7 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.vm.VMRegistryLogger;
 
 public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   final static public String TEST_NAME = "random-server-failure";
@@ -84,6 +85,8 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       try {
         VMDescriptor selWorker = selectRandomVM(dflClient.getActiveDataflowWorkers());
         if(selWorker != null) {
+          VMRegistryLogger logger = new VMRegistryLogger(dflClient.getRegistry(), selWorker, "kill") ;
+          logger.info("select-random-worker", "Select random worker = " + selWorker.getId());
           System.err.println("DataflowRandomServerFailureTest: Select random worker = " + selWorker.getId());
           executeLog.setDescription("Kill the dataflow worker " + selWorker.getId());
           if(simulateKill) {
