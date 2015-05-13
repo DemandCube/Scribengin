@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.script;
+package com.neverwinterdp.swing;
 
 import java.util.HashSet;
 import java.util.Map;

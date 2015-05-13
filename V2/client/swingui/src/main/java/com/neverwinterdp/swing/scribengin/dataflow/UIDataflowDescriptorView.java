@@ -10,31 +10,34 @@ import javax.swing.JPanel;
 import org.apache.commons.lang3.StringUtils;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 
 @SuppressWarnings("serial")
-public class UIDataflowDescriptorView extends JPanel {
+public class UIDataflowDescriptorView extends JPanel implements UILifecycle {
   private String  dataflowRootPath ;
   
   public UIDataflowDescriptorView(String dataflowRootPath) {
     
     setLayout(new BorderLayout()) ;
     this.dataflowRootPath = dataflowRootPath ;
-    
-    try {
-      onActivate() ;
-    } catch(Throwable e) {
-      MessageUtil.handleError(e);
-    }
   }
   
-  public void onActivate() throws RegistryException {
+  @Override
+  public void onInit() throws Exception {
+  }
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+  @Override
+  public void onActivate() throws Exception {
+    removeAll();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
@@ -44,6 +47,11 @@ public class UIDataflowDescriptorView extends JPanel {
     
     DataflowInfo dfInfo = new DataflowInfo(dataflowDesc) ;
     add(dfInfo, BorderLayout.CENTER) ;
+  }
+
+  @Override
+  public void onDeactivate() throws Exception {
+    removeAll();
   }
   
   static public class DataflowInfo extends SpringLayoutGridJPanel {
@@ -68,21 +76,21 @@ public class UIDataflowDescriptorView extends JPanel {
       StorageDescriptor sourceDesc = dataflowDesc.getSourceDescriptor();
       
       addRow("Source Descriptor:","");
+      //TODO: use sourceDesc.entrySet() to iteratte through all the available properties 
       addRow(indent+"Source Type",sourceDesc.getType());
       addRow(indent+"Source Location", sourceDesc.getLocation());
       
       addRow("Sink Descriptors:","");
       for (Entry<String, StorageDescriptor> entry : sinkDescriptors.entrySet()) {
         String sinkName = entry.getKey();
-        StorageDescriptor desc = entry.getValue();
+        StorageDescriptor sinkDescriptor = entry.getValue();
+        //TODO: use sinkDescriptor.entrySet() to iteratte through all the available properties , maybe separate in another method
         addRow(indent+sinkName+" Sink:","");
-        addRow(StringUtils.repeat(indent, 2)+"Sink Type",     desc.getType());
-        addRow(StringUtils.repeat(indent, 2)+"Sink Location", desc.getLocation());
+        //TODO: code convention , format.
+        addRow(StringUtils.repeat(indent, 2)+"Sink Type",     sinkDescriptor.getType());
+        addRow(StringUtils.repeat(indent, 2)+"Sink Location", sinkDescriptor.getLocation());
       }
-      
-      
       makeCompactGrid();
     }
   }
-  
 }

@@ -18,7 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
-import com.neverwinterdp.swing.script.ScriptRunner;
+import com.neverwinterdp.swing.ScriptRunner;
 import com.neverwinterdp.swing.util.SwingUtil;
 import com.neverwinterdp.swing.widget.Fonts;
 

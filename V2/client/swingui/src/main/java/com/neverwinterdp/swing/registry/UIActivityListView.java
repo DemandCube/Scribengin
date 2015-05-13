@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
@@ -21,53 +19,57 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIActivityListView extends SpringLayoutGridJPanel {
+public class UIActivityListView extends SpringLayoutGridJPanel implements UILifecycle {
   private String activityRootPath ;
   private String listPath ;
   
   public UIActivityListView(String activityRootPath, String path) {
     this.activityRootPath = activityRootPath;
     this.listPath = path ;
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
-    if(registry == null) {
-      initNoConnection() ;
-    } else {
-      try {
-        init(registry) ;
-      } catch(Throwable e) {
-        MessageUtil.handleError(e);
-      }
-    }
-    makeCompactGrid(); 
   }
 
   public String getActivityRootPath() { return this.activityRootPath ; }
   
   public String getListPath() { return this.listPath; }
   
-  private void initNoConnection() {
-    JPanel infoPanel = new JPanel();
-    infoPanel.add(new JLabel("No Registry Connection"));
-    addRow(infoPanel);
+  @Override
+  public void onInit() throws Exception {
   }
-  
-  private void init(Registry registry) throws Exception {
-    JToolBar toolbar = new JToolBar();
-    toolbar.setFloatable(false);
-    toolbar.add(new AbstractAction("Reload") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    addRow(toolbar) ;
-    
-    ActivityJXTable activityTable = new  ActivityJXTable(getActivities(registry)) ;
-    addRow(new JScrollPane(activityTable)) ;
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+  @Override
+  public void onActivate() throws Exception {
+    clear();
+    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    if(registry == null) {
+      addRow("No Registry Connection");
+    } else {
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbar.add(new AbstractAction("Reload") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+      });
+      addRow(toolbar) ;
+      
+      ActivityJXTable activityTable = new  ActivityJXTable(getActivities(registry)) ;
+      addRow(new JScrollPane(activityTable)) ;
+    }
+    makeCompactGrid(); 
+  }
+
+  @Override
+  public void onDeactivate() throws Exception {
+    clear();
   }
   
   protected List<Activity> getActivities(Registry registry) throws RegistryException {
@@ -96,7 +98,6 @@ public class UIActivityListView extends SpringLayoutGridJPanel {
     }
   }
 
-  
   static class ActivityTableModel extends DefaultTableModel {
     static String[] COLUMNS = {"Id", "Coordinator", "Step Builder"} ;
 

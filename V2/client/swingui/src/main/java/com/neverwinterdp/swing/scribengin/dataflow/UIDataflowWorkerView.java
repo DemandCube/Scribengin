@@ -2,13 +2,14 @@ package com.neverwinterdp.swing.scribengin.dataflow;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
@@ -19,75 +20,68 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIDataflowWorkerView extends SpringLayoutGridJPanel {
+public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILifecycle {
   private String workersPath ;
+  private DataflowWorkersJXTable  workerTable;
+  private DataflowWorkerInfoPanel workerInfo ;
   
   public UIDataflowWorkerView(String workersPath) {
     this.workersPath = workersPath;
+  }
+  
+  @Override
+  public void onInit() throws Exception {
+  }
+
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+
+  @Override
+  public void onActivate() throws Exception {
+    clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if(registry == null) {
-      JPanel infoPanel = new JPanel();
-      infoPanel.add(new JLabel("No Registry Connection"));
-      addRow(infoPanel);
+      addRow("No Registry Connection");
     } else {
-      try {
-        init(registry) ;
-      } catch(Throwable e) {
-        MessageUtil.handleError(e);
-      }
+      JToolBar toolbar = new JToolBar();
+      toolbar.setFloatable(false);
+      toolbar.add(new AbstractAction("Reload") {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+      });
+      addRow(toolbar) ;
+      
+      workerTable = new  DataflowWorkersJXTable(workersPath + "/all", workersPath + "/all") ;
+      workerInfo = new DataflowWorkerInfoPanel() ;
+      JSplitPane splitPane =
+          new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(workerTable), new JScrollPane(workerInfo));
+      splitPane.setOneTouchExpandable(true);
+      splitPane.setDividerLocation(150);
+
+      addRow(splitPane) ;
     }
     makeCompactGrid(); 
   }
-  
-  
-  private void init(Registry registry) throws Exception {
-    JToolBar toolbar = new JToolBar();
-    toolbar.setFloatable(false);
-    toolbar.add(new AbstractAction("Reload") {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    addRow(toolbar) ;
-    
-    DataflowWorkersJXTable workerTable = new  DataflowWorkersJXTable(getWorkers(registry)) ;
-    addRow(new JScrollPane(workerTable)) ;
+
+
+  @Override
+  public void onDeactivate() throws Exception {
+    clear();    
   }
   
-  
-  protected List<WorkerAndExecutors> getWorkers(Registry registry) throws RegistryException {
-    List<WorkerAndExecutors> workersAndExecutors = new ArrayList<>();
-    
-    if(! registry.exists(workersPath+"/all")){
-      JPanel infoPanel = new JPanel();
-      infoPanel.add(new JLabel("Path: "+workersPath+"/all does not exist!"));
-      addRow(infoPanel);
-      return new ArrayList<WorkerAndExecutors>();
-    }
-    
-    for(String id : registry.getChildren(workersPath+"/all")){
-      workersAndExecutors.add(
-          new WorkerAndExecutors(id,
-              new String(registry.getData(workersPath+"/all/"+id+"/status")).replaceAll("\"", ""),
-              registry.getChildrenAs(workersPath+"/all/"+id+"/executors", DataflowTaskExecutorDescriptor.class)
-            ));
-    }
-    
-    
-    return workersAndExecutors;
-  }
-  
-  static public class DataflowWorkersJXTable extends JXTable {
-    public DataflowWorkersJXTable(List<WorkerAndExecutors> workersAndExecutors) throws Exception {
+  public class DataflowWorkersJXTable extends JXTable {
+    public DataflowWorkersJXTable(String workerAllPath, String workerListPath) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      DataflowWorkersTableModel model = new DataflowWorkersTableModel(workersAndExecutors);
+      DataflowWorkersTableModel model = new DataflowWorkersTableModel(workerAllPath, workerListPath);
       setModel(model);
       model.loadData();
       
@@ -95,64 +89,97 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel {
       setVisibleColumnCount(8);
       setHorizontalScrollEnabled(true);
       setColumnControlVisible(true);
-
+      addMouseListener(new MouseAdapter() {
+        public void mouseClicked(MouseEvent e) {
+          DataflowWorkersTableModel model = (DataflowWorkersTableModel) getModel() ;
+          DataflowWorkerInfo selectedWorkerInfo = model.getDataflowWorkerInfoAt(getSelectedRow());
+          workerInfo.updateWorkerInfo(selectedWorkerInfo);
+        }
+      });
       setHighlighters(HighlighterFactory.createSimpleStriping());
       addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
-    
     }
   }
   
+  public class DataflowWorkerInfoPanel extends SpringLayoutGridJPanel {
+    public DataflowWorkerInfoPanel() {
+      updateWorkerInfo(null);
+    }
+    
+    public void updateWorkerInfo(DataflowWorkerInfo selectedWorkerInfo) {
+      clear() ;
+      createBorder("Dataflow Worker Info");
+      if(selectedWorkerInfo == null) {
+        addRow("Name 1", "Value 1");
+        addRow("Name 2", "Value 2");
+        addRow("Name 3", "Value 3");
+      } else {
+        Registry registry = Cluster.getCurrentInstance().getRegistry() ;
+        addRow("TODO", "Load the data from " + selectedWorkerInfo.getWorkerId());
+        //TODO: load the dataflow worker descriptor, show it in the 
+        //TODO load the data from selectedWorkerInfo.getDataflowWorkerPath();
+      }
+      makeCompactGrid();
+      revalidate();
+    }
+  }
   
   static class DataflowWorkersTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Worker ID", "Worker Status", 
-      "Executor ID", "Executor Task IDs", "Executor Status"} ;
+    static String[] COLUMNS = {
+      "Worker ID", "Worker Status", 
+    } ;
 
-    List<WorkerAndExecutors> workersAndExecutors;
+    private String workerAllPath ;
+    private String workerListPath ;
+    private List<DataflowWorkerInfo> workerInfos ;
     
-    public DataflowWorkersTableModel(List<WorkerAndExecutors> workersAndExecutors) {
+    public DataflowWorkersTableModel(String workerAllPath, String workerListPath) {
       super(COLUMNS, 0) ;
-      this.workersAndExecutors = workersAndExecutors ;
+      this.workerAllPath = workerAllPath;
+      this.workerListPath = workerListPath;
+    }
+    
+    public DataflowWorkerInfo getDataflowWorkerInfoAt(int row) {
+      return workerInfos.get(row) ;
     }
     
     void loadData() throws Exception {
-      for(WorkerAndExecutors wae: workersAndExecutors){
-        for(DataflowTaskExecutorDescriptor executorDesc: wae.getExecutorDescriptors()){
-          Object[] cell = {
-              wae.getID(), 
-              wae.getStatus(),
-              executorDesc.getId(),
-              executorDesc.getAssignedTaskIds(),
-              executorDesc.getStatus()
-          };
-          addRow(cell);
-        }
+      workerInfos = loadWorkerInfos() ;
+      for(DataflowWorkerInfo workerInfo: workerInfos){
+        Object[] cell = {
+            workerInfo.getWorkerId(), 
+            workerInfo.getStatus(),
+        };
+        addRow(cell);
       }
     }
+    
+    List<DataflowWorkerInfo> loadWorkerInfos() throws Exception {
+      Registry registry = Cluster.getCurrentInstance().getRegistry();
+      List<DataflowWorkerInfo> workerInfos = new ArrayList<>();
+      for(String workerId : registry.getChildren(workerListPath)) {
+        String status = new String(registry.getData(workerAllPath + "/" + workerId + "/status")) ;
+        workerInfos.add(new DataflowWorkerInfo(workerAllPath + "/" + workerId, workerId, status));
+      }
+      return workerInfos;
+    }
   }
   
-  //Simple class to help map worker with executors
-  public class WorkerAndExecutors{
-    public String ID;
-    public String status;
-    public List<DataflowTaskExecutorDescriptor> executorDescs;
-    
-    public WorkerAndExecutors(String ID, String status, List<DataflowTaskExecutorDescriptor> executorDescs){
-      this.ID = ID;
+  static public class DataflowWorkerInfo {
+    private String dataflowWorkerPath ;
+    public String  workerId;
+    public String  status;
+
+    public DataflowWorkerInfo(String dataflowWorkerPath, String workerId, String status){
+      this.dataflowWorkerPath = dataflowWorkerPath;
+      this.workerId = workerId;
       this.status = status;
-      this.executorDescs = executorDescs;
     }
     
-    public String getID(){
-      return this.ID;
-    }
+    public String getDataflowWorkerPath() { return this.dataflowWorkerPath ; }
     
-    public String getStatus(){
-      return this.status;
-    }
+    public String getWorkerId() { return this.workerId; }
     
-    public List<DataflowTaskExecutorDescriptor> getExecutorDescriptors(){
-      return this.executorDescs;
-    }
+    public String getStatus() { return this.status; }
   }
-  
 }

@@ -19,6 +19,12 @@ public class SpringLayoutGridJPanel extends JPanel {
   public SpringLayoutGridJPanel() {
     setLayout(new SpringLayout()) ;
   }
+
+  public void clear() {
+    removeAll() ;
+    numberOfRow = 0;
+    numberOfColumn = -1 ;
+  }
   
   public void addRow(Object ... comp) {
     if(numberOfColumn < 0) numberOfColumn = comp.length ;

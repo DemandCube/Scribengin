@@ -52,9 +52,10 @@ public class UIControl extends JPanel {
         }
       }
     });
-    tabbedPaneUI.setSelectedTab(0);
+    
     add(tabbedPaneUI, BorderLayout.CENTER);
     this.setPreferredSize(new Dimension(200, 450));
+    tabbedPaneUI.setSelectedTab(0);
   }
   
   public void fitSize() {
