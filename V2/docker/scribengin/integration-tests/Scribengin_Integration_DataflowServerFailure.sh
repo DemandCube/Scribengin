@@ -27,6 +27,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
 FAILURE_PID=$!
 
 #Run dataflow
+# --debug-dataflow-activity \
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
           ./bin/shell.sh dataflow-test kafka-to-kafka \
              --dataflow-id    kafka-to-kafka-1 \
@@ -43,7 +44,6 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
              --print-dataflow-info -1 \
              --debug-dataflow-task \
              --debug-dataflow-vm \
-             --debug-dataflow-activity \
              --junit-report /opt/junit-reports/KafkaIntegrationTest.xml \
              --dump-registry "
 
