@@ -45,11 +45,6 @@ public class DataflowS3ToS3ExperimentTest {
 
     s3Client = new S3Client();
     s3Client.onInit();
-
-    if (s3Client.hasBucket(bucketName)) {
-      s3Client.deleteS3Folder(bucketName, folderPath);
-    }
-    s3Client.createBucket(bucketName);
   }
 
   @After
@@ -68,9 +63,7 @@ public class DataflowS3ToS3ExperimentTest {
   public void testDataflows() throws Exception {
     int numStreams = 1;
 
-    for (int i = 1; i <= numStreams; i++) {
-      s3Client.createS3Folder(bucketName, folderPath + "/stream-"+i);
-    }
+
     Thread.sleep(1000);
     DataflowSubmitter submitter = new DataflowSubmitter(bucketName, folderPath, numStreams);
     submitter.start();
