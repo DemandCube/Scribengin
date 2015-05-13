@@ -49,10 +49,11 @@ if [ -e "$JAVA_HOME/jre/lib/ext/sunjce_provider.jar" ] ; then
   echo "She exists!!!!"
 fi
 
-echo home --> $HOME
+echo $HOME
+echo $USER
 
 if [ -d "$HOME/.aws" ] ; then 
-  echo "She exists!!!!"
+  echo "pasword iko !!!!"
 fi
 
 $JAVACMD -Djava.ext.dirs=$APP_DIR/libs:$JAVA_HOME/jre/lib/ext $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
