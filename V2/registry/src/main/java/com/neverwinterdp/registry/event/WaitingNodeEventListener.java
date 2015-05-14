@@ -106,8 +106,8 @@ abstract public class WaitingNodeEventListener {
         wait(maxWaitTime);
       }
       if(detectNodeEventCount != waitingNodeEventCount) {
-        TabularFormater formater = this.getTabularFormaterEventLogInfo() ;
-        throw new Exception(formater.getFormattedText());
+        TabularFormater formater = getTabularFormaterEventLogInfo() ;
+        throw new Exception(formater.getFormatText());
       }
     } catch (InterruptedException e) {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
