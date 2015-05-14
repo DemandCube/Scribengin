@@ -107,7 +107,8 @@ abstract public class WaitingNodeEventListener {
       }
       if(detectNodeEventCount != waitingNodeEventCount) {
         TabularFormater formater = getTabularFormaterEventLogInfo() ;
-        throw new Exception(formater.getFormatText());
+        String msg = "Error: wait time = " + timeout + "ms\n" + formater.getFormatText() ;
+        throw new Exception(msg);
       }
     } catch (InterruptedException e) {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;
