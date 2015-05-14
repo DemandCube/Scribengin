@@ -138,12 +138,20 @@ public class ActivityService extends ActivityRegistry {
   }
   
   public <T> void updateActivityStepFinished(final Activity activity, final ActivityStep step) throws RegistryException {
+    updateActivityStepFinished(activity, step, ActivityStep.Status.FINISHED) ;
+  }
+  
+  public <T> void updateActivityStepFailed(final Activity activity, final ActivityStep step) throws RegistryException {
+    updateActivityStepFinished(activity, step, ActivityStep.Status.FINISHED_WITH_ERROR) ;
+  }
+  
+  private <T> void updateActivityStepFinished(final Activity activity, final ActivityStep step, final ActivityStep.Status status) throws RegistryException {
     BatchOperations<Boolean> ops = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         Node activityStepNode = getActivityStepNode(activity, step);
         Transaction transaction = registry.getTransaction() ;
-        step.setStatus(ActivityStep.Status.FINISHED);
+        step.setStatus(status);
         transaction.setData(activityStepNode, step);
         transaction.deleteChild(activityStepNode, "heartbeat") ;
         transaction.commit();

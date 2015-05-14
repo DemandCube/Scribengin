@@ -44,17 +44,18 @@ abstract public class ActivityCoordinator {
     for(int i = 0; i < activitySteps.size(); i++) {
       long startTime = System.currentTimeMillis();
       ActivityStep selectStep = activitySteps.get(i);
-      service.updateActivityStepAssigned(activity, selectStep);
       try {
+        service.updateActivityStepAssigned(activity, selectStep);
         for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, selectStep);
         execute(ctx, activity, selectStep);
         for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, selectStep);
+        service.updateActivityStepFinished(activity, selectStep);
       } catch(Exception ex) {
         selectStep.addLog(ExceptionUtil.getStackTrace(ex));
         ctx.setError(ex);
         ctx.setAbort(true); 
+        service.updateActivityStepFailed(activity, selectStep);
       } 
-      service.updateActivityStepFinished(activity, selectStep);
       if(ctx.isAbort()) break;
       long executeTime = System.currentTimeMillis() - startTime ;
       selectStep.setExecuteTime(executeTime);

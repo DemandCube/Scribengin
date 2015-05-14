@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ActivityStep {
-  static public enum Status { INIT, ASSIGNED, EXECUTING, FINISHED }
+  static public enum Status { INIT, ASSIGNED, EXECUTING, FINISHED, FINISHED_WITH_ERROR }
   
   private String              description;
   private String              type;
