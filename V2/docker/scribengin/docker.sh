@@ -281,6 +281,10 @@ function host_sync() {
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
   scp -r /root/.aws neverwinterdp@hadoop-master:/opt/
   
+if [ -d "$HOME/.aws" ] ; then 
+  echo "pasword exists on host !!!!"
+fi
+
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync hadoop-master"
 }
 
