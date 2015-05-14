@@ -228,7 +228,6 @@ public class DataflowRegistry {
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
-        //TODO: use the transaction
         descriptor.setStatus(Status.SUSPENDED);    
         Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
         String name = descriptorNode.getName();
