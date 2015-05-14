@@ -84,7 +84,7 @@ public class LockUnitTest {
         Thread.sleep(random.nextInt(100));
         Registry registry = newRegistry().connect();
         Node lockDir =  registry.get(LOCK_DIR) ;
-        Lock lock = lockDir.getLock("write") ;
+        Lock lock = lockDir.getLock("write", "test write lock") ;
         lockId = lock.lock(60 * 1000) ; //wait max 15s for lock
         System.out.println("\nWorker " + name + " acquires the lock: " + lockId);
         long execTime = random.nextInt(1000) ;

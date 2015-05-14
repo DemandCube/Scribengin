@@ -89,7 +89,7 @@ public class Node {
     transaction.rdelete(path);
   }
 
-  public Lock getLock(String name) { return new Lock(registry, path, name) ; }
+  public Lock getLock(String name, String desc) { return new Lock(registry, path, name, desc) ; }
 
   public LeaderElection getLeaderElection() { return new LeaderElection(registry, path) ; }
 
