@@ -69,7 +69,6 @@ public class Lock {
       try {
         lock(timeoutThreshold * (i + 1)) ;
         T result = op.execute(registry);
-        unlock();
         return result;
       } catch (RegistryException e) {
         if(e.getErrorCode() != ErrorCode.Timeout) {
@@ -77,6 +76,8 @@ public class Lock {
         }
       } catch (Exception e) {
         throw new RegistryException(ErrorCode.Unknown, e);
+      } finally {
+        unlock();
       }
     }
     throw new RegistryException(ErrorCode.Unknown, "Fail after " + retry + "tries");
