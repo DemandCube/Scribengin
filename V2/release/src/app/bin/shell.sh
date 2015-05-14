@@ -51,7 +51,7 @@ fi
 
 echo $HOME
 echo $USER
-homes='ls $HOME'
+homes=ls $HOME
 echo $homes
 
 if [ -d "$HOME/.aws" ] ; then 
