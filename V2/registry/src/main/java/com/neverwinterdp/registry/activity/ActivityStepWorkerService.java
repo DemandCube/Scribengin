@@ -20,16 +20,17 @@ public class ActivityStepWorkerService<T> {
   
   public void exectute(ActivityExecutionContext context, Activity activity, ActivityStep activityStep) throws Exception, InterruptedException {
     ActivityService service = context.getActivityService();
+    service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
     Exception error = null ;
     for(int i = 0; i < activityStep.getMaxRetries(); i++) {
       error = null;
       try {
-        service.updateActivityStepExecuting(activity, activityStep, getWorkerDescriptor());
         ActivityStepExecutor executor = service.getActivityStepExecutor(activityStep.getExecutor());
         executor.execute(context, activity, activityStep);
         return;
       } catch (Exception e) {
         activityStep.addLog("Fail to execute the activity due to the error: " + e.getMessage());
+        context.setAbort(true);
         e.printStackTrace();
         error = e ;
       }

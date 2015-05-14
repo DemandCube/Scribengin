@@ -47,11 +47,11 @@ abstract public class ActivityCoordinator {
       for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, nextStep);
       execute(ctx, activity, nextStep);
       for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, nextStep);
+      service.updateActivityStepFinished(activity, nextStep);
       if(ctx.isAbort()) break;
       long executeTime = System.currentTimeMillis() - startTime ;
       nextStep.setExecuteTime(executeTime);
       nextStep.setTryCount(i + 1);
-      service.updateActivityStepFinished(activity, nextStep);
     }
     onFinish(ctx, activity);
   }
