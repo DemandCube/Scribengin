@@ -79,7 +79,7 @@ public class UIActivityStepsView extends JPanel implements UILifecycle {
       addRow("Execute Time: ", step.getExecuteTime() + "ms");
       if(step.getLogs() != null) {
         JTextArea logArea = new JTextArea() ;
-        logArea.setRows(5);
+        logArea.setRows(10);
         logArea.setText(getLogs(step));
         addRow("Logs: ", new JScrollPane(logArea));
       } else {
