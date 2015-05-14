@@ -9,13 +9,14 @@ import com.google.inject.Injector;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.vm.VMDescriptor;
 import com.neverwinterdp.vm.VMStatus;
 import com.neverwinterdp.vm.client.VMClient;
 import com.neverwinterdp.vm.command.VMCommand;
-import com.neverwinterdp.vm.event.VMWaitingEventListener;
 import com.neverwinterdp.vm.service.VMService;
 
 public class VMClusterBuilder {
@@ -41,7 +42,7 @@ public class VMClusterBuilder {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    VMWaitingEventListener waitingListener = createVMMaster("vm-master-1");
+    WaitingNodeEventListener waitingListener = createVMMaster("vm-master-1");
     waitingListener.waitForEvents(30000);
     TabularFormater info = waitingListener.getTabularFormaterEventLogInfo();
     info.setTitle("Waiting for vm-master events to make sure it is launched properly");
@@ -55,16 +56,20 @@ public class VMClusterBuilder {
     }
   }
   
-  public VMWaitingEventListener createVMMaster(String name) throws Exception {
+  public WaitingNodeEventListener createVMMaster(String vmId) throws Exception {
     if(!vmClient.getRegistry().isConnect()) {
       vmClient.getRegistry().connect() ;
     }
-    VMWaitingEventListener waitingListener = new VMWaitingEventListener(vmClient.getRegistry());
-    waitingListener.waitVMStatus(format("Expect %s with running status", name), name, VMStatus.RUNNING);
-    waitingListener.waitHeartbeat(format("Expect %s has connected heartbeat", name), name, true);
-    waitingListener.waitVMServiceStatus("Wait for the master status running", VMService.Status.RUNNING);
-    h1(format("Create VM master %s", name));
-    vmClient.createVMMaster(name);
+    
+    WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(vmClient.getRegistry()) ;
+    String vmStatusPath = VMService.getVMStatusPath(vmId);
+    waitingListener.add(vmStatusPath, VMStatus.RUNNING, "Wait for RUNNING status for vm " + vmId, true);
+    String vmHeartbeatPath = VMService.getVMHeartbeatPath(vmId);
+    waitingListener.addCreate(vmHeartbeatPath, format("Expect %s has connected heartbeat", vmId), true);
+    String vmServiceStatusPath = VMService.MASTER_PATH + "/status";
+    waitingListener.add(vmServiceStatusPath, VMService.Status.RUNNING, "Wait for VMService RUNNING status ", true);
+    h1(format("Create VM master %s", vmId));
+    vmClient.createVMMaster(vmId);
     return waitingListener;
   }
   

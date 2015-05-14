@@ -83,6 +83,18 @@ abstract public class WaitingNodeEventListener {
     add(path, expectData, desc);
   }
   
+  public <T> void addCreate(String path, String desc, boolean checkBeforeWatch) throws Exception {
+    Registry registry = registryListener.getRegistry() ;
+    if(checkBeforeWatch && registry.exists(path))  return;
+    this.add(path, NodeEvent.Type.CREATE, desc);
+  }
+  
+  public <T> void addDelete(String path, String desc, boolean checkBeforeWatch) throws Exception {
+    Registry registry = registryListener.getRegistry() ;
+    if(checkBeforeWatch && !registry.exists(path)) return;
+    this.add(path, NodeEvent.Type.DELETE, desc);
+  }
+  
   public <T> void add(String path, NodeEventMatcher matcher) throws Exception {
     add(path, matcher, null);
   }

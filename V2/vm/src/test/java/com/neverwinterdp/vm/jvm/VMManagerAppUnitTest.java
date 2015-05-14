@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
+import com.neverwinterdp.registry.event.WaitingNodeEventListener;
+import com.neverwinterdp.registry.event.WaitingRandomNodeEventListener;
 import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.text.TabularFormater;
@@ -19,6 +21,7 @@ import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.event.VMWaitingEventListener;
+import com.neverwinterdp.vm.service.VMService;
 import com.neverwinterdp.vm.service.VMServiceCommand;
 import com.neverwinterdp.vm.tool.VMZKClusterBuilder;
 import com.neverwinterdp.vm.util.VMNodeDebugger;
@@ -52,7 +55,7 @@ public class VMManagerAppUnitTest  {
   @Test
   public void testMaster() throws Exception {
     try {
-      VMWaitingEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
+      WaitingNodeEventListener master1waitingListener = vmCluster.createVMMaster("vm-master-1");
       master1waitingListener.waitForEvents(5000);
       TabularFormater info = master1waitingListener.getTabularFormaterEventLogInfo();
       info.setTitle("Waiting for vm-master events to make sure it is launched properly");
@@ -67,33 +70,37 @@ public class VMManagerAppUnitTest  {
       
       VMWaitingEventListener eventsListener = new VMWaitingEventListener(shell.getVMClient().getRegistry());
       banner("Create VM Dummy 1");
-      eventsListener.waitVMStatus("Expect vm-dummy-1 with running status", "vm-dummy-1", VMStatus.RUNNING);
-      eventsListener.waitHeartbeat("Expect vm-dummy-1 has connected heartbeat", "vm-dummy-1", true);
+      
+      WaitingNodeEventListener vmDummy1WaitingEventListener = createVMWaitingNodeEventListener("vm-dummy-1");
       VMDescriptor vmDummy1 = allocate(vmClient, "vm-dummy-1") ;
-      eventsListener.waitForEvents(5000);
+      vmDummy1WaitingEventListener.waitForEvents(5000);
 
       shell.execute("registry dump");
 
       banner("Shutdown VM Master 1");
       //shutdown vm master 1 , the vm-master-2 should pickup the leader role.
-      eventsListener.waitVMStatus("Expect vm-master-1 with terminated status", "vm-master-1", VMStatus.TERMINATED);
-      eventsListener.waitHeartbeat("Expect vm-master-1 has connected heartbeat", "vm-master-1", false);
-      eventsListener.waitVMMaster("Expect the vm-master-2 will be elected", "vm-master-2");
+      WaitingNodeEventListener shutdownVMMaster1WaitingListener = new WaitingRandomNodeEventListener(vmClient.getRegistry()) ;
+      shutdownVMMaster1WaitingListener.add(VMService.getVMStatusPath("vm-master-1"), VMStatus.TERMINATED, "Wait for TERMINATED status for vm-master-1", true);
+      shutdownVMMaster1WaitingListener.addDelete(VMService.getVMHeartbeatPath("vm-master-1"), "Expect  delete heartbeat for vm-master-1", true);
+      //TODO: add assert vm-master-2 become leader
       vmClient.shutdown(vmClient.getMasterVMDescriptor());
-      //vmMaster1.shutdown();
-      eventsListener.waitForEvents(5000);
+      shutdownVMMaster1WaitingListener.waitForEvents(5000);
       shell.execute("registry dump");
 
       banner("Create VM Dummy 2");
+      WaitingNodeEventListener vmDummy2WaitingEventListener = createVMWaitingNodeEventListener("vm-dummy-2");
       VMDescriptor vmDummy2 = allocate(vmClient, "vm-dummy-2") ;
+      vmDummy2WaitingEventListener.waitForEvents(5000);
       shell.execute("registry dump");
 
       banner("Shutdown VM Dummy 1 and 2");
-      eventsListener.waitVMStatus("Expect vm-dummy-1 terminated status", "vm-dummy-1", VMStatus.TERMINATED);
-      eventsListener.waitVMStatus("Expect vm-dummy-2 terminated status", "vm-dummy-2", VMStatus.TERMINATED);
+      WaitingNodeEventListener shutdownDummysWaitingListener = new WaitingRandomNodeEventListener(vmClient.getRegistry()) ;
+      shutdownDummysWaitingListener.add(VMService.getVMStatusPath("vm-dummy-1"), VMStatus.TERMINATED, "Wait for TERMINATED status for vm-dummy-1", true);
+      shutdownDummysWaitingListener.add(VMService.getVMStatusPath("vm-dummy-2"), VMStatus.TERMINATED, "Wait for TERMINATED status for vm-dummy-2", true);
+      
       Assert.assertTrue(shutdown(vmClient, vmDummy2));
       Assert.assertTrue(shutdown(vmClient, vmDummy1));
-      eventsListener.waitForEvents(10000);
+      shutdownDummysWaitingListener.waitForEvents(10000);
       
       vmClient.shutdown();
     } catch(Exception ex) {
@@ -112,16 +119,17 @@ public class VMManagerAppUnitTest  {
     System.out.println("------------------------------------------------------------------------");
   }
   
-  private VMDescriptor allocate(VMClient vmClient, String name) throws Exception {
+  private VMDescriptor allocate(VMClient vmClient, String vmId) throws Exception {
     VMDescriptor masterVMDescriptor = vmClient.getMasterVMDescriptor();
     String[] args = {
-      "--name", name,
+      "--name", vmId,
       "--role", "dummy",
       "--registry-connect", "127.0.0.1:2181", 
       "--registry-db-domain", "/NeverwinterDP",
       "--registry-implementation", RegistryImpl.class.getName(),
       "--vm-application", VMDummyApp.class.getName()
     };
+    
     VMConfig vmConfig = new VMConfig() ;
     new JCommander(vmConfig, args);
     CommandResult<?> result = vmClient.execute(masterVMDescriptor, new VMServiceCommand.Allocate(vmConfig));
@@ -129,6 +137,15 @@ public class VMManagerAppUnitTest  {
     VMDescriptor vmDescriptor = result.getResultAs(VMDescriptor.class);
     Assert.assertNotNull(vmDescriptor);
     return vmDescriptor;
+  }
+  
+  private WaitingNodeEventListener createVMWaitingNodeEventListener(String vmId) throws Exception {
+    WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(vmClient.getRegistry()) ;
+    String vmStatusPath = VMService.getVMStatusPath(vmId);
+    waitingListener.add(vmStatusPath, VMStatus.RUNNING, "Wait for RUNNING status for vm " + vmId, true);
+    String vmHeartbeatPath = VMService.getVMHeartbeatPath(vmId);
+    waitingListener.addCreate(vmHeartbeatPath, "Expect  heartbeat for " + vmId, true);
+    return waitingListener;
   }
   
   private boolean shutdown(VMClient vmClient, VMDescriptor vmDescriptor) throws Exception {
