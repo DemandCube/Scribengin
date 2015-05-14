@@ -1,6 +1,7 @@
 #Set up docker images
 DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --deploy-scribengin --start-cluster
+$DOCKERSCRIBEDIR/../docker.sh host-sync
 
 #make folder for test results
 mkdir testresults
