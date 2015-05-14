@@ -115,7 +115,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
       List<String> workers = dflRegistry.getActiveWorkerNames();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
-        String path = dflRegistry.getWorkersNode(workers.get(i)) + "/status" ;
+        String path = dflRegistry.getWorkerNode(workers.get(i)) + "/status" ;
         waitingListener.add(path, DataflowWorkerStatus.RUNNING);
       }
       

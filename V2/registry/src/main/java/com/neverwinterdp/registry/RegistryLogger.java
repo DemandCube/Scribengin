@@ -14,6 +14,10 @@ public class RegistryLogger {
     logNode = registry.createIfNotExist("/logs/" + path + "-logger") ;
   }
   
+  public RegistryLogger(Registry registry, String rootPath, String relativePath) throws RegistryException {
+    logNode = registry.createIfNotExist( rootPath + "/" + relativePath + "-logger") ;
+  }
+  
   public void info(String name, String mesg) throws RegistryException {
     Log log = new Log("INFO", mesg) ;
     logNode.createChild(log.getTimestampId() + "-INFO-" + name + "-", log, NodeCreateMode.PERSISTENT_SEQUENTIAL);

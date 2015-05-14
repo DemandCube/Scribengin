@@ -330,7 +330,7 @@ public class DataflowRegistry {
   
   public Node getActiveWorkersNode() { return activeWorkers ; }
   
-  public Node getWorkersNode(String vmId) throws RegistryException { 
+  public Node getWorkerNode(String vmId) throws RegistryException { 
     return allWorkers.getChild(vmId) ; 
   }
   
