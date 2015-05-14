@@ -166,7 +166,8 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     executeLog.start();
     System.err.println("Client: start request resume...");
     WaitingOrderNodeEventListener resumeWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
-    resumeWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), DataflowLifecycleStatus.RUNNING);
+    String statusPath = dflClient.getDataflowRegistry().getStatusNode().getPath();
+    resumeWaitingListener.add(statusPath, DataflowLifecycleStatus.RUNNING, "Expect RUNNING for the dataflow status", true);
     dflClient.setDataflowEvent(DataflowEvent.RESUME);
     resumeWaitingListener.waitForEvents(maxWaitForResume);
     if(resumeWaitingListener.getUndetectNodeEventCount() > 0) {

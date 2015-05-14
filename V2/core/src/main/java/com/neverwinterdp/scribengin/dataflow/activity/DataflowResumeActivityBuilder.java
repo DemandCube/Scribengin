@@ -66,11 +66,7 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
       }
       
       dflRegistry.broadcastWorkerEvent(DataflowEvent.RESUME);
-      
       waitingListener.waitForEvents(30 * 1000);
-      if(waitingListener.getUndetectNodeEventCount() > 0) {
-        throw new Exception("Cannot detect the RUNNING status for " + waitingListener.getUndetectNodeEventCount() + " workers") ;
-      }
     }
   }
   
