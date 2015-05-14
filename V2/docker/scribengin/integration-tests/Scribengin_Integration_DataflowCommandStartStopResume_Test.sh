@@ -11,7 +11,7 @@ sleep 5
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
 
-ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
+#ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "/opt/cluster/clusterCommander.py monitor --update-interval 15" &
 
 #MONITOR_PID=$!
 
@@ -20,7 +20,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/jun
       cd /opt/scribengin/scribengin && ./bin/shell.sh dataflow-test start-stop-resume  \
               --dataflow-id kafka-to-kafka-1 \
               --sleep-before-stop    30000 \
-              --sleep-before-resume  5000 \
+              --sleep-before-resume  15000 \
               --wait-before-start    15000 \
               --max-wait-for-stop    30000 \
               --max-wait-for-resume  30000 \
