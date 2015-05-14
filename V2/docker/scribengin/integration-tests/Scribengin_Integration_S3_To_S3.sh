@@ -1,7 +1,7 @@
 #Set up docker images
 DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --deploy-scribengin --start-cluster
-  scp -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
+  scp -o "StrictHostKeyChecking no" -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
   echo $HOME
   echo $USER
   echo "testing existence of .aws folder on local host"
@@ -12,7 +12,7 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   fi
 
  echo "testing existence of .aws folder on remote host"
-  if ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "[ -d /home/neverwinterdp/.aws ]" ; then
+  if "ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master" "[ -d /home/neverwinterdp/.aws ]" ; then
      echo its there on remote 
   else 
      echo its not there on remote 
