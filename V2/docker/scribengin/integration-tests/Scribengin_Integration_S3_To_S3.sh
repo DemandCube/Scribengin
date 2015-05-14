@@ -12,10 +12,10 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   fi
 
  echo "testing existence of .aws folder on remote host"
-  if ssh neverwinterdp@hadoop-master "[ -d /home/neverwinterdp/.aws ]"
-     echo its there on remote ; 
+  if ssh neverwinterdp@hadoop-master "[ -d /home/neverwinterdp/.aws ]" ; then
+     echo its there on remote 
   else 
-     echo its not there on remote ; 
+     echo its not there on remote 
   fi
 
 #make folder for test results
