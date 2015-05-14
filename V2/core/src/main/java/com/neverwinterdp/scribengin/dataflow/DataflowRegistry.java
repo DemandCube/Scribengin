@@ -229,14 +229,13 @@ public class DataflowRegistry {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         //TODO: use the transaction
-        
         descriptor.setStatus(Status.SUSPENDED);    
-        dataflowTaskUpdate(descriptor);
         Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
         String name = descriptorNode.getName();
-        tasksAvailableQueue.offer(name.getBytes());
-        //tasksAssignedNode.getChild(dataflowName).rdelete();
+        
         Transaction transaction = registry.getTransaction();
+        transaction.setData(descriptor.getRegistryPath(), descriptor) ;
+        tasksAvailableQueue.offer(transaction, name.getBytes());
         transaction.rdelete(tasksAssignedNode.getPath() + "/" + name);
         transaction.commit();
         return true;

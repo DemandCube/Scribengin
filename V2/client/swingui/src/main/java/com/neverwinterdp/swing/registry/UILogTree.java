@@ -20,9 +20,9 @@ public class UILogTree extends UIRegistryTree {
   }
   
   public RegistryTreeNode onCustomTreeNode(RegistryTreeNode node) {
-    if(loggerNodeMatcher.matches(node)) {
-      node.setAllowsChildren(false);
-    }
+//    if(loggerNodeMatcher.matches(node)) {
+//      node.setAllowsChildren(false);
+//    }
     return node ;
   }
 }
