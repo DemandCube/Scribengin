@@ -202,7 +202,7 @@ public class DataflowRegistry {
   }
   
   public DataflowTaskDescriptor assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
-    Lock lock = tasksLock.getLock("write") ;
+    Lock lock = tasksLock.getLock("write", "Lock to assign task to " + vmDescriptor.getId()) ;
     BatchOperations<DataflowTaskDescriptor> getAssignedtaskOp = new BatchOperations<DataflowTaskDescriptor>() {
       @Override
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
@@ -224,7 +224,7 @@ public class DataflowRegistry {
   
   
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write") ;
+    Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to suspend") ;
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
@@ -246,7 +246,7 @@ public class DataflowRegistry {
   }
 
   public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write") ;
+    Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish") ;
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {

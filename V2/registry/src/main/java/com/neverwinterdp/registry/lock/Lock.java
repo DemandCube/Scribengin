@@ -18,11 +18,17 @@ public class Lock {
   private String    lockDir ;
   private String    name ;
   private LockId    lockId ;
+  private String    description;
   
   public Lock(Registry registry, String dir, String name) {
+    this(registry, dir, name, "") ;
+  }
+  
+  public Lock(Registry registry, String dir, String name, String desc) {
     this.registry = registry;
     this.lockDir = dir ;
     this.name = name ;
+    this.description = desc; 
   }
   
   public Registry getRegistry() { return this.registry ; }
@@ -31,12 +37,14 @@ public class Lock {
   
   public String getLockDir() { return this.lockDir ; }
   
+  public String getDescription() { return this.description; }
+  
   public LockId lock(long timeout) throws RegistryException {
     if(lockId != null) {
       throw new RegistryException(ErrorCode.Unknown, "The lock is already created") ;
     }
     String lockPath = lockDir + "/" + name + "-" + registry.getSessionId() + "-" ;
-    Node node = registry.create(lockPath , new byte[0], NodeCreateMode.EPHEMERAL_SEQUENTIAL);
+    Node node = registry.create(lockPath , description.getBytes(), NodeCreateMode.EPHEMERAL_SEQUENTIAL);
     lockId = new LockId(node.getPath()) ;
     SortedSet<LockId> currentLockIds = getSortedLockIds() ;
     LockId ownerId = currentLockIds.first() ;
