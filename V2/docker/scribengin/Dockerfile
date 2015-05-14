@@ -91,7 +91,7 @@ RUN /tmp/post-install/post-install.sh
 #RUN su neverwinterdp -c "chmod -R 700    /home/neverwinterdp/.ssh/ && chmod 644 /home/neverwinterdp/.ssh/authorized_keys"
 
 #Copy the AWS credentials folder to the containers
-ADD /home/root/.aws /home/neverwinterdp/.aws
+ADD /root/.aws /home/neverwinterdp/.aws
 
 RUN rm -rf          /tmp/*.tgz
 RUN rm -rf          /tmp/post-install
