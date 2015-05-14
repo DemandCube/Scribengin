@@ -4,12 +4,15 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   scp -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
   echo $HOME
   echo $USER
-  echo testing existence of .aws folder
+  echo "testing existence of .aws folder on local host"
   if [ -d /root/.aws ] ; then 
     echo "pasword exists on host !!!!"
   else
     echo "we have the wrong host location."
   fi
+
+ echo "testing existence of .aws folder on remote host"
+if ssh neverwinterdp@hadoop-master test -e "/home/neverwinterdp/.aws" ; then echo its there on remote ; else its not there on remote ; fi
 
 #make folder for test results
 mkdir testresults
