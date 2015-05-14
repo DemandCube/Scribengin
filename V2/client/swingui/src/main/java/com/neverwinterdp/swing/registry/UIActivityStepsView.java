@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
@@ -76,18 +77,23 @@ public class UIActivityStepsView extends JPanel implements UILifecycle {
       
       addRow("Try Count: ",    step.getTryCount());
       addRow("Execute Time: ", step.getExecuteTime() + "ms");
-      addRow("Logs: ",         getLogs(step));
+      if(step.getLogs() != null) {
+        JTextArea logArea = new JTextArea() ;
+        logArea.setRows(5);
+        logArea.setText(getLogs(step));
+        addRow("Logs: ", new JScrollPane(logArea));
+      } else {
+        addRow("Logs: ", "No log is available");
+      }
       makeCompactGrid();
     }
     
     private String getLogs(ActivityStep step) {
       StringBuilder logB = new StringBuilder() ;
       if(step.getLogs() != null) {
-        logB.append("<html>") ;
         for(String log : step.getLogs()) {
-          logB.append(log).append("<br/>");
+          logB.append(log).append("\n\n");
         }
-        logB.append("</html>") ;
       }
       return logB.toString();
     }
