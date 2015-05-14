@@ -67,7 +67,9 @@ function build_image() {
   cp -R -f $DOCKERSCRIBEDIR/../../release/build/release $DOCKERSCRIBEDIR/tmp/release
   cp -R -f $DOCKERSCRIBEDIR/../../tools/cluster $DOCKERSCRIBEDIR/tmp/cluster
   
-  
+  #Copy aws credentials file to $DOCKERSCRIBEDIR/tmp
+  # cp -R /root/.aws $DOCKERSCRIBEDIR/tmp
+
   #Use existing key if it already exists
   if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
     cat ~/.ssh/id_rsa > $DOCKERSCRIBEDIR/tmp/id_rsa
@@ -277,6 +279,7 @@ function host_sync() {
   scp -r ./bootstrap/post-install/kafka      neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/zookeeper  neverwinterdp@hadoop-master:/opt/
   scp -r ./bootstrap/post-install/cluster.sh neverwinterdp@hadoop-master:/opt/
+  scp -r /root/.aws neverwinterdp@hadoop-master:~/
   
   ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/cluster && yes | ./clusterCommander.py cluster --sync hadoop-master"
 }
