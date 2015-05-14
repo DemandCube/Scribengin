@@ -12,11 +12,12 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   fi
 
  echo "testing existence of .aws folder on remote host"
-  if "ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master" "[ -d /home/neverwinterdp/.aws ]" ; then
-     echo its there on remote 
-  else 
-     echo its not there on remote 
-  fi
+is_exists=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -d /home/neverwinterdp/.aws ] ; then echo '0';else echo '1'; fi"`
+if [ $is_exists == '0' ]; then
+  echo "Directory exists"
+else
+  echo "Directory does not exists"
+fi
 
 #make folder for test results
 mkdir testresults
