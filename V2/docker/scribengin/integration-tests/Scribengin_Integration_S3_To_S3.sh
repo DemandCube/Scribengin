@@ -1,11 +1,13 @@
 #Set up docker images
 DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --deploy-scribengin --start-cluster
-  scp -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
+  scp -r $HOME/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
   
   echo testing existence of .aws folder
   if [ -d "$HOME/.aws" ] ; then 
     echo "pasword exists on host !!!!"
+  elif
+    echo hamna
   fi
 
 #make folder for test results
