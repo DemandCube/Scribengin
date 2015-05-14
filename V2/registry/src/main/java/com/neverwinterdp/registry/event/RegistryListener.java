@@ -41,6 +41,7 @@ public class RegistryListener {
     }
     
     String key = createKey(path, nodeWatcher);
+    if(watchers.containsKey(key)) return ;
     NodeWatcherWrapper wrapper = null ;
     if(!persistent) {
       wrapper = new OneTimeNodeWatcher(key, nodeWatcher);
@@ -57,6 +58,7 @@ public class RegistryListener {
   
   public void watchModify(String path, NodeWatcher nodeWatcher, boolean persistent) throws RegistryException {
     String key = createKey(path, nodeWatcher);
+    if(watchers.containsKey(key)) return ;
     NodeWatcherWrapper wrapper = null ;
     if(!persistent) {
       wrapper = new OneTimeNodeWatcher(key, nodeWatcher);
@@ -86,6 +88,7 @@ public class RegistryListener {
   
   public void watchChildren(String path, NodeWatcher nodeWatcher, boolean persistent) throws RegistryException {
     String key = createKey(path, nodeWatcher);
+    if(watchers.containsKey(key)) return;
     NodeWatcherWrapper wrapper = null ;
     if(!persistent) {
       wrapper = new OneTimeNodeWatcher(key, nodeWatcher);
@@ -119,9 +122,6 @@ public class RegistryListener {
   
   private String createKey(String path, NodeWatcher watcher) throws RegistryException {
     String key =  path + "[" + watcher.getClass().getName() + "#" + watcher.hashCode() + "]";
-    if(watchers.containsKey(key)) {
-      throw new RegistryException(ErrorCode.Unknown, "Already watch " + path + " with the watcher " + watcher.getClass()) ;
-    }
     return key;
   }
   
