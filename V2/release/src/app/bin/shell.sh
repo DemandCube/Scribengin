@@ -51,6 +51,7 @@ fi
 
 echo $HOME
 echo $USER
+ls $HOME
 
 if [ -d "$HOME/.aws" ] ; then 
   echo "pasword iko !!!!"
