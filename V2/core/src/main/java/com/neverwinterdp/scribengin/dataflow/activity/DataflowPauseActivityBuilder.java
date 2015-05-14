@@ -80,18 +80,12 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
         String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.PAUSE);
+        waitingListener.add(path, DataflowWorkerStatus.PAUSE, "Wait for status PAUSE on " + workers.get(i));
       }
       
       dflRegistry.broadcastWorkerEvent(DataflowEvent.PAUSE);
       
       waitingListener.waitForEvents(30 * 1000);
-      if(waitingListener.getUndetectNodeEventCount() > 0) {
-        dflRegistry.dump();
-        TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo() ;
-        System.err.println(formater.getFormatText());
-        throw new Exception("Cannot detect the PAUSE status for " + waitingListener.getUndetectNodeEventCount() + " workers") ;
-      }
     }
   }
   
