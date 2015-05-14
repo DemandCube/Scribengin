@@ -5,6 +5,7 @@ public class ActivityExecutionContext {
   private ActivityService     activityService;
   private ActivityCoordinator activityCoordinator;
   private boolean             abort = false;
+  private Throwable           error = null ;
 
   public ActivityExecutionContext(Activity activity, ActivityService service) {
     this.activity = activity;
@@ -24,6 +25,9 @@ public class ActivityExecutionContext {
   public void setAbort(boolean abort) {
     this.abort = abort;
   }
+
+  public Throwable getError() { return error; }
+  public void setError(Throwable error) { this.error = error; }
 
   public synchronized void notifyTermination() {
     notifyAll();

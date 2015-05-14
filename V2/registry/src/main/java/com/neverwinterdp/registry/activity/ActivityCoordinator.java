@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.util.ExceptionUtil;
 
 abstract public class ActivityCoordinator {
   private List<ActivityCoordinatorAdapter> adapters = new ArrayList<>();
@@ -42,16 +43,22 @@ abstract public class ActivityCoordinator {
     ActivityService service = ctx.getActivityService();
     for(int i = 0; i < activitySteps.size(); i++) {
       long startTime = System.currentTimeMillis();
-      ActivityStep nextStep = activitySteps.get(i);
-      service.updateActivityStepAssigned(activity, nextStep);
-      for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, nextStep);
-      execute(ctx, activity, nextStep);
-      for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, nextStep);
-      service.updateActivityStepFinished(activity, nextStep);
+      ActivityStep selectStep = activitySteps.get(i);
+      service.updateActivityStepAssigned(activity, selectStep);
+      try {
+        for(ActivityCoordinatorAdapter sel : adapters) sel.beforeExecute(ctx, activity, selectStep);
+        execute(ctx, activity, selectStep);
+        for(ActivityCoordinatorAdapter sel : adapters) sel.afterExecute(ctx, activity, selectStep);
+      } catch(Exception ex) {
+        selectStep.addLog(ExceptionUtil.getStackTrace(ex));
+        ctx.setError(ex);
+        ctx.setAbort(true); 
+      } 
+      service.updateActivityStepFinished(activity, selectStep);
       if(ctx.isAbort()) break;
       long executeTime = System.currentTimeMillis() - startTime ;
-      nextStep.setExecuteTime(executeTime);
-      nextStep.setTryCount(i + 1);
+      selectStep.setExecuteTime(executeTime);
+      selectStep.setTryCount(i + 1);
     }
     onFinish(ctx, activity);
   }
