@@ -25,6 +25,7 @@ import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.Fonts;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
+import com.neverwinterdp.util.text.DateUtil;
 
 @SuppressWarnings("serial")
 public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
@@ -122,7 +123,7 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       for(int i = 0; i < logs.size(); i++) {
         RegistryLogger.Log log = logs.get(i) ;
         Object[] cells = {
-          log.getTimestamp(), log.getLevel(), log.getMessage()
+          DateUtil.asCompactDateTime(log.getTimestamp()), log.getLevel(), log.getMessage()
         };
         addRow(cells);
       }
@@ -143,7 +144,7 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       clear() ;
       createBorder("Log Detail");
       if(log != null) {
-        addRow("Timestamp", log.getTimestamp());
+        addRow("Timestamp", DateUtil.asCompactDateTime(log.getTimestamp()));
         addRow("Level",     log.getLevel());
         JTextArea text = new JTextArea() ;
         text.setFont(Fonts.FIXED);

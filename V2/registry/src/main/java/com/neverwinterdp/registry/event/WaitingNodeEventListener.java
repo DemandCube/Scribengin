@@ -102,8 +102,12 @@ abstract public class WaitingNodeEventListener {
     try {
       while(detectNodeEventCount < waitingNodeEventCount) {
         long maxWaitTime = stopTime - System.currentTimeMillis();
-        if(maxWaitTime <= 0) return;
+        if(maxWaitTime <= 0) break;
         wait(maxWaitTime);
+      }
+      if(detectNodeEventCount != waitingNodeEventCount) {
+        TabularFormater formater = this.getTabularFormaterEventLogInfo() ;
+        throw new Exception(formater.getFormattedText());
       }
     } catch (InterruptedException e) {
       throw new Exception("Cannot wait for the events in " + timeout + "ms") ;

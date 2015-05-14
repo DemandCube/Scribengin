@@ -120,9 +120,6 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       }
       
       waitingListener.waitForEvents(30 * 1000);
-      TabularFormater formater = waitingListener.getTabularFormaterEventLogInfo();
-      formater.setTitle("Wait for worker running status");
-      System.err.println(formater.getFormatText());
     }
   }
 }
