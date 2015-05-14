@@ -5,7 +5,7 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   echo $HOME
   echo $USER
   echo testing existence of .aws folder
-  if [ -d /root/.aws" ] ; then 
+  if [ -d /root/.aws ] ; then 
     echo "pasword exists on host !!!!"
   else
     echo "we have the wrong host location."
