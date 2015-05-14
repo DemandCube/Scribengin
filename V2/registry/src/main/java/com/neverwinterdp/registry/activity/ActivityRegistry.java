@@ -1,5 +1,6 @@
 package com.neverwinterdp.registry.activity;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.Node;
@@ -64,7 +65,9 @@ public class ActivityRegistry {
   
   public List<ActivityStep> getActivitySteps(String name) throws RegistryException {
     Node stepsNode = allNode.getDescendant(name + "/activity-steps");
-    return stepsNode.getChildrenAs(ActivityStep.class) ;
+    List<ActivityStep> steps = stepsNode.getChildrenAs(ActivityStep.class) ;
+    Collections.sort(steps, ActivityStep.COMPARATOR);
+    return steps ;
   }
   
   public void history(Activity activity) throws RegistryException {

@@ -1,12 +1,21 @@
 package com.neverwinterdp.registry.activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ActivityStep {
   static public enum Status { INIT, ASSIGNED, EXECUTING, FINISHED, FINISHED_WITH_ERROR }
+  
+  static public Comparator<ActivityStep> COMPARATOR = new Comparator<ActivityStep>() {
+    @Override
+    public int compare(ActivityStep o1, ActivityStep o2) {
+      return o1.getId().compareTo(o2.getId());
+    }
+  };
   
   private String              description;
   private String              type;
