@@ -75,12 +75,12 @@ public class DataflowPauseActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
-      List<String> workers = workerNodes.getChildren();
+      List<String> activeWorkers = dflRegistry.getActiveWorkersNode().getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
-      for(int i = 0; i < workers.size(); i++) {
-        String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.PAUSE, "Wait for status PAUSE on " + workers.get(i));
+      for(int i = 0; i < activeWorkers.size(); i++) {
+        Node workerNode = dflRegistry.getWorkerNode(activeWorkers.get(i));
+        String path = workerNode.getPath() + "/status" ;
+        waitingListener.add(path, DataflowWorkerStatus.PAUSE, "Wait for status PAUSE on " + activeWorkers.get(i));
       }
       
       dflRegistry.broadcastWorkerEvent(DataflowEvent.PAUSE);
