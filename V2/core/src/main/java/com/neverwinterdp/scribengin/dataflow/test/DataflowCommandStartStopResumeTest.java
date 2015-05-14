@@ -13,6 +13,7 @@ import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.util.text.TabularFormater;
@@ -139,6 +140,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
   }
   
   ExecuteLog doStop(DataflowClient dflClient, DataflowEvent stopEvent) throws Exception {
+    DataflowRegistry dflRegistry = dflClient.getDataflowRegistry();
     ExecuteLog executeLog = new ExecuteLog("Stop the dataflow with the event " + stopEvent) ;
     executeLog.start(); 
     DataflowLifecycleStatus expectStatus = DataflowLifecycleStatus.PAUSE;
@@ -147,7 +149,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     }
     System.err.println("Client: start request stop, event = " + stopEvent + ", expect status = " + expectStatus);
     WaitingOrderNodeEventListener stopWaitingListener = new WaitingOrderNodeEventListener(dflClient.getRegistry());
-    stopWaitingListener.add(dflClient.getDataflowRegistry().getStatusNode().getPath(), expectStatus);
+    stopWaitingListener.add(dflRegistry.getStatusNode().getPath(), expectStatus, "Wait for dataflow status " + expectStatus, true);
     dflClient.setDataflowEvent(stopEvent);
     stopWaitingListener.waitForEvents(maxWaitForStop);
     if(stopWaitingListener.getUndetectNodeEventCount() > 0) {
