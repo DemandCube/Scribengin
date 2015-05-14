@@ -57,12 +57,12 @@ public class DataflowResumeActivityBuilder extends ActivityBuilder {
     @Override
     public void execute(ActivityExecutionContext ctx, Activity activity, ActivityStep step) throws Exception {
       DataflowRegistry dflRegistry = service.getDataflowRegistry();
-      Node workerNodes = dflRegistry.getActiveWorkersNode() ;
-      List<String> workers = workerNodes.getChildren();
+      List<String> workers = dflRegistry.getActiveWorkersNode().getChildren();
       WaitingNodeEventListener waitingListener = new WaitingRandomNodeEventListener(dflRegistry.getRegistry()) ;
       for(int i = 0; i < workers.size(); i++) {
-        String path = workerNodes.getPath() + "/" + workers.get(i) + "/status" ;
-        waitingListener.add(path, DataflowWorkerStatus.RUNNING);
+        Node workerNode = dflRegistry.getWorkerNode(workers.get(i)) ;
+        String path = workerNode.getPath() + "/status" ;
+        waitingListener.add(path, DataflowWorkerStatus.RUNNING, "Expect the RUNNING status for worker " + workers.get(i));
       }
       
       dflRegistry.broadcastWorkerEvent(DataflowEvent.RESUME);
