@@ -51,11 +51,9 @@ fi
 
 echo $HOME
 echo $USER
-homes=ls $HOME
-echo $homes
 
 if [ -d "$HOME/.aws" ] ; then 
-  echo "pasword iko !!!!"
+  echo "pasword exists!!!!"
 fi
 
 $JAVACMD -Djava.ext.dirs=$APP_DIR/libs:$JAVA_HOME/jre/lib/ext $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
