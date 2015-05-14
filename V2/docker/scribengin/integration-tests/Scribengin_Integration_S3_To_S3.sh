@@ -6,8 +6,8 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   echo testing existence of .aws folder
   if [ -d "$HOME/.aws" ] ; then 
     echo "pasword exists on host !!!!"
-  elif
-    echo hamna
+  else
+    echo "hamna"
   fi
 
 #make folder for test results
