@@ -57,8 +57,6 @@ public class VMCommand {
     @Override
     public CommandResult<?> execute(VM vm) {
       try {
-        VMRegistryLogger logger = new VMRegistryLogger(vm.getVMRegistry().getRegistry(), vm.getDescriptor(), "kill") ;
-        logger.info("server-got-kill-command", "The server got the kill command, server = " + vm.getDescriptor().getId());
       } catch(Exception ex) {
         ex.printStackTrace();
       }

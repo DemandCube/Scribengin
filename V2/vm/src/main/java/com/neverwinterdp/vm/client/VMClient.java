@@ -110,9 +110,6 @@ public class VMClient {
   }
   
   public boolean kill(VMDescriptor vmDescriptor) throws Exception {
-    VMRegistryLogger logger = new VMRegistryLogger(getRegistry(), vmDescriptor, "kill") ;
-    logger.info("send-kill-command", "send kill command for vm " + vmDescriptor.getId());
-    
     //CommandResult<?> result = execute(vmDescriptor, new VMCommand.Kill());
     
     Command command = new VMCommand.Kill();
@@ -121,19 +118,11 @@ public class VMClient {
     CommandReponseWatcher responseWatcher = new CommandReponseWatcher(registry, node.getPath(), command);
     node.watchModify(responseWatcher);
     
-    logger.info("before-wait-for-kill-command-result", "Before wait for the kill command result for vm " + vmDescriptor.getId());
     try {
       CommandResult<?> result = responseWatcher.waitForResult(60000);
-      String msg = "Success wait for the kill command result for vm " + vmDescriptor.getId() ;
-      msg += "\npath = " + node.getPath();
-      logger.info("success-wait-for-kill-command-result", msg);
       if(result.isDiscardResult()) return true;
       return result.getResultAs(Boolean.class);
     } catch(Exception ex) {
-      String message = "Fail wait for the kill command result for vm " + vmDescriptor.getId() ;
-      message += "\npath = " + node.getPath();
-      message += "\n" + ExceptionUtil.getStackTrace(ex) ;
-      logger.info("fail-wait-for-kill-command-result", message);
       throw ex ;
     }
   }

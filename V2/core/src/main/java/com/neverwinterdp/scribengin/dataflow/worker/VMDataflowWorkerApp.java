@@ -74,8 +74,6 @@ public class VMDataflowWorkerApp extends VMApp {
           } else if(terminateEvent == TerminateEvent.SimulateKill) {
             dataflowTaskExecutorService.simulateKill();
           } else if(terminateEvent == TerminateEvent.Kill) {
-            VMRegistryLogger logger = new VMRegistryLogger(getVM().getVMRegistry().getRegistry(), vmApp.getVM().getDescriptor(), "kill") ;
-            logger.info("kill", "call System.exit(0) to kill the vm " + vmApp.getVM().getDescriptor().getId());
             System.exit(0);
           }
         } catch (Exception e) {
