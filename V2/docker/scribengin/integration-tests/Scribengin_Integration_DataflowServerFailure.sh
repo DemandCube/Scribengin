@@ -20,8 +20,8 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "mkdir -p /opt/jun
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && \
   ./bin/shell.sh dataflow-test random-server-failure \
     --dataflow-id kafka-to-kafka-1 \
-    --dataflow-name kafka-to-kafka \ 
-    --failure-period 30000 --max-failure 30 --simulate-kill" &
+    --wait-for-running-dataflow 180000 \
+    --failure-period 30000 --max-failure 30" &
 
 
 FAILURE_PID=$!
