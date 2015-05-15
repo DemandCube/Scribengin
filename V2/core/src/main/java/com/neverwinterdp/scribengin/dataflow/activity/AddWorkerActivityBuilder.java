@@ -116,7 +116,6 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
         Node workerNode = dflRegistry.getWorkerNode(workers.get(i)) ;
         String statusPath = workerNode.getPath() + "/status" ;
         String logDesc = "Wait for RUNNING status for worker " + workerNode.getName() ;
-        step.addLog(logDesc);
         waitingListener.add(statusPath, DataflowWorkerStatus.RUNNING, logDesc, true);
       }
       
