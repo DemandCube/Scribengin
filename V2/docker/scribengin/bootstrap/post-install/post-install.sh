@@ -29,6 +29,15 @@ cp -r /tmp/post-install/release/*  /opt/scribengin/
 
 cp -r /tmp/post-install/cluster/*  /opt/cluster/
 
+if [ -d /tmp/post-install/aws/.aws ]; then
+  h1 "Set aws credential"
+  cp -r /tmp/post-install/aws/.aws /home/neverwinterdp
+  chown -R neverwinterdp:neverwinterdp /home/neverwinterdp/.aws
+  chmod -R 777 /home/neverwinterdp/.aws
+else
+  h1 "aws does not exists"
+fi
+
 
 h1 "Set up ssh for neverwinterdp user"
 sudo cat /tmp/post-install/ssh-config/id_rsa.pub > /home/neverwinterdp/.ssh/authorized_keys

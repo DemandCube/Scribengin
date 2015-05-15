@@ -83,6 +83,8 @@ ADD tmp/release /tmp/post-install/release/
 RUN mkdir -p  /opt/cluster/
 ADD tmp/cluster /tmp/post-install/cluster/
 
+#Add aws credentials
+ADD tmp/aws /tmp/post-install/aws
 
 RUN /tmp/post-install/post-install.sh
 
