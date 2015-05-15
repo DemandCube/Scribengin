@@ -32,17 +32,18 @@ import com.neverwinterdp.vm.VMDescriptor;
 public class DataflowRegistry {
   final static public String TASKS_PATH = "tasks";
   
-  final static public String TASKS_DESCRIPTORS_PATH = TASKS_PATH + "/descriptors";
-  final static public String TASKS_AVAILABLE_PATH   = TASKS_PATH + "/executors/available";
-  final static public String TASKS_ASSIGNED_PATH    = TASKS_PATH + "/executors/assigned" ;
-  final static public String TASKS_FINISHED_PATH    = TASKS_PATH + "/executors/finished";
-  final static public String TASKS_LOCK_PATH        = TASKS_PATH + "/executors/locks";
+  final static public String TASKS_DESCRIPTORS_PATH       = TASKS_PATH + "/descriptors";
+  final static public String TASKS_AVAILABLE_PATH         = TASKS_PATH + "/executors/available";
+  final static public String TASKS_ASSIGNED_PATH          = TASKS_PATH + "/executors/assigned" ;
+  final static public String TASKS_ASSIGNED_HEARTBEAT_PATH = TASKS_PATH + "/executors/assigned-heartbeat" ;
+  final static public String TASKS_FINISHED_PATH          = TASKS_PATH + "/executors/finished";
+  final static public String TASKS_LOCK_PATH              = TASKS_PATH + "/executors/locks";
 
   final static public String MASTER_EVENT_PATH      = "event/master" ;
   final static public String WORKER_EVENT_PATH      = "event/worker" ;
   final static public String FAILURE_EVENT_PATH     = "event/failure" ;
   
-  final static public String ACTIVITIES_PATH           = "activities";
+  final static public String ACTIVITIES_PATH        = "activities";
   
   final static public String MASTER_PATH            = "master";
   final static public String MASTER_LEADER_PATH     = MASTER_PATH + "/leader";
@@ -73,6 +74,7 @@ public class DataflowRegistry {
   private Node               masterEventNode;
   private DistributedQueue   tasksAvailableQueue;
   private Node               tasksAssignedNode;
+  private Node               tasksAssignedHeartbeatNode;
   private Node               tasksFinishedNode;
   private Node               tasksLock;
   private Node               activeActivitiesNode;
@@ -103,6 +105,7 @@ public class DataflowRegistry {
     
     tasksAvailableQueue = new DistributedQueue(registry, dataflowPath + "/" + TASKS_AVAILABLE_PATH);
     tasksAssignedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
+    tasksAssignedHeartbeatNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_HEARTBEAT_PATH);
     tasksFinishedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
     tasksLock = registry.createIfNotExist(dataflowPath + "/" + TASKS_LOCK_PATH);
     
@@ -124,6 +127,10 @@ public class DataflowRegistry {
   public Node getTasksFinishedNode() { return tasksFinishedNode;}
   
   public Node getTasksAssignedNode() { return tasksAssignedNode; }
+  
+  public DistributedQueue getTasksAvailableQueue() { return tasksAvailableQueue ; }
+  
+  public Node getTasksAssignedHeartbeatNode() { return tasksAssignedHeartbeatNode; }
   
   public Node getActiveActivitiesNode() { return activeActivitiesNode; } 
   
@@ -212,14 +219,22 @@ public class DataflowRegistry {
         Node childNode = tasksDescriptors.getChild(taskName);
         Transaction transaction = registry.getTransaction();
         transaction.createChild(tasksAssignedNode, taskName, NodeCreateMode.PERSISTENT);
-        transaction.createDescendant(tasksAssignedNode, taskName + "/heartbeat", vmDescriptor, NodeCreateMode.EPHEMERAL);
-        transaction.commit();
-        
+        transaction.createChild(tasksAssignedHeartbeatNode, taskName, vmDescriptor,NodeCreateMode.EPHEMERAL);
+        try {
+          transaction.commit();
+        } catch(Exception ex) {
+          try {
+            tasksAssignedNode.getParentNode().dump(System.err);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          throw ex;
+        }
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
         return descriptor;
       }
     };
-    return lock.execute(getAssignedtaskOp, 5, 1000);
+    return lock.execute(getAssignedtaskOp, 1, 3000);
   }
   
   
@@ -235,7 +250,8 @@ public class DataflowRegistry {
         Transaction transaction = registry.getTransaction();
         transaction.setData(descriptor.getRegistryPath(), descriptor) ;
         tasksAvailableQueue.offer(transaction, name.getBytes());
-        transaction.rdelete(tasksAssignedNode.getPath() + "/" + name);
+        transaction.delete(tasksAssignedNode.getPath() + "/" + name);
+        transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + name);
         transaction.commit();
         return true;
       }
@@ -251,14 +267,12 @@ public class DataflowRegistry {
         Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
         String name = descriptorNode.getName();
         descriptor.setStatus(Status.TERMINATED);
-        //TODO Transaction: convert to use the transaction
         Transaction transaction = registry.getTransaction();
         //update the task descriptor
         transaction.setData(descriptor.getRegistryPath(), descriptor);
         transaction.createChild(tasksFinishedNode, name, NodeCreateMode.PERSISTENT);
         transaction.rdelete(tasksAssignedNode.getPath() + "/" + name);
-        //tasksFinishedNode.createChild(transaction, dataflowName, NodeCreateMode.PERSISTENT);
-        //tasksAssignedNode.getChild(dataflowName).rdelete(transaction);
+        transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + name);
         transaction.commit();
         return true;
       }
