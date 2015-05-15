@@ -165,12 +165,13 @@ public class ScribenginClient {
   }
   
   public DataflowClient getDataflowClient(String dataflowId, long timeout) throws Exception {
+    Registry registry = getRegistry() ;
     String dataflowPath = ScribenginService.getDataflowPath(dataflowId);
     long stopTime = System.currentTimeMillis() + timeout;
     while(System.currentTimeMillis() < stopTime) {
-      if(getRegistry().exists(dataflowPath + "/status")) {
-        DataflowLifecycleStatus status = 
-            getRegistry().get(dataflowPath + "/status").getDataAs(DataflowLifecycleStatus.class) ;
+      String statusPath = dataflowPath + "/status";
+      if(getRegistry().exists(statusPath)) {
+        DataflowLifecycleStatus status = registry.get(statusPath).getDataAs(DataflowLifecycleStatus.class) ;
         if(status == DataflowLifecycleStatus.RUNNING ) {
           DataflowClient dataflowClient = new DataflowClient(this, dataflowPath);
           return dataflowClient ;

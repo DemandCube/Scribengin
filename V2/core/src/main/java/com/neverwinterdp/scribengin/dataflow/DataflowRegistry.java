@@ -321,7 +321,7 @@ public class DataflowRegistry {
   }
   
   public int countActiveDataflowWorkers() throws RegistryException {
-    return registry.getChildren(dataflowPath + "/" + ACTIVE_WORKERS_PATH).size();
+    return activeWorkers.getChildren().size();
   }
   
   public Node getAllWorkersNode() { return allWorkers ; }
