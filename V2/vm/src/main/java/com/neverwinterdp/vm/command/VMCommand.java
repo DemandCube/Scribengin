@@ -1,10 +1,8 @@
 package com.neverwinterdp.vm.command;
 
-import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.vm.VM;
 import com.neverwinterdp.vm.VMApp.TerminateEvent;
-import com.neverwinterdp.vm.VMRegistryLogger;
 
 public class VMCommand {
   static public class Terminate extends Command {
