@@ -6,7 +6,7 @@ public class UILogTree extends UIRegistryTree {
   private RegistryTreeNodePathMatcher loggerNodeMatcher ;
   
   
-  public UILogTree() throws Exception {
+  public UILogTree() {
     super("/logs", "Logs");
     loggerNodeMatcher = new RegistryTreeNodePathMatcher() ;
     loggerNodeMatcher.add("/logs/.*/.*-logger");

@@ -8,7 +8,6 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.neverwinterdp.swing.registry.UILogTree;
 import com.neverwinterdp.swing.registry.UIRegistryTree;
 import com.neverwinterdp.swing.scribengin.UIScribengin;
 import com.neverwinterdp.swing.server.UIServers;
@@ -28,7 +27,6 @@ public class UIControl extends JPanel {
     tabbedPaneUI = new JTabbedPaneUI() ;
     tabbedPaneUI.addTab("Tools", new UITools(), false);
     tabbedPaneUI.addTab("Registry", new UIRegistryTree("/", "/"), false);
-    tabbedPaneUI.addTab("Logs", new UILogTree(), false);
     tabbedPaneUI.addTab("VM", new UIVM(), false);
     tabbedPaneUI.addTab("Scribengin", new UIScribengin(), false);
     tabbedPaneUI.addTab("Servers", new UIServers(), false);
@@ -56,7 +54,7 @@ public class UIControl extends JPanel {
     });
     
     add(tabbedPaneUI, BorderLayout.CENTER);
-    this.setPreferredSize(new Dimension(200, 450));
+    setPreferredSize(new Dimension(200, 450));
     tabbedPaneUI.setSelectedTab(0);
   }
   

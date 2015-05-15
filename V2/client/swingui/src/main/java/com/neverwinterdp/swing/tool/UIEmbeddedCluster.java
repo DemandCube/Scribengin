@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.EmbeddedClusterConfig.KafkaConfig;
 import com.neverwinterdp.swing.tool.EmbeddedClusterConfig.ZookeeperConfig;
 import com.neverwinterdp.swing.widget.BeanBindingJTextField;
@@ -16,31 +17,30 @@ import com.neverwinterdp.swing.widget.GridLayoutPanel;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIEmbeddedCluster extends JPanel {
+public class UIEmbeddedCluster extends JPanel implements UILifecycle {
   private ClusterLauncherThread clusterLauncherThread ;
   
   private  EmbeddedClusterConfig embeddedClusterConfig  = new  EmbeddedClusterConfig();
   
   public UIEmbeddedCluster() {
+    setLayout(new BorderLayout());
+  }
+  
+  @Override
+  public void onInit() throws Exception {
+  }
+
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+  @Override
+  public void onActivate() {
+    removeAll();
     SpringLayoutGridJPanel configPanels = new SpringLayoutGridJPanel();
     configPanels.addRow(new ZookeeperConfigPanel(embeddedClusterConfig));
     configPanels.addRow(new KafkaConfigPanel(embeddedClusterConfig));
     configPanels.makeGrid();
-    
-    JButton connectBtn = new JButton("Connect");
-    connectBtn.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    
-    JButton disconnectBtn = new JButton("Disconnect");
-    disconnectBtn.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-      }
-    });
-    
     
     JButton startScribenginBtn = new JButton("Start");
     startScribenginBtn.addActionListener(new ActionListener() {
@@ -57,13 +57,17 @@ public class UIEmbeddedCluster extends JPanel {
       }
     });
     
-    GridLayoutPanel btnPanel = new GridLayoutPanel();
-    btnPanel.addCells(startScribenginBtn, shutdownScribenginBtn, connectBtn, disconnectBtn);
-    btnPanel.makeGrid(2);
+    JPanel btnPanel = new JPanel(new FlowLayout());
+    btnPanel.add(startScribenginBtn);
+    btnPanel.add(shutdownScribenginBtn);
     
-    setLayout(new BorderLayout());
     add(configPanels,   BorderLayout.NORTH);
     add(btnPanel, BorderLayout.CENTER);
+  }
+
+  @Override
+  public void onDeactivate() throws Exception {
+    removeAll();
   }
 
   void launchCluster() {
@@ -83,7 +87,6 @@ public class UIEmbeddedCluster extends JPanel {
         cluster.startDependencySevers();
         cluster.startVMMaster();
         cluster.startScribenginMaster();
-        cluster.runKafkaToKafkaDataflow();
       } catch(Exception ex) {
         ex.printStackTrace();
       }

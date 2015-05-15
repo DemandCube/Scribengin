@@ -31,7 +31,7 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
   private String rootPath  = "/";
   private String rootName  = "/";
   
-  public UIRegistryTree(String rootPath, String rootName) throws Exception {
+  public UIRegistryTree(String rootPath, String rootName) {
     setLayout(new BorderLayout());
     setOpaque(false);
     setBorder(new EmptyBorder(0, 0, 5, 0) );
@@ -116,6 +116,14 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
       if(registry == null || !registry.isConnect()) {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;
+      }
+      try {
+      if(!registry.exists(nodePath)) {
+        return ;
+      }
+      } catch(Exception ex) {
+        ex.printStackTrace();
+        return;
       }
       SwingWorker<List<RegistryTreeNode>, Void> worker = new SwingWorker<List<RegistryTreeNode>, Void>() {
         @Override

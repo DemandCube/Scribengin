@@ -1,7 +1,5 @@
 package com.neverwinterdp.swing.tool;
 
-import java.util.Random;
-
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;

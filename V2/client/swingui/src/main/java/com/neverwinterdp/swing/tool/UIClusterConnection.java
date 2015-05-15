@@ -9,21 +9,34 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.neverwinterdp.registry.RegistryConfig;
+import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.BeanBindingJComboBox;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIRemoteCluster extends JPanel {
+public class UIClusterConnection extends JPanel implements UILifecycle {
   static private String[]  REMOTE_ZKS = {
-    "test.scribengin:2181"
+    "127.0.0.1:2181", "test.scribengin:2181"
   };
   
   private RegistryConfig registryConfig = RegistryConfig.getDefault();
   
-  public UIRemoteCluster() {
+  public UIClusterConnection() {
     setLayout(new BorderLayout());
+  }
+  
+  @Override
+  public void onInit() throws Exception {
+  }
 
+  @Override
+  public void onDestroy() throws Exception {
+  }
+
+  @Override
+  public void onActivate() throws Exception {
+    removeAll();
     SpringLayoutGridJPanel configPanel = new SpringLayoutGridJPanel();
     configPanel.createBorder("Remote Zookeeper Configuration");
     
@@ -53,6 +66,11 @@ public class UIRemoteCluster extends JPanel {
     
     add(configPanel, BorderLayout.NORTH);
     add(btnPanel, BorderLayout.CENTER);
+  }
+
+  @Override
+  public void onDeactivate() throws Exception {
+    removeAll();
   }
   
   private void onConnect() {
