@@ -117,6 +117,7 @@ public class KafkaMessageCheckTool implements Runnable {
           messageTracker.log(messageExtractor.extract(messagePayload));
         }
       }
+      System.out.println("Read count: " + messageCounter.getTotal());
       if(lastCount == messageCounter.getTotal()) {
         cannotReadCount++;
         Thread.sleep(1000);
