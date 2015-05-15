@@ -63,6 +63,7 @@ public class VMDataflowWorkerApp extends VMApp {
     };
     Injector injector = Guice.createInjector(Stage.PRODUCTION, modules);
     container = injector.getInstance(DataflowContainer.class);
+    container.getDataflowRegistry().addWorker(getVM().getDescriptor());
     dataflowTaskExecutorService = container.getDataflowTaskExecutorManager();
     addListener(new VMApp.VMAppTerminateEventListener() {
       @Override
@@ -83,7 +84,6 @@ public class VMDataflowWorkerApp extends VMApp {
       }
     });
     try {
-      container.getDataflowRegistry().addWorker(getVM().getDescriptor());
       dataflowTaskExecutorService.start();
       dataflowTaskExecutorService.waitForTerminated(500);
     } catch(InterruptedException ex) {
