@@ -58,6 +58,16 @@ function build_image() {
   echo "Prepare the temporary configuration files"
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
   mkdir $DOCKERSCRIBEDIR/tmp
+  
+  #Check .aws path exists
+  aws_path=$(get_opt --aws-credential-path $HOME/'.aws' $@)
+  mkdir $DOCKERSCRIBEDIR/tmp/aws
+  if [ -d "$aws_path" ];then
+    echo "copying $aws_path to $DOCKERSCRIBEDIR/tmp/aws"
+    cp -R -f $aws_path $DOCKERSCRIBEDIR/tmp/aws
+  else
+    echo "AWS credentials $aws_path  does not exists. Skipping to copy .aws directory"  
+  fi
 
   if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
     $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build
@@ -66,7 +76,6 @@ function build_image() {
   #Move release/build/release to $DOCKERSCRIBEDIR/tmp
   cp -R -f $DOCKERSCRIBEDIR/../../release/build/release $DOCKERSCRIBEDIR/tmp/release
   cp -R -f $DOCKERSCRIBEDIR/../../tools/cluster $DOCKERSCRIBEDIR/tmp/cluster
-  
   
   #Use existing key if it already exists
   if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
@@ -338,16 +347,17 @@ function cluster(){
 function printUsage() {
   echo "Cluster command options: "
   echo "  Command image consists of the sub commands: "
-  echo "    build                 : To build the ubuntu os image with the required components"
-  echo "    clean                 : To remove the image"
+  echo "    build                      : To build the ubuntu os image with the required components"
+  echo "    build --aws-credential-path: To build with aws credential directory. (--aws-credential-path='/root/.aws')"
+  echo "    clean                      : To remove the image"
   echo "  Command container consists of the sub commands: "
-  echo "    run                   : To run the containers(hadoop, zookeeper, kafka...)"
-  echo "    run --spare-zookeeper : Number of spare zookeeper servers to launch"
-  echo "    run --spare-kafka     : Number of spare kafka servers to launch"
-  echo "    run --spare-hadoop    : Number of spare hadoop-worker servers to launch"
-  echo "    clean                 : To remove and destroy all the running containers"
-  echo "    login                 : To login the given containeri name or id  with the root user"
-  echo "    update-hosts          : To update the /etc/hosts in all the running containers"
+  echo "    run                        : To run the containers(hadoop, zookeeper, kafka...)"
+  echo "    run --spare-zookeeper      : Number of spare zookeeper servers to launch"
+  echo "    run --spare-kafka          : Number of spare kafka servers to launch"
+  echo "    run --spare-hadoop         : Number of spare hadoop-worker servers to launch"
+  echo "    clean                      : To remove and destroy all the running containers"
+  echo "    login                      : To login the given containeri name or id  with the root user"
+  echo "    update-hosts               : To update the /etc/hosts in all the running containers"
   echo "  Cluster Commands: "
   echo "     ./docker.sh cluster [options]"
   echo "       Options: "
@@ -362,10 +372,10 @@ function printUsage() {
   echo "         --force-stop-cluster  : Force stop kafka, hadoop, zookeeper, and scribengin"
   echo "         --launch              : Cleans docker image and containers, Builds image and container, then launches Scribengin"
   echo "  Other commands:"
-  echo "    ssh                   : The ssh command use to resolve the container ssh port and login a container with ssh command"
-  echo "    scp                   : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
-  echo "    ip-route              : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
-  echo "    host-sync             : Run this to run \"./scribengin.sh build\" and then sync the release folder and post-install with your cluster."
+  echo "    ssh                        : The ssh command use to resolve the container ssh port and login a container with ssh command"
+  echo "    scp                        : The scp command use to resolve the container ssh port and copy the file/directory from or to a container"
+  echo "    ip-route                   : If you are running macos, use this command to route the 127.17.0.0 ip range to the boot2docker host. It allows to access the docker container directly from the MAC"
+  echo "    host-sync                  : Run this to run \"./scribengin.sh build\" and then sync the release folder and post-install with your cluster."
 }
 
 
