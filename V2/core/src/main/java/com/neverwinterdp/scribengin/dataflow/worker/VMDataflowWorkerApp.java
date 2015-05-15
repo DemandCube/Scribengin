@@ -83,8 +83,8 @@ public class VMDataflowWorkerApp extends VMApp {
       }
     });
     try {
-      dataflowTaskExecutorService.start();
       container.getDataflowRegistry().addWorker(getVM().getDescriptor());
+      dataflowTaskExecutorService.start();
       dataflowTaskExecutorService.waitForTerminated(500);
     } catch(InterruptedException ex) {
     } finally {
