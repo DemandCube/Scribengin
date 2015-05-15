@@ -21,6 +21,10 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   @Parameter(names = "--wait-for-running-dataflow", description = "The command should repeat in this failurePeriod of time")
   long waitForRunningDataflow = 180000;
   
+  @Parameter(names = "--wait-before-simulate-failure", description = "Wait before simulate")
+  long waitBeforeSimulateFailure = 15000;
+  
+  
   @Parameter(names = "--failure-period", description = "The command should repeat in this period of time")
   long failurePeriod = 15000;
   
@@ -41,13 +45,17 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       while(dflClient.countActiveDataflowWorkers() == 0 && System.currentTimeMillis() < stopTime) {
         Thread.sleep(500);
       }
+      
+      if(waitBeforeSimulateFailure > 0) {
+        Thread.sleep(waitBeforeSimulateFailure);
+      }
       List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
       boolean error = false ;
       int failureCount = 0 ;
       FailureSimulator[] failureSimulator = {
           new RandomWorkerKillFailureSimulator()
       } ;
-
+      
       while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
         RegistryLogger logger = 
           new RegistryLogger(dflClient.getRegistry(), "dataflow-random-server-kill/iteration-" +(failureCount + 1)) ;
