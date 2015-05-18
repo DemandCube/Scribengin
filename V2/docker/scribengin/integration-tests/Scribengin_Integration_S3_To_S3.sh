@@ -8,6 +8,22 @@ mkdir testresults
 #Give everything time to come up
 sleep 5
 
+  echo "testing existence of .aws folder on local host"
+  if [ -d /root/.aws ] ; then 
+    echo "pasword exists on host !!!!"
+  else
+    echo "we have the wrong host location."
+  fi
+
+ echo "testing existence of .aws folder on remote host"
+is_exists=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -e /home/neverwinterdp/.aws/credentials ] ; then echo '0';else echo '1'; fi"`
+if [ $is_exists == '0' ]; then
+  echo "Directory exists"
+else
+  echo "Directory does not exists"
+fi
+
+
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
 
