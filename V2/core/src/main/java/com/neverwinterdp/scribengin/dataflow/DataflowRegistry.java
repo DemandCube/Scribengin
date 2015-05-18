@@ -26,7 +26,6 @@ import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
 import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
-import com.neverwinterdp.util.ExceptionUtil;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
@@ -234,7 +233,7 @@ public class DataflowRegistry {
         try {
           transaction.commit();
         } catch(Exception ex) {
-          String errorMessage = "Fail to assign the task " + taskId + "to server " + vmDescriptor.getId();
+          String errorMessage = "Fail to assign the task " + taskId + " to server " + vmDescriptor.getId();
           StringBuilder registryDump = new StringBuilder() ;
           try {
             tasksAssignedNode.getParentNode().dump(registryDump);
@@ -251,8 +250,8 @@ public class DataflowRegistry {
     try {
       return lock.execute(getAssignedtaskOp, 3, 3000);
     } catch(RegistryException ex) {
-      String errorMessage = "Fail to assign the task ";
-      dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
+      String errorMessage = "Fail to assign the task after 3 tries";
+      dataflowTaskNotifier.error("fail-to-assign-dataflow-task", errorMessage, ex);
       throw ex;
     }
   }
@@ -281,7 +280,7 @@ public class DataflowRegistry {
           } catch (IOException e) {
           }
           errorMessage += "\n" + registryDump.toString();
-          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
+          dataflowTaskNotifier.warn("fail-to-suspend-dataflow-task", errorMessage, ex);
           throw ex ;
         }
       }
@@ -291,7 +290,7 @@ public class DataflowRegistry {
       lock.execute(suspendtOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
-      dataflowTaskNotifier.warn("fail-to-suspend-dataflow-task", errorMessage, ex);
+      dataflowTaskNotifier.error("fail-to-suspend-dataflow-task", errorMessage, ex);
       throw ex;
     }
   }
@@ -410,15 +409,6 @@ public class DataflowRegistry {
   public List<DataflowTaskExecutorDescriptor> getWorkerExecutors(String worker) throws RegistryException {
     Node executors = allWorkers.getDescendant(worker + "/executors") ;
     return executors.getChildrenAs(DataflowTaskExecutorDescriptor.class);
-  }
-  
-  public RegistryDebugger getDataflowTaskDebugger(Appendable out) throws RegistryException {
-    RegistryDebugger debugger = new RegistryDebugger(out, registry) ;
-    System.out.println("dataflow task debug path:");
-    System.out.println("  " + tasksAssignedNode.getPath());
-    System.out.println("  /scribengin/dataflows/running/hello-kafka-dataflow/tasks/executors/assigned");
-    debugger.watchChild(tasksAssignedNode.getPath(), ".*", new DataflowTaskNodeDebugger());
-    return debugger ;
   }
   
   public void dump() throws RegistryException, IOException {
