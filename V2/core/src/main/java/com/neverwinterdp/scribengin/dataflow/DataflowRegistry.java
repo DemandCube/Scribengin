@@ -235,14 +235,20 @@ public class DataflowRegistry {
           transaction.commit();
         } catch(Exception ex) {
           String errorMessage = "Fail to assign the task " + taskName + "to server " + vmDescriptor.getId();
-          dataflowTaskNotifier.error("fail-to-assign-dataflow-task", errorMessage, ex);
+          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
           throw ex;
         }
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
         return descriptor;
       }
     };
-    return lock.execute(getAssignedtaskOp, 1, 3000);
+    try {
+      return lock.execute(getAssignedtaskOp, 1, 3000);
+    } catch(RegistryException ex) {
+      String errorMessage = "Fail to assign the task ";
+      dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
+      throw ex;
+    }
   }
   
   
@@ -265,16 +271,21 @@ public class DataflowRegistry {
           return true;
         } catch(RegistryException ex) {
           String errorMessage = "Fail to suspend the task " + descriptor.getId();
-          dataflowTaskNotifier.error("fail-to-assign-dataflow-task", errorMessage, ex);
+          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
           throw ex ;
         }
       }
     };
-    lock.execute(suspendtOp, 5, 1000);
+    try {
+      lock.execute(suspendtOp, 5, 1000);
+    } catch(RegistryException ex) {
+      String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
+      dataflowTaskNotifier.warn("fail-to-suspend-dataflow-task", errorMessage, ex);
+      throw ex;
+    }
   }
 
   public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish") ;
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
@@ -292,12 +303,19 @@ public class DataflowRegistry {
           return true;
         } catch(RegistryException ex) {
           String errorMessage = "Fail to finish the task task-" + descriptor.getId();
-          dataflowTaskNotifier.error("fail-to-finish-dataflow-task", errorMessage, ex);
+          dataflowTaskNotifier.warn("fail-to-finish-dataflow-task", errorMessage, ex);
           throw ex;
         }
       }
     };
-    lock.execute(commitOp, 5, 1000);
+    try {
+      Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish") ;
+      lock.execute(commitOp, 5, 1000);
+    } catch(RegistryException ex) {
+      String errorMessage = "Fail to finish the task task-" + descriptor.getId();
+      dataflowTaskNotifier.warn("fail-to-finish-dataflow-task", errorMessage, ex);
+      throw ex;
+    }
   }
   
   public void dataflowTaskUpdate(DataflowTaskDescriptor descriptor) throws RegistryException {

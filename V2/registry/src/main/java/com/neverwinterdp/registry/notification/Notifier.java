@@ -39,5 +39,17 @@ public class Notifier {
     NotificationEvent notificationEvent = new NotificationEvent(NotificationEvent.Level.ERROR, name, errorText) ;
     eventsNode.createChild("error-" + name + "-", notificationEvent, NodeCreateMode.PERSISTENT_SEQUENTIAL);
   }
+  
+  public void warn(String name, String mesg) throws RegistryException {
+    NotificationEvent notificationEvent = new NotificationEvent(NotificationEvent.Level.WARNING, name, mesg) ;
+    eventsNode.createChild("error-" + name + "-", notificationEvent, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+  }
+  
+  public void warn(String name, String mesg, Throwable t) throws RegistryException {
+    String stacktrace = ExceptionUtil.getStackTrace(t);
+    String errorText = mesg + "\n" + stacktrace; 
+    NotificationEvent notificationEvent = new NotificationEvent(NotificationEvent.Level.WARNING, name, errorText) ;
+    eventsNode.createChild("error-" + name + "-", notificationEvent, NodeCreateMode.PERSISTENT_SEQUENTIAL);
+  }
 }
 
