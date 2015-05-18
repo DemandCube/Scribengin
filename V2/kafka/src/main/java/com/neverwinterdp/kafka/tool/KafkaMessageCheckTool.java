@@ -112,7 +112,7 @@ public class KafkaMessageCheckTool implements Runnable {
     int readCountToPrint = 50000;
     while (messageCounter.getTotal() - messageTracker.getDuplicatedCount() < topicConfig.consumerConfig.consumeMax && !interrupt ) {
       for (int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages = partitionReader[k].fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/);
+        List<byte[]> messages = partitionReader[k].fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/,topicConfig.consumerConfig.consumeFetchRetries);
         messageCounter.count(partitionReader[k].getPartition(), messages.size());
         for(byte[] messagePayload : messages) {
           messageTracker.log(messageExtractor.extract(messagePayload));
