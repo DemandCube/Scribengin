@@ -262,11 +262,10 @@ public class DataflowRegistry {
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
+        descriptor.setStatus(Status.SUSPENDED);    
+        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
+        String taskId = descriptorNode.getName();
         try {
-          descriptor.setStatus(Status.SUSPENDED);    
-          Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
-          String taskId = descriptorNode.getName();
-
           Transaction transaction = registry.getTransaction();
           transaction.setData(descriptor.getRegistryPath(), descriptor) ;
           tasksAvailableQueue.offer(transaction, taskId.getBytes());
@@ -275,7 +274,7 @@ public class DataflowRegistry {
           transaction.commit();
           return true;
         } catch(RegistryException ex) {
-          String errorMessage = "Fail to suspend the task " + descriptor.getId();
+          String errorMessage = "Fail to suspend the task " + taskId;
           StringBuilder registryDump = new StringBuilder() ;
           try {
             tasksAssignedNode.getParentNode().dump(registryDump);
@@ -301,16 +300,16 @@ public class DataflowRegistry {
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
+        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
+        String taskId = descriptorNode.getName();
+        descriptor.setStatus(Status.TERMINATED);
         try {
-          Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
-          String name = descriptorNode.getName();
-          descriptor.setStatus(Status.TERMINATED);
           Transaction transaction = registry.getTransaction();
           //update the task descriptor
           transaction.setData(descriptor.getRegistryPath(), descriptor);
-          transaction.createChild(tasksFinishedNode, name, NodeCreateMode.PERSISTENT);
-          transaction.delete(tasksAssignedNode.getPath() + "/" + name);
-          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + name);
+          transaction.createChild(tasksFinishedNode, taskId, NodeCreateMode.PERSISTENT);
+          transaction.delete(tasksAssignedNode.getPath() + "/" + taskId);
+          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
           transaction.commit();
           return true;
         } catch(RegistryException ex) {

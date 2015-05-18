@@ -47,7 +47,7 @@ public class DataflowTaskMonitor {
       
       DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(taskId);
       DataflowTaskDescriptor.Status status = descriptor.getStatus();
-      if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
+      if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
         dataflowRegistry.dataflowTaskSuspend(descriptor);
       } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
         onFinishDataflowTask();
