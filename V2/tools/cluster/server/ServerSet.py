@@ -1,7 +1,7 @@
 from tabulate import tabulate
 from multiprocessing import Pool
 import os, sys
-from os.path import join
+from os.path import join, expanduser
 
 #This function is outside the ServerSet class
 #because otherwise it wouldn't be pickleable 
@@ -98,13 +98,13 @@ class ServerSet(object):
       output[server.getHostname()] = server.sshExecute(command)
     return output 
   
-  def sync(self, hostname):
+  def sync(self, hostname, src="/opt/", dst="/opt"):
     for hostmachine in self.servers :
       if hostmachine.getHostname() == hostname:
         for server in self.servers :
           if server.getHostname() != hostname:
             self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
-            command = "rsync -a -r -c -P --delete /opt/ " + server.user +"@"+ server.getHostname() + ":/opt"
+            command = "rsync -a -r -c -P --delete " +src+ " " + server.user +"@"+ server.getHostname() + ":"+dst
             hostmachine.sshExecute(command)
         break
     
@@ -392,7 +392,7 @@ class ServerSet(object):
     os.system(join(os.getcwd(), "../../gradlew clean release"))
     os.chdir(currentWorkingDir)
     
-  def scribenginDeploy(self, hostname, clean):
+  def scribenginDeploy(self, hostname, aws_credential_path, clean):
     self.printTitle("Deploy Scribengin")
     self.killCluster()
     if(clean):
@@ -403,6 +403,11 @@ class ServerSet(object):
     os.chdir(join(currentWorkingDir, "../../../"))
     os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"release/build/release")+" neverwinterdp@"+hostname+":/opt/scribengin")
     os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"tools/cluster")+" neverwinterdp@"+hostname+":/opt/cluster")
+    if aws_credential_path == "":
+      aws_credential_path = join(expanduser("~"),".aws")
+    print aws_credential_path
+    os.system("scp -q -o StrictHostKeyChecking=no -r "+aws_credential_path+" neverwinterdp@"+hostname+":/home/neverwinterdp")
+    self.sync(hostname, src="/home/neverwinterdp/.aws", dst="/home/neverwinterdp")
     os.chdir(currentWorkingDir)
     self.sync(hostname)
     

@@ -38,16 +38,14 @@ public class UIDataflowTests extends JPanel implements UILifecycle {
     Action hdfsToHdfsTest = new AbstractAction("Hdfs To Hdfs Dataflow Test") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        //TODO: check Hdfs dataflow unit test add it here 
-        //new DataflowTestRunner.KafkaToKakaDataflowTestRunner().start();
+        new DataflowTestRunner.HDFSToHDFSDataflowTestRunner().start();
       }
     };
     
     Action dataflowServerFailureTest = new AbstractAction("Server Failure Dataflow Test") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        //TODO: check server failure dataflow unit test add it here 
-        //new DataflowTestRunner.KafkaToKakaDataflowTestRunner().start();
+        new DataflowTestRunner.ServerFailureDataflowTestRunner().start();
       }
     };
     
