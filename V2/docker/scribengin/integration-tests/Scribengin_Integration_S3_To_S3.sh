@@ -15,6 +15,7 @@ sleep 5
     echo "we have the wrong host location."
   fi
 
+
  echo "testing existence of .aws folder on remote host"
 is_exists=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -e /home/neverwinterdp/.aws/credentials ] ; then echo '0';else echo '1'; fi"`
 if [ $is_exists == '0' ]; then
