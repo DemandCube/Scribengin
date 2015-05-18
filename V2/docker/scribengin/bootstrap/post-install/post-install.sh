@@ -33,7 +33,6 @@ if [ -d /tmp/post-install/aws/.aws ]; then
   h1 "Set aws credential"
   cp -r /tmp/post-install/aws/.aws /home/neverwinterdp
   chown -R neverwinterdp:neverwinterdp /home/neverwinterdp/.aws
-  chmod -R 777 /home/neverwinterdp/.aws
 else
   h1 "aws does not exists"
 fi
