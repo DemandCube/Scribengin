@@ -25,7 +25,7 @@ else
 fi
 
   echo "testing existence of sunjce file on remote host"
-  if [ -e $JAVA_HOME/lib/ext/sunjce_provider.jar ] ; then 
+  if [ -e $JAVA_HOME/jre/lib/ext ] ; then 
     echo "sunjce exists !!!!"
   else
     echo "sunjce exists not."
