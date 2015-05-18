@@ -223,15 +223,18 @@ public class DataflowRegistry {
     BatchOperations<DataflowTaskDescriptor> getAssignedtaskOp = new BatchOperations<DataflowTaskDescriptor>() {
       @Override
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
-        byte[] data  = tasksAvailableQueue.poll();
-        if(data == null) return null;
-        String taskId = new String(data);
-        Node childNode = tasksDescriptors.getChild(taskId);
-        Transaction transaction = registry.getTransaction();
-        transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
-        transaction.createChild(tasksAssignedHeartbeatNode, taskId, vmDescriptor,NodeCreateMode.EPHEMERAL);
+        String taskId = null;
         try {
+          byte[] data  = tasksAvailableQueue.poll();
+          if(data == null) return null;
+          taskId = new String(data);
+          Node childNode = tasksDescriptors.getChild(taskId);
+          Transaction transaction = registry.getTransaction();
+          transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
+          transaction.createChild(tasksAssignedHeartbeatNode, taskId, vmDescriptor,NodeCreateMode.EPHEMERAL);
           transaction.commit();
+          DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+          return descriptor;
         } catch(Exception ex) {
           String errorMessage = "Fail to assign the task " + taskId + " to server " + vmDescriptor.getId();
           StringBuilder registryDump = new StringBuilder() ;
@@ -243,8 +246,6 @@ public class DataflowRegistry {
           dataflowTaskNotifier.warn("fail-to-assign-dataflow-task ", errorMessage, ex);
           throw ex;
         }
-        DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
-        return descriptor;
       }
     };
     try {
