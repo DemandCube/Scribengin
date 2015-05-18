@@ -5,7 +5,7 @@ import com.neverwinterdp.swing.registry.UIActivityListView;
 import com.neverwinterdp.swing.registry.UIActivityQueueView;
 import com.neverwinterdp.swing.registry.UIActivityStepsView;
 import com.neverwinterdp.swing.registry.UIActivityView;
-import com.neverwinterdp.swing.registry.UILogView;
+import com.neverwinterdp.swing.registry.UINotificationView;
 import com.neverwinterdp.swing.registry.UIRegistryNodeView;
 import com.neverwinterdp.swing.registry.UIRegistryTree;
 import com.neverwinterdp.swing.registry.UIRegistryTree.RegistryTreeNodePathMatcher;
@@ -75,7 +75,7 @@ public class UIDataflowTree extends UIRegistryTree {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
       view.addView("Queue Activities", new UIActivityQueueView(activitiesRootPath, node.getNodePath()), false) ;
     } else  if(notificationNodeMatcher.matches(node)) {
-      view.addView("Notifications", new UILogView(node.getNodePath()), false) ;
+      view.addView("Notifications", new UINotificationView(node.getNodePath()), false) ;
     }
     view.setSelectedView(0);
   }

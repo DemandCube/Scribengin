@@ -69,6 +69,9 @@ public class DataflowRegistry {
   @Inject
   private Registry           registry;
   
+  @Inject
+  private VMDescriptor       vmDescriptor;
+  
   private Node               status;
   
   private Node               tasksDescriptors;
@@ -231,7 +234,7 @@ public class DataflowRegistry {
           Node childNode = tasksDescriptors.getChild(taskId);
           Transaction transaction = registry.getTransaction();
           transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.createChild(tasksAssignedHeartbeatNode, taskId, vmDescriptor,NodeCreateMode.EPHEMERAL);
+          transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(vmDescriptor.getRegistryPath()),NodeCreateMode.EPHEMERAL);
           transaction.commit();
           DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
           return descriptor;
@@ -257,8 +260,11 @@ public class DataflowRegistry {
     }
   }
   
-  
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
+    dataflowTaskSuspend(descriptor, false) ;
+  }
+  
+  public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor, final boolean disconnectHeartbeat) throws RegistryException {
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
@@ -270,11 +276,13 @@ public class DataflowRegistry {
           transaction.setData(descriptor.getRegistryPath(), descriptor) ;
           tasksAvailableQueue.offer(transaction, taskId.getBytes());
           transaction.delete(tasksAssignedNode.getPath() + "/" + taskId);
-          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
+          if(!disconnectHeartbeat) {
+            transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
+          }
           transaction.commit();
           return true;
         } catch(RegistryException ex) {
-          String errorMessage = "Fail to suspend the task " + taskId;
+          String errorMessage = "Fail to suspend the task " + taskId + " on " + vmDescriptor.getId();
           StringBuilder registryDump = new StringBuilder() ;
           try {
             tasksAssignedNode.getParentNode().dump(registryDump);

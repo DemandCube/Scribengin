@@ -65,6 +65,7 @@ public class Lock {
   }
   
   public <T> T execute(BatchOperations<T> op, int retry, long timeoutThreshold) throws RegistryException {
+    RegistryException lastError ;
     for(int i = 0;i < retry; i++) {
       try {
         lock(timeoutThreshold * (i + 1)) ;
@@ -74,6 +75,7 @@ public class Lock {
         if(e.getErrorCode() != ErrorCode.Timeout) {
           throw e;
         }
+        lastError = e;
       } catch (Exception e) {
         throw new RegistryException(ErrorCode.Unknown, e);
       } finally {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class NotificationEvent {
   static public enum Level {INFO, WARNING, ERROR} ;
   
+  private String seqId ;
   private long   timestamp ;
   private Level  level ;
   private String name ;
@@ -21,6 +22,10 @@ public class NotificationEvent {
     this.message = message ;
   }
 
+  @JsonIgnore
+  public String getSeqId() { return this.seqId; }
+  public void   setSeqId(String id) { this.seqId = id ; }
+  
   public long getTimestamp() { return timestamp; }
   public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 

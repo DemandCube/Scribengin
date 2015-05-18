@@ -14,7 +14,7 @@ public class UINotificationTree extends UIRegistryTree {
   
   protected void onCustomNodeView(RegistryTreeNode node, UIRegistryNodeView view) {
     if(notificationNodeMatcher.matches(node)) {
-      view.addView("Notifications", new UILogView(node.getNodePath()), false) ;
+      view.addView("Notifications", new UINotificationView(node.getNodePath()), false) ;
     }
     view.setSelectedView(0);
   }

@@ -21,6 +21,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.notification.NotificationEvent;
+import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.Fonts;
@@ -28,13 +29,13 @@ import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.text.DateUtil;
 
 @SuppressWarnings("serial")
-public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
-  private String logPath ;
-  private LogJXTable logTable ;
-  private  LogDetailPanel logDetailPanel;
+public class UINotificationView extends SpringLayoutGridJPanel implements UILifecycle {
+  private String notificationPath ;
+  private NotificationJXTable notificationTable ;
+  private  NotificationDetailPanel detailPanel;
   
-  public UILogView(String logPath) {
-    this.logPath = logPath ;
+  public UINotificationView(String logPath) {
+    this.notificationPath = logPath ;
   }
 
   @Override
@@ -61,10 +62,10 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       });
       addRow(toolbar) ;
       
-      logTable = new  LogJXTable(logPath) ;
-      logDetailPanel = new LogDetailPanel() ;
+      notificationTable = new  NotificationJXTable(notificationPath) ;
+      detailPanel = new NotificationDetailPanel() ;
       JSplitPane splitPane =
-          new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(logTable), new JScrollPane(logDetailPanel));
+          new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(notificationTable), new JScrollPane(detailPanel));
       splitPane.setOneTouchExpandable(true);
       splitPane.setDividerLocation(150);
       addRow(splitPane) ;
@@ -77,8 +78,8 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
     clear();
   }
   
-  public class LogJXTable extends JXTable {
-    public LogJXTable(String logPath) throws Exception {
+  public class NotificationJXTable extends JXTable {
+    public NotificationJXTable(String logPath) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       RegistryLogTableModel model = new RegistryLogTableModel(logPath);
       setModel(model);
@@ -96,33 +97,37 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           RegistryLogTableModel model = (RegistryLogTableModel) getModel() ;
-          NotificationEvent notificationEvent = model.getLogAt(getSelectedRow());
-          logDetailPanel.updateLogDetail(notificationEvent);
+          int row = getSelectedRow() ;
+          String seqId = model.getValueAt(row, 0).toString();
+          NotificationEvent notificationEvent = model.getNotificationEvent(seqId);
+          detailPanel.updateLogDetail(notificationEvent);
         }
       });
     }
   }
 
   static class RegistryLogTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Timestamp", "Level", "Name", "Message"} ;
+    static String[] COLUMNS = {"#", "Timestamp", "Level", "Name", "Message"} ;
 
-    private String logPath ;
+    private String notificationPath ;
     List<NotificationEvent> notificationEvents;
     
     public RegistryLogTableModel(String logPath) {
       super(COLUMNS, 0) ;
-      this.logPath = logPath ;
+      this.notificationPath = logPath ;
     }
     
-    public NotificationEvent getLogAt(int row) {
-      return notificationEvents.get(row) ;
+    public NotificationEvent getNotificationEvent(String seqId) {
+      int idx = Integer.parseInt(seqId) ;
+      return notificationEvents.get(idx) ;
     }
     
     void loadData() throws Exception {
-      notificationEvents = loadLogs() ;
+      notificationEvents = loadNotificationEvents() ;
       for(int i = 0; i < notificationEvents.size(); i++) {
         NotificationEvent notificationEvent = notificationEvents.get(i) ;
         Object[] cells = {
+          notificationEvent.getSeqId(),
           DateUtil.asCompactDateTime(notificationEvent.getTimestamp()), 
           notificationEvent.getLevel(),
           notificationEvent.getName(),
@@ -132,14 +137,14 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       }
     }
     
-    List<NotificationEvent> loadLogs() throws Exception{
+    List<NotificationEvent> loadNotificationEvents() throws Exception{
       Registry registry = Cluster.getCurrentInstance().getRegistry();
-      return registry.getChildrenAs(logPath, NotificationEvent.class) ;
+      return Notifier.getNotificationEvents(registry, notificationPath);
     }
   }
   
-  public class LogDetailPanel extends SpringLayoutGridJPanel {
-    public LogDetailPanel() {
+  public class NotificationDetailPanel extends SpringLayoutGridJPanel {
+    public NotificationDetailPanel() {
       updateLogDetail(null);
     }
     
