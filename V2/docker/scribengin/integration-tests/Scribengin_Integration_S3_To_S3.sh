@@ -1,6 +1,7 @@
 #Set up docker images
 DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --deploy-scribengin --start-cluster
+scp -o "StrictHostKeyChecking no" -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
 
 #make folder for test results
 mkdir testresults
