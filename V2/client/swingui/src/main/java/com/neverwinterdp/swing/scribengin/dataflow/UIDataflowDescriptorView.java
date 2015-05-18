@@ -76,19 +76,26 @@ public class UIDataflowDescriptorView extends JPanel implements UILifecycle {
       StorageDescriptor sourceDesc = dataflowDesc.getSourceDescriptor();
       
       addRow("Source Descriptor:","");
-      //TODO: use sourceDesc.entrySet() to iteratte through all the available properties 
+
       addRow(indent+"Source Type",sourceDesc.getType());
       addRow(indent+"Source Location", sourceDesc.getLocation());
-      
+
+      for (Entry<String, String> entry : sourceDesc.entrySet()) {
+        addRow(indent+entry.getKey(), entry.getValue());
+      }
+
       addRow("Sink Descriptors:","");
       for (Entry<String, StorageDescriptor> entry : sinkDescriptors.entrySet()) {
         String sinkName = entry.getKey();
         StorageDescriptor sinkDescriptor = entry.getValue();
-        //TODO: use sinkDescriptor.entrySet() to iteratte through all the available properties , maybe separate in another method
         addRow(indent+sinkName+" Sink:","");
+        
         //TODO: code convention , format.
         addRow(StringUtils.repeat(indent, 2)+"Sink Type",     sinkDescriptor.getType());
         addRow(StringUtils.repeat(indent, 2)+"Sink Location", sinkDescriptor.getLocation());
+        for (Entry<String, String> entrySet : sinkDescriptor.entrySet()) {
+          addRow(indent+entrySet.getKey(), entrySet.getValue());
+        }
       }
       makeCompactGrid();
     }
