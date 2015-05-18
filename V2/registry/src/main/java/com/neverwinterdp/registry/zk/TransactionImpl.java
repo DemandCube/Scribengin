@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.OpResult;
 
-import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.RegistryException;
@@ -132,7 +131,7 @@ public class TransactionImpl implements Transaction {
   public void commit() throws RegistryException {
     try {
       List<OpResult> results = zkTransaction.commit();
-    } catch (InterruptedException | KeeperException e) {
+    } catch (InterruptedException  | KeeperException e) {
       throw RegistryImpl.toRegistryException("Commit Error", e);
     }
   }

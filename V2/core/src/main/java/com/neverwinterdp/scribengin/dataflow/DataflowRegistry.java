@@ -103,7 +103,7 @@ public class DataflowRegistry {
     status = registry.createIfNotExist(dataflowPath + "/status");
     tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     
-    masterEventNode        = registry.createIfNotExist(dataflowPath + "/" + MASTER_EVENT_PATH);
+    masterEventNode  = registry.createIfNotExist(dataflowPath + "/" + MASTER_EVENT_PATH);
     workerEventNode  = registry.createIfNotExist(dataflowPath + "/" + WORKER_EVENT_PATH);
     failureEventNode = registry.createIfNotExist(dataflowPath + "/" + FAILURE_EVENT_PATH);
     
@@ -226,16 +226,16 @@ public class DataflowRegistry {
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
         byte[] data  = tasksAvailableQueue.poll();
         if(data == null) return null;
-        String taskName = new String(data);
-        Node childNode = tasksDescriptors.getChild(taskName);
+        String taskId = new String(data);
+        Node childNode = tasksDescriptors.getChild(taskId);
         Transaction transaction = registry.getTransaction();
-        transaction.createChild(tasksAssignedNode, taskName, NodeCreateMode.PERSISTENT);
-        transaction.createChild(tasksAssignedHeartbeatNode, taskName, vmDescriptor,NodeCreateMode.EPHEMERAL);
+        transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
+        transaction.createChild(tasksAssignedHeartbeatNode, taskId, vmDescriptor,NodeCreateMode.EPHEMERAL);
         try {
           transaction.commit();
         } catch(Exception ex) {
-          String errorMessage = "Fail to assign the task " + taskName + "to server " + vmDescriptor.getId();
-          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
+          String errorMessage = "Fail to assign the task " + taskId + "to server " + vmDescriptor.getId();
+          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task ", errorMessage, ex);
           throw ex;
         }
         DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
@@ -253,20 +253,19 @@ public class DataflowRegistry {
   
   
   public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to suspend") ;
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         try {
           descriptor.setStatus(Status.SUSPENDED);    
           Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
-          String name = descriptorNode.getName();
+          String taskId = descriptorNode.getName();
 
           Transaction transaction = registry.getTransaction();
           transaction.setData(descriptor.getRegistryPath(), descriptor) ;
-          tasksAvailableQueue.offer(transaction, name.getBytes());
-          transaction.delete(tasksAssignedNode.getPath() + "/" + name);
-          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + name);
+          tasksAvailableQueue.offer(transaction, taskId.getBytes());
+          transaction.delete(tasksAssignedNode.getPath() + "/" + taskId);
+          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
           transaction.commit();
           return true;
         } catch(RegistryException ex) {
@@ -277,6 +276,7 @@ public class DataflowRegistry {
       }
     };
     try {
+      Lock lock = tasksLock.getLock("write", "Lock to move the task-" + descriptor.getId() + " to suspend") ;
       lock.execute(suspendtOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
