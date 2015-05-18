@@ -40,11 +40,10 @@ public class DataflowTaskMonitor {
     Node tasksAssignedNode = dataflowRegistry.getTasksAssignedNode(); 
     Node taskAssignedNode = tasksAssignedNode.getChild(taskId) ;
     if(taskAssignedNode.exists()) {
-      Transaction transaction = taskAssignedNode.getRegistry().getTransaction();
-      dataflowRegistry.getTasksAvailableQueue().offer(transaction, taskId.getBytes());
-      transaction.delete(taskAssignedNode.getPath());
-      transaction.commit();
-      
+//      Transaction transaction = taskAssignedNode.getRegistry().getTransaction();
+//      dataflowRegistry.getTasksAvailableQueue().offer(transaction, taskId.getBytes());
+//      transaction.delete(taskAssignedNode.getPath());
+//      transaction.commit();
       DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(taskId);
       DataflowTaskDescriptor.Status status = descriptor.getStatus();
       if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
