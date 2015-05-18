@@ -94,7 +94,7 @@ public class UIDataflowDescriptorView extends JPanel implements UILifecycle {
         addRow(StringUtils.repeat(indent, 2)+"Sink Type",     sinkDescriptor.getType());
         addRow(StringUtils.repeat(indent, 2)+"Sink Location", sinkDescriptor.getLocation());
         for (Entry<String, String> entrySet : sinkDescriptor.entrySet()) {
-          addRow(indent+entrySet.getKey(), entrySet.getValue());
+          addRow(StringUtils.repeat(indent, 2)+entrySet.getKey(), entrySet.getValue());
         }
       }
       makeCompactGrid();
