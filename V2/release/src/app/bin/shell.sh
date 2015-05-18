@@ -42,4 +42,4 @@ APP_OPT="-Dapp.dir=$APP_DIR -Duser.dir=$APP_DIR"
 APP_OPT="$APP_OPT -Dshell.zk-connect=zookeeper-1:2181 -Dshell.hadoop-master=hadoop-master"
 
 MAIN_CLASS="com.neverwinterdp.scribengin.ShellMain"
-$JAVACMD -Djava.ext.dirs=$APP_DIR/libs $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
+$JAVACMD -Djava.ext.dirs=$APP_DIR/libs:$JAVA_HOME/lib/ext $JAVA_OPTS $APP_OPT $LOG_OPT $MAIN_CLASS "$@"
