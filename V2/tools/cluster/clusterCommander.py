@@ -80,15 +80,16 @@ def vmmaster(restart, start, stop,force_stop, wait_before_start, wait_before_rep
 @click.option('--build',   is_flag=True, help="Build Scribengin")
 @click.option('--with-test',   is_flag=True, help="Build Scribengin with test")
 @click.option('--deploy',   is_flag=True, help="Deploy Scribengin")
+@click.option('--aws-credential-path', default="", help="Deploy Scribengin with aws credential. (--aws-credential-path='/root/.aws')")
 @click.option('--clean',   is_flag=True, help="Clean cluster")
-def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report, build, with_test, deploy, clean):
+def scribengin(restart, start, stop, force_stop, wait_before_start, wait_before_report, build, with_test, deploy, aws_credential_path, clean):
   cluster = Cluster()
   
   if(build):
     cluster.scribenginBuild(with_test)
     
   if(deploy):
-    cluster.scribenginDeploy("hadoop-master", clean)
+    cluster.scribenginDeploy("hadoop-master", aws_credential_path, clean)
       
   if(restart or stop):
     logging.debug("Shutting down Scribengin")
