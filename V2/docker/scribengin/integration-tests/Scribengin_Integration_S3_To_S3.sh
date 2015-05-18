@@ -19,9 +19,9 @@ sleep 5
  echo "testing existence of .aws folder on remote host"
 is_exists=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -e /home/neverwinterdp/.aws/credentials ] ; then echo '0';else echo '1'; fi"`
 if [ $is_exists == '0' ]; then
-  echo "Directory exists"
+  echo "Credentials file exists"
 else
-  echo "Directory does not exists"
+  echo "credentials file does not exists"
 fi
 
 
