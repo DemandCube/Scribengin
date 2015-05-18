@@ -104,7 +104,7 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
   }
 
   static class RegistryLogTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Timestamp", "Level", "Message"} ;
+    static String[] COLUMNS = {"Timestamp", "Level", "Name", "Message"} ;
 
     private String logPath ;
     List<NotificationEvent> notificationEvents;
@@ -123,7 +123,10 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       for(int i = 0; i < notificationEvents.size(); i++) {
         NotificationEvent notificationEvent = notificationEvents.get(i) ;
         Object[] cells = {
-          DateUtil.asCompactDateTime(notificationEvent.getTimestamp()), notificationEvent.getLevel(), notificationEvent.getMessage()
+          DateUtil.asCompactDateTime(notificationEvent.getTimestamp()), 
+          notificationEvent.getLevel(),
+          notificationEvent.getName(),
+          notificationEvent.getMessage()
         };
         addRow(cells);
       }
@@ -145,7 +148,8 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       createBorder("Log Detail");
       if(notificationEvent != null) {
         addRow("Timestamp", DateUtil.asCompactDateTime(notificationEvent.getTimestamp()));
-        addRow("Level",     notificationEvent.getLevel());
+        addRow("Level",     notificationEvent.getLevel().toString());
+        addRow("Name",      notificationEvent.getName());
         JTextArea text = new JTextArea() ;
         text.setFont(Fonts.FIXED);
         text.setText(notificationEvent.getMessage());

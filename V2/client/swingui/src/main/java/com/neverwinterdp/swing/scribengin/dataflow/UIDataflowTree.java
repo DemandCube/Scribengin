@@ -5,8 +5,10 @@ import com.neverwinterdp.swing.registry.UIActivityListView;
 import com.neverwinterdp.swing.registry.UIActivityQueueView;
 import com.neverwinterdp.swing.registry.UIActivityStepsView;
 import com.neverwinterdp.swing.registry.UIActivityView;
+import com.neverwinterdp.swing.registry.UILogView;
 import com.neverwinterdp.swing.registry.UIRegistryNodeView;
 import com.neverwinterdp.swing.registry.UIRegistryTree;
+import com.neverwinterdp.swing.registry.UIRegistryTree.RegistryTreeNodePathMatcher;
 
 @SuppressWarnings("serial")
 public class UIDataflowTree extends UIRegistryTree {
@@ -17,6 +19,8 @@ public class UIDataflowTree extends UIRegistryTree {
   private RegistryTreeNodePathMatcher activityNodeMatcher ;
   private RegistryTreeNodePathMatcher activityListMatcher ;
   private RegistryTreeNodePathMatcher activityQueueMatcher ;
+  
+  private RegistryTreeNodePathMatcher notificationNodeMatcher ;
   
   private RegistryTreeNodePathMatcher ignoreNodeMatcher ;
   
@@ -41,6 +45,9 @@ public class UIDataflowTree extends UIRegistryTree {
     
     activityQueueMatcher = new RegistryTreeNodePathMatcher() ;
     activityQueueMatcher.add(ScribenginService.DATAFLOWS_ALL_PATH + "/.*/activities/queue");
+    
+    notificationNodeMatcher = new RegistryTreeNodePathMatcher() ;
+    notificationNodeMatcher.add(ScribenginService.DATAFLOWS_ALL_PATH + "/.*/notifications/.*-events");
     
     ignoreNodeMatcher = new RegistryTreeNodePathMatcher() ;
     ignoreNodeMatcher.add(ScribenginService.DATAFLOWS_ALL_PATH + "/.*/activities/activity-id-tracker");
@@ -67,6 +74,8 @@ public class UIDataflowTree extends UIRegistryTree {
     } else if(activityQueueMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
       view.addView("Queue Activities", new UIActivityQueueView(activitiesRootPath, node.getNodePath()), false) ;
+    } else  if(notificationNodeMatcher.matches(node)) {
+      view.addView("Notifications", new UILogView(node.getNodePath()), false) ;
     }
     view.setSelectedView(0);
   }

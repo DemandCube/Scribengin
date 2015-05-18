@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.registry.UIActivityTree;
+import com.neverwinterdp.swing.registry.UINotificationTree;
 import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowTree;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.util.SwingUtil;
@@ -24,6 +25,7 @@ public class UIScribengin extends JAccordionPanel implements UILifecycle {
     addBar("Dataflows", new UIDataflowTree());
     addBar("Masters", getDummyPanel("Masters"));
     addBar("Events", getDummyPanel("Events"));
+    addBar("Notifications", new UINotificationTree("/scribengin"));
     addBar("Activities", new UIActivityTree(ScribenginService.ACTIVITIES_PATH));
   }
   

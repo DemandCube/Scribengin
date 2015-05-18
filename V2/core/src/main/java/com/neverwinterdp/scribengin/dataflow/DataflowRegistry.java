@@ -243,7 +243,7 @@ public class DataflowRegistry {
       }
     };
     try {
-      return lock.execute(getAssignedtaskOp, 1, 3000);
+      return lock.execute(getAssignedtaskOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to assign the task ";
       dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
@@ -277,7 +277,7 @@ public class DataflowRegistry {
       }
     };
     try {
-      lock.execute(suspendtOp, 5, 1000);
+      lock.execute(suspendtOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
       dataflowTaskNotifier.warn("fail-to-suspend-dataflow-task", errorMessage, ex);
@@ -310,7 +310,7 @@ public class DataflowRegistry {
     };
     try {
       Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish") ;
-      lock.execute(commitOp, 5, 1000);
+      lock.execute(commitOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to finish the task task-" + descriptor.getId();
       dataflowTaskNotifier.warn("fail-to-finish-dataflow-task", errorMessage, ex);
