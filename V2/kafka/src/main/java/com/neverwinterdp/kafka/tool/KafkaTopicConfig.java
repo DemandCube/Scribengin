@@ -71,6 +71,9 @@ public class KafkaTopicConfig {
     @Parameter(names = "--consume-batch-fetch", description = "The number of messages that kafka should fetch from server each time")
     public int   consumeBatchFetch = 500;
     
+    @Parameter(names = "--consume-fetch-retries", description = "The number of retry when the consumer cannot connect/read from partitions broker")
+    public int   consumeFetchRetries = 20;
+    
     @Parameter(names = "--consume-retries", description = "The number of retry when the consumer cannot read more messages")
     public int   consumeRetries = 20;
     

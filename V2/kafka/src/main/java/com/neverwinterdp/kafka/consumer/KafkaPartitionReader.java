@@ -92,12 +92,12 @@ public class KafkaPartitionReader {
   }
   
   public List<byte[]> fetch(int fetchSize, int maxRead) throws Exception {
-    return fetch(fetchSize, maxRead, 1000) ;
+    return fetch(fetchSize, maxRead, 1000, 3) ;
   }
   
-  public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait) throws Exception {
+  public List<byte[]> fetch(int fetchSize, int maxRead, int maxWait, int numRetries) throws Exception {
     FetchOperation fetchOperation = new FetchOperation(fetchSize, maxRead, maxWait);
-    return execute(fetchOperation, 3, 500);
+    return execute(fetchOperation, numRetries, 500);
   }
   
   byte[] getCurrentMessagePayload() {
