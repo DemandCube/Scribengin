@@ -24,6 +24,13 @@ else
   echo "credentials file does not exists"
 fi
 
+  echo "testing existence of sunjce file on remote host"
+  if [ -e $JAVA_HOME/lib/ext/sunjce_provider.jar ] ; then 
+    echo "sunjce exists !!!!"
+  else
+    echo "sunjce exists not."
+  fi
+
 
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh scribengin info"
 ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengin/scribengin && ./bin/shell.sh vm info"
