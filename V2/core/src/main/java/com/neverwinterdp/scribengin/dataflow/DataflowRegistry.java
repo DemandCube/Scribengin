@@ -235,6 +235,12 @@ public class DataflowRegistry {
           transaction.commit();
         } catch(Exception ex) {
           String errorMessage = "Fail to assign the task " + taskId + "to server " + vmDescriptor.getId();
+          StringBuilder registryDump = new StringBuilder() ;
+          try {
+            tasksAssignedNode.getParentNode().dump(registryDump);
+          } catch (IOException e) {
+          }
+          errorMessage += "\n" + registryDump.toString();
           dataflowTaskNotifier.warn("fail-to-assign-dataflow-task ", errorMessage, ex);
           throw ex;
         }
@@ -270,6 +276,12 @@ public class DataflowRegistry {
           return true;
         } catch(RegistryException ex) {
           String errorMessage = "Fail to suspend the task " + descriptor.getId();
+          StringBuilder registryDump = new StringBuilder() ;
+          try {
+            tasksAssignedNode.getParentNode().dump(registryDump);
+          } catch (IOException e) {
+          }
+          errorMessage += "\n" + registryDump.toString();
           dataflowTaskNotifier.warn("fail-to-assign-dataflow-task", errorMessage, ex);
           throw ex ;
         }
