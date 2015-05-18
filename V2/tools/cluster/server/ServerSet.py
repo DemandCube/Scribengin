@@ -407,7 +407,7 @@ class ServerSet(object):
       aws_credential_path = join(expanduser("~"),".aws")
     print aws_credential_path
     os.system("scp -q -o StrictHostKeyChecking=no -r "+aws_credential_path+" neverwinterdp@"+hostname+":/home/neverwinterdp")
-    self.sync(hostname, src="/home/neverwinterdp/.aws", dst="home/neverwinterdp")
+    self.sync(hostname, src="/home/neverwinterdp/.aws", dst="/home/neverwinterdp")
     os.chdir(currentWorkingDir)
     self.sync(hostname)
     
