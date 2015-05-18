@@ -7,8 +7,8 @@ import com.beust.jcommander.Parameter;
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.RegistryLogger;
 import com.neverwinterdp.registry.event.WaitingOrderNodeEventListener;
+import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
@@ -56,7 +56,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
     int resumeCount = 0 ;
     int resumeCompleteCount = 0; 
     List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
-    RegistryLogger registryLogger = null ;
+    Notifier notifier = null ;
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
       Registry registry = scribenginClient.getRegistry() ;
@@ -69,26 +69,27 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       int count = 0 ;
       while(count < maxExecution) {
         count++ ;
-        registryLogger = new RegistryLogger(registry, "start-stop-failure-simulation/execute-" + count);
-        registryLogger.info("wait-before-stop", "Wait " + sleepBeforeStop + "ms before stop the dataflow");
+        notifier = 
+            new Notifier(registry, "/scribengin/tests/dataflow-start-top-resume/notification", "simulation-" + (count + 1));
+        notifier.info("wait-before-stop", "Wait " + sleepBeforeStop + "ms before stop the dataflow");
         if(sleepBeforeStop > 0) Thread.sleep(sleepBeforeStop);
         try {
           dataflowStatus = dflClient.getStatus();
         } catch(RegistryException ex) {
-          registryLogger.info("unexpected-error", ExceptionUtil.getStackTrace(ex));
+          notifier.info("unexpected-error", ExceptionUtil.getStackTrace(ex));
           if(ex.getErrorCode() == ErrorCode.NoNode) break;
           throw ex;
         }
-        registryLogger.info("check-dataflow-status", "The current dataflow status is " + dataflowStatus);
+        notifier.info("check-dataflow-status", "The current dataflow status is " + dataflowStatus);
         if(dataflowStatus == DataflowLifecycleStatus.FINISH || dataflowStatus == DataflowLifecycleStatus.TERMINATED) {
-          registryLogger.info("terminate", "Terminate the failure simulation, the dataflow status is " + dataflowStatus);
+          notifier.info("terminate", "Terminate the failure simulation, the dataflow status is " + dataflowStatus);
           break;
         }
         stopCount++ ;
         DataflowEvent stopEvent = stopCount % 2 == 0 ? DataflowEvent.PAUSE : DataflowEvent.STOP;
-        registryLogger.info("before-stop", "Before execute stop with the event" + stopEvent);
+        notifier.info("before-stop", "Before execute stop with the event" + stopEvent);
         ExecuteLog stopExecuteLog = doStop(dflClient, stopEvent) ;
-        registryLogger.info("after-stop", stopExecuteLog.getFormatText());
+        notifier.info("after-stop", stopExecuteLog.getFormatText());
         executeLogs.add(stopExecuteLog);
         shell.console().println(stopExecuteLog.getFormatText());
         if(!stopExecuteLog.isSuccess()) {
@@ -96,13 +97,13 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
         }
         stopCompleteCount++ ;
 
-        registryLogger.info("sleep-before-resume", "Sleep " + sleepBeforeResume +"ms before resume");
+        notifier.info("sleep-before-resume", "Sleep " + sleepBeforeResume +"ms before resume");
         if(sleepBeforeResume > 0) Thread.sleep(sleepBeforeResume);
 
         resumeCount++ ;
-        registryLogger.info("before-resume", "Before resume");
+        notifier.info("before-resume", "Before resume");
         ExecuteLog resumeExecuteLog = doResume(dflClient) ;
-        registryLogger.info("after-resume", resumeExecuteLog.getFormatText());
+        notifier.info("after-resume", resumeExecuteLog.getFormatText());
         executeLogs.add(resumeExecuteLog);
         shell.console().println(resumeExecuteLog.getFormatText());
         if(!resumeExecuteLog.isSuccess()) {
@@ -112,7 +113,7 @@ public class DataflowCommandStartStopResumeTest extends DataflowCommandTest {
       }
     } catch(Exception ex) {
       ex.printStackTrace();
-      if(registryLogger != null) registryLogger.info("unexpected-error", ExceptionUtil.getStackTrace(ex));
+      if(notifier != null) notifier.info("unexpected-error", ExceptionUtil.getStackTrace(ex));
       shell.execute("registry dump");
       shell.execute("dataflow info --dataflow-id " + dataflowId);
     }

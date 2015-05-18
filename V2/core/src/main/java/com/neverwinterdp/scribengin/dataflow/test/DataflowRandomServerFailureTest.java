@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Random;
 
 import com.beust.jcommander.Parameter;
-import com.neverwinterdp.registry.RegistryLogger;
+import com.neverwinterdp.registry.Registry;
+import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.scribengin.ScribenginClient;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.DataflowClient;
@@ -38,10 +39,12 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   protected boolean printSummary = false;
   
   public void doRun(ScribenginShell shell) throws Exception {
+
     try {
       ScribenginClient scribenginClient = shell.getScribenginClient() ;
-      long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
       DataflowClient dflClient = scribenginClient.getDataflowClient(dataflowId, waitForRunningDataflow);
+      Registry registry = dflClient.getRegistry();
+      long stopTime = System.currentTimeMillis() + waitForRunningDataflow;
       while(dflClient.countActiveDataflowWorkers() == 0 && System.currentTimeMillis() < stopTime) {
         Thread.sleep(500);
       }
@@ -51,22 +54,22 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
       }
       List<ExecuteLog> executeLogs = new ArrayList<ExecuteLog>() ;
       boolean error = false ;
-      int failureCount = 0 ;
+      int simulationCount = 0 ;
       FailureSimulator[] failureSimulator = {
           new RandomWorkerKillFailureSimulator()
       } ;
       
-      while(!error && failureCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
-        RegistryLogger logger = 
-          new RegistryLogger(dflClient.getRegistry(), "dataflow-random-server-kill/iteration-" +(failureCount + 1)) ;
-        ExecuteLog executeLog = failureSimulator[0].terminate(dflClient, logger);
+      while(!error && simulationCount < maxFailure && dflClient.getStatus() == DataflowLifecycleStatus.RUNNING) {
+        Notifier notifier = 
+          new Notifier(registry, "/scribengin/tests/dataflow-random-server-kill/notification", "simulation-" + ((simulationCount + 1)));
+        ExecuteLog executeLog = failureSimulator[0].terminate(dflClient, notifier);
         if(executeLog != null) {
           executeLogs.add(executeLog);
           Thread.sleep(failurePeriod);
         } else {
           error = true ;
         }
-        failureCount++ ;
+        simulationCount++ ;
       }
       report(shell, executeLogs);
     } catch(Exception ex) {
@@ -77,7 +80,7 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
     }
   }
 
-  VMDescriptor selectRandomVM(List<VMDescriptor> vmDescriptors, RegistryLogger logger) throws Exception {
+  VMDescriptor selectRandomVM(List<VMDescriptor> vmDescriptors, Notifier logger) throws Exception {
     if(vmDescriptors.size() == 0) {
       logger.info("select-random-server", "No server to select");
       return null ;
@@ -95,11 +98,11 @@ public class DataflowRandomServerFailureTest extends DataflowCommandTest {
   }
   
   abstract public class FailureSimulator {
-    abstract public ExecuteLog terminate(DataflowClient dflClient, RegistryLogger logger) throws Exception ;
+    abstract public ExecuteLog terminate(DataflowClient dflClient, Notifier logger) throws Exception ;
   }
   
   public class RandomWorkerKillFailureSimulator extends FailureSimulator {
-    public ExecuteLog terminate(DataflowClient dflClient, RegistryLogger logger) throws Exception {
+    public ExecuteLog terminate(DataflowClient dflClient, Notifier logger) throws Exception {
       ExecuteLog executeLog = new ExecuteLog() ;
       executeLog.start();
       try {

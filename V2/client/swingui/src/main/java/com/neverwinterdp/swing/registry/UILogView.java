@@ -20,7 +20,7 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryLogger;
+import com.neverwinterdp.registry.notification.NotificationEvent;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.Fonts;
@@ -96,8 +96,8 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           RegistryLogTableModel model = (RegistryLogTableModel) getModel() ;
-          RegistryLogger.Log log = model.getLogAt(getSelectedRow());
-          logDetailPanel.updateLogDetail(log);
+          NotificationEvent notificationEvent = model.getLogAt(getSelectedRow());
+          logDetailPanel.updateLogDetail(notificationEvent);
         }
       });
     }
@@ -107,31 +107,31 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
     static String[] COLUMNS = {"Timestamp", "Level", "Message"} ;
 
     private String logPath ;
-    List<RegistryLogger.Log> logs;
+    List<NotificationEvent> notificationEvents;
     
     public RegistryLogTableModel(String logPath) {
       super(COLUMNS, 0) ;
       this.logPath = logPath ;
     }
     
-    public RegistryLogger.Log getLogAt(int row) {
-      return logs.get(row) ;
+    public NotificationEvent getLogAt(int row) {
+      return notificationEvents.get(row) ;
     }
     
     void loadData() throws Exception {
-      logs = loadLogs() ;
-      for(int i = 0; i < logs.size(); i++) {
-        RegistryLogger.Log log = logs.get(i) ;
+      notificationEvents = loadLogs() ;
+      for(int i = 0; i < notificationEvents.size(); i++) {
+        NotificationEvent notificationEvent = notificationEvents.get(i) ;
         Object[] cells = {
-          DateUtil.asCompactDateTime(log.getTimestamp()), log.getLevel(), log.getMessage()
+          DateUtil.asCompactDateTime(notificationEvent.getTimestamp()), notificationEvent.getLevel(), notificationEvent.getMessage()
         };
         addRow(cells);
       }
     }
     
-    List<RegistryLogger.Log> loadLogs() throws Exception{
+    List<NotificationEvent> loadLogs() throws Exception{
       Registry registry = Cluster.getCurrentInstance().getRegistry();
-      return registry.getChildrenAs(logPath, RegistryLogger.Log.class) ;
+      return registry.getChildrenAs(logPath, NotificationEvent.class) ;
     }
   }
   
@@ -140,15 +140,15 @@ public class UILogView extends SpringLayoutGridJPanel implements UILifecycle {
       updateLogDetail(null);
     }
     
-    public void updateLogDetail(RegistryLogger.Log log) {
+    public void updateLogDetail(NotificationEvent notificationEvent) {
       clear() ;
       createBorder("Log Detail");
-      if(log != null) {
-        addRow("Timestamp", DateUtil.asCompactDateTime(log.getTimestamp()));
-        addRow("Level",     log.getLevel());
+      if(notificationEvent != null) {
+        addRow("Timestamp", DateUtil.asCompactDateTime(notificationEvent.getTimestamp()));
+        addRow("Level",     notificationEvent.getLevel());
         JTextArea text = new JTextArea() ;
         text.setFont(Fonts.FIXED);
-        text.setText(log.getMessage());
+        text.setText(notificationEvent.getMessage());
         addRow("Message", text);
         makeCompactGrid();
       }
