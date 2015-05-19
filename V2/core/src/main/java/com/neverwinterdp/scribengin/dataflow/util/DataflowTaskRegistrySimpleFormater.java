@@ -4,7 +4,6 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
-import com.neverwinterdp.vm.VMDescriptor;
 
 /**
  * @author Tuan
@@ -27,21 +26,9 @@ public class DataflowTaskRegistrySimpleFormater extends NodeFormatter {
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);
       DataflowTaskReport     dflTaskReport = taskDescriptorNode.getChild("report").getDataAs(DataflowTaskReport.class);
       
-      VMDescriptor workerDescriptor = null ;
-      Node workerHeartbeatNode = 
-          taskDescriptorNode.getParentNode().
-          getParentNode().getDescendant("executors/assigned/" + taskDescriptorNode.getName() + "/heartbeat");
-      
-      
       b.append("  DataflowTaskDescriptor: ID = "+dflDescriptor.getId()+", Status: "+dflDescriptor.getStatus()+"\n");
       b.append("  DataflowTaskReport: ProcessCount = "+dflTaskReport.getProcessCount()+", "+
-          "CommitProcessCount = "+dflTaskReport.getCommitProcessCount()+"\n");
-      
-      if(workerHeartbeatNode.exists()) {
-        workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
-        b.append("  WorkerDescriptor: ID = "+workerDescriptor.getId()+", Path: "+workerDescriptor.getRegistryPath()+"\n");
-      }
-      
+               "CommitProcessCount = "+dflTaskReport.getCommitProcessCount()+"\n");
     } catch (Exception e) {
       e.printStackTrace();
       b.append(e.getMessage());

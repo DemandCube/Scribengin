@@ -35,9 +35,9 @@ public class DataflowWorkerMonitor {
     Node vmNode = heartbeatNode.getParentNode().getParentNode();
     workerHeartbeatListeners.remove(vmNode.getPath());
     Node dataflowWorkerNode = dataflowRegistry.getAllWorkersNode().getChild(vmNode.getName());
-    DataflowWorkerStatus dataflowWorkerStatus = dataflowWorkerNode.getChild("status").getDataAs(DataflowWorkerStatus.class);
     dataflowRegistry.historyWorker(vmNode.getName());
     
+    DataflowWorkerStatus dataflowWorkerStatus = dataflowWorkerNode.getChild("status").getDataAs(DataflowWorkerStatus.class);
     if(dataflowWorkerStatus != DataflowWorkerStatus.TERMINATED) {
       Activity activity = new AddWorkerActivityBuilder().build(1);
       activityService.queue(activity);
@@ -68,8 +68,8 @@ public class DataflowWorkerMonitor {
     @Override
     public void processNodeEvent(NodeEvent nodeEvent) throws Exception {
       if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
-        removeWorkerListener(nodeEvent.getPath());
         setComplete();
+        removeWorkerListener(nodeEvent.getPath());
       }
     }
   }

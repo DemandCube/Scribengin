@@ -34,19 +34,6 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);
       DataflowTaskReport     dflTaskReport = taskDescriptorNode.getChild("report").getDataAs(DataflowTaskReport.class);
       
-      VMDescriptor workerDescriptor = null ;
-      
-      Node workerHeartbeatNode = 
-        taskDescriptorNode.getParentNode().
-        getParentNode().getDescendant("executors/assigned/" + taskDescriptorNode.getName() + "/heartbeat");
-      if(workerHeartbeatNode.exists()) {
-        workerDescriptor = workerHeartbeatNode.getDataAs(VMDescriptor.class) ;
-      }
-      else{
-        
-      }
-
-      
       TabularFormater taskFt = new TabularFormater("Property", "Value");
       taskFt.addRow("Dataflow Task Descriptor", "");
       taskFt.addRow("  Dataflow Task Id", dflDescriptor.getId());
@@ -59,18 +46,14 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       taskFt.addRow("  Process Count", dflTaskReport.getProcessCount());
       taskFt.addRow("  Commit Process Count", dflTaskReport.getCommitProcessCount());
       taskFt.addRow("Worker", "");
-      if(workerDescriptor != null) { 
-        taskFt.addRow("  Id", workerDescriptor.getId());
-        taskFt.addRow("  Registry Path", workerDescriptor.getRegistryPath());
+
+      DataflowTaskDescriptor.Status status = dflDescriptor.getStatus();
+      if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
+        taskFt.addRow("  Status", "FAILED");
+      } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+        taskFt.addRow("  Status", "FINISHED");
       } else{
-        DataflowTaskDescriptor.Status status = dflDescriptor.getStatus();
-        if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
-          taskFt.addRow("  Status", "FAILED");
-        } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
-          taskFt.addRow("  Status", "FINISHED");
-        } else{
-          taskFt.addRow("  Status", status);
-        }
+        taskFt.addRow("  Status", status);
       }
       b.append(taskFt.getFormatText());
       

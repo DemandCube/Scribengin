@@ -38,7 +38,7 @@ public class DataflowTaskMonitor {
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
     if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
       Notifier notifier = dataflowRegistry.getDataflowTaskNotifier() ;
-      notifier.warn("detect-failed-dataflow-task", "Detect the failed dataflow task " + taskId + ", move the task to suspended");
+      notifier.warn("detect-failed-dataflow-" + taskId, "Detect the failed dataflow task " + taskId + ", move the task to suspended");
       dataflowRegistry.dataflowTaskSuspend(descriptor, true);
     } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
       onFinishDataflowTask();
@@ -53,6 +53,24 @@ public class DataflowTaskMonitor {
  
   synchronized public void waitForAllTaskFinish() throws InterruptedException {
     wait() ;
+  }
+  
+  synchronized void processHeartbeatNodeEvent(NodeEvent nodeEvent) throws Exception {
+    if(nodeEvent.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
+      List<String> assignedTaskHeartbeats = dataflowRegistry.getTasksAssignedHeartbeatNode().getChildren();
+      List<String> assignedTasks = dataflowRegistry.getTasksAssignedNode().getChildren();
+      Set<String> assignedTaskHeartbeatSet = new HashSet<>();
+      assignedTaskHeartbeatSet.addAll(assignedTaskHeartbeats);
+      for(int i = 0; i < assignedTasks.size(); i++) {
+        String assignedTask = assignedTasks.get(i) ;
+        if(!assignedTaskHeartbeatSet.contains(assignedTask)) {
+          onDeleteHeartbeat(assignedTask);
+        }
+      }
+    } else if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
+    } else {
+      System.err.println("unhandle assigned dataflow task event: " + nodeEvent.getPath() + " - " + nodeEvent.getType());
+    }
   }
   
   public  class FinishDataflowTaskWatcher extends NodeChildrenWatcher {
@@ -78,21 +96,7 @@ public class DataflowTaskMonitor {
     
     @Override
     public void processNodeEvent(NodeEvent nodeEvent) throws Exception {
-      if(nodeEvent.getType() == NodeEvent.Type.CHILDREN_CHANGED) {
-        List<String> assignedTaskHeartbeats = dataflowRegistry.getTasksAssignedHeartbeatNode().getChildren();
-        List<String> assignedTasks = dataflowRegistry.getTasksAssignedNode().getChildren();
-        Set<String> assignedTaskHeartbeatSet = new HashSet<>();
-        assignedTaskHeartbeatSet.addAll(assignedTaskHeartbeats);
-        for(int i = 0; i < assignedTasks.size(); i++) {
-          String assignedTask = assignedTasks.get(i) ;
-          if(!assignedTaskHeartbeatSet.contains(assignedTask)) {
-            onDeleteHeartbeat(assignedTask);
-          }
-        }
-      } else if(nodeEvent.getType() == NodeEvent.Type.DELETE) {
-      } else {
-        System.err.println("unhandle assigned dataflow task event: " + nodeEvent.getPath() + " - " + nodeEvent.getType());
-      }
+      processHeartbeatNodeEvent(nodeEvent);
     }
   }
 }

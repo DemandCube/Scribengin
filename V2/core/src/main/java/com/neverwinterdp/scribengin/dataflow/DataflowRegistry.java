@@ -19,11 +19,9 @@ import com.neverwinterdp.registry.activity.ActivityRegistry;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.registry.queue.DistributedQueue;
-import com.neverwinterdp.registry.util.RegistryDebugger;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
-import com.neverwinterdp.scribengin.dataflow.util.DataflowTaskNodeDebugger;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
 import com.neverwinterdp.util.JSONSerializer;
@@ -234,12 +232,12 @@ public class DataflowRegistry {
           byte[] data  = tasksAvailableQueue.poll();
           if(data == null) return null;
           taskId = new String(data);
-          Node childNode = tasksDescriptors.getChild(taskId);
+          Node taskNode = tasksDescriptors.getChild(taskId);
           Transaction transaction = registry.getTransaction();
           transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
           transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(vmDescriptor.getRegistryPath()),NodeCreateMode.EPHEMERAL);
           transaction.commit();
-          DataflowTaskDescriptor descriptor = childNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+          DataflowTaskDescriptor descriptor = taskNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
           return descriptor;
         } catch(Exception ex) {
           String errorMessage = "Fail to assign the task " + taskId + " to server " + vmDescriptor.getId();
@@ -299,7 +297,7 @@ public class DataflowRegistry {
       }
     };
     try {
-      Lock lock = tasksLock.getLock("write", "Lock to move the task-" + descriptor.getId() + " to suspend") ;
+      Lock lock = tasksLock.getLock("write", "Lock to move the task-" + descriptor.getId() + " to suspend by " + vmDescriptor.getId()) ;
       lock.execute(suspendtOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
@@ -332,7 +330,7 @@ public class DataflowRegistry {
       }
     };
     try {
-      Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish") ;
+      Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish by " + vmDescriptor.getId()) ;
       lock.execute(commitOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to finish the task task-" + descriptor.getId();

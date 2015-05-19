@@ -32,7 +32,6 @@ public class DataflowTaskNodeDebugger implements NodeDebugger{
       formatter = new DataflowTaskRegistrySimpleFormater(taskDescriptorNode);
     }
     registryDebugger.println(formatter.getFormattedText());
-    registryDebugger.watch(assignedTaskNode.getChild("heartbeat").getPath(), formatter, true);
   }
 
   @Override
