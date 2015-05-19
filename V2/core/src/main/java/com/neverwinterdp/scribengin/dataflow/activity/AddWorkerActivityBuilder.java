@@ -62,7 +62,7 @@ public class AddWorkerActivityBuilder extends ActivityBuilder {
       ActivityStep step = new ActivityStep().
       withType("create-dataflow-worker").
       withExecutor(AddDataflowWorkerStepExecutor.class).
-      attribute("worker.id", dataflowMasterIdTracker.nextInt());
+      attribute("worker.id", dataflowMasterIdTracker.nextSeqId());
       return step;
     }
   }

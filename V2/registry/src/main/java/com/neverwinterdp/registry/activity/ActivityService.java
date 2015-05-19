@@ -89,7 +89,7 @@ public class ActivityService extends ActivityRegistry {
     ActivityStepBuilder stepBuilder = container.getInstance(stepBuilderType);
     List<ActivityStep> activitySteps = stepBuilder.build(activity, container);
     
-    String activityId = activity.getType() + "-" + activityIdTracker.nextInt() ;
+    String activityId = activityIdTracker.nextSeqId() + "-" + activity.getType()  ;
     activity.setId(activityId);
     
     Transaction transaction = registry.getTransaction() ;

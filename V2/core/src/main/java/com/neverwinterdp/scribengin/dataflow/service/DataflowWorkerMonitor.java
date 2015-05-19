@@ -8,6 +8,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
+import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.activity.AddWorkerActivityBuilder;
 import com.neverwinterdp.scribengin.dataflow.activity.DataflowActivityService;
@@ -40,6 +41,8 @@ public class DataflowWorkerMonitor {
     if(dataflowWorkerStatus != DataflowWorkerStatus.TERMINATED) {
       Activity activity = new AddWorkerActivityBuilder().build(1);
       activityService.queue(activity);
+      Notifier notifier = dataflowRegistry.getDataflowWorkerNotifier();
+      notifier.warn("dataflow-worker-faillure-detection", "Detect a failed dataflow worker " + dataflowWorkerNode.getName() + " and allocate a new one");
     } else {
       notifyWorkerTerminated();
     }

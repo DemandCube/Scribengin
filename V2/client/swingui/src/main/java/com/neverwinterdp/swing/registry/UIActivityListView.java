@@ -23,6 +23,10 @@ import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
+//TODO: Rename to UIActivityView. Merge this view and step view into one.  We should have a table that list all the activity
+// and when the user select an activity, it will show detail information. Look at the UINotifcations to see how to split the list
+//view and detail view
+
 @SuppressWarnings("serial")
 public class UIActivityListView extends SpringLayoutGridJPanel implements UILifecycle {
   private String activityRootPath ;

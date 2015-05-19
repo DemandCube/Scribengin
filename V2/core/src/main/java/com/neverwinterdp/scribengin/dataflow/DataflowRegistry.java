@@ -90,6 +90,7 @@ public class DataflowRegistry {
   private Node               historyWorkers;
   
   private Notifier           dataflowTaskNotifier ;
+  private Notifier           dataflowWorkerNotifier ;
 
   public DataflowRegistry() { }
   
@@ -123,6 +124,7 @@ public class DataflowRegistry {
     
     String notificationPath = getDataflowNotificationsPath() ;
     dataflowTaskNotifier = new Notifier(registry, notificationPath, "dataflow-tasks");
+    dataflowWorkerNotifier = new Notifier(registry, notificationPath, "dataflow-workers");
   }
   
   public String getDataflowPath() { return this.dataflowPath ; }
@@ -146,6 +148,8 @@ public class DataflowRegistry {
   public Node getActiveActivitiesNode() { return activeActivitiesNode; } 
   
   public Notifier getDataflowTaskNotifier() { return this.dataflowTaskNotifier ; }
+  
+  public Notifier getDataflowWorkerNotifier() { return this.dataflowWorkerNotifier ; }
   
   public Registry getRegistry() { return this.registry ; }
   

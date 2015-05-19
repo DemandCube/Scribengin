@@ -56,7 +56,7 @@ public class AddDataflowMasterActivityBuilder extends ActivityBuilder {
       steps.add(new ActivityStep().
           withType("create-dataflow-master").
           withExecutor(AddDataflowMasterStepExecutor.class).
-          attribute("master.id", dataflowMasterIdTracker.nextInt()));
+          attribute("master.id", dataflowMasterIdTracker.nextSeqId()));
       return steps;
     }
   }
