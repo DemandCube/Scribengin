@@ -8,6 +8,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeChildrenWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
+import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 
@@ -36,6 +37,8 @@ public class DataflowTaskMonitor {
     DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(taskId);
     DataflowTaskDescriptor.Status status = descriptor.getStatus();
     if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
+      Notifier notifier = dataflowRegistry.getDataflowTaskNotifier() ;
+      notifier.warn("detect-failed-dataflow-task", "Detect the failed dataflow task " + taskId + ", move the task to suspended");
       dataflowRegistry.dataflowTaskSuspend(descriptor, true);
     } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
       onFinishDataflowTask();
