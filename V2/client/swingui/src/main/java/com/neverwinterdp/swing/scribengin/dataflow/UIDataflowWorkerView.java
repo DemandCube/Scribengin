@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -138,7 +139,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
       clear();
       createBorder("Dataflow Worker Info");
       if (selectedWorkerInfo == null) {
-        addRow("Please select one of the workers above to view its details. ");
+        addRow("Select one of the workers above to view its details. ");
       } else {
         Registry registry = Cluster.getCurrentInstance().getRegistry();
         addRow(indent,"Worker id: ", selectedWorkerInfo.getWorkerId());
@@ -204,11 +205,12 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
         String status = new String(registry.getData(workerAllPath + "/" + workerId + "/status"));
         workerInfos.add(new DataflowWorkerInfo(workerAllPath + "/" + workerId, workerId, status));
       }
+      Collections.sort(workerInfos);
       return workerInfos;
     }
   }
 
-  static public class DataflowWorkerInfo {
+  static public class DataflowWorkerInfo implements Comparable<DataflowWorkerInfo>{
     private String dataflowWorkerPath;
     public String workerId;
     public String status;
@@ -229,6 +231,11 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
 
     public String getStatus() {
       return this.status;
+    }
+
+    @Override
+    public int compareTo(DataflowWorkerInfo other) {
+      return this.workerId.compareToIgnoreCase(other.workerId);
     }
   }
 }
