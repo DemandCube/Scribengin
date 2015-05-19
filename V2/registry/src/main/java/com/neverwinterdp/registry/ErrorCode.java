@@ -6,6 +6,7 @@ public enum ErrorCode {
   NodeCreation(3, "Cannot create node due to certain error such, no parent node..."),
   NodeAccess(4, "Cannot access the node due to certain error such permission"),
   NoNode(5, "No such node exists"),
+  NodeExists(6, "A node is already existed"),
   Unknown(1000,  "Unclassified error");
   
   private int code;

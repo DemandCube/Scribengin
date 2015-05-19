@@ -235,7 +235,7 @@ public class DataflowRegistry {
           Node taskNode = tasksDescriptors.getChild(taskId);
           Transaction transaction = registry.getTransaction();
           transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(vmDescriptor.getRegistryPath()),NodeCreateMode.EPHEMERAL);
+          transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(vmDescriptor.getRegistryPath()), NodeCreateMode.EPHEMERAL);
           transaction.commit();
           DataflowTaskDescriptor descriptor = taskNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
           return descriptor;

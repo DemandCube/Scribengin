@@ -590,7 +590,7 @@ public class RegistryImpl implements Registry {
       } else if(kEx.code() ==  KeeperException.Code.NODEEXISTS) {
         KeeperException.NodeExistsException nodeExistsEx = (KeeperException.NodeExistsException) kEx;
         message += "\n" + "  path = " + nodeExistsEx.getPath();
-        return new RegistryException(ErrorCode.NoNode, message, t) ;
+        return new RegistryException(ErrorCode.NodeExists, message, t) ;
       }
     }
     return new RegistryException(ErrorCode.Unknown, message, t) ;

@@ -218,7 +218,7 @@ public class Node {
       stringData = stringData.replace("\r\n", " ");
       stringData = stringData.replace("\n", " ");
       if(stringData.length() > 80) {
-        stringData = stringData.substring(0, 80);
+        stringData = stringData.substring(0, 80) + "...";
       }
     }
     out.append(indentation + node + stringData).append('\n');

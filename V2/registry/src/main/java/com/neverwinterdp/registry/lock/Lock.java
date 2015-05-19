@@ -129,9 +129,15 @@ public class Lock {
     }
     
     public void watch(SortedSet<LockId> currentLockIds) throws RegistryException {
-      SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
-      LockId previousLock = lessThanMe.last();
-      registry.watchExists(previousLock.getPath(), this);
+      try {
+        SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
+        LockId previousLock = lessThanMe.last();
+        registry.watchExists(previousLock.getPath(), this);
+      } catch(NullPointerException ex) {
+        System.err.println("lockId = " + lockId);
+        ex.printStackTrace();
+        throw ex ;
+      }
     }
     
     public void waitForLock() throws RegistryException {

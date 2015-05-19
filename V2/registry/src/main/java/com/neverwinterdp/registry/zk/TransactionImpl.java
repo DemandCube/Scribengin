@@ -33,6 +33,35 @@ public class TransactionImpl implements Transaction {
   }
   
   @Override
+  public Transaction createChild(Node node, String name, NodeCreateMode mode) {
+    return createChild(node, name, new byte[0], mode);
+  }
+  
+  @Override
+  public Transaction createChild(Node node, String name, byte data[], NodeCreateMode mode) {
+    return create(node.getPath() + "/" + name, data, mode);
+  }
+  
+  @Override
+  public <T> Transaction createChild(Node node, String name, T obj, NodeCreateMode mode) {
+    return createChild(node, name, JSONSerializer.INSTANCE.toBytes(obj), mode);
+  }
+  
+  @Override
+  public Transaction createDescendant(Node node, String relativePath, NodeCreateMode mode) {
+    return createDescendant(node, relativePath, new byte[0], mode);
+  }
+  @Override
+  public Transaction createDescendant(Node node, String relativePath, byte data[], NodeCreateMode mode) {
+    return create(node.getPath() + "/" + relativePath, data, mode);
+  }
+
+  @Override
+  public <T> Transaction createDescendant(Node node, String relativePath, T obj , NodeCreateMode mode) {
+    return createDescendant(node, relativePath, JSONSerializer.INSTANCE.toBytes(obj), mode);
+  }
+  
+  @Override
   public Transaction delete(String path) {
     zkTransaction.delete(registry.realPath(path), -1);
     return this;
@@ -88,35 +117,6 @@ public class TransactionImpl implements Transaction {
     return this;
   }
 
-  @Override
-  public Transaction createChild(Node node, String name, NodeCreateMode mode) {
-    return createChild(node, name, new byte[0], mode);
-  }
-  
-  @Override
-  public Transaction createChild(Node node, String name, byte data[], NodeCreateMode mode) {
-    return create(node.getPath() + "/" + name, data, mode);
-  }
-  
-  @Override
-  public <T> Transaction createChild(Node node, String name, T obj, NodeCreateMode mode) {
-    return createChild(node, name, JSONSerializer.INSTANCE.toBytes(obj), mode);
-  }
-  
-  @Override
-  public Transaction createDescendant(Node node, String relativePath, NodeCreateMode mode) {
-    return createDescendant(node, relativePath, new byte[0], mode);
-  }
-  @Override
-  public Transaction createDescendant(Node node, String relativePath, byte data[], NodeCreateMode mode) {
-    return create(node.getPath() + "/" + relativePath, data, mode);
-  }
-
-  @Override
-  public <T> Transaction createDescendant(Node node, String relativePath, T obj , NodeCreateMode mode) {
-    return createDescendant(node, relativePath, JSONSerializer.INSTANCE.toBytes(obj), mode);
-  }
-  
   public Transaction deleteChild(Node node, String name) {
     delete(node.getPath() + "/" + name) ;
     return this ;
