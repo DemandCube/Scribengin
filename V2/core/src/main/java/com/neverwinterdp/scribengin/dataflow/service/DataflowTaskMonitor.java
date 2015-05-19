@@ -4,10 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.event.NodeChildrenWatcher;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
@@ -17,12 +15,10 @@ public class DataflowTaskMonitor {
   private DataflowRegistry dataflowRegistry ;
   private AssignedDataflowTaskHeartbeatWatcher assignedDataflowTaskHeartbeatWatcher ;
   private FinishDataflowTaskWatcher finishDataflowTaskWatcher;
-  private int finishedTaskCount = 0 ;
   private int numOfTasks = 0;
   
   public DataflowTaskMonitor(DataflowRegistry dflRegistry) throws RegistryException {
     this.dataflowRegistry = dflRegistry;
-    finishedTaskCount = dflRegistry.getTasksFinishedNode().getChildren().size();
     numOfTasks = dflRegistry.getTaskDescriptors().size();
     
     assignedDataflowTaskHeartbeatWatcher = new AssignedDataflowTaskHeartbeatWatcher(dflRegistry.getRegistry(), true);
@@ -37,20 +33,12 @@ public class DataflowTaskMonitor {
   }
 
   synchronized void onDeleteHeartbeat(String taskId) throws RegistryException {
-    Node tasksAssignedNode = dataflowRegistry.getTasksAssignedNode(); 
-    Node taskAssignedNode = tasksAssignedNode.getChild(taskId) ;
-    if(taskAssignedNode.exists()) {
-//      Transaction transaction = taskAssignedNode.getRegistry().getTransaction();
-//      dataflowRegistry.getTasksAvailableQueue().offer(transaction, taskId.getBytes());
-//      transaction.delete(taskAssignedNode.getPath());
-//      transaction.commit();
-      DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(taskId);
-      DataflowTaskDescriptor.Status status = descriptor.getStatus();
-      if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
-        dataflowRegistry.dataflowTaskSuspend(descriptor, true);
-      } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
-        onFinishDataflowTask();
-      }
+    DataflowTaskDescriptor descriptor = dataflowRegistry.getTaskDescriptor(taskId);
+    DataflowTaskDescriptor.Status status = descriptor.getStatus();
+    if(status != DataflowTaskDescriptor.Status.SUSPENDED || status != DataflowTaskDescriptor.Status.TERMINATED) {
+      dataflowRegistry.dataflowTaskSuspend(descriptor, true);
+    } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+      onFinishDataflowTask();
     }
   }
   

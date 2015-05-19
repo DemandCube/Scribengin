@@ -222,7 +222,6 @@ public class DataflowRegistry {
   }
   
   public DataflowTaskDescriptor assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
-    Lock lock = tasksLock.getLock("write", "Lock to assign task to " + vmDescriptor.getId()) ;
     BatchOperations<DataflowTaskDescriptor> getAssignedtaskOp = new BatchOperations<DataflowTaskDescriptor>() {
       @Override
       public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
@@ -252,6 +251,7 @@ public class DataflowRegistry {
       }
     };
     try {
+      Lock lock = tasksLock.getLock("write", "Lock to grab a task for the dataflow worker " + vmDescriptor.getId()) ;
       return lock.execute(getAssignedtaskOp, 3, 3000);
     } catch(RegistryException ex) {
       String errorMessage = "Fail to assign the task after 3 tries";

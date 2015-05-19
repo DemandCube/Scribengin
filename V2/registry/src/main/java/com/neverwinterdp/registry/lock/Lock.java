@@ -72,10 +72,11 @@ public class Lock {
         T result = op.execute(registry);
         return result;
       } catch (RegistryException e) {
-        if(e.getErrorCode() != ErrorCode.Timeout) {
+        if(e.getErrorCode() != ErrorCode.Connection || e.getErrorCode() == ErrorCode.Timeout) {
+          lastError = e;
+        } else {
           throw e;
         }
-        lastError = e;
       } catch (Exception e) {
         throw new RegistryException(ErrorCode.Unknown, e);
       } finally {
