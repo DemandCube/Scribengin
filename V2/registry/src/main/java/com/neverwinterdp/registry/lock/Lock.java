@@ -135,29 +135,25 @@ public class Lock {
       registry.watchExists(previousLock.getPath(), this);
     }
     
-    public void waitForLock() throws RegistryException {
-      synchronized(this) {
-        try {
-          wait(timeout - (System.currentTimeMillis() - startTime));
-        } catch (InterruptedException e) {
+    synchronized public void waitForLock() throws RegistryException {
+      try {
+        wait(timeout - (System.currentTimeMillis() - startTime));
+      } catch (InterruptedException e) {
+        setComplete() ;
+        unlock();
+        throw new RegistryException(ErrorCode.Timeout, e) ;
+      }
+      if(!obtainedLock) {
+        //check again
+        SortedSet<LockId> currentLockIds = getSortedLockIds() ;
+        LockId ownerId = currentLockIds.first() ;
+        if(ownerId.equals(lockId)) {
+          obtainedLock = true;
+        } else {
+          String lockIdPath = lockId.getPath();
           setComplete() ;
           unlock();
-          throw new RegistryException(ErrorCode.Timeout, e) ;
-        }
-        if(!obtainedLock) {
-          //check again
-          SortedSet<LockId> currentLockIds = getSortedLockIds() ;
-          LockId ownerId = currentLockIds.first() ;
-          if(ownerId.equals(lockId)) {
-            obtainedLock = true;
-          } else {
-            String lockIdPath = lockId.getPath();
-            registry.delete(lockIdPath);
-            lockId = null;
-            setComplete() ;
-            unlock();
-            throw new RegistryException(ErrorCode.Timeout, "Cannot obtain a lock at " + lockIdPath + " after " + timeout + "ms") ;
-          }
+          throw new RegistryException(ErrorCode.Timeout, "Cannot obtain a lock at " + lockIdPath + " after " + timeout + "ms") ;
         }
       }
     }
