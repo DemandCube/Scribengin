@@ -128,9 +128,9 @@ public class TaskServiceUnitTest {
       try {
         Random rand = new Random();
         while((tContext = taskService.take(id)) != null) {
-          long processTime = rand.nextInt(3000) + 1;
+          long processTime = rand.nextInt(1000) + 1;
           Thread.sleep(processTime);
-          if(rand.nextInt(4)  % 3 == 0) {
+          if(rand.nextInt(10)  % 7 == 0) {
             taskService.finish(id, tContext.getTaskId());
           } else {
             taskService.suspend(id, tContext.getTaskId());
