@@ -13,7 +13,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeWatcher;
 
-public class Lock {
+public class LockBak {
   private Registry    registry ;
   private String      lockDir ;
   private String      name ;
@@ -22,11 +22,11 @@ public class Lock {
   private String      description;
   private LockWatcher currentLockWatcher;
   
-  public Lock(Registry registry, String dir, String name) {
+  public LockBak(Registry registry, String dir, String name) {
     this(registry, dir, name, "") ;
   }
   
-  public Lock(Registry registry, String dir, String name, String desc) {
+  public LockBak(Registry registry, String dir, String name, String desc) {
     this.registry = registry;
     this.lockDir = dir ;
     this.name = name ;
@@ -49,9 +49,14 @@ public class Lock {
     Node node = registry.create(lockPath , description.getBytes(), NodeCreateMode.EPHEMERAL_SEQUENTIAL);
     lockId = new LockId(node.getPath()) ;
     SortedSet<LockId> currentLockIds = getSortedLockIds() ;
-    currentLockWatcher = new LockWatcher(timeout) ;
-    currentLockWatcher.tryWatch(currentLockIds);
-    currentLockWatcher.waitForLock();
+    LockId ownerId = currentLockIds.first() ;
+    if(ownerId.equals(lockId)) {
+      return lockId ;
+    } else {
+      currentLockWatcher = new LockWatcher(timeout) ;
+      currentLockWatcher.tryWatch(currentLockIds);
+      currentLockWatcher.waitForLock();
+    }
     return lockId ;
   }
   
@@ -106,30 +111,31 @@ public class Lock {
     }
     
     @Override
-    public void onEvent(NodeEvent event) {
+    synchronized public void onEvent(NodeEvent event) {
       if(event.getType() != NodeEvent.Type.DELETE) return ;
       try {
         SortedSet<LockId> currentLockIds = getSortedLockIds() ;
-        tryWatch(currentLockIds);
+        if(currentLockIds.size() == 0) return ;
+        LockId ownerId = currentLockIds.first() ;
+        if(ownerId.equals(lockId)) {
+          obtainedLock = true ;
+          notifyAll() ;
+          return ;
+        } else {
+          tryWatch(currentLockIds);
+        }
       } catch(Throwable ex) {
         throw new RuntimeException("Error lock " + event.getPath() + ", event = " + event.getType() + ", lock id = " + lockId, ex) ;
       }
     }
     
-    synchronized public void tryWatch(SortedSet<LockId> currentLockIds) throws RegistryException {
+    public void tryWatch(SortedSet<LockId> currentLockIds) throws RegistryException {
       while(true) {
         try {
-          LockId ownerId = currentLockIds.first() ;
-          if(ownerId.equals(lockId)) {
-            obtainedLock = true ;
-            notifyAll() ;
-            return ;
-          } else {
-            SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
-            LockId previousLock = lessThanMe.last();
-            registry.watchModify(previousLock.getPath(), this);
-            return;
-          }
+          SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
+          LockId previousLock = lessThanMe.last();
+          registry.watchModify(previousLock.getPath(), this);
+          return;
         } catch(RegistryException ex) {
           if(ex.getErrorCode() == ErrorCode.NoNode) {
             currentLockIds = getSortedLockIds() ;
@@ -140,8 +146,13 @@ public class Lock {
       }
     }
     
+//    void watch(SortedSet<LockId> currentLockIds) throws RegistryException {
+//      SortedSet<LockId> lessThanMe = currentLockIds.headSet(lockId);
+//      LockId previousLock = lessThanMe.last();
+//      registry.watchModify(previousLock.getPath(), this);
+//    }
+    
     synchronized public void waitForLock() throws RegistryException {
-      if(obtainedLock) return;
       try {
         wait(timeout - (System.currentTimeMillis() - startTime));
       } catch (InterruptedException e) {
@@ -150,10 +161,17 @@ public class Lock {
         throw new RegistryException(ErrorCode.Timeout, e) ;
       }
       if(!obtainedLock) {
-        String lockIdPath = lockId.getPath();
-        setComplete() ;
-        unlock();
-        throw new RegistryException(ErrorCode.Timeout, "Cannot obtain a lock at " + lockIdPath + " after " + timeout + "ms") ;
+        //check again
+        SortedSet<LockId> currentLockIds = getSortedLockIds() ;
+        LockId ownerId = currentLockIds.first() ;
+        if(ownerId.equals(lockId)) {
+          obtainedLock = true;
+        } else {
+          String lockIdPath = lockId.getPath();
+          setComplete() ;
+          unlock();
+          throw new RegistryException(ErrorCode.Timeout, "Cannot obtain a lock at " + lockIdPath + " after " + timeout + "ms") ;
+        }
       }
     }
   }

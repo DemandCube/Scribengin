@@ -75,10 +75,13 @@ public class TaskServiceUnitTest {
 
   @Test
   public void testTaskService() throws Exception {
-    TaskService<TaskDescriptor> service = new TaskService<>(registry, TASKS_PATH);
+    TaskService<TaskDescriptor> service = new TaskService<>(registry, TASKS_PATH, TaskDescriptor.class);
+    TestTaskMonitor<TaskDescriptor> monitor = new TestTaskMonitor<TaskDescriptor>();
+    service.addTaskMonitor(monitor);
     
+    int NUM_OF_TASKS = 100;
     DecimalFormat seqIdFormater = new DecimalFormat("000");
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < NUM_OF_TASKS; i++) {
       String taskId = "task-" + seqIdFormater.format(i) ;
       service.offer(taskId, new TaskDescriptor(taskId));
     }
@@ -89,16 +92,19 @@ public class TaskServiceUnitTest {
     } catch(RegistryException ex) {
       Assert.assertEquals(ErrorCode.NodeExists, ex.getErrorCode());
     }
-    service.getTasksRootNode().dump(System.out);
+    service.getTaskRegistry().getTasksRootNode().dump(System.out);
 
-    ExecutorService execService = Executors.newFixedThreadPool(3);
-    for(int i = 0; i < 3; i++) {
+    int NUM_OF_EXECUTORS = 20;
+    ExecutorService execService = Executors.newFixedThreadPool(NUM_OF_EXECUTORS);
+    for(int i = 0; i < NUM_OF_EXECUTORS; i++) {
       TaskExecutor<TaskDescriptor> executor = new TaskExecutor<>(i + "", service);
       execService.submit(executor);
     }
     execService.shutdown();
     execService.awaitTermination(30000, TimeUnit.MILLISECONDS);
-    service.getTasksRootNode().dump(System.out);
+    service.getTaskRegistry().getTasksRootNode().dump(System.out);
+    service.onDestroy();
+    Assert.assertEquals(NUM_OF_TASKS, monitor.finishCounter);
   }
   
   final static public class TaskDescriptor {
@@ -112,6 +118,27 @@ public class TaskServiceUnitTest {
     
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+  }
+  
+  static public class TestTaskMonitor<T> implements TaskMonitor<T> {
+    int finishCounter = 0;
+    
+    @Override
+    public void onAssign(TaskContext<T> context) {
+      System.out.println("on assign task " + context.getTaskId());
+    }
+
+    @Override
+    public void onAvailable(TaskContext<T> context) {
+      System.out.println("on available task " + context.getTaskId());
+    }
+
+    @Override
+    public void onFinish(TaskContext<T> context) {
+      finishCounter++ ;
+      System.out.println("on finish task " + context.getTaskId());
+    }
+    
   }
   
   static public class TaskExecutor<T> implements Runnable {
@@ -128,9 +155,9 @@ public class TaskServiceUnitTest {
       try {
         Random rand = new Random();
         while((tContext = taskService.take(id)) != null) {
-          long processTime = rand.nextInt(1000) + 1;
+          long processTime = rand.nextInt(500) + 1;
           Thread.sleep(processTime);
-          if(rand.nextInt(10)  % 7 == 0) {
+          if(rand.nextInt(5)  % 3 == 0) {
             taskService.finish(id, tContext.getTaskId());
           } else {
             taskService.suspend(id, tContext.getTaskId());
