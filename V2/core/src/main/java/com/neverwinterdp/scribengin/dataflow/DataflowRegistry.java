@@ -71,16 +71,18 @@ public class DataflowRegistry {
   private VMDescriptor       vmDescriptor;
   
   private Node               status;
-  
-  private Node               tasksDescriptors;
+
   private Node               workerEventNode;
   private Node               failureEventNode;
   private Node               masterEventNode;
+  
+  private Node               tasksDescriptors;
   private DistributedQueue   tasksAvailableQueue;
   private Node               tasksAssignedNode;
   private Node               tasksAssignedHeartbeatNode;
   private Node               tasksFinishedNode;
   private Node               tasksLock;
+  
   private Node               activeActivitiesNode;
   
   private Node               allWorkers;

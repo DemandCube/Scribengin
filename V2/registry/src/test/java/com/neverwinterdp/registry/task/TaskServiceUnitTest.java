@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,7 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.util.FileUtil;
+import com.neverwinterdp.util.text.TabularFormater;
 import com.neverwinterdp.zk.tool.server.EmbededZKServer;
 
 public class TaskServiceUnitTest {
@@ -102,9 +104,10 @@ public class TaskServiceUnitTest {
     }
     execService.shutdown();
     execService.awaitTermination(30000, TimeUnit.MILLISECONDS);
+    monitor.dump();
     service.getTaskRegistry().getTasksRootNode().dump(System.out);
-    service.onDestroy();
     Assert.assertEquals(NUM_OF_TASKS, monitor.finishCounter);
+    service.onDestroy();
   }
   
   final static public class TaskDescriptor {
@@ -120,25 +123,47 @@ public class TaskServiceUnitTest {
     public void setDescription(String description) { this.description = description; }
   }
   
+  static public class TaskLog {
+    int availableCount, assignCount, finishCount ;
+  }
+  
   static public class TestTaskMonitor<T> implements TaskMonitor<T> {
+    TreeMap<String, TaskLog> taskLogs = new TreeMap<String, TaskLog>();
     int finishCounter = 0;
     
     @Override
-    public void onAssign(TaskContext<T> context) {
-      System.out.println("on assign task " + context.getTaskId());
-    }
-
-    @Override
     public void onAvailable(TaskContext<T> context) {
-      System.out.println("on available task " + context.getTaskId());
+      getTaskLog(context).availableCount++;
+    }
+    
+    @Override
+    public void onAssign(TaskContext<T> context) {
+      getTaskLog(context).assignCount++ ;
     }
 
     @Override
     public void onFinish(TaskContext<T> context) {
       finishCounter++ ;
-      System.out.println("on finish task " + context.getTaskId());
+      getTaskLog(context).finishCount++;
     }
     
+    TaskLog getTaskLog(TaskContext<T> context) {
+      TaskLog taskLog = taskLogs.get(context.getTaskId()) ;
+      if(taskLog == null) {
+        taskLog = new TaskLog();
+        taskLogs.put(context.getTaskId(), taskLog);
+      }
+      return taskLog ;
+    }
+    
+    public void dump() {
+      TabularFormater formatter = new TabularFormater("Task", "Available", "Assign", "Finish") ;
+      for(Map.Entry<String, TaskLog> entry : taskLogs.entrySet()) {
+        TaskLog taskLog = entry.getValue();
+        formatter.addRow(entry.getKey(), taskLog.availableCount, taskLog.assignCount, taskLog.finishCount);
+      }
+      System.out.println(formatter.getFormattedText());
+    }
   }
   
   static public class TaskExecutor<T> implements Runnable {
@@ -154,14 +179,16 @@ public class TaskServiceUnitTest {
       TaskContext<T> tContext = null ;
       try {
         Random rand = new Random();
+        int count = 0 ;
         while((tContext = taskService.take(id)) != null) {
           long processTime = rand.nextInt(500) + 1;
           Thread.sleep(processTime);
-          if(rand.nextInt(5)  % 3 == 0) {
+          if(count > 10 || rand.nextInt(5)  % 3 == 0) {
             taskService.finish(id, tContext.getTaskId());
           } else {
             taskService.suspend(id, tContext.getTaskId());
           }
+          count++ ;
         }
       } catch(InterruptedException ex) {
       } catch(RegistryException ex) {
