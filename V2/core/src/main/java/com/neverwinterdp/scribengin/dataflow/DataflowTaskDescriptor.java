@@ -7,21 +7,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 
 public class DataflowTaskDescriptor {
-  static public enum Status { INIT, PROCESSING, SUSPENDED, TERMINATED }
 
-  private int                           id;
-  private Status                        status = Status.INIT;
+  private String                        taskId;
   private String                        scribe;
   private StreamDescriptor              streamDescriptor;
   private Map<String, StreamDescriptor> sinkStreamDescriptors;
   private String                        registryPath;
 
-  public int getId() { return id; }
-  public void setId(int id) { this.id = id; }
+  public String getTaskId() { return taskId; }
+  public void setTaskId(String id) { this.taskId = id; }
 
-  public Status getStatus() { return this.status; }
-  public void setStatus(Status status) { this.status = status; }
-  
   public String getScribe() { return scribe;}
   public void setScribe(String scribe) { this.scribe = scribe; }
   

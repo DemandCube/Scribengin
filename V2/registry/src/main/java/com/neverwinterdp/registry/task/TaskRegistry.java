@@ -76,6 +76,8 @@ public class TaskRegistry<T>{
 
   public Node getTasksAssignedNode() { return tasksAssignedNode; }
   
+  public Node getTasksAssignedHeartbeatNode() { return tasksAssignedHeartbeatNode; }
+  
   public Node getTasksFinishedNode() { return tasksFinishedNode; }
 
   public Notifier getTaskExecutionNotifier() { return this.taskExecutionNotifier ; }
@@ -109,12 +111,14 @@ public class TaskRegistry<T>{
         try {
           Node taskNode = tasksListNode.getChild(taskId) ;
           Transaction transaction = registry.getTransaction();
+          TaskTransactionId taskTransactionId = new TaskTransactionId(taskId, Math.abs(transaction.hashCode()) + "");
+          
           transaction.setData(taskNode.getChild(TASK_STATUS_PATH), TaskStatus.PROCESSING);
-          transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(executorRefPath), NodeCreateMode.EPHEMERAL);
+          transaction.createChild(tasksAssignedNode, taskTransactionId.getTaskTransactionId(), NodeCreateMode.PERSISTENT);
+          transaction.createChild(tasksAssignedHeartbeatNode, taskTransactionId.getTaskTransactionId(), new RefNode(executorRefPath), NodeCreateMode.EPHEMERAL);
           transaction.deleteChild(tasksAvailableNode, taskId);
           transaction.commit();
-          TaskContext<T> taskContext = createTaskContext(taskId) ;
+          TaskContext<T> taskContext = createTaskContext(taskTransactionId, null) ;
           return taskContext;
         } catch(Exception ex) {
           String errorMessage = "Fail to grab task " + taskId + " for the executor " + executorRefPath;
@@ -139,21 +143,27 @@ public class TaskRegistry<T>{
     }
   }
   
-  public void suspend(final String executorRef, final String taskId) throws RegistryException {
+  public void suspend(final String executorRef, TaskTransactionId taskTransactionId) throws RegistryException {
+    suspend(executorRef, taskTransactionId, false);
+  }
+  
+  public void suspend(final String executorRef, final TaskTransactionId taskTransactionId, final boolean disconnectHeartbeat) throws RegistryException {
     BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         try {
-          Node taskNode = tasksListNode.getChild(taskId) ;
+          Node taskNode = tasksListNode.getChild(taskTransactionId.getTaskId()) ;
           Transaction transaction = registry.getTransaction();
-          transaction.setData(taskNode.getChild(TASK_STATUS_PATH), TaskStatus.TERMINATED);
-          transaction.deleteChild(tasksAssignedNode, taskId) ;
-          transaction.deleteChild(tasksAssignedHeartbeatNode, taskId) ;
-          transaction.createChild(tasksAvailableNode, taskId, NodeCreateMode.PERSISTENT) ;
+          transaction.setData(taskNode.getChild(TASK_STATUS_PATH), TaskStatus.SUSPENDED);
+          transaction.deleteChild(tasksAssignedNode, taskTransactionId.getTaskTransactionId()) ;
+          if(!disconnectHeartbeat) {
+            transaction.deleteChild(tasksAssignedHeartbeatNode, taskTransactionId.getTaskTransactionId()) ;
+          }
+          transaction.createChild(tasksAvailableNode, taskTransactionId.getTaskId(), NodeCreateMode.PERSISTENT) ;
           transaction.commit();
           return true;
         } catch(RegistryException ex) {
-          String errorMessage = "Fail to suspend the task " + taskId;
+          String errorMessage = "Fail to suspend the task " + taskTransactionId.getTaskTransactionId();
           StringBuilder registryDump = new StringBuilder() ;
           try {
             tasksAssignedNode.getParentNode().dump(registryDump);
@@ -166,52 +176,52 @@ public class TaskRegistry<T>{
       }
     };
     try {
-      Lock lock = tasksLockNode.getLock("write", "Lock to move the task " + taskId + " to suspend by " + executorRef) ;
+      Lock lock = tasksLockNode.getLock("write", "Lock to move the task " + taskTransactionId.getTaskTransactionId() + " to suspend by " + executorRef) ;
       lock.execute(suspendtOp, 3, 3000);
     } catch(RegistryException ex) {
-      String errorMessage = "Fail to suspend the task " + taskId;
+      String errorMessage = "Fail to suspend the task " + taskTransactionId.getTaskTransactionId();
       taskExecutionNotifier.error("fail-to-suspend-dataflow-task", errorMessage, ex);
       throw ex;
     }
   }
   
-  public void finish(final String executorRef, final String taskId) throws RegistryException {
+  public void finish(final String executorRef, final TaskTransactionId taskTransactionId) throws RegistryException {
     BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
       @Override
       public Boolean execute(Registry registry) throws RegistryException {
         try {
-          Node taskNode = tasksListNode.getChild(taskId) ;
+          Node taskNode = tasksListNode.getChild(taskTransactionId.getTaskId()) ;
           Transaction transaction = registry.getTransaction();
           //update the task descriptor
           transaction.setData(taskNode.getChild(TASK_STATUS_PATH), TaskStatus.TERMINATED);
-          transaction.createChild(tasksFinishedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.deleteChild(tasksAssignedNode, taskId);
-          transaction.deleteChild(tasksAssignedHeartbeatNode, taskId);
+          transaction.createChild(tasksFinishedNode, taskTransactionId.getTaskId(), NodeCreateMode.PERSISTENT);
+          transaction.deleteChild(tasksAssignedNode, taskTransactionId.getTaskTransactionId());
+          transaction.deleteChild(tasksAssignedHeartbeatNode, taskTransactionId.getTaskTransactionId());
           transaction.commit();
           return true;
         } catch(RegistryException ex) {
-          String errorMessage = "Fail to finish the task " + taskId;
+          String errorMessage = "Fail to finish the task " + taskTransactionId.getTaskTransactionId();
           taskExecutionNotifier.warn("fail-to-finish-a-task", errorMessage, ex);
           throw ex;
         }
       }
     };
     try {
-      Lock lock = tasksLockNode.getLock("write", "Lock to move the task " + taskId + " to finish by " + executorRef) ;
+      Lock lock = tasksLockNode.getLock("write", "Lock to move the task " + taskTransactionId.getTaskTransactionId() + " to finish by " + executorRef) ;
       lock.execute(commitOp, 3, 3000);
     } catch(RegistryException ex) {
-      String errorMessage = "Fail to finish the task " + taskId;
+      String errorMessage = "Fail to finish the task " + taskTransactionId.getTaskTransactionId();
       taskExecutionNotifier.warn("fail-to-finish-a-task", errorMessage, ex);
       throw ex;
     }
   }
   
-  public TaskContext<T> createTaskContext(String taskId) throws RegistryException {
-    return createTaskContext(taskId, null) ;
+  public TaskContext<T> createTaskContext(String taskTransactionId) throws RegistryException {
+    return createTaskContext(new TaskTransactionId(taskTransactionId), null) ;
   }
   
-  public TaskContext<T> createTaskContext(String taskId, T taskDescriptor) throws RegistryException {
-    TaskContext<T> taskContext = new TaskContext<T>(taskId, taskDescriptor, tasksListNode.getChild(taskId)) ;
+  public TaskContext<T> createTaskContext(TaskTransactionId taskTransactionId, T taskDescriptor) throws RegistryException {
+    TaskContext<T> taskContext = new TaskContext<T>(this, taskTransactionId, taskDescriptor) ;
     return taskContext;
   }
 }

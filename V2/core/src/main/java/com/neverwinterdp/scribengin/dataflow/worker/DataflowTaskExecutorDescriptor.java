@@ -11,7 +11,7 @@ public class DataflowTaskExecutorDescriptor {
   
   private String id ;
   private Status status = Status.INIT ;
-  private List<Integer> assignedTaskIds = new ArrayList<>() ;
+  private List<String> assignedTaskIds = new ArrayList<>() ;
   
   public DataflowTaskExecutorDescriptor() { }
 
@@ -25,13 +25,13 @@ public class DataflowTaskExecutorDescriptor {
   public Status getStatus() { return status ; }
   public void setStatus(Status status) { this.status = status ; }
 
-  public List<Integer> getAssignedTaskIds() { return assignedTaskIds; }
-  public void setAssignedTaskIds(List<Integer> assignedTasks) {
+  public List<String> getAssignedTaskIds() { return assignedTaskIds; }
+  public void setAssignedTaskIds(List<String> assignedTasks) {
     this.assignedTaskIds = assignedTasks;
   }
   
-  public void addAssignedTask(DataflowTaskDescriptor taskDescriptor) {
-    assignedTaskIds.add(taskDescriptor.getId());
+  public void addAssignedTask(String taskId) {
+    assignedTaskIds.add(taskId);
   }
 
 }

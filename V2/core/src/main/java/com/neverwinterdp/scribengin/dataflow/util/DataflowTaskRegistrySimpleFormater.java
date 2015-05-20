@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
 import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.task.TaskStatus;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
@@ -25,10 +26,10 @@ public class DataflowTaskRegistrySimpleFormater extends NodeFormatter {
       
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);
       DataflowTaskReport     dflTaskReport = taskDescriptorNode.getChild("report").getDataAs(DataflowTaskReport.class);
-      
-      b.append("  DataflowTaskDescriptor: ID = "+dflDescriptor.getId()+", Status: "+dflDescriptor.getStatus()+"\n");
-      b.append("  DataflowTaskReport: ProcessCount = "+dflTaskReport.getProcessCount()+", "+
-               "CommitProcessCount = "+dflTaskReport.getCommitProcessCount()+"\n");
+      TaskStatus status = taskDescriptorNode.getChild("status").getDataAs(TaskStatus.class);
+      b.append("  DataflowTaskDescriptor: ID = " + dflDescriptor.getTaskId() + ", Status: " + status + "\n");
+      b.append("  DataflowTaskReport: ProcessCount = " + dflTaskReport.getProcessCount() + ", " +
+               "CommitProcessCount = " + dflTaskReport.getCommitProcessCount() + "\n");
     } catch (Exception e) {
       e.printStackTrace();
       b.append(e.getMessage());

@@ -11,12 +11,20 @@ public class TaskService<T>{
 
   public TaskService() { }
   
+  public TaskService(TaskRegistry<T> taskRegistry) throws RegistryException {
+    init(taskRegistry) ;
+  }
+  
   public TaskService(Registry registry, String path, Class<T> taskDescriptorType) throws RegistryException {
     init(registry, path, taskDescriptorType) ;
   }
   
   protected void init(Registry registry, String path, Class<T> taskDescriptorType) throws RegistryException {
-    taskRegistry = new TaskRegistry<T>(registry, path, taskDescriptorType);
+    init(new TaskRegistry<T>(registry, path, taskDescriptorType));
+  }
+  
+  protected void init(TaskRegistry<T> taskRegistry) throws RegistryException {
+    this.taskRegistry = taskRegistry;
     taskWatcher = new TaskWatcher<T>(taskRegistry) ;
   }
   
@@ -40,11 +48,11 @@ public class TaskService<T>{
     return taskRegistry.take(executorRefPath);
   }
   
-  public void suspend(final String executorRef, final String taskId) throws RegistryException {
-    taskRegistry.suspend(executorRef, taskId);
+  public void suspend(final String executorRef, TaskTransactionId id) throws RegistryException {
+    taskRegistry.suspend(executorRef, id);
   }
   
-  public void finish(final String executorRef, final String taskId) throws RegistryException {
-    taskRegistry.finish(executorRef, taskId);
+  public void finish(final String executorRef, TaskTransactionId id) throws RegistryException {
+    taskRegistry.finish(executorRef, id);
   }
 }

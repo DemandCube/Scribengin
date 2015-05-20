@@ -54,10 +54,6 @@ public class DataflowContainer {
   
   public DataflowRegistry getDataflowRegistry() { return appContainer.getInstance(DataflowRegistry.class); }
   
-  public DataflowTaskReporter getDataflowTaskReporter() {
-    return appContainer.getInstance(DataflowTaskReporter.class);
-  }
-  
   public SourceFactory getSourceFactory() { return appContainer.getInstance(SourceFactory.class); }
   
   public SinkFactory   getSinkFactory() { return appContainer.getInstance(SinkFactory.class); }

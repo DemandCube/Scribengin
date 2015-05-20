@@ -23,14 +23,19 @@ class TaskWatcher<T> {
     Registry registry = tRegistry.getRegistry() ;
     availableTaskWatcher = new AddRemoveNodeChildrenWatcher<T>(registry, tRegistry.getTasksAvailableNode()) {
       @Override
-      public void onAddChild(String taskId) {
-        enqueue(new OnAvailableTaskOperation(), taskId);
+      public void onAddChild(String childName) {
+        enqueue(new OnAvailableTaskOperation(), childName);
       }
     };
-    assignedTaskWatcher = new AddRemoveNodeChildrenWatcher<T>(registry, tRegistry.getTasksAssignedNode()) {
+    assignedTaskWatcher = new AddRemoveNodeChildrenWatcher<T>(registry, tRegistry.getTasksAssignedHeartbeatNode()) {
       @Override
       public void onAddChild(String taskId) {
-        enqueue(new OnTakeTaskOperation(), taskId);
+        enqueue(new OnAssignTaskOperation(), taskId);
+      }
+      
+      @Override
+      public void onRemoveChild(String taskId) {
+        enqueue(new  OnDisconnectHeartbeatTaskOperation(), taskId);
       }
     };
     finishedTaskWatcher = new AddRemoveNodeChildrenWatcher<T>(registry, tRegistry.getTasksFinishedNode()) {
@@ -58,9 +63,9 @@ class TaskWatcher<T> {
     }
   }
   
-  void enqueue(TaskOperation<T> op, String taskId) {
+  void enqueue(TaskOperation<T> op, String childName) {
     try {
-      op.init(taskRegistry.createTaskContext(taskId)) ;
+      op.init(taskRegistry.createTaskContext(childName)) ;
       taskOperationQueue.offer(op) ;
     } catch (RegistryException e) {
       Notifier notifier =  taskRegistry.getTaskCoordinationNotifier();
@@ -82,11 +87,44 @@ class TaskWatcher<T> {
     
     abstract public void execute() ;
   }
+
+  class  OnAvailableTaskOperation extends TaskOperation<T> {
+    public void execute() {
+      for(TaskMonitor<T> sel : taskMonitors) {
+        sel.onAvailable(taskContext);
+      }
+    }
+  }
   
-  class  OnTakeTaskOperation extends TaskOperation<T> {
+  class  OnAssignTaskOperation extends TaskOperation<T> {
     public void execute() {
       for(TaskMonitor<T> sel : taskMonitors) {
         sel.onAssign(taskContext);
+      }
+    }
+  }
+  
+  class  OnDisconnectHeartbeatTaskOperation extends TaskOperation<T> {
+    public void execute() {
+      boolean failTask = false ;
+      TaskTransactionId id = taskContext.getTaskTransactionId();
+      try {
+        if(taskRegistry.getTasksAssignedNode().getChild(id.getTaskTransactionId()).exists()) {
+          failTask = true;
+        }
+      } catch (RegistryException e) {
+        Notifier notifier = taskRegistry.getTaskExecutionNotifier();
+        try {
+          notifier.error("fail-to-process-heartbeat-disconnect", "Fail to process heartbeat disconnect event", e);
+        } catch (RegistryException e1) {
+          e1.printStackTrace();
+        }
+      }
+
+      if(failTask) {
+        for(TaskMonitor<T> sel : taskMonitors) {
+          sel.onFail(taskContext);
+        }
       }
     }
   }
@@ -95,14 +133,6 @@ class TaskWatcher<T> {
     public void execute() {
       for(TaskMonitor<T> sel : taskMonitors) {
         sel.onFinish(taskContext);
-      }
-    }
-  }
-  
-  class  OnAvailableTaskOperation extends TaskOperation<T> {
-    public void execute() {
-      for(TaskMonitor<T> sel : taskMonitors) {
-        sel.onAvailable(taskContext);
       }
     }
   }

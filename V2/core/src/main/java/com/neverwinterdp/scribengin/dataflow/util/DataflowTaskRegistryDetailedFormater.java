@@ -3,13 +3,13 @@ package com.neverwinterdp.scribengin.dataflow.util;
 import java.util.List;
 
 import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.task.TaskStatus;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.util.text.DateUtil;
 import com.neverwinterdp.util.text.TabularFormater;
-import com.neverwinterdp.vm.VMDescriptor;
 
 /**
  * The goal of this class is to print out all and in detail of the information of the triggered task and the status 
@@ -33,11 +33,11 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       
       DataflowTaskDescriptor dflDescriptor = taskDescriptorNode.getDataAs(DataflowTaskDescriptor.class);
       DataflowTaskReport     dflTaskReport = taskDescriptorNode.getChild("report").getDataAs(DataflowTaskReport.class);
-      
+      TaskStatus status = taskDescriptorNode.getChild("status").getDataAs(TaskStatus.class);
       TabularFormater taskFt = new TabularFormater("Property", "Value");
       taskFt.addRow("Dataflow Task Descriptor", "");
-      taskFt.addRow("  Dataflow Task Id", dflDescriptor.getId());
-      taskFt.addRow("  Status", dflDescriptor.getStatus());
+      taskFt.addRow("  Dataflow Task Id", dflDescriptor.getTaskId());
+      taskFt.addRow("  Status", status);
       taskFt.addRow("  Registry Path", taskDescriptorNode.getPath());
       taskFt.addRow("Dataflow Task Report", "");
       taskFt.addRow("  Scribe", dflDescriptor.getScribe());
@@ -47,10 +47,9 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       taskFt.addRow("  Commit Process Count", dflTaskReport.getCommitProcessCount());
       taskFt.addRow("Worker", "");
 
-      DataflowTaskDescriptor.Status status = dflDescriptor.getStatus();
-      if(status != DataflowTaskDescriptor.Status.SUSPENDED && status != DataflowTaskDescriptor.Status.TERMINATED) {
+      if(status != TaskStatus.SUSPENDED && status != TaskStatus.TERMINATED) {
         taskFt.addRow("  Status", "FAILED");
-      } else if(status == DataflowTaskDescriptor.Status.TERMINATED) {
+      } else if(status == TaskStatus.TERMINATED) {
         taskFt.addRow("  Status", "FINISHED");
       } else{
         taskFt.addRow("  Status", status);
@@ -64,7 +63,7 @@ public class DataflowTaskRegistryDetailedFormater extends NodeFormatter {
       tasksFt.setTitle("Dataflow Tasks");
       for(int i = 0; i < taskDescriptors.size(); i++) {
         DataflowTaskDescriptor descriptor = taskDescriptors.get(i) ;
-        tasksFt.addRow(descriptor.getId(), descriptor.getStatus(), descriptor.getRegistryPath());
+        tasksFt.addRow(descriptor.getTaskId(), status, descriptor.getRegistryPath());
       }
       b.append("\n");
       b.append(tasksFt.getFormatText());

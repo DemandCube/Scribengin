@@ -124,7 +124,7 @@ public class TaskServiceUnitTest {
   }
   
   static public class TaskLog {
-    int availableCount, assignCount, finishCount ;
+    int availableCount, assignCount, finishCount, failCount ;
   }
   
   static public class TestTaskMonitor<T> implements TaskMonitor<T> {
@@ -147,20 +147,30 @@ public class TaskServiceUnitTest {
       getTaskLog(context).finishCount++;
     }
     
+    @Override
+    public void onFail(TaskContext<T> context) {
+      try {
+        context.suspend("coordinator", true);
+      } catch (RegistryException e) {
+        e.printStackTrace();
+      }
+      getTaskLog(context).failCount++;
+    }
+    
     TaskLog getTaskLog(TaskContext<T> context) {
-      TaskLog taskLog = taskLogs.get(context.getTaskId()) ;
+      TaskLog taskLog = taskLogs.get(context.getTaskTransactionId().getTaskId()) ;
       if(taskLog == null) {
         taskLog = new TaskLog();
-        taskLogs.put(context.getTaskId(), taskLog);
+        taskLogs.put(context.getTaskTransactionId().getTaskId(), taskLog);
       }
       return taskLog ;
     }
     
     public void dump() {
-      TabularFormater formatter = new TabularFormater("Task", "Available", "Assign", "Finish") ;
+      TabularFormater formatter = new TabularFormater("Task", "Available", "Assign", "Fail", "Finish") ;
       for(Map.Entry<String, TaskLog> entry : taskLogs.entrySet()) {
         TaskLog taskLog = entry.getValue();
-        formatter.addRow(entry.getKey(), taskLog.availableCount, taskLog.assignCount, taskLog.finishCount);
+        formatter.addRow(entry.getKey(), taskLog.availableCount, taskLog.assignCount, taskLog.failCount, taskLog.finishCount);
       }
       System.out.println(formatter.getFormattedText());
     }
@@ -183,10 +193,13 @@ public class TaskServiceUnitTest {
         while((tContext = taskService.take(id)) != null) {
           long processTime = rand.nextInt(500) + 1;
           Thread.sleep(processTime);
-          if(count > 10 || rand.nextInt(5)  % 3 == 0) {
-            taskService.finish(id, tContext.getTaskId());
+          int randNum = rand.nextInt(7);
+          if(count > 10 || randNum  % 5 == 0) {
+            taskService.finish(id, tContext.getTaskTransactionId());
+          } else  if(randNum  % 3 == 0) {
+            taskService.getTaskRegistry().getTasksAssignedHeartbeatNode().getChild(tContext.getTaskTransactionId().getTaskTransactionId()).delete();
           } else {
-            taskService.suspend(id, tContext.getTaskId());
+            taskService.suspend(id, tContext.getTaskTransactionId());
           }
           count++ ;
         }

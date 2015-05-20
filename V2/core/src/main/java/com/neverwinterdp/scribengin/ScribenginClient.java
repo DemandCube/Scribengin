@@ -133,7 +133,7 @@ public class ScribenginClient {
     waitingEventListener.waitDataflowLeader(
         format("Expect %s-master-1 as the leader", 
         dflDescriptor.getId()), dflDescriptor,  
-        format("%s-master-1", dflDescriptor.getId()));
+        format("%s-master-0000000001", dflDescriptor.getId()));
     waitingEventListener.waitDataflowStatus("Expect dataflow init status", dflDescriptor, DataflowLifecycleStatus.INIT);
     waitingEventListener.waitDataflowStatus("Expect dataflow running status", dflDescriptor, DataflowLifecycleStatus.RUNNING);
     waitingEventListener.waitDataflowStatus("Expect dataflow terminated status", dflDescriptor, DataflowLifecycleStatus.TERMINATED);

@@ -1,32 +1,38 @@
 package com.neverwinterdp.registry.task;
 
-import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.RegistryException;
 
 public class TaskContext<T> {
-  private String          taskId;
-  private T               taskDescriptor;
-  private TaskStatus      taskStatus;
-  private Node            taskNode;
-  private TaskRegistry<T> taskRegistry;
+  private TaskTransactionId taskTransactionId;
+  private T                 taskDescriptor;
+  private TaskStatus        taskStatus;
+  private TaskRegistry<T>   taskRegistry;
 
-  public TaskContext(String taskId, T taskDescriptor, Node taskNode) {
-    this.taskId = taskId;
+  public TaskContext(TaskRegistry<T> taskRegistry, String taskTransactionId, T taskDescriptor) {
+    this(taskRegistry, new TaskTransactionId(taskTransactionId), taskDescriptor) ;
+  }
+  
+  public TaskContext(TaskRegistry<T> taskRegistry, TaskTransactionId taskTransactionId, T taskDescriptor) {
+    this.taskRegistry = taskRegistry;
+    this.taskTransactionId = taskTransactionId;
     this.taskDescriptor = taskDescriptor;
-    this.taskNode = taskNode; 
   }
 
-  public String getTaskId() { return taskId; }
+  public TaskTransactionId getTaskTransactionId() { return taskTransactionId; }
 
+  public TaskRegistry<T> getTaskRegistry() { return this.taskRegistry; }
+  
   public T getTaskDescriptor(boolean reload) throws RegistryException { 
-    if(taskDescriptor == null || reload) taskDescriptor = taskRegistry.getTaskDescriptor(taskId) ;
+    if(taskDescriptor == null || reload) taskDescriptor = taskRegistry.getTaskDescriptor(taskTransactionId.getTaskId()) ;
     return taskDescriptor; 
   }
 
   public TaskStatus getTaskStatus(boolean reload) throws RegistryException { 
-    if(taskStatus == null || reload) taskStatus = taskRegistry.getTaskStatus(taskId) ;
+    if(taskStatus == null || reload) taskStatus = taskRegistry.getTaskStatus(taskTransactionId.getTaskId()) ;
     return taskStatus; 
   }
   
-  public Node getTaskNode() { return taskNode; }
+  public void suspend(String executorRef, boolean disconnectHeartbeat) throws RegistryException {
+    taskRegistry.suspend(executorRef, taskTransactionId, disconnectHeartbeat);
+  }
 }

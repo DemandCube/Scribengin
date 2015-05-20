@@ -7,6 +7,7 @@ import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.registry.event.NodeEvent;
 import com.neverwinterdp.registry.event.NodeEventWatcher;
+import com.neverwinterdp.registry.task.TaskService;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
@@ -40,6 +41,8 @@ public class DataflowService {
   @Inject
   private DataflowActivityService activityService;
   
+  private TaskService<DataflowTaskDescriptor> taskService ;
+  
   private DataflowTaskMonitor dataflowTaskMonitor;
   
   private DataflowWorkerMonitor  dataflowWorkerMonitor ;
@@ -60,7 +63,6 @@ public class DataflowService {
   
   public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     dataflowRegistry.addAvailableTask(taskDescriptor);
-    dataflowTaskMonitor.addMonitorTask(taskDescriptor);
   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
@@ -71,7 +73,10 @@ public class DataflowService {
     dataflowWorkerMonitor = new DataflowWorkerMonitor(dataflowRegistry, activityService);
     dataflowRegistry.setStatus(DataflowLifecycleStatus.INIT);
     masterEventListener = new DataflowTaskMasterEventListenter(dataflowRegistry);
-    dataflowTaskMonitor = new DataflowTaskMonitor(dataflowRegistry);
+    
+    dataflowTaskMonitor = new DataflowTaskMonitor();
+    taskService = new TaskService<>(dataflowRegistry.getTaskRegistry());
+    taskService.addTaskMonitor(dataflowTaskMonitor);
     
     activityService.queue(new DataflowInitActivityBuilder().build());
     activityService.queue(new DataflowRunActivityBuilder().build());
@@ -82,6 +87,7 @@ public class DataflowService {
     this.waitForTerminationThread = waitForTerminationThread ;
     System.err.println("DataflowService: waitForTermination()");
     dataflowTaskMonitor.waitForAllTaskFinish();
+    System.err.println("Wait for all task finish done");
     dataflowWorkerMonitor.waitForAllWorkerTerminated();
     //finish
     System.err.println("DataflowService: FINISH");

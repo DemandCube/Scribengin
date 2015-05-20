@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow.activity;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,10 +68,13 @@ public class DataflowInitActivityBuilder extends ActivityBuilder {
         sinks.put(entry.getKey(), sink);
       }
 
+      DecimalFormat seqIdFormatter = new DecimalFormat("00000");
+      
       SourceStream[] sourceStream = source.getStreams();
       for(int i = 0; i < sourceStream.length; i++) {
+        String taskId =  "task-" + seqIdFormatter.format(i);
         DataflowTaskDescriptor descriptor = new DataflowTaskDescriptor();
-        descriptor.setId(i);
+        descriptor.setTaskId(taskId);
         descriptor.setScribe(dataflowDescriptor.getScribe());
         descriptor.setSourceStreamDescriptor(sourceStream[i].getDescriptor());
         for(Map.Entry<String, Sink> entry : sinks.entrySet()) {

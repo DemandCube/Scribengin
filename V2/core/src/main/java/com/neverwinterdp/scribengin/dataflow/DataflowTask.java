@@ -1,24 +1,29 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import com.neverwinterdp.registry.task.TaskContext;
+import com.neverwinterdp.registry.task.TaskStatus;
 import com.neverwinterdp.scribengin.Record;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
 import com.neverwinterdp.scribengin.scribe.ScribeAbstract;
 import com.neverwinterdp.scribengin.storage.source.SourceStreamReader;
 
 public class DataflowTask {
   private DataflowContainer container;
-  private DataflowTaskDescriptor descriptor;
+  private final TaskContext<DataflowTaskDescriptor> taskContext;
+  private DataflowTaskDescriptor descriptor ;
   private ScribeAbstract processor;
   private DataflowTaskContext context;
   private boolean interrupt = false;
   private boolean complete = false;
   
-  public DataflowTask(DataflowContainer container, DataflowTaskDescriptor descriptor) throws Exception {
+  public DataflowTask(DataflowContainer container, TaskContext<DataflowTaskDescriptor> taskContext) throws Exception {
     this.container = container;
-    this.descriptor = descriptor;
+    this.taskContext = taskContext;
+    this.descriptor = taskContext.getTaskDescriptor(true);
     Class<ScribeAbstract> scribeType = (Class<ScribeAbstract>) Class.forName(descriptor.getScribe());
     processor = scribeType.newInstance();
   }
+  
+  public TaskContext<DataflowTaskDescriptor> getTaskContext() { return this.taskContext; }
   
   public DataflowTaskDescriptor getDescriptor() { return descriptor ; }
   
@@ -30,9 +35,6 @@ public class DataflowTask {
     DataflowRegistry dRegistry = container.getDataflowRegistry();
     DataflowTaskReport report = dRegistry.getTaskReport(descriptor);
     context = new DataflowTaskContext(container, descriptor, report);
-    descriptor.setStatus(Status.PROCESSING);
-    dRegistry.dataflowTaskUpdate(descriptor);
-    dRegistry.dataflowTaskReport(descriptor, report);
   }
   
   public void run() throws Exception {
@@ -48,12 +50,12 @@ public class DataflowTask {
   
   public void suspend() throws Exception {
     saveContext();
-    container.getDataflowRegistry().dataflowTaskSuspend(descriptor);
+    container.getDataflowRegistry().dataflowTaskSuspend(taskContext);
   }
   
   public void finish() throws Exception {
     saveContext();
-    container.getDataflowRegistry().dataflowTaskFinish(descriptor);
+    container.getDataflowRegistry().dataflowTaskFinish(taskContext);
   }
   
   void saveContext() throws Exception {

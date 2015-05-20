@@ -149,7 +149,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       } else {
         System.err.println("report " + taskAndReport.getTaskDescriptor().getSourceStreamDescriptor());
         addRow(indent, "Task id: ", taskAndReport.getId());
-        addRow(indent, "Status: ", taskAndReport.getTaskDescriptor().getStatus().toString());
+        addRow(indent, "Status: ", "TODO");
         addRow(indent, "Scribe: ", taskAndReport.getTaskDescriptor().getScribe().toString());
 
         addRow(indent, "Start time:", getValidTime(taskAndReport.getReport().getStartTime()));
@@ -193,7 +193,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
         DataflowTaskDescriptor desc = tar.getTaskDescriptor();
 
         Object[] cells = {
-            tar.getId(), desc.getStatus(), report.getProcessCount(),
+            tar.getId(), "TODO", report.getProcessCount(),
             report.getCommitProcessCount(), getValidTime(report.getStartTime()),getValidTime(report.getFinishTime())
         };
         addRow(cells);

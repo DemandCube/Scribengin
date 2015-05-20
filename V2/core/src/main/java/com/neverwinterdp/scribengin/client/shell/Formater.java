@@ -101,9 +101,9 @@ public class Formater {
                            descriptor.getScribe().length());
         }
         formater.addRow(
-            descriptor.getId(),
+            descriptor.getTaskId(),
             scribeName,
-            descriptor.getStatus()
+            "TODO: update"
             );
       }
       formater.setTitle(title);

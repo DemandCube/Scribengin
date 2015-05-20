@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.worker;
 
 import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.registry.task.TaskContext;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTask;
@@ -50,13 +51,13 @@ public class DataflowTaskExecutor {
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
     try {
       while(!interrupt) {
-        DataflowTaskDescriptor taskDescriptor = dataflowRegistry.assignDataflowTask(vmDescriptor);
+        TaskContext<DataflowTaskDescriptor> taskContext= dataflowRegistry.assignDataflowTask(vmDescriptor);
         if(interrupt) return ;
-        if(taskDescriptor == null) return;
+        if(taskContext == null) return;
         
-        executorDescriptor.addAssignedTask(taskDescriptor);
+        executorDescriptor.addAssignedTask(taskContext.getTaskTransactionId().getTaskId());
         dataflowRegistry.updateWorkerTaskExecutor(vmDescriptor, executorDescriptor);
-        currentDataflowTask = new DataflowTask(dataflowContainer, taskDescriptor);
+        currentDataflowTask = new DataflowTask(dataflowContainer, taskContext);
         currentDataflowTask.init();
         executorThread = new DataflowTaskExecutorThread(currentDataflowTask);
         executorThread.start();
@@ -65,7 +66,7 @@ public class DataflowTaskExecutor {
         else currentDataflowTask.suspend();
       }
     } catch (InterruptedException e) {
-      System.err.println("detect shutdown interrupt for task " + currentDataflowTask.getDescriptor().getId());
+      System.err.println("detect shutdown interrupt for task " + currentDataflowTask.getDescriptor().getTaskId());
       currentDataflowTask.interrupt();
     } catch (Exception e) {
       e.printStackTrace();

@@ -22,8 +22,7 @@ public class DataflowTaskContext {
   private DataflowRegistry dataflowRegistry;
   private DataflowTaskDescriptor dataflowTaskDescriptor;
 
-  public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report)
-      throws Exception {
+  public DataflowTaskContext(DataflowContainer container, DataflowTaskDescriptor descriptor, DataflowTaskReport report)  throws Exception {
     this.sourceContext = new SourceContext(container.getSourceFactory(), descriptor.getSourceStreamDescriptor());
     Iterator<Map.Entry<String, StreamDescriptor>> i = descriptor.getSinkStreamDescriptors().entrySet().iterator();
       while (i.hasNext()) {

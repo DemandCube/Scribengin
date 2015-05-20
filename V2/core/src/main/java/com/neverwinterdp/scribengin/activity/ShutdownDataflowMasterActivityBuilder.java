@@ -19,8 +19,6 @@ import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowLifecycleStatus;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.service.ScribenginService;
-import com.neverwinterdp.vm.VMDescriptor;
-import com.neverwinterdp.vm.client.VMClient;
 
 public class ShutdownDataflowMasterActivityBuilder extends ActivityBuilder {
   static public AtomicInteger idTracker = new AtomicInteger(1) ;

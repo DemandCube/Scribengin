@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,9 @@ import com.neverwinterdp.registry.activity.ActivityRegistry;
 import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.registry.queue.DistributedQueue;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor.Status;
+import com.neverwinterdp.registry.task.TaskContext;
+import com.neverwinterdp.registry.task.TaskRegistry;
+import com.neverwinterdp.registry.task.TaskStatus;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
@@ -76,12 +79,12 @@ public class DataflowRegistry {
   private Node               failureEventNode;
   private Node               masterEventNode;
   
-  private Node               tasksDescriptors;
-  private DistributedQueue   tasksAvailableQueue;
-  private Node               tasksAssignedNode;
-  private Node               tasksAssignedHeartbeatNode;
-  private Node               tasksFinishedNode;
-  private Node               tasksLock;
+//  private Node               tasksDescriptors;
+//  private DistributedQueue   tasksAvailableQueue;
+//  private Node               tasksAssignedNode;
+//  private Node               tasksAssignedHeartbeatNode;
+//  private Node               tasksFinishedNode;
+//  private Node               tasksLock;
   
   private Node               activeActivitiesNode;
   
@@ -92,6 +95,8 @@ public class DataflowRegistry {
   private Notifier           dataflowTaskNotifier ;
   private Notifier           dataflowWorkerNotifier ;
 
+  private TaskRegistry<DataflowTaskDescriptor> taskRegistry ;
+  
   public DataflowRegistry() { }
   
   public DataflowRegistry(Registry registry, String dataflowPath) throws Exception { 
@@ -103,18 +108,21 @@ public class DataflowRegistry {
   @Inject
   public void onInit() throws Exception {
     registry.createIfNotExist(dataflowPath + "/" + MASTER_LEADER_PATH);
+    String taskPath = dataflowPath + "/tasks";
+    taskRegistry = new TaskRegistry<DataflowTaskDescriptor>(registry, taskPath, DataflowTaskDescriptor.class);
+    
     status = registry.createIfNotExist(dataflowPath + "/status");
-    tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
+    //tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     
     masterEventNode  = registry.createIfNotExist(dataflowPath + "/" + MASTER_EVENT_PATH);
     workerEventNode  = registry.createIfNotExist(dataflowPath + "/" + WORKER_EVENT_PATH);
     failureEventNode = registry.createIfNotExist(dataflowPath + "/" + FAILURE_EVENT_PATH);
     
-    tasksAvailableQueue = new DistributedQueue(registry, dataflowPath + "/" + TASKS_AVAILABLE_PATH);
-    tasksAssignedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
-    tasksAssignedHeartbeatNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_HEARTBEAT_PATH);
-    tasksFinishedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
-    tasksLock = registry.createIfNotExist(dataflowPath + "/" + TASKS_LOCK_PATH);
+    //tasksAvailableQueue = new DistributedQueue(registry, dataflowPath + "/" + TASKS_AVAILABLE_PATH);
+    //tasksAssignedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
+    //tasksAssignedHeartbeatNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_HEARTBEAT_PATH);
+    //tasksFinishedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
+    //tasksLock = registry.createIfNotExist(dataflowPath + "/" + TASKS_LOCK_PATH);
     
     activeActivitiesNode = registry.createIfNotExist(dataflowPath + "/" + ACTIVITIES_PATH);
     
@@ -137,13 +145,11 @@ public class DataflowRegistry {
   
   public Node getFailureEventNode() { return failureEventNode ; }
   
-  public Node getTasksFinishedNode() { return tasksFinishedNode;}
+  public Node getTasksFinishedNode() { return taskRegistry.getTasksFinishedNode();}
   
-  public Node getTasksAssignedNode() { return tasksAssignedNode; }
+  public Node getTasksAssignedNode() { return taskRegistry.getTasksAssignedNode(); }
   
-  public DistributedQueue getTasksAvailableQueue() { return tasksAvailableQueue ; }
-  
-  public Node getTasksAssignedHeartbeatNode() { return tasksAssignedHeartbeatNode; }
+  public Node getTasksAssignedHeartbeatNode() { return taskRegistry.getTasksAssignedHeartbeatNode(); }
   
   public Node getActiveActivitiesNode() { return activeActivitiesNode; } 
   
@@ -153,21 +159,11 @@ public class DataflowRegistry {
   
   public Registry getRegistry() { return this.registry ; }
   
+  public TaskRegistry<DataflowTaskDescriptor> getTaskRegistry() { return this.taskRegistry; }
+  
   public DataflowDescriptor getDataflowDescriptor() throws RegistryException {
     return registry.getDataAs(dataflowPath, DataflowDescriptor.class);
   }
-  
-  //TODO: find where this method is used and pass an array of the descriptor and execute the add in the a transaction
-  public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
-    Node taskNode = tasksDescriptors.createChild("task-", NodeCreateMode.PERSISTENT_SEQUENTIAL);
-    taskDescriptor.setRegistryPath(taskNode.getPath());
-    taskNode.setData(taskDescriptor);
-    DataflowTaskReport report = new DataflowTaskReport();
-    report.setStartTime(System.currentTimeMillis());
-    taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
-    String nodeName = taskNode.getName();
-    tasksAvailableQueue.offer(nodeName.getBytes());
-   }
   
   public void addWorker(VMDescriptor vmDescriptor) throws RegistryException {
     Transaction transaction = registry.getTransaction() ;
@@ -224,153 +220,61 @@ public class DataflowRegistry {
   public void broadcastFailureEvent(FailureConfig event) throws RegistryException {
     failureEventNode.setData(event);
   }
-  
-  public DataflowTaskDescriptor assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
-    BatchOperations<DataflowTaskDescriptor> getAssignedtaskOp = new BatchOperations<DataflowTaskDescriptor>() {
-      @Override
-      public DataflowTaskDescriptor execute(Registry registry) throws RegistryException {
-        String taskId = null;
-        try {
-          byte[] data  = tasksAvailableQueue.poll();
-          if(data == null) return null;
-          taskId = new String(data);
-          Node taskNode = tasksDescriptors.getChild(taskId);
-          Transaction transaction = registry.getTransaction();
-          transaction.createChild(tasksAssignedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.createChild(tasksAssignedHeartbeatNode, taskId, new RefNode(vmDescriptor.getRegistryPath()), NodeCreateMode.EPHEMERAL);
-          transaction.commit();
-          DataflowTaskDescriptor descriptor = taskNode.getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
-          return descriptor;
-        } catch(Exception ex) {
-          String errorMessage = "Fail to assign the task " + taskId + " to server " + vmDescriptor.getId();
-          StringBuilder registryDump = new StringBuilder() ;
-          try {
-            tasksAssignedNode.getParentNode().dump(registryDump);
-          } catch (IOException e) {
-          }
-          errorMessage += "\n" + registryDump.toString();
-          dataflowTaskNotifier.warn("fail-to-assign-dataflow-task ", errorMessage, ex);
-          throw ex;
-        }
-      }
-    };
-    try {
-      Lock lock = tasksLock.getLock("write", "Lock to grab a task for the dataflow worker " + vmDescriptor.getId()) ;
-      return lock.execute(getAssignedtaskOp, 3, 3000);
-    } catch(RegistryException ex) {
-      String errorMessage = "Fail to assign the task after 3 tries";
-      dataflowTaskNotifier.error("fail-to-assign-dataflow-task", errorMessage, ex);
-      throw ex;
-    }
-  }
-  
-  public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    dataflowTaskSuspend(descriptor, false) ;
-  }
-  
-  public void dataflowTaskSuspend(final DataflowTaskDescriptor descriptor, final boolean disconnectHeartbeat) throws RegistryException {
-    BatchOperations<Boolean> suspendtOp = new BatchOperations<Boolean>() {
-      @Override
-      public Boolean execute(Registry registry) throws RegistryException {
-        descriptor.setStatus(Status.SUSPENDED);    
-        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
-        String taskId = descriptorNode.getName();
-        try {
-          Transaction transaction = registry.getTransaction();
-          transaction.setData(descriptor.getRegistryPath(), descriptor) ;
-          tasksAvailableQueue.offer(transaction, taskId.getBytes());
-          transaction.delete(tasksAssignedNode.getPath() + "/" + taskId);
-          if(!disconnectHeartbeat) {
-            transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
-          }
-          transaction.commit();
-          return true;
-        } catch(RegistryException ex) {
-          String errorMessage = "Fail to suspend the task " + taskId + " on " + vmDescriptor.getId();
-          StringBuilder registryDump = new StringBuilder() ;
-          try {
-            tasksAssignedNode.getParentNode().dump(registryDump);
-          } catch (IOException e) {
-          }
-          errorMessage += "\n" + registryDump.toString();
-          dataflowTaskNotifier.warn("fail-to-suspend-dataflow-task", errorMessage, ex);
-          throw ex ;
-        }
-      }
-    };
-    try {
-      Lock lock = tasksLock.getLock("write", "Lock to move the task-" + descriptor.getId() + " to suspend by " + vmDescriptor.getId()) ;
-      lock.execute(suspendtOp, 3, 3000);
-    } catch(RegistryException ex) {
-      String errorMessage = "Fail to suspend the task task-" + descriptor.getId();
-      dataflowTaskNotifier.error("fail-to-suspend-dataflow-task", errorMessage, ex);
-      throw ex;
-    }
+
+  public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
+    String taskId = taskDescriptor.getTaskId();
+    Node taskNode = taskRegistry.getTasksListNode().getChild(taskId);
+    taskDescriptor.setRegistryPath(taskNode.getPath());
+    taskRegistry.offer(taskId, taskDescriptor);
+    create(taskDescriptor, new DataflowTaskReport());
   }
 
-  public void dataflowTaskFinish(final DataflowTaskDescriptor descriptor) throws RegistryException {
-    BatchOperations<Boolean> commitOp = new BatchOperations<Boolean>() {
-      @Override
-      public Boolean execute(Registry registry) throws RegistryException {
-        Node descriptorNode = registry.get(descriptor.getRegistryPath()) ;
-        String taskId = descriptorNode.getName();
-        descriptor.setStatus(Status.TERMINATED);
-        try {
-          Transaction transaction = registry.getTransaction();
-          //update the task descriptor
-          transaction.setData(descriptor.getRegistryPath(), descriptor);
-          transaction.createChild(tasksFinishedNode, taskId, NodeCreateMode.PERSISTENT);
-          transaction.delete(tasksAssignedNode.getPath() + "/" + taskId);
-          transaction.delete(tasksAssignedHeartbeatNode.getPath() + "/" + taskId);
-          transaction.commit();
-          return true;
-        } catch(RegistryException ex) {
-          String errorMessage = "Fail to finish the task task-" + descriptor.getId();
-          dataflowTaskNotifier.warn("fail-to-finish-dataflow-task", errorMessage, ex);
-          throw ex;
-        }
-      }
-    };
-    try {
-      Lock lock = tasksLock.getLock("write", "Lock to move the task " + descriptor.getId() + " to finish by " + vmDescriptor.getId()) ;
-      lock.execute(commitOp, 3, 3000);
-    } catch(RegistryException ex) {
-      String errorMessage = "Fail to finish the task task-" + descriptor.getId();
-      dataflowTaskNotifier.warn("fail-to-finish-dataflow-task", errorMessage, ex);
-      throw ex;
-    }
+  public TaskContext<DataflowTaskDescriptor> assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
+    TaskContext<DataflowTaskDescriptor> tContext = taskRegistry.take(vmDescriptor.getRegistryPath());
+    return tContext;
   }
   
-  public void dataflowTaskUpdate(DataflowTaskDescriptor descriptor) throws RegistryException {
-    registry.setData(descriptor.getRegistryPath(), descriptor);
+  public void dataflowTaskSuspend(final TaskContext<DataflowTaskDescriptor> context) throws RegistryException {
+    dataflowTaskSuspend(context, false) ;
+  }
+  
+  public void dataflowTaskSuspend(final TaskContext<DataflowTaskDescriptor> context, final boolean disconnectHeartbeat) throws RegistryException {
+    taskRegistry.suspend(vmDescriptor.getRegistryPath(), context.getTaskTransactionId(), disconnectHeartbeat);
+  }
+
+  public void dataflowTaskFinish(final TaskContext<DataflowTaskDescriptor> context) throws RegistryException {
+    taskRegistry.finish(vmDescriptor.getRegistryPath(), context.getTaskTransactionId());
   }
   
   public void dataflowTaskReport(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
-    Node reportNode = registry.get(descriptor.getRegistryPath() + "/report");
+    Node  reportNode = taskRegistry.getTasksListNode().getChild(descriptor.getTaskId()).getChild("report");
     reportNode.setData(report);
   }
   
   public void create(DataflowTaskDescriptor descriptor, DataflowTaskReport report) throws RegistryException {
-    Node taskNode = registry.get(descriptor.getRegistryPath());
+    Node taskNode = taskRegistry.getTasksListNode().getChild(descriptor.getTaskId());
     taskNode.createChild("report", report, NodeCreateMode.PERSISTENT);
   }
   
   public List<DataflowTaskDescriptor> getTaskDescriptors() throws RegistryException {
-    return tasksDescriptors.getChildrenAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+    return taskRegistry.getTasksListNode().getChildrenAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
   }
   
   public DataflowTaskDescriptor getTaskDescriptor(String taskName) throws RegistryException {
-    return tasksDescriptors.getChild(taskName).getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
+    return taskRegistry.getTasksListNode().getChild(taskName).getDataAs(DataflowTaskDescriptor.class, TASK_DESCRIPTOR_DATA_MAPPER);
   }
   
   public DataflowTaskReport getTaskReport(DataflowTaskDescriptor descriptor) throws RegistryException {
-    return registry.getDataAs(descriptor.getRegistryPath() + "/report", DataflowTaskReport.class) ;
+    Node taskNode = taskRegistry.getTasksListNode().getChild(descriptor.getTaskId());
+    return registry.getDataAs(taskNode.getPath() + "/report", DataflowTaskReport.class) ;
   }
   
   public List<DataflowTaskReport> getTaskReports(List<DataflowTaskDescriptor> descriptors) throws RegistryException {
     List<String> reportPaths = new ArrayList<String>();
     for(int i = 0; i < descriptors.size(); i++) {
-      reportPaths.add(descriptors.get(i).getRegistryPath() + "/report") ;
+      DataflowTaskDescriptor descriptor = descriptors.get(i);
+      Node taskNode = taskRegistry.getTasksListNode().getChild(descriptor.getTaskId());
+      reportPaths.add(taskNode.getPath() + "/report") ;
     }
     return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
