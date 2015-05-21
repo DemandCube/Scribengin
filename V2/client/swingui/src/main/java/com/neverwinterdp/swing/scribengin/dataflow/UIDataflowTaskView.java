@@ -125,7 +125,6 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
         public void mouseClicked(MouseEvent e) {
           DataflowTaskTableModel model = (DataflowTaskTableModel) getModel();
           TaskAndReport selectedTaskReport = model.getTaskAndReportAt(getSelectedRow());
-          System.err.println("Ime bonyezwa.");
           taskInfo.updateTaskInfo(selectedTaskReport);
         }
       });
@@ -147,7 +146,6 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       if (taskAndReport == null) {
         addRow("Select one of the tasks above to view its details. ");
       } else {
-        System.err.println("report " + taskAndReport.getTaskDescriptor().getSourceStreamDescriptor());
         addRow(indent, "Task id: ", taskAndReport.getId());
         addRow(indent, "Status: ", "TODO");
         addRow(indent, "Scribe: ", taskAndReport.getTaskDescriptor().getScribe().toString());
@@ -190,11 +188,9 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
     void loadData() throws Exception {
       for (TaskAndReport tar : tasksAndReports) {
         DataflowTaskReport report = tar.getReport();
-        DataflowTaskDescriptor desc = tar.getTaskDescriptor();
-
         Object[] cells = {
             tar.getId(), "TODO", report.getProcessCount(),
-            report.getCommitProcessCount(), getValidTime(report.getStartTime()),getValidTime(report.getFinishTime())
+            report.getCommitProcessCount(), getValidTime(report.getStartTime()), getValidTime(report.getFinishTime())
         };
         addRow(cells);
       }
