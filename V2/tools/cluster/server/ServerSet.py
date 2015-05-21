@@ -92,7 +92,7 @@ class ServerSet(object):
   def addServer(self, server):
     self.servers.append(server)
   
-  def sshExecute(self, command):
+  def sshExecute(self, command, enableConsoleOutput = True):
     output = {}
     for server in self.servers :
       output[server.getHostname()] = server.sshExecute(command)
@@ -105,7 +105,7 @@ class ServerSet(object):
           if server.getHostname() != hostname:
             self.printTitle("Sync data with " + server.getHostname() + " from " + hostname)
             command = "rsync -a -r -c -P --delete " +src+ " " + server.user +"@"+ server.getHostname() + ":"+dst
-            hostmachine.sshExecute(command)
+            hostmachine.sshExecute(command, False)
         break
     
   def startProcessOnHost(self, processName, hostname, setupClusterEnv = False):
@@ -405,7 +405,7 @@ class ServerSet(object):
     os.system("scp -q -o StrictHostKeyChecking=no -r "+join(os.getcwd(),"tools/cluster")+" neverwinterdp@"+hostname+":/opt/cluster")
     if aws_credential_path == "":
       aws_credential_path = join(expanduser("~"),".aws")
-    print aws_credential_path
+    #print aws_credential_path
     os.system("scp -q -o StrictHostKeyChecking=no -r "+aws_credential_path+" neverwinterdp@"+hostname+":/home/neverwinterdp")
     self.sync(hostname, src="/home/neverwinterdp/.aws", dst="/home/neverwinterdp")
     os.chdir(currentWorkingDir)
