@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import kafka.javaapi.PartitionMetadata;
 import kafka.javaapi.TopicMetadata;
@@ -97,52 +100,31 @@ public class KafkaMessageCheckTool implements Runnable {
     
     TopicMetadata topicMeta = kafkaTool.findTopicMetadata(topicConfig.topic, 3);
     List<PartitionMetadata> partitionMetas = topicMeta.partitionsMetadata();
-    this.numOfPartitions = partitionMetas.size();
+    numOfPartitions = partitionMetas.size();
     kafkaTool.close();
     
-    KafkaPartitionReader[] partitionReader = new KafkaPartitionReader[partitionMetas.size()];
-    for (int i = 0; i < partitionReader.length; i++) {
-      partitionReader[i] = 
-        new KafkaPartitionReader(NAME, topicConfig.zkConnect, topicConfig.topic, partitionMetas.get(i));
-    }
+    
     interrupt = false;
-    int lastCount = 0, cannotReadCount = 0;
     int batchFetch = topicConfig.consumerConfig.consumeBatchFetch ;
     int fetchSize = batchFetch * (topicConfig.producerConfig.messageSize + 100) ;
-    int readCountToPrint = 50000;
-    while (messageCounter.getTotal() - messageTracker.getDuplicatedCount() < topicConfig.consumerConfig.consumeMax && !interrupt ) {
-      for (int k = 0; k < partitionReader.length; k++) {
-        List<byte[]> messages = partitionReader[k].fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/,topicConfig.consumerConfig.consumeFetchRetries);
-        messageCounter.count(partitionReader[k].getPartition(), messages.size());
-        for(byte[] messagePayload : messages) {
-          messageTracker.log(messageExtractor.extract(messagePayload));
-        }
-      }
-      if(messageCounter.getTotal() > readCountToPrint) {
-        System.out.println("Read count: " + messageCounter.getTotal());
-        readCountToPrint += 50000;
-      }
-      if(lastCount == messageCounter.getTotal()) {
-        cannotReadCount++;
-        Thread.sleep(1000);
-      } else {
-        cannotReadCount = 0;
-      }
-      if(cannotReadCount >= topicConfig.consumerConfig.consumeRetries) interrupt = true;
-      lastCount = messageCounter.getTotal();
-    }
-    //Run the last fetch to find the duplicated messages if there are some
-    for (int k = 0; k < partitionReader.length; k++) {
-      List<byte[]> messages = partitionReader[k].fetch(fetchSize, 100/*max read*/, 1000 /*max wait*/, topicConfig.consumerConfig.consumeFetchRetries);
-      messageCounter.count(partitionReader[k].getPartition(), messages.size());
-      for(byte[] messagePayload : messages) {
-        messageTracker.log(messageExtractor.extract(messagePayload));
-      }
-    }
+    
+    ExecutorService executorService = Executors.newFixedThreadPool(numOfPartitions);
 
-    for (int k = 0; k < partitionReader.length; k++) {
-      partitionReader[k].commit();
-      partitionReader[k].close();
+    KafkaPartitionConsumer[] partitionConsumer = new KafkaPartitionConsumer[numOfPartitions];
+    for (int i = 0; i < partitionConsumer.length; i++) {
+      KafkaPartitionReader partitionReader = 
+          new KafkaPartitionReader(NAME, topicConfig.zkConnect, topicConfig.topic, partitionMetas.get(i));
+      partitionConsumer[i] = 
+        new KafkaPartitionConsumer(partitionReader, batchFetch, fetchSize);
+      executorService.submit(partitionConsumer[i]);
+    }
+    executorService.shutdown();
+    while(!executorService.isTerminated()) {
+      System.out.println("Read count: " + messageCounter.getTotal());
+      if(messageCounter.getTotal() - messageTracker.getDuplicatedCount() >= topicConfig.consumerConfig.consumeMax) {
+        interrupt = true;
+      }
+      Thread.sleep(5000);
     }
     
     System.out.println("Read count: " + messageCounter.getTotal() +"(Stop)") ;
@@ -161,35 +143,32 @@ public class KafkaMessageCheckTool implements Runnable {
 
   public void populate(KafkaTopicReport report) {
     ConsumerReport consumerReport = report.getConsumerReport();
-    consumerReport.setMessagesRead(messageCounter.totalMessages);
+    consumerReport.setMessagesRead(messageCounter.totalMessages.get());
     consumerReport.setRunDuration(readDuration.elapsed(TimeUnit.MILLISECONDS));
   }
 
   static public class MessageCounter {
-    private Map<Integer, Integer> counters = new HashMap<Integer, Integer>();
-    //TODO use atomic integer for thread safety
-    private int totalMessages;
+    private Map<Integer, AtomicInteger> counters = new HashMap<>();
+    private AtomicInteger totalMessages = new AtomicInteger();
 
     public int getTotal() {
-      return totalMessages;
+      return totalMessages.get();
     }
     
-    public Map<Integer, Integer> getCounter(){
-      return counters;
-    }
+    public Map<Integer, AtomicInteger> getCounter(){ return counters; }
 
     public int getPartitionCount(int partition) {
-      return counters.get(partition);
+      return counters.get(partition).get();
     }
 
-    public void count(int partition, int readMessage) {
-      Integer current = counters.get(partition);
-      if (current == null) {
-        counters.put(partition, readMessage);
+    synchronized public void count(int partition, int readMessage) {
+      AtomicInteger current = counters.get(partition);
+      if(current == null) {
+        counters.put(partition, new AtomicInteger(readMessage));
       } else {
-        counters.put(partition, current.intValue() + readMessage);
+        current.addAndGet(readMessage);
       }
-      totalMessages += readMessage;
+      totalMessages.addAndGet(readMessage);
     }
 
     public void print(Appendable out, String title) {
@@ -197,8 +176,8 @@ public class KafkaMessageCheckTool implements Runnable {
       formater.setTitle(title + "(" + totalMessages + ")");
 
       formater.setIndent("  ");
-      for (Map.Entry<Integer, Integer> entry : counters.entrySet()) {
-        formater.addRow(entry.getKey(), entry.getValue());
+      for (Map.Entry<Integer, AtomicInteger> entry : counters.entrySet()) {
+        formater.addRow(entry.getKey(), entry.getValue().get());
       }
 
       try {
@@ -206,6 +185,63 @@ public class KafkaMessageCheckTool implements Runnable {
       } catch (IOException e) {
         e.printStackTrace();
       }
+    }
+  }
+  
+  public class KafkaPartitionConsumer implements Runnable {
+    private  KafkaPartitionReader partitionReader;
+    private  int batchFetch ;
+    private  int fetchSize ;
+    
+    public KafkaPartitionConsumer(KafkaPartitionReader partitionReader, int batchFetch, int fetchSize) {
+      this.partitionReader = partitionReader;
+      this.batchFetch = batchFetch;
+      this.fetchSize  = fetchSize;
+    }
+    
+    @Override
+    public void run() {
+      try {
+        doRun();
+      } catch (Exception e) {
+        e.printStackTrace();
+      } finally {
+        try {
+          partitionReader.commit();
+          partitionReader.close();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    
+    void doRun() throws Exception {
+      int total = 0, lastCount = 0, cannotReadCount = 0;
+      int fetchRetries = topicConfig.consumerConfig.consumeFetchRetries;
+      while(!interrupt ) {
+        List<byte[]> messages = partitionReader.fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/,fetchRetries);
+        messageCounter.count(partitionReader.getPartition(), messages.size());
+        for(byte[] messagePayload : messages) {
+          messageTracker.log(messageExtractor.extract(messagePayload));
+        }
+        total += messages.size();
+
+        if(lastCount == total) {
+          cannotReadCount++;
+          Thread.sleep(1000);
+        } else {
+          cannotReadCount = 0;
+        }
+        if(cannotReadCount >= topicConfig.consumerConfig.consumeRetries) break;
+        lastCount = total;
+      } 
+      List<byte[]> messages = 
+          partitionReader.fetch(fetchSize, batchFetch/*max read*/, 0 /*max wait*/,fetchRetries);
+      messageCounter.count(partitionReader.getPartition(), messages.size());
+      for(byte[] messagePayload : messages) {
+        messageTracker.log(messageExtractor.extract(messagePayload));
+      }
+      total += messages.size();
     }
   }
 }

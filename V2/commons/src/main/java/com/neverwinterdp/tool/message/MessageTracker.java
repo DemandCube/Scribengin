@@ -42,7 +42,7 @@ public class MessageTracker {
     return true;
   }
 
-  public void log(Message message) {
+  synchronized public void log(Message message) {
     log(message.getPartition(), message.getTrackId());
   }
 
