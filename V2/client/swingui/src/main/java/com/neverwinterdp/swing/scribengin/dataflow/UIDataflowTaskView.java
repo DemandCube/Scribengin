@@ -87,17 +87,17 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
 
   protected List<TaskAndReport> getTasks(Registry registry) throws RegistryException {
     List<TaskAndReport> tasksAndReports = new ArrayList<>();
-    if (!registry.exists(tasksPath + "/descriptors")) {
+    if (!registry.exists(tasksPath + "/task-list")) {
       JPanel infoPanel = new JPanel();
-      infoPanel.add(new JLabel("Path: " + tasksPath + "/descriptors does not exist!"));
+      infoPanel.add(new JLabel("Path: " + tasksPath + "/task-list does not exist!"));
       addRow(infoPanel);
       return new ArrayList<TaskAndReport>();
     }
-    for (String id : registry.getChildren(tasksPath + "/descriptors")) {
+    for (String id : registry.getChildren(tasksPath + "/task-list")) {
       tasksAndReports.add(
           new TaskAndReport(id,
-              registry.getDataAs(tasksPath + "/descriptors/" + id, DataflowTaskDescriptor.class),
-              registry.getDataAs(tasksPath + "/descriptors/" + id + "/report", DataflowTaskReport.class)
+              registry.getDataAs(tasksPath + "/task-list/" + id, DataflowTaskDescriptor.class),
+              registry.getDataAs(tasksPath + "/task-list/" + id + "/report", DataflowTaskReport.class)
           ));
     }
     return tasksAndReports;
