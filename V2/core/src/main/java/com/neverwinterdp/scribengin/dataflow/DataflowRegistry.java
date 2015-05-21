@@ -32,15 +32,6 @@ import com.neverwinterdp.vm.VMDescriptor;
 
 @Singleton
 public class DataflowRegistry {
-  final static public String TASKS_PATH = "tasks";
-  
-  final static public String TASKS_DESCRIPTORS_PATH       = TASKS_PATH + "/descriptors";
-  final static public String TASKS_AVAILABLE_PATH         = TASKS_PATH + "/executors/available";
-  final static public String TASKS_ASSIGNED_PATH          = TASKS_PATH + "/executors/assigned" ;
-  final static public String TASKS_ASSIGNED_HEARTBEAT_PATH = TASKS_PATH + "/executors/assigned-heartbeat" ;
-  final static public String TASKS_FINISHED_PATH          = TASKS_PATH + "/executors/finished";
-  final static public String TASKS_LOCK_PATH              = TASKS_PATH + "/executors/locks";
-
   final static public String MASTER_EVENT_PATH      = "event/master" ;
   final static public String WORKER_EVENT_PATH      = "event/worker" ;
   final static public String FAILURE_EVENT_PATH     = "event/failure" ;
@@ -79,13 +70,6 @@ public class DataflowRegistry {
   private Node               failureEventNode;
   private Node               masterEventNode;
   
-//  private Node               tasksDescriptors;
-//  private DistributedQueue   tasksAvailableQueue;
-//  private Node               tasksAssignedNode;
-//  private Node               tasksAssignedHeartbeatNode;
-//  private Node               tasksFinishedNode;
-//  private Node               tasksLock;
-  
   private Node               activeActivitiesNode;
   
   private Node               allWorkers;
@@ -112,17 +96,10 @@ public class DataflowRegistry {
     taskRegistry = new TaskRegistry<DataflowTaskDescriptor>(registry, taskPath, DataflowTaskDescriptor.class);
     
     status = registry.createIfNotExist(dataflowPath + "/status");
-    //tasksDescriptors = registry.createIfNotExist(dataflowPath + "/" + TASKS_DESCRIPTORS_PATH);
     
     masterEventNode  = registry.createIfNotExist(dataflowPath + "/" + MASTER_EVENT_PATH);
     workerEventNode  = registry.createIfNotExist(dataflowPath + "/" + WORKER_EVENT_PATH);
     failureEventNode = registry.createIfNotExist(dataflowPath + "/" + FAILURE_EVENT_PATH);
-    
-    //tasksAvailableQueue = new DistributedQueue(registry, dataflowPath + "/" + TASKS_AVAILABLE_PATH);
-    //tasksAssignedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_PATH);
-    //tasksAssignedHeartbeatNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_ASSIGNED_HEARTBEAT_PATH);
-    //tasksFinishedNode = registry.createIfNotExist(dataflowPath + "/" + TASKS_FINISHED_PATH);
-    //tasksLock = registry.createIfNotExist(dataflowPath + "/" + TASKS_LOCK_PATH);
     
     activeActivitiesNode = registry.createIfNotExist(dataflowPath + "/" + ACTIVITIES_PATH);
     

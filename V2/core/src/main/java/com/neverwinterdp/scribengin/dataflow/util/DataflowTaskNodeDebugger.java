@@ -1,6 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.util;
 
 import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.task.TaskTransactionId;
 import com.neverwinterdp.registry.util.NodeDebugger;
 import com.neverwinterdp.registry.util.NodeFormatter;
 import com.neverwinterdp.registry.util.RegistryDebugger;
@@ -19,10 +20,9 @@ public class DataflowTaskNodeDebugger implements NodeDebugger{
   @Override
   public void onCreate(RegistryDebugger registryDebugger, Node assignedTaskNode) throws Exception {
     registryDebugger.println("DataflowTaskNodeDebugger: Node = " + assignedTaskNode.getPath() + ", Event = CREATE");
-    String assignedTaskName = assignedTaskNode.getName();
-    Node tasksNode = assignedTaskNode.getParentNode().getParentNode().getParentNode();
-    Node tasksDescriptorsNode = tasksNode.getChild("descriptors");
-    Node taskDescriptorNode = tasksDescriptorsNode.getChild(assignedTaskName); 
+    TaskTransactionId taskTransactionId = new TaskTransactionId(assignedTaskNode.getName()) ;
+    Node tasksNode = assignedTaskNode.getParentNode().getParentNode().getParentNode().getParentNode();
+    Node taskDescriptorNode = tasksNode.getDescendant("task-list/" + taskTransactionId.getTaskId()); 
     
     NodeFormatter formatter = null;
     if(this.detailedDebugger){

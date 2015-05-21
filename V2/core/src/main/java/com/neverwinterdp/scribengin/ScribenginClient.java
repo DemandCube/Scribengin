@@ -3,7 +3,6 @@ package com.neverwinterdp.scribengin;
 import static com.neverwinterdp.vm.tool.VMClusterBuilder.h1;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.neverwinterdp.registry.Node;
@@ -183,7 +182,7 @@ public class ScribenginClient {
   }
   
   public RegistryDebugger getDataflowTaskDebugger(Appendable out, DataflowDescriptor descriptor, boolean detailedDebugger) throws RegistryException {
-    String taskAssignedPath = ScribenginService.getDataflowPath(descriptor.getId()) + "/" + DataflowRegistry.TASKS_ASSIGNED_PATH;
+    String taskAssignedPath = ScribenginService.getDataflowPath(descriptor.getId()) + "/tasks/executions/assigned/task-ids";
     RegistryDebugger debugger = new RegistryDebugger(out, getVMClient().getRegistry()) ;
     debugger.watchChild(taskAssignedPath, ".*", new DataflowTaskNodeDebugger(detailedDebugger));
     return debugger ;
@@ -217,8 +216,6 @@ public class ScribenginClient {
     }
     Thread.sleep(1000);
     vmClient.shutdown(activeMaster) ;
-    //Registry registry = vmClient.getRegistry();
-    //registry.create(ScribenginService.SHUTDOWN_EVENT_PATH, true, NodeCreateMode.PERSISTENT);
   }
   
   public CommandResult<?> execute(VMDescriptor vmDescriptor, Command command) throws RegistryException, Exception {
