@@ -172,7 +172,7 @@ public class TaskServiceUnitTest {
         TaskLog taskLog = entry.getValue();
         formatter.addRow(entry.getKey(), taskLog.availableCount, taskLog.assignCount, taskLog.failCount, taskLog.finishCount);
       }
-      System.out.println(formatter.getFormattedText());
+      System.out.println(formatter.getFormatText());
     }
   }
   
