@@ -22,7 +22,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
     --dataflow-id kafka-to-kafka-1 \
     --wait-before-simulate-failure 60000 \
     --wait-for-running-dataflow 180000 \
-    --failure-period 30000 --max-failure 30" &
+    --failure-period 30000 --max-failure 20" &
 
 
 FAILURE_PID=$!
@@ -40,7 +40,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
              --source-name input \
              --source-num-of-stream 10 \
              --source-write-period 0 \
-             --source-max-records-per-stream 2500000 \
+             --source-max-records-per-stream 1000000 \
              --sink-name output \
              --print-dataflow-info -1 \
              --debug-dataflow-task \

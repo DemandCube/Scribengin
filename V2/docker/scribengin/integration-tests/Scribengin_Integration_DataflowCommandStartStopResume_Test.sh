@@ -42,7 +42,7 @@ ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "cd /opt/scribengi
              --source-name input \
              --source-num-of-stream 10 \
              --source-write-period 0 \
-             --source-max-records-per-stream 2500000 \
+             --source-max-records-per-stream 1500000 \
              --sink-name output \
              --print-dataflow-info -1 \
              --debug-dataflow-task \
