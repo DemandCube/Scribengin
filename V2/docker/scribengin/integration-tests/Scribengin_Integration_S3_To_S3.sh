@@ -2,30 +2,22 @@
 DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --deploy-scribengin --start-cluster
   scp -o "StrictHostKeyChecking no" -r /root/.aws neverwinterdp@hadoop-master:/home/neverwinterdp/
-  echo $HOME
-  echo $USER
-  echo "testing existence of .aws folder on local host"
-  if [ -d /root/.aws ] ; then 
-    echo "pasword exists on host !!!!"
-  else
-    echo "we have the wrong host location."
-  fi
+#  echo $HOME
+#  echo $USER
+#  echo "testing existence of .aws folder on local host"
+#  if [ -d /root/.aws ] ; then 
+#    echo "pasword exists on host !!!!"
+#  else
+#    echo "we have the wrong host location."
+#  fi
 
- echo "testing existence of .aws folder on remote host"
-is_exists= "if [ -d /home/neverwinterdp/.aws ] ; then echo '0';else echo '1'; fi"`
-if [ $is_exists == '0' ]; then
-  echo "Directory exists"
-else
-  echo "Directory does not exists"
-fi
-
-#checking permisions
-echo checking permisions
-hostPerm=$(stat -c %a "~/.aws/credentials")
-echo $hostPerm
-
-dockerPerm='ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "$(stat -c %a "~/.aws/credentials")"'
-echo $dockerPerm
+# echo "testing existence of .aws folder on remote host"
+#is_exists= 'ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -d /home/neverwinterdp/.aws ] ; then echo '0';else echo '1'; fi"'
+#if [ $is_exists == '0' ]; then
+#  echo "Directory exists"
+#else
+#  echo "Directory does not exists"
+# fi
 
 
 #make folder for test results
