@@ -233,6 +233,11 @@ function container_update_hosts() {
   for container_id in $(container_ids); do
     #extract the container name
     container_name=$(docker inspect -f {{.Config.Hostname}} $container_id)
+    
+    #Update ssh key while we're at it
+    echo "ssh-keygen -R $container_name"
+    ssh-keygen -R $container_name
+    
     echo "Update /etc/hosts for $container_name"
     ssh -o StrictHostKeyChecking=no -p $(login_ssh_port $container_id) root@$HOST_IP "echo '$HOSTS'  > /etc/hosts"
   done
@@ -264,6 +269,9 @@ function host_machine_update_hosts() {
   #write new hosts file
   echo -e "$out\n$hostString" > /etc/hosts
   echo -e "$hostString"
+  
+  
+  
 }
 
 function container_clean() {
