@@ -24,7 +24,7 @@ echo checking permisions
 hostPerm=$(stat -c %a "~/.aws/credentials")
 echo $hostPerm
 
-dockerPerm=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "$(stat -c %a "~/.aws/credentials")"`
+dockerPerm='ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "$(stat -c %a "~/.aws/credentials")"'
 echo $dockerPerm
 
 
