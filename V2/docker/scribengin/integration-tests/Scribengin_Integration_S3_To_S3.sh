@@ -12,12 +12,21 @@ $DOCKERSCRIBEDIR/../docker.sh cluster --clean-containers --run-containers --depl
   fi
 
  echo "testing existence of .aws folder on remote host"
-is_exists=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "if [ -d /home/neverwinterdp/.aws ] ; then echo '0';else echo '1'; fi"`
+is_exists= "if [ -d /home/neverwinterdp/.aws ] ; then echo '0';else echo '1'; fi"`
 if [ $is_exists == '0' ]; then
   echo "Directory exists"
 else
   echo "Directory does not exists"
 fi
+
+#checking permisions
+echo checking permisions
+hostPerm=$(stat -c %a "~/.aws/credentials")
+echo $hostPerm
+
+dockerPerm=`ssh -o "StrictHostKeyChecking no" neverwinterdp@hadoop-master "$(stat -c %a "~/.aws/credentials")"`
+echo $dockerPerm
+
 
 #make folder for test results
 mkdir testresults
