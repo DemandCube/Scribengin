@@ -18,7 +18,7 @@ import com.neverwinterdp.util.text.TabularFormater;
 public class MessageTracker {
   private TreeMap<Integer, PartitionMessageTracker> partitions = new TreeMap<>();
 
-  public int getLogCount() {
+  synchronized public int getLogCount() {
     int logCount = 0;
     for (PartitionMessageTracker sel : partitions.values()) {
       logCount += sel.getLogCount();
@@ -26,7 +26,7 @@ public class MessageTracker {
     return logCount;
   }
 
-  public int getDuplicatedCount() {
+  synchronized public int getDuplicatedCount() {
     int duplicatedCount = 0;
     for (PartitionMessageTracker sel : partitions.values()) {
       duplicatedCount += sel.getDuplicatedCount();
@@ -34,7 +34,7 @@ public class MessageTracker {
     return duplicatedCount;
   }
 
-  public boolean isInSequence() {
+  synchronized public boolean isInSequence() {
     for (PartitionMessageTracker sel : partitions.values()) {
       if (!sel.isInSequence())
         return false;
