@@ -128,15 +128,15 @@ public class DataflowTestRunner extends Thread {
       ScribenginShell shell = Cluster.getCurrentInstance().getScribenginShell();
       String dataflowWorkerFailureSimulationCommand = 
           "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME + 
-          "  --dataflow-id server-failure-kafka-to-kafka-1" + 
+          "  --dataflow-id dataflow-kafka-to-kafka-worker-failure-test " + 
           "  --dataflow-name server-failure-test" + 
           "  --failure-period 10000 --max-failure 5 --simulate-kill";
       add(shell, dataflowWorkerFailureSimulationCommand);
 
       String dataflowKafkaToKafkaCommand =
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
-          " --dataflow-id    server-failure-kafka-to-kafka-1" +
-          " --dataflow-name  server-failure-kafka-to-kafka" +
+          " --dataflow-id    dataflow-kafka-to-kafka-worker-failure-test" +
+          " --dataflow-name  dataflow-kafka-to-kafka-worker-failure-test" +
           " --worker 2 --executor-per-worker 2"+
           " --duration 180000"+
           " --task-max-execute-time 5000" +
@@ -163,7 +163,7 @@ public class DataflowTestRunner extends Thread {
 
       String dataflowStartStopResumeCommand = 
           "dataflow-test " + DataflowCommandStartStopResumeTest.TEST_NAME +
-          "  --dataflow-id kafka-to-kafka-1" +
+          "  --dataflow-id dataflow-kafka-to-kafka-start-stop-resume-test" +
           "  --sleep-before-stop 10000 --sleep-before-resume 5000" +
           "  --max-wait-for-stop    10000 " +
           "  --max-wait-for-resume  5000 " +
@@ -174,9 +174,9 @@ public class DataflowTestRunner extends Thread {
 
       String dataflowKafkaToKafkaCommand =
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
-          " --dataflow-id    server-failure-kafka-to-kafka-1" +
-          " --dataflow-name  server-failure-kafka-to-kafka" +
-          " --worker 2 --executor-per-worker 2"+
+          " --dataflow-id    dataflow-kafka-to-kafka-start-stop-resume-test" +
+          " --dataflow-name  dataflow-kafka-to-kafka-start-stop-resume-test" +
+          " --worker 2 --executor-per-worker 2" +
           " --duration 180000"+
           " --task-max-execute-time 5000" +
           " --source-name input"+

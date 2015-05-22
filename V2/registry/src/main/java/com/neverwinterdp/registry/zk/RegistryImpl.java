@@ -24,6 +24,7 @@ import com.google.inject.Singleton;
 import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.ErrorCode;
+import com.neverwinterdp.registry.MultiDataGet;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.NodeInfo;
@@ -273,6 +274,10 @@ public class RegistryImpl implements Registry {
       holder.add(getDataAs(path, type, mapper));
     }
     return holder;
+  }
+  
+  public <T> MultiDataGet<T> createMultiDataGet(Class<T> type) {
+    return new ZookeeperMultiDataGet<T>(this, type);
   }
   
   public NodeInfo setData(String path, byte[] data) throws RegistryException {
@@ -576,6 +581,10 @@ public class RegistryImpl implements Registry {
   String realPath(String path) { 
     if(path.equals("/")) return config.getDbDomain() ;
     return config.getDbDomain() + path; 
+  }
+  
+  String path(String realPath) { 
+    return realPath.substring(config.getDbDomain().length());
   }
   
   static public RegistryException toRegistryException(String message, Throwable t) {

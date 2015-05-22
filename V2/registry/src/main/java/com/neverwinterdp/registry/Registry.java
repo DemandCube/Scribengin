@@ -32,6 +32,9 @@ public interface Registry {
   public <T> List<T> getDataAs(List<String> paths, Class<T> type) throws RegistryException;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, boolean ignoreNoNodeError) throws RegistryException;
   public <T> List<T> getDataAs(List<String> paths, Class<T> type, DataMapperCallback<T> mapper) throws RegistryException;
+  
+  public <T> MultiDataGet<T> createMultiDataGet(Class<T> type) ;
+  
   public NodeInfo setData(String path, byte[] data) throws RegistryException ;
   public <T> NodeInfo setData(String path, T data) throws RegistryException ;
   

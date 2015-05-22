@@ -1,5 +1,6 @@
 package com.neverwinterdp.registry.zk;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -8,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.neverwinterdp.registry.MultiDataGet;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.Registry;
@@ -159,6 +161,30 @@ public class RegistryUnitTest {
     registry.disconnect();
   }
   
+  @Test
+  public void testMultiDataGet() throws Exception {
+    final Registry registry = newRegistry().connect();
+    int NUM_OF_NODE = 100 ;
+    Node dataNode = registry.create("/data", NodeCreateMode.PERSISTENT);
+    String desc = "This is a very long .......................................... description " ;
+    for(int i = 0; i < NUM_OF_NODE; i++) {
+      dataNode.createChild("node-" + i, new HelloData(desc + i), NodeCreateMode.PERSISTENT);
+    }
+    MultiDataGet<HelloData> multiDataGet = registry.createMultiDataGet(HelloData.class) ;
+    for(int i = 0; i < NUM_OF_NODE; i++) {
+      multiDataGet.get("/data/node-" + i);
+    }
+    multiDataGet.waitForAllGet(5000);
+    Assert.assertEquals(NUM_OF_NODE, multiDataGet.getProcessResultCount());
+    Assert.assertEquals(0, multiDataGet.getProcessErrorGetCount());
+    List<HelloData> holder = multiDataGet.getResults();
+    for(int i = 0; i < holder.size(); i++) {
+      HelloData sel = holder.get(i);
+      System.out.println(sel.getDescription());
+    }
+    registry.disconnect();
+  }
+  
   private Registry newRegistry() {
     return new RegistryImpl(RegistryConfig.getDefault()) ;
   }
@@ -171,5 +197,19 @@ public class RegistryUnitTest {
     }
     
     public NodeEvent getNodeEvent() { return this.nodeEvent ; }
+  }
+  
+  static public class HelloData {
+    String description ;
+
+    public HelloData() {}
+    
+    public HelloData(String desc) {
+      this.description = desc; 
+    }
+    
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
   }
 }
