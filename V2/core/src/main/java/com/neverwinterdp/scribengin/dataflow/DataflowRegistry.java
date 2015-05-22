@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.neverwinterdp.registry.DataMapperCallback;
+import com.neverwinterdp.registry.MultiDataGet;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
 import com.neverwinterdp.registry.RefNode;
@@ -319,20 +320,22 @@ public class DataflowRegistry {
   }
   
   static public List<DataflowTaskDescriptor> getDataflowTaskDescriptors(Registry registry, String dataflowPath) throws RegistryException {
-    Node dataflowNode = registry.get(dataflowPath) ;
-    Node taskListNode = dataflowNode.getDescendant("tasks/task-list") ;
-    return taskListNode.getChildrenAs(DataflowTaskDescriptor.class) ;
+    MultiDataGet<DataflowTaskDescriptor> multiGet = registry.createMultiDataGet(DataflowTaskDescriptor.class);
+    multiGet.getChildren(dataflowPath + "/tasks/task-list");
+    multiGet.waitForAllGet(30000);
+    return multiGet.getResults();
   }
   
   static public List<DataflowTaskReport> getDataflowTaskReports(Registry registry, String dataflowPath) throws RegistryException {
-    Node dataflowNode = registry.get(dataflowPath) ;
-    Node taskListNode = dataflowNode.getDescendant("tasks/task-list") ;
-    List<String> taskIds = taskListNode.getChildren() ;
+    MultiDataGet<DataflowTaskReport> multiGet = registry.createMultiDataGet(DataflowTaskReport.class);
+    String taskListPath = dataflowPath + "/tasks/task-list";
+    List<String> taskIds = registry.getChildren(taskListPath) ;
     List<String> reportPaths = new ArrayList<String>() ;
-    String taskListPath = taskListNode.getPath();
     for(String selTaskId : taskIds) {
       reportPaths.add(taskListPath + "/" + selTaskId + "/report") ;
     }
-    return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
+    multiGet.get(reportPaths);
+    multiGet.waitForAllGet(30000);
+    return multiGet.getResults();
   }
 }

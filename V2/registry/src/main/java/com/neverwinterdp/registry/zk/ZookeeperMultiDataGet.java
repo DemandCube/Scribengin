@@ -11,6 +11,8 @@ import org.apache.zookeeper.data.Stat;
 
 import com.neverwinterdp.registry.ErrorCode;
 import com.neverwinterdp.registry.MultiDataGet;
+import com.neverwinterdp.registry.Node;
+import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.JSONSerializer;
 
 public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.DataCallback {
@@ -41,6 +43,31 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
     results.put(path, dataGet);
   }
 
+  @Override
+  public void get(String ... paths) {
+    for(String selPath : paths) get(selPath);
+  }
+  
+  @Override
+  public void get(List<String> paths) {
+    for(int i = 0; i < paths.size(); i++) get(paths.get(i));
+  }
+  
+  @Override
+  public void getChildren(String path) throws RegistryException {
+    List<String> children = registry.getChildren(path) ;
+    for(String child : children) {
+      get(path + "/" + child) ;
+    }
+  }
+  
+  @Override
+  public void getChildren(Node node) throws RegistryException {
+    List<String> children = node.getChildren() ;
+    for(String child : children) {
+      get(node.getPath() + "/" + child) ;
+    }
+  }
   
   @Override
   public List<T>          getResults() {
@@ -57,15 +84,19 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
   }
 
   @Override
-  synchronized public void waitForAllGet(long timeout) throws InterruptedException {
+  synchronized public void waitForAllGet(long timeout) throws RegistryException {
     long currentTime = System.currentTimeMillis() ;
     long stopTime = currentTime + timeout ;
     long waitTime = timeout ;
-    while(waitTime > 0) {
-      wait(waitTime) ;
-      if(this.processResultCount == results.size()) return ;
-      currentTime = System.currentTimeMillis();
-      waitTime = stopTime - currentTime;
+    try {
+      while(waitTime > 0) {
+        wait(waitTime) ;
+        if(this.processResultCount == results.size()) return ;
+        currentTime = System.currentTimeMillis();
+        waitTime = stopTime - currentTime;
+      }
+    } catch (InterruptedException e) {
+      throw new RegistryException(ErrorCode.Timeout, "Cannot retrieve the data in " + timeout + "ms");
     }
   }
   

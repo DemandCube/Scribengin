@@ -5,6 +5,14 @@ import java.util.List;
 public interface MultiDataGet<T> {
   public void get(String path) ;
   
+  public void get(String ... path) ;
+  
+  public void get(List<String> paths) ;
+  
+  public void getChildren(String path) throws RegistryException ;
+  
+  public void getChildren(Node node) throws RegistryException ;
+  
   public int  getProcessErrorGetCount() ;
   
   public int  getProcessResultCount();
@@ -13,7 +21,7 @@ public interface MultiDataGet<T> {
   
   public List<DataGet<T>> getDataGetResults() ;
   
-  public void waitForAllGet(long timeout) throws InterruptedException ;
+  public void waitForAllGet(long timeout) throws RegistryException ;
   
   static public class DataGet<T> {
     private String    path;
