@@ -60,7 +60,8 @@ public class UIDataflowTree extends UIRegistryTree {
     } else if(dataflowNodeMatcher.matches(node)) {
       String dataflowRootPath = ScribenginService.DATAFLOWS_ALL_PATH+"/"+node.getNodeName();
       view.addView("Descriptor", new UIDataflowDescriptorView(dataflowRootPath), false) ;
-      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath + "/tasks"), false) ;
+      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath), false) ;
+      view.addView("Task Report", new UIDataflowTaskReportView(dataflowRootPath), false) ;
       view.addView("Workers", new UIDataflowWorkerView(dataflowRootPath + "/workers"), false) ;
       
     } else if(activityNodeMatcher.matches(node)) {

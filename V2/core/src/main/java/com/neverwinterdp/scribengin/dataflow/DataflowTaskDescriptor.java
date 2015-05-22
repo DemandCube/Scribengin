@@ -1,5 +1,6 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 
 public class DataflowTaskDescriptor {
-
+  final static public Comparator<DataflowTaskDescriptor> COMPARATOR = new Comparator<DataflowTaskDescriptor>() {
+    @Override
+    public int compare(DataflowTaskDescriptor o1, DataflowTaskDescriptor o2) {
+      return o1.getTaskId().compareTo(o2.getTaskId());
+    }
+  };
+  
   private String                        taskId;
   private String                        scribe;
   private StreamDescriptor              streamDescriptor;

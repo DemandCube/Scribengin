@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -24,23 +21,21 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
-import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
-import com.neverwinterdp.swing.util.text.DateUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
 public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILifecycle {
-  private String tasksPath;
-  private DataflowTasksJXTable taskTable;
+  private String dataflowPath;
+  private DataflowTaskJXTable taskTable;
   private DataflowTaskInfoPanel taskInfo;
 
-  public UIDataflowTaskView(String tasksPath) {
-    this.tasksPath = tasksPath;
+  public UIDataflowTaskView(String dataflowPath) {
+    this.dataflowPath = dataflowPath;
   }
 
   @Override
@@ -68,7 +63,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       });
       addRow(toolbar);
 
-      taskTable = new DataflowTasksJXTable(getTasks(registry));
+      taskTable = new DataflowTaskJXTable(DataflowRegistry.getDataflowTaskDescriptors(registry, dataflowPath));
       taskInfo = new DataflowTaskInfoPanel();
       JSplitPane splitPane =
           new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(taskTable), new JScrollPane(taskInfo));
@@ -85,33 +80,8 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
     clear();
   }
 
-  protected List<TaskAndReport> getTasks(Registry registry) throws RegistryException {
-    List<TaskAndReport> tasksAndReports = new ArrayList<>();
-    if (!registry.exists(tasksPath + "/task-list")) {
-      JPanel infoPanel = new JPanel();
-      infoPanel.add(new JLabel("Path: " + tasksPath + "/task-list does not exist!"));
-      addRow(infoPanel);
-      return new ArrayList<TaskAndReport>();
-    }
-    for (String id : registry.getChildren(tasksPath + "/task-list")) {
-      tasksAndReports.add(
-          new TaskAndReport(id,
-              registry.getDataAs(tasksPath + "/task-list/" + id, DataflowTaskDescriptor.class),
-              registry.getDataAs(tasksPath + "/task-list/" + id + "/report", DataflowTaskReport.class)
-          ));
-    }
-    return tasksAndReports;
-  }
-
-  private static String getValidTime(long time) {
-    if (time == 0l)
-      return "-";
-    else
-      return DateUtil.asCompactDateTime(time);
- }
-
-  public class DataflowTasksJXTable extends JXTable {
-    public DataflowTasksJXTable(List<TaskAndReport> tasksAndReports) throws Exception {
+  public class DataflowTaskJXTable extends JXTable {
+    public DataflowTaskJXTable(List<DataflowTaskDescriptor> tasksAndReports) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       DataflowTaskTableModel model = new DataflowTaskTableModel(tasksAndReports);
       setModel(model);
@@ -124,8 +94,8 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           DataflowTaskTableModel model = (DataflowTaskTableModel) getModel();
-          TaskAndReport selectedTaskReport = model.getTaskAndReportAt(getSelectedRow());
-          taskInfo.updateTaskInfo(selectedTaskReport);
+          DataflowTaskDescriptor descriptor = model.getTaskAndReportAt(getSelectedRow());
+          taskInfo.updateTaskInfo(descriptor);
         }
       });
       setHighlighters(HighlighterFactory.createSimpleStriping());
@@ -139,28 +109,22 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       updateTaskInfo(null);
     }
 
-    public void updateTaskInfo(TaskAndReport taskAndReport) {
-      String indent = "    ";
+    public void updateTaskInfo(DataflowTaskDescriptor descriptor) {
       clear();
       createBorder("Dataflow task Info");
-      if (taskAndReport == null) {
+      if (descriptor == null) {
         addRow("Select one of the tasks above to view its details. ");
       } else {
-        addRow(indent, "Task id: ", taskAndReport.getId());
-        addRow(indent, "Status: ", "TODO");
-        addRow(indent, "Scribe: ", taskAndReport.getTaskDescriptor().getScribe().toString());
+        addRow("Task id: ", descriptor.getTaskId());
+        addRow("Status: ", "TODO");
+        addRow("Scribe: ", descriptor.getScribe());
 
-        addRow(indent, "Start time:", getValidTime(taskAndReport.getReport().getStartTime()));
-        addRow(indent, "Finish time:", getValidTime(taskAndReport.getReport().getFinishTime()));
-        addRow(indent, "Process count:", taskAndReport.getReport().getProcessCount());
-        addRow(indent, "Commit count:", taskAndReport.getReport().getCommitProcessCount());
-        addRow(indent, "Registry path:",taskAndReport.getTaskDescriptor().getRegistryPath());
+        addRow("Registry path:", descriptor.getRegistryPath());
 
-        addRow(indent,"Source Type: ", taskAndReport.getTaskDescriptor().getSourceStreamDescriptor().getType());
-        for (Entry<String, StreamDescriptor> sinkStream : taskAndReport.getTaskDescriptor().getSinkStreamDescriptors()
-            .entrySet()) {
-          addRow(indent,  "Sink Name: ", sinkStream.getKey());
-          addRow(indent,  "Sink Type: ", sinkStream.getValue().getType());
+        addRow("Source Type: ", descriptor.getSourceStreamDescriptor().getType());
+        for(Entry<String, StreamDescriptor> sinkStream : descriptor.getSinkStreamDescriptors().entrySet()) {
+          addRow("Sink Name: ", sinkStream.getKey());
+          addRow("Sink Type: ", sinkStream.getValue().getType());
         }
       }
       makeCompactGrid();
@@ -169,74 +133,27 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   }
   
   static class DataflowTaskTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {
-        "Id", "Status", "Process Count", "Commit Process Count", "Start Time", "Finish Time" };
+    static String[] COLUMNS = {"Id", "Status", "Scribe" };
 
-    List<TaskAndReport> tasksAndReports;
+    List<DataflowTaskDescriptor> taskDescriptors;
 
-    public DataflowTaskTableModel(List<TaskAndReport> tasksAndReports) {
+    public DataflowTaskTableModel(List<DataflowTaskDescriptor> taskDescriptors) {
       super(COLUMNS, 0);
-      this.tasksAndReports = tasksAndReports;
-      Collections.sort(this.tasksAndReports);
+      this.taskDescriptors = taskDescriptors;
+      Collections.sort(taskDescriptors, DataflowTaskDescriptor.COMPARATOR);
     }
 
-    public TaskAndReport getTaskAndReportAt(int selectedRow) {
-
-      return tasksAndReports.get(selectedRow);
+    public DataflowTaskDescriptor getTaskAndReportAt(int selectedRow) {
+      return taskDescriptors.get(selectedRow);
     }
 
     void loadData() throws Exception {
-      for (TaskAndReport tar : tasksAndReports) {
-        DataflowTaskReport report = tar.getReport();
+      for(DataflowTaskDescriptor sel : taskDescriptors) {
         Object[] cells = {
-            tar.getId(), "TODO", report.getProcessCount(),
-            report.getCommitProcessCount(), getValidTime(report.getStartTime()), getValidTime(report.getFinishTime())
+            sel.getTaskId(), "TODO", sel.getScribe()
         };
         addRow(cells);
       }
-    }
-  }
-
-  //Simple class to help map taskDescriptor with its Report and ID
-  public class TaskAndReport implements Comparable<TaskAndReport> {
-    public String id;
-    public DataflowTaskDescriptor taskDescriptor;
-    public DataflowTaskReport report;
-
-    public TaskAndReport(String ID, DataflowTaskDescriptor dataflowTaskDesc, DataflowTaskReport report) {
-      this.id = ID;
-      this.taskDescriptor = dataflowTaskDesc;
-      this.report = report;
-    }
-
-    public String getId() {
-      return id;
-    }
-
-    public DataflowTaskReport getReport() {
-      return report;
-    }
-
-    public DataflowTaskDescriptor getTaskDescriptor() {
-      return taskDescriptor;
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append("TaskAndReport [id=");
-      builder.append(id);
-      builder.append(", taskDescriptor=");
-      builder.append(taskDescriptor);
-      builder.append(", report=");
-      builder.append(report);
-      builder.append("]");
-      return builder.toString();
-    }
-
-    @Override
-    public int compareTo(TaskAndReport other) {
-      return this.getId().compareToIgnoreCase(other.getId());
     }
   }
 }

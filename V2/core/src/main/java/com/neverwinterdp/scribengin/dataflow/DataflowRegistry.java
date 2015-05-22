@@ -1,14 +1,12 @@
 package com.neverwinterdp.scribengin.dataflow;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.neverwinterdp.registry.BatchOperations;
 import com.neverwinterdp.registry.DataMapperCallback;
 import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.NodeCreateMode;
@@ -17,16 +15,14 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.Transaction;
 import com.neverwinterdp.registry.activity.ActivityRegistry;
-import com.neverwinterdp.registry.lock.Lock;
 import com.neverwinterdp.registry.notification.Notifier;
-import com.neverwinterdp.registry.queue.DistributedQueue;
 import com.neverwinterdp.registry.task.TaskContext;
 import com.neverwinterdp.registry.task.TaskRegistry;
-import com.neverwinterdp.registry.task.TaskStatus;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
+import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
@@ -203,7 +199,7 @@ public class DataflowRegistry {
     Node taskNode = taskRegistry.getTasksListNode().getChild(taskId);
     taskDescriptor.setRegistryPath(taskNode.getPath());
     taskRegistry.offer(taskId, taskDescriptor);
-    create(taskDescriptor, new DataflowTaskReport());
+    create(taskDescriptor, new DataflowTaskReport(taskDescriptor.getTaskId()));
   }
 
   public TaskContext<DataflowTaskDescriptor> assignDataflowTask(final VMDescriptor vmDescriptor) throws RegistryException  {
@@ -315,5 +311,28 @@ public class DataflowRegistry {
   
   static  public DataflowLifecycleStatus getStatus(Registry registry, String dataflowPath) throws RegistryException {
     return registry.getDataAs(dataflowPath + "/status" , DataflowLifecycleStatus.class) ;
+  }
+  
+  static public List<DataflowDescriptor> getDataflowDescriptors(Registry registry) throws RegistryException {
+    Node dataflowsNode = registry.get(ScribenginService.DATAFLOWS_PATH) ;
+    return dataflowsNode.getChildrenAs(DataflowDescriptor.class) ;
+  }
+  
+  static public List<DataflowTaskDescriptor> getDataflowTaskDescriptors(Registry registry, String dataflowPath) throws RegistryException {
+    Node dataflowNode = registry.get(dataflowPath) ;
+    Node taskListNode = dataflowNode.getDescendant("tasks/task-list") ;
+    return taskListNode.getChildrenAs(DataflowTaskDescriptor.class) ;
+  }
+  
+  static public List<DataflowTaskReport> getDataflowTaskReports(Registry registry, String dataflowPath) throws RegistryException {
+    Node dataflowNode = registry.get(dataflowPath) ;
+    Node taskListNode = dataflowNode.getDescendant("tasks/task-list") ;
+    List<String> taskIds = taskListNode.getChildren() ;
+    List<String> reportPaths = new ArrayList<String>() ;
+    String taskListPath = taskListNode.getPath();
+    for(String selTaskId : taskIds) {
+      reportPaths.add(taskListPath + "/" + selTaskId + "/report") ;
+    }
+    return registry.getDataAs(reportPaths, DataflowTaskReport.class) ;
   }
 }

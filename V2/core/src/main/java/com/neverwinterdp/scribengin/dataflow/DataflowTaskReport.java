@@ -1,10 +1,30 @@
 package com.neverwinterdp.scribengin.dataflow;
 
+import java.util.Comparator;
+
 public class DataflowTaskReport {
-  private long startTime  ;
-  private long finishTime ;
-  private long processCount ;
-  private long commitProcessCount;
+  final static public Comparator<DataflowTaskReport> COMPARATOR = new Comparator<DataflowTaskReport>() {
+    @Override
+    public int compare(DataflowTaskReport o1, DataflowTaskReport o2) {
+      return o1.getTaskId().compareTo(o2.getTaskId());
+    }
+  };
+  
+  private String taskId ;
+  private long  startTime  ;
+  private long  finishTime ;
+  private long  processCount ;
+  private long  commitProcessCount;
+  
+  public DataflowTaskReport() {} 
+  
+  public DataflowTaskReport(String taskId) {
+    this.taskId = taskId ;
+    this.startTime = System.currentTimeMillis();
+  }
+  
+  public String getTaskId() { return taskId; }
+  public void setTaskId(String taskId) { this.taskId = taskId; }
   
   public long getStartTime() { return startTime; }
   public void setStartTime(long startTime) { this.startTime = startTime; }

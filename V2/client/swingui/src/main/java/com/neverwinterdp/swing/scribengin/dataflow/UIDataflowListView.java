@@ -19,6 +19,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
+import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
@@ -58,7 +59,7 @@ public class UIDataflowListView extends SpringLayoutGridJPanel implements UILife
       });
       addRow(toolbar) ;
       
-      DataflowJXTable dataflowTable = new  DataflowJXTable(getDescriptors(registry)) ;
+      DataflowJXTable dataflowTable = new  DataflowJXTable(DataflowRegistry.getDataflowDescriptors(registry)) ;
       addRow(new JScrollPane(dataflowTable)) ;
     }
     makeCompactGrid(); 
@@ -67,13 +68,6 @@ public class UIDataflowListView extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onDeactivate() throws Exception {
     clear();
-  }
-  
-  protected List<DataflowDescriptor> getDescriptors(Registry registry) throws RegistryException {
-    List<String> dataflowPaths = new ArrayList<>() ;
-    for(String id : registry.getChildren(listPath)) dataflowPaths.add(ScribenginService.DATAFLOWS_ALL_PATH + "/" + id) ;
-    List<DataflowDescriptor> dataflows = registry.getDataAs(dataflowPaths, DataflowDescriptor.class) ;
-    return dataflows ;
   }
   
   static public class DataflowJXTable extends JXTable {
