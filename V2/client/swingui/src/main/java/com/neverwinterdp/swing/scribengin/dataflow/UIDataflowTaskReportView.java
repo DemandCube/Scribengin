@@ -23,6 +23,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.text.DateUtil;
 
@@ -53,14 +54,14 @@ public class UIDataflowTaskReportView extends SpringLayoutGridJPanel implements 
       JToolBar toolbar = new JToolBar();
       toolbar.setFloatable(false);
       toolbar.add(new AbstractAction("Reload") {
-       //TODO make it work
         @Override
         public void actionPerformed(ActionEvent e) {
+          taskReportTable.onRefresh();
         }
       });
       addRow(toolbar);
 
-      taskReportTable = new DataflowTaskReportJXTable(DataflowRegistry.getDataflowTaskReports(registry, dataflowPath));
+      taskReportTable = new DataflowTaskReportJXTable(dataflowPath);
       addRow(new JScrollPane(taskReportTable));
     }
     makeCompactGrid();
@@ -72,11 +73,10 @@ public class UIDataflowTaskReportView extends SpringLayoutGridJPanel implements 
   }
 
   public class DataflowTaskReportJXTable extends JXTable {
-    public DataflowTaskReportJXTable(List<DataflowTaskReport> reports) throws Exception {
+    public DataflowTaskReportJXTable(String dataflowPath) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      DataflowTaskReportTableModel model = new DataflowTaskReportTableModel(reports);
+      DataflowTaskReportTableModel model = new DataflowTaskReportTableModel(dataflowPath);
       setModel(model);
-      model.loadData();
 
       setVisibleRowCount(30);
       setVisibleColumnCount(8);
@@ -90,25 +90,43 @@ public class UIDataflowTaskReportView extends SpringLayoutGridJPanel implements 
       });
       setHighlighters(HighlighterFactory.createSimpleStriping());
       addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
-
+    }
+    
+    public void onRefresh()  {
+      DataflowTaskReportTableModel model = (DataflowTaskReportTableModel) getModel();
+      try {
+        model.onRefresh();
+      } catch (Exception e) {
+        MessageUtil.handleError("Cannot Reload The Report Information", e);
+      }
     }
   }
 
   static class DataflowTaskReportTableModel extends DefaultTableModel {
     static String[] COLUMNS = {"Id", "Process", "Commit", "Start Time", "Finish Time"};
 
+    String dataflowPath; 
     List<DataflowTaskReport> reports;
 
-    public DataflowTaskReportTableModel(List<DataflowTaskReport> reports) {
+    public DataflowTaskReportTableModel(String dataflowPath) throws Exception {
       super(COLUMNS, 0);
-      this.reports = reports;
-      Collections.sort(reports, DataflowTaskReport.COMPARATOR);
+      this.dataflowPath = dataflowPath;
+      onRefresh();
     }
 
     public DataflowTaskReport getDataflowTaskReportAt(int selectedRow) {
       return reports.get(selectedRow);
     }
 
+    public void onRefresh() throws Exception {
+      Registry registry = Cluster.getCurrentInstance().getRegistry();
+      reports = DataflowRegistry.getDataflowTaskReports(registry, dataflowPath);
+      Collections.sort(reports, DataflowTaskReport.COMPARATOR);
+      getDataVector().clear();
+      loadData();
+      fireTableDataChanged();
+    }
+    
     void loadData() throws Exception {
       for(DataflowTaskReport sel : reports) {
         Object[] cells = {

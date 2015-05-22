@@ -48,7 +48,6 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
 
   @Override
   public void onActivate() throws Exception {
-    System.err.println("UIDataflowWorkerView: call activate......................");
     clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if (registry == null) {
@@ -59,6 +58,8 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
       toolbar.add(new AbstractAction("Reload") {
         @Override
         public void actionPerformed(ActionEvent e) {
+          workerTable.onRefresh();
+          workerInfo.updateWorkerInfo(null);
         }
       });
       toolbar.add(new AbstractAction("All Workers") {
@@ -128,6 +129,15 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
       setHighlighters(HighlighterFactory.createSimpleStriping());
       addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
     }
+    
+    public void onRefresh()  {
+      DataflowWorkersTableModel model = (DataflowWorkersTableModel) getModel();
+      try {
+        model.onRefresh();
+      } catch (Exception e) {
+        MessageUtil.handleError("Cannot Reload The Worker Information", e);
+      }
+    }
   }
 
   public class DataflowWorkerInfoPanel extends SpringLayoutGridJPanel {
@@ -163,9 +173,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
   }
 
   static class DataflowWorkersTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {
-        "Worker ID", "Worker Status",
-    };
+    static String[] COLUMNS = { "Worker ID", "Worker Status", };
 
     private String workerAllPath;
     private String workerListPath;
@@ -179,6 +187,10 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
 
     public void setWorkerListPath(String listPath) throws Exception {
       this.workerListPath = listPath;
+      onRefresh();
+    }
+    
+    public void onRefresh() throws Exception {
       getDataVector().clear();
       loadData();
       fireTableDataChanged();

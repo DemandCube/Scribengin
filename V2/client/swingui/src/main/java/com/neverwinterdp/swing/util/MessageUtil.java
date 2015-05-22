@@ -10,8 +10,12 @@ public class MessageUtil {
   }
   
   static public void handleError(Throwable t) {
+    handleError(null, t);
+  }
+  
+  static public void handleError(String title, Throwable t) {
     String stacktrace = ExceptionUtil.getStackTrace(t) ;
     System.err.println(stacktrace);
-    JOptionPane.showMessageDialog(null, stacktrace);
+    JOptionPane.showMessageDialog(null, stacktrace, title, JOptionPane.INFORMATION_MESSAGE);
   }
 }

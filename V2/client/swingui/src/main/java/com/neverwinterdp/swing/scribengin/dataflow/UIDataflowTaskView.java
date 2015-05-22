@@ -25,12 +25,15 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.swing.UILifecycle;
+import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowWorkerView.DataflowWorkersTableModel;
 import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
 public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILifecycle {
   private String dataflowPath;
+  
   private DataflowTaskJXTable taskTable;
   private DataflowTaskInfoPanel taskInfo;
 
@@ -48,7 +51,6 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
 
   @Override
   public void onActivate() throws Exception {
-    System.err.println("UIDataflowTaskView: call activate......................");
     clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if (registry == null) {
@@ -57,14 +59,15 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       JToolBar toolbar = new JToolBar();
       toolbar.setFloatable(false);
       toolbar.add(new AbstractAction("Reload") {
-       //TODO make it work
         @Override
         public void actionPerformed(ActionEvent e) {
+          taskTable.onRefresh();
+          taskInfo.updateTaskInfo(null);
         }
       });
       addRow(toolbar);
 
-      taskTable = new DataflowTaskJXTable(DataflowRegistry.getDataflowTaskDescriptors(registry, dataflowPath));
+      taskTable = new DataflowTaskJXTable(dataflowPath);
       taskInfo = new DataflowTaskInfoPanel();
       JSplitPane splitPane =
           new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(taskTable), new JScrollPane(taskInfo));
@@ -82,9 +85,9 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   }
 
   public class DataflowTaskJXTable extends JXTable {
-    public DataflowTaskJXTable(List<DataflowTaskDescriptor> taskDescriptors) throws Exception {
+    public DataflowTaskJXTable(String dataflowPath) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      DataflowTaskTableModel model = new DataflowTaskTableModel(taskDescriptors);
+      DataflowTaskTableModel model = new DataflowTaskTableModel(dataflowPath);
       setModel(model);
       model.loadData();
 
@@ -95,13 +98,21 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
       addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           DataflowTaskTableModel model = (DataflowTaskTableModel) getModel();
-          DataflowTaskDescriptor descriptor = model.getTaskAndReportAt(getSelectedRow());
+          DataflowTaskDescriptor descriptor = model.getDataflowTaskDescriptorAt(getSelectedRow());
           taskInfo.updateTaskInfo(descriptor);
         }
       });
       setHighlighters(HighlighterFactory.createSimpleStriping());
       addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, Color.BLACK, Color.WHITE));
-
+    }
+    
+    public void onRefresh()  {
+      DataflowTaskTableModel model = (DataflowTaskTableModel) getModel();
+      try {
+        model.onRefresh();
+      } catch (Exception e) {
+        MessageUtil.handleError("Cannot Reload The Worker Information", e);
+      }
     }
   }
 
@@ -136,19 +147,29 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   static class DataflowTaskTableModel extends DefaultTableModel {
     static String[] COLUMNS = {"Id", "Status", "Scribe" };
 
-    List<DataflowTaskDescriptor> taskDescriptors;
-
-    public DataflowTaskTableModel(List<DataflowTaskDescriptor> taskDescriptors) {
+    private String dataflowPath;
+    private List<DataflowTaskDescriptor> taskDescriptors;
+    
+    public DataflowTaskTableModel(String dataflowPath) throws Exception {
       super(COLUMNS, 0);
-      this.taskDescriptors = taskDescriptors;
-      Collections.sort(taskDescriptors, DataflowTaskDescriptor.COMPARATOR);
+      this.dataflowPath = dataflowPath;
+      onRefresh() ;
     }
 
-    public DataflowTaskDescriptor getTaskAndReportAt(int selectedRow) {
+    public DataflowTaskDescriptor getDataflowTaskDescriptorAt(int selectedRow) {
       return taskDescriptors.get(selectedRow);
     }
 
+    public void onRefresh() throws Exception {
+      Registry registry = Cluster.getCurrentInstance().getRegistry();
+      taskDescriptors = DataflowRegistry.getDataflowTaskDescriptors(registry, dataflowPath);
+      getDataVector().clear();
+      loadData();
+      fireTableDataChanged();
+    }
+    
     void loadData() throws Exception {
+      Collections.sort(taskDescriptors, DataflowTaskDescriptor.COMPARATOR);
       for(DataflowTaskDescriptor sel : taskDescriptors) {
         Object[] cells = {
             sel.getTaskId(), "TODO", sel.getScribe()
