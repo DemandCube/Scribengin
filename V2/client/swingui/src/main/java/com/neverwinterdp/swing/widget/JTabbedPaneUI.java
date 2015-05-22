@@ -37,6 +37,10 @@ public class JTabbedPaneUI  extends JPanel {
   }
   
   public void addTab(String title, JComponent jpanel, boolean closable) {
+    addTab(title, jpanel, closable, true);
+  }
+  
+  public void addTab(String title, JComponent jpanel, boolean closable, boolean selected) {
     for(int i = 0; i < tabbedPane.getTabCount(); i++) {
       String checkTitle = tabbedPane.getTitleAt(i) ;
       if(title.equals(checkTitle)) {
@@ -50,8 +54,9 @@ public class JTabbedPaneUI  extends JPanel {
       ClosableTabButton ctBtn = new ClosableTabButton(tabbedPane) ;
       tabbedPane.setTabComponentAt(index, ctBtn);
     }
-    tabbedPane.setSelectedIndex(index);
+    if(selected) tabbedPane.setSelectedIndex(index);
   }
+  
   
   public void setSelectedTab(int idx) {
     tabbedPane.setSelectedIndex(idx) ;

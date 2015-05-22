@@ -17,6 +17,8 @@ public interface MultiDataGet<T> {
   
   public int  getProcessResultCount();
   
+  public void shutdown() ;
+  
   public List<T>          getResults() ;
   
   public List<DataGet<T>> getDataGetResults() ;

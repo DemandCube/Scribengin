@@ -1,20 +1,19 @@
 package com.neverwinterdp.swing.tool;
 
-import java.awt.FlowLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.scribengin.dataflow.test.DataflowTestRunner;
+import com.neverwinterdp.swing.widget.GridLayoutPanel;
 
 @SuppressWarnings("serial")
-public class UIDataflowTests extends JPanel implements UILifecycle {
+public class UIDataflowTests extends GridLayoutPanel implements UILifecycle {
   public UIDataflowTests() {
-    setLayout(new FlowLayout()) ;
   }
   
   @Override
@@ -56,10 +55,8 @@ public class UIDataflowTests extends JPanel implements UILifecycle {
       }
     };
     
-    add(new JButton(kafkaToKafkaTest));
-    add(new JButton(hdfsToHdfsTest));
-    add(new JButton(dataflowServerFailureTest));
-    add(new JButton(dataflowStartStopResumeTest));
+    addCells(kafkaToKafkaTest, hdfsToHdfsTest, dataflowServerFailureTest, dataflowStartStopResumeTest);
+    makeGrid(1);
   }
 
   @Override

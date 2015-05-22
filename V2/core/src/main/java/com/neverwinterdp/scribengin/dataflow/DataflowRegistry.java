@@ -314,14 +314,18 @@ public class DataflowRegistry {
     return registry.getDataAs(dataflowPath + "/status" , DataflowLifecycleStatus.class) ;
   }
   
-  static public List<DataflowDescriptor> getDataflowDescriptors(Registry registry) throws RegistryException {
-    Node dataflowsNode = registry.get(ScribenginService.DATAFLOWS_PATH) ;
-    return dataflowsNode.getChildrenAs(DataflowDescriptor.class) ;
+  static public List<DataflowDescriptor> getDataflowDescriptors(Registry registry, String listPath) throws RegistryException {
+    MultiDataGet<DataflowDescriptor> multiGet = registry.createMultiDataGet(DataflowDescriptor.class);
+    multiGet.getChildren(listPath);
+    multiGet.shutdown();
+    multiGet.waitForAllGet(30000);
+    return multiGet.getResults();
   }
   
   static public List<DataflowTaskDescriptor> getDataflowTaskDescriptors(Registry registry, String dataflowPath) throws RegistryException {
     MultiDataGet<DataflowTaskDescriptor> multiGet = registry.createMultiDataGet(DataflowTaskDescriptor.class);
     multiGet.getChildren(dataflowPath + "/tasks/task-list");
+    multiGet.shutdown();
     multiGet.waitForAllGet(30000);
     return multiGet.getResults();
   }
@@ -335,6 +339,7 @@ public class DataflowRegistry {
       reportPaths.add(taskListPath + "/" + selTaskId + "/report") ;
     }
     multiGet.get(reportPaths);
+    multiGet.shutdown();
     multiGet.waitForAllGet(30000);
     return multiGet.getResults();
   }

@@ -49,7 +49,7 @@ public class UIRegistryNodeView extends JPanel {
     jtabbedPane.withBottomTabPlacement();
     add(jtabbedPane, BorderLayout.CENTER);
     
-    addView("Info", new UIRegistryNodeInfo(path), false) ;
+    addView("Info", new UIRegistryNodeInfo(path), false, false) ;
     jtabbedPane.setSelectedTab(0);
   }
   
@@ -62,7 +62,11 @@ public class UIRegistryNodeView extends JPanel {
   public void setLabel(String label) { this.label = label ; }
   
   public void addView(String label, UILifecycle view, boolean removable) {
-    jtabbedPane.addTab(label, (JComponent)view, removable);
+    jtabbedPane.addTab(label, (JComponent)view, removable, false);
+  }
+  
+  public void addView(String label, UILifecycle view, boolean removable, boolean selected) {
+    jtabbedPane.addTab(label, (JComponent)view, removable, selected);
   }
   
   public void setSelectedView(int idx) {

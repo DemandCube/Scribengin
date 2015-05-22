@@ -48,6 +48,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
 
   @Override
   public void onActivate() throws Exception {
+    System.err.println("UIDataflowWorkerView: call activate......................");
     clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if (registry == null) {

@@ -2,7 +2,6 @@ package com.neverwinterdp.swing.scribengin.dataflow;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -17,10 +16,8 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 
 import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
-import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.Cluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
@@ -59,7 +56,7 @@ public class UIDataflowListView extends SpringLayoutGridJPanel implements UILife
       });
       addRow(toolbar) ;
       
-      DataflowJXTable dataflowTable = new  DataflowJXTable(DataflowRegistry.getDataflowDescriptors(registry)) ;
+      DataflowJXTable dataflowTable = new  DataflowJXTable(DataflowRegistry.getDataflowDescriptors(registry, listPath)) ;
       addRow(new JScrollPane(dataflowTable)) ;
     }
     makeCompactGrid(); 

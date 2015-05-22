@@ -21,6 +21,7 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
   private LinkedHashMap<String, DataGet<T>> results = new LinkedHashMap<String, DataGet<T>>() ;
   private int processResultCount = 0;
   private int processErrorCount = 0 ;
+  private boolean shutdown = false;
   
   public ZookeeperMultiDataGet(RegistryImpl registry, Class<T> type) {
     this.registry = registry ;
@@ -35,12 +36,13 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
   
   
   @Override
-  public void get(String path) {
+  synchronized public void get(String path) {
+    if(shutdown) throw new RuntimeException("MultiDataGet is already shutdown!") ;
     ZooKeeper zk = registry.getZkClient() ;
     String realPath = registry.realPath(path);
-    zk.getData(realPath, false, this, null);
     DataGet<T> dataGet = new DataGet<T>(path, null);
     results.put(path, dataGet);
+    zk.getData(realPath, false, this, null);
   }
 
   @Override
@@ -69,6 +71,8 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
     }
   }
   
+  public void shutdown() { shutdown = true; }
+  
   @Override
   public List<T>          getResults() {
     List<T> holder = new ArrayList<T>() ;
@@ -91,7 +95,7 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
     try {
       while(waitTime > 0) {
         wait(waitTime) ;
-        if(this.processResultCount == results.size()) return ;
+        if(processResultCount == results.size() && shutdown) return ;
         currentTime = System.currentTimeMillis();
         waitTime = stopTime - currentTime;
       }
@@ -101,7 +105,7 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
   }
   
   @Override
-  public void processResult(int rc, String realPath, Object ctx, byte[] data, Stat stat) {
+  synchronized public void processResult(int rc, String realPath, Object ctx, byte[] data, Stat stat) {
     processResultCount++ ;
     String path = registry.path(realPath);
     DataGet<T> dataGet = results.get(path);
@@ -111,8 +115,6 @@ public class ZookeeperMultiDataGet<T> implements MultiDataGet<T>, AsyncCallback.
       processErrorCount++ ;
       dataGet.setErrorCode(ErrorCode.Unknown);
     }
-    synchronized(this) {
-      notifyAll();
-    }
+    notifyAll();
   }
 }

@@ -48,6 +48,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
 
   @Override
   public void onActivate() throws Exception {
+    System.err.println("UIDataflowTaskView: call activate......................");
     clear();
     Registry registry = Cluster.getCurrentInstance().getRegistry();
     if (registry == null) {
@@ -81,9 +82,9 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   }
 
   public class DataflowTaskJXTable extends JXTable {
-    public DataflowTaskJXTable(List<DataflowTaskDescriptor> tasksAndReports) throws Exception {
+    public DataflowTaskJXTable(List<DataflowTaskDescriptor> taskDescriptors) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      DataflowTaskTableModel model = new DataflowTaskTableModel(tasksAndReports);
+      DataflowTaskTableModel model = new DataflowTaskTableModel(taskDescriptors);
       setModel(model);
       model.loadData();
 
