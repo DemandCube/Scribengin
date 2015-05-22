@@ -13,7 +13,6 @@ import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.tool.EmbeddedClusterConfig.KafkaConfig;
 import com.neverwinterdp.swing.tool.EmbeddedClusterConfig.ZookeeperConfig;
 import com.neverwinterdp.swing.widget.BeanBindingJTextField;
-import com.neverwinterdp.swing.widget.GridLayoutPanel;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")

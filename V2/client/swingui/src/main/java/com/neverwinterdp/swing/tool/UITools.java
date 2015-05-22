@@ -7,7 +7,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.registry.UINotificationTree;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.JAccordionPanel;
 
@@ -48,7 +47,7 @@ public class UITools extends JPanel implements UILifecycle {
       UIEmbeddedCluster embeddedCluster = new UIEmbeddedCluster();
       addBar("Embedded Cluster", embeddedCluster);
       addBar("Cluster Connection",  new UIClusterConnection());
-      addBar("Tests",            new UIDataflowTests());
+      addBar("Dataflow Tests",      new UIDataflowTests());
       embeddedCluster.onActivate();
     }
     

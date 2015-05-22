@@ -33,32 +33,6 @@ abstract public class Cluster {
   
   abstract public Registry getRegistry() ;
 
-  
-  public void runKafkaToKafkaDataflow() throws Exception {
-    ScribenginShell shell = getScribenginShell() ;
-    String command =
-        "dataflow-test " + KafkaDataflowTest.TEST_NAME +
-        " --dataflow-id    kafka-to-kafka-1" +
-        " --dataflow-name  kafka-to-kafka" +
-        " --worker 3" +
-        " --executor-per-worker 1" +
-        " --duration 90000" +
-        " --task-max-execute-time 1000" +
-        " --source-name input" +
-        " --source-num-of-stream 10" +
-        " --source-write-period 0" +
-        " --source-max-records-per-stream 10000" +
-        " --sink-name output " +
-        " --print-dataflow-info -1" +
-        " --debug-dataflow-task " +
-        " --debug-dataflow-vm " +
-        " --debug-dataflow-activity " +
-        " --junit-report build/junit-report.xml" + 
-        " --dump-registry" + 
-        " --vm-client-wait-for-result-timeout 60000";
-    shell.execute(command);
-  }
-  
   static public Cluster getCurrentInstance() { return CURRENT_INSTANCE;  }
   
   static public void setCurrentInstance(Cluster instance) { 

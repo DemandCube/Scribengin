@@ -28,30 +28,38 @@ public class UIDataflowTests extends JPanel implements UILifecycle {
   @Override
   public void onActivate() throws Exception {
     removeAll();
-    Action kafkaToKafkaTest = new AbstractAction("Kafka To Kafka Dataflow Test") {
+    Action kafkaToKafkaTest = new AbstractAction("Dataflow Kafka To Kafka Test") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        new DataflowTestRunner.KafkaToKakaDataflowTestRunner().start();
+        new DataflowTestRunner.DataflowKafkaToKakaTestRunner().start();
       }
     };
     
-    Action hdfsToHdfsTest = new AbstractAction("Hdfs To Hdfs Dataflow Test") {
+    Action hdfsToHdfsTest = new AbstractAction("Dataflow Hdfs To Hdfs Test") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        new DataflowTestRunner.HDFSToHDFSDataflowTestRunner().start();
+        new DataflowTestRunner.DataflowHDFSToHDFSTestRunner().start();
       }
     };
     
-    Action dataflowServerFailureTest = new AbstractAction("Server Failure Dataflow Test") {
+    Action dataflowServerFailureTest = new AbstractAction("Dataflow Worker Failure Test") {
       @Override
       public void actionPerformed(ActionEvent e) {
-        new DataflowTestRunner.ServerFailureDataflowTestRunner().start();
+        new DataflowTestRunner.DataflowWorkerFailureTestRunner().start();
+      }
+    };
+    
+    Action dataflowStartStopResumeTest = new AbstractAction("Dataflow Start/Stop/Resume Test") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        new DataflowTestRunner.DataflowStartStopResumtTestRunner().start();
       }
     };
     
     add(new JButton(kafkaToKafkaTest));
     add(new JButton(hdfsToHdfsTest));
     add(new JButton(dataflowServerFailureTest));
+    add(new JButton(dataflowStartStopResumeTest));
   }
 
   @Override
