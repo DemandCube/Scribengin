@@ -1,0 +1,17 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'module.kafka'
+
+eclipse {
+  project {
+    name = 'module.kafka'
+  }
+}
+
+dependencies {
+  compile project(':commons')
+  compile project(':registry/core')
+
+  compile group: 'com.google.guava', name: 'guava', version: '18.0'
+  testCompile "org.apache.kafka:kafka_2.10:0.8.2.0:test"
+}

@@ -16,7 +16,7 @@ test {
 }
 
 dependencies {
-  compile project(':core')
+  compile project(':scribengin/core')
 
   compile group: 'org.swinglabs.swingx', name: 'swingx-all', version: '1.6.5'
   compile group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9'

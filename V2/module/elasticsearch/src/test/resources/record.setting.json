@@ -1,0 +1,9 @@
+{
+  "analysis": {
+    "analyzer": {
+      "standard": {
+        "type": "standard"
+      }
+    }
+  }
+}

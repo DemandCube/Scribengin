@@ -18,13 +18,13 @@ configurations {
 }
 
 dependencies {
-  compile project(':registry')
+  compile project(':lib/utils')
+  compile project(':registry/core')
   compile project(':jvmagent/bootstrap')
 
 
-  deployJars project(':registry')
+  deployJars project(':registry/core')
   deployJars project(':jvmagent/bootstrap')
-  deployJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
   deployJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
 
   deployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'

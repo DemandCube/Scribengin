@@ -43,20 +43,21 @@ configurations.all {
 }
 
 dependencies {
-  compile project(':core')
-  compile project(':dataflow/hdfs')
+  compile project(':scribengin/core')
+  compile project(':scribengin/dataflow/hdfs')
 
   compile group: 'junit', name: 'junit', version: '4.11'
 
   /*************************Scribengin runtime deploy jars***************************/
+  scribenginDeployJars project(':lib/utils')
   scribenginDeployJars project(':commons')
-  scribenginDeployJars project(':kafka')
-  scribenginDeployJars project(':vm')
-  scribenginDeployJars project(':registry')
-  scribenginDeployJars project(':core')
+  scribenginDeployJars project(':module/kafka')
+  scribenginDeployJars project(':registry/core')
+  scribenginDeployJars project(':registry/vm')
+  scribenginDeployJars project(':scribengin/core')
+
   scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
   scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
-  scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.utils', version: '1.0-SNAPSHOT'
   scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.yara.core', version: '1.0-SNAPSHOT'
 
 
@@ -116,13 +117,13 @@ dependencies {
 
 
   /*************************jvmagent runtime deploy jars***************************/
-  compile project(':registry')
+  scribenginDeployJars project(':lib/utils')
+  compile project(':registry/core')
   compile project(':jvmagent/bootstrap')
-  jvmagentDeployJars project(':registry')
+  jvmagentDeployJars project(':registry/vm')
   jvmagentDeployJars project(':jvmagent/bootstrap')
   jvmagentDeployJars project(':jvmagent/registry')
    
-  jvmagentDeployJars group: 'com.neverwinterdp',    name: 'commons.utils', version: '1.0-SNAPSHOT'
   jvmagentDeployJars group: 'org.apache.zookeeper', name: 'zookeeper', version: '3.4.6'
 
   jvmagentDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'

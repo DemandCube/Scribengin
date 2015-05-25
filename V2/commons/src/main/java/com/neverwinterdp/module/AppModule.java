@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 public class AppModule extends AbstractModule {
@@ -63,6 +64,10 @@ public class AppModule extends AbstractModule {
   
   public <T> void bindInstance(Class<T> type, T instance) {
     bind(type).toInstance(instance);
+  }
+  
+  public void bindMapProperties(String name, Map<String, String> props) {
+    bind(new TypeLiteral<Map<String,String>>(){}).annotatedWith(Names.named(name)).toInstance(props) ;
   }
   
   void bindProperties() {

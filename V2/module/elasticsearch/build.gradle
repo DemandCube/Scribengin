@@ -1,0 +1,16 @@
+archivesBaseName = 'module.elasticsearch'
+
+eclipse {
+  project {
+    name = 'module.elasticsearch'
+  }
+}
+
+dependencies {
+  compile project(':commons')
+  compile project(':registry/core')
+  compile group: 'com.neverwinterdp', name: 'commons.buffer', version: '1.0-SNAPSHOT'
+  compile group: 'com.neverwinterdp', name: 'commons.cluster', version: '1.0-SNAPSHOT'
+  compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.2.2'
+}
+

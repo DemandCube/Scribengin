@@ -1,0 +1,17 @@
+{
+  "Record": {
+    "properties" : {
+      "createdBy" : { "type" : "string", "index" : "analyzed", "analyzer" : "standard" },
+
+      "content" : {
+        "type" : "multi_field",
+        "fields" : {
+          "content" :   {"type" : "string", "index" : "analyzed", "analyzer": "standard" },
+          "custom_content" : {"type" : "string", "index" : "analyzed", "analyzer": "standard" }
+        }
+      },
+
+      "location"  : { "type" : "geo_point" }
+    }
+  }
+}
