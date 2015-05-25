@@ -1,4 +1,6 @@
 include 'lib/utils'
+include 'lib/yara'
+include 'lib/buffer'
 
 include 'commons'
 

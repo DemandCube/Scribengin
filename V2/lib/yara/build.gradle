@@ -1,0 +1,18 @@
+apply plugin: 'maven-publish'
+
+archivesBaseName = 'lib.yara'
+
+eclipse {
+  project {
+    name = 'lib.yara'
+  }
+}
+
+dependencies {
+  compile project(':lib/utils')
+
+
+  testCompile group: 'com.clearspring.analytics', name: 'stream', version: '2.7.0'
+  testCompile group: 'com.codahale.metrics', name: 'metrics-core', version: '3.0.2'
+  testCompile group: 'com.codahale.metrics', name: 'metrics-json', version: '3.0.2'
+}
