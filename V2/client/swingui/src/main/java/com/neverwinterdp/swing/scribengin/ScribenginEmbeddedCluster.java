@@ -6,7 +6,7 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class ScribenginEmbeddedCluster extends ScribnginCluster {
+public class ScribenginEmbeddedCluster extends ScribenginCluster {
   private ScribenginClusterBuilder clusterBuilder;
   private ScribenginEmbeddedClusterConfig    config;
   private ScribenginShell          shell;

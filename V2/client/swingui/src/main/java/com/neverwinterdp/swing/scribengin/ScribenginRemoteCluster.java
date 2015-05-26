@@ -6,7 +6,7 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class ScribenginRemoteCluster extends ScribnginCluster {
+public class ScribenginRemoteCluster extends ScribenginCluster {
   static public ScribenginRemoteCluster INSTANCE = new ScribenginRemoteCluster() ;
 
   private ScribenginShell shell;

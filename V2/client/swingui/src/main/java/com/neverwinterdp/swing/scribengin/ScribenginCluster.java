@@ -5,8 +5,8 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
 import com.neverwinterdp.vm.client.VMClient;
 
-abstract public class ScribnginCluster {
-  static private ScribnginCluster CURRENT_INSTANCE ;
+abstract public class ScribenginCluster {
+  static private ScribenginCluster CURRENT_INSTANCE ;
   
   public void start() throws Exception {
   }
@@ -33,9 +33,9 @@ abstract public class ScribnginCluster {
   
   abstract public Registry getRegistry() ;
 
-  static public ScribnginCluster getCurrentInstance() { return CURRENT_INSTANCE;  }
+  static public ScribenginCluster getCurrentInstance() { return CURRENT_INSTANCE;  }
   
-  static public void setCurrentInstance(ScribnginCluster instance) { 
+  static public void setCurrentInstance(ScribenginCluster instance) { 
     CURRENT_INSTANCE = instance ; 
   }
 }

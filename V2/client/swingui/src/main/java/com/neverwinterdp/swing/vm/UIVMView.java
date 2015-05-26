@@ -15,7 +15,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.JSONSerializer;
@@ -41,7 +41,7 @@ public class UIVMView extends SpringLayoutGridJPanel implements UILifecycle {
   @Override
   public void onActivate() throws Exception {
     removeAll();
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       addRow("No Registry Connection");
     } else {

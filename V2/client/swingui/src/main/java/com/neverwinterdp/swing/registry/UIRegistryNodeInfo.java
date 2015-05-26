@@ -13,7 +13,7 @@ import com.neverwinterdp.registry.NodeInfo;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.util.text.DateUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.JSONSerializer;
@@ -39,7 +39,7 @@ public class UIRegistryNodeInfo extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       addRow("No Registry Connection");
     } else {

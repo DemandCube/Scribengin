@@ -86,7 +86,7 @@ public class UIScribenginCluster extends SpringLayoutGridJPanel  implements UILi
     public void run() {
       try {
         ScribenginEmbeddedCluster cluster = new ScribenginEmbeddedCluster(scribenginEmbeddedClusterConfig);
-        ScribnginCluster.setCurrentInstance(cluster);
+        ScribenginCluster.setCurrentInstance(cluster);
         cluster.startDependencySevers();
         cluster.startVMMaster();
         cluster.startScribenginMaster();
@@ -158,7 +158,7 @@ public class UIScribenginCluster extends SpringLayoutGridJPanel  implements UILi
         System.out.println("Connecting to the remote zookeeper " + registryConfig.getConnect());
         ScribenginRemoteCluster cluster = new ScribenginRemoteCluster() ;
         cluster.connect(registryConfig);
-        ScribnginCluster.setCurrentInstance(cluster);
+        ScribenginCluster.setCurrentInstance(cluster);
         System.out.println("Connected to the remote zookeeper " + registryConfig.getConnect());
       } catch (Exception error) {
         MessageUtil.handleError(error);
@@ -167,7 +167,7 @@ public class UIScribenginCluster extends SpringLayoutGridJPanel  implements UILi
     
     private void onDisconnect() {
       try {
-        ScribenginRemoteCluster cluster = (ScribenginRemoteCluster)ScribnginCluster.getCurrentInstance();
+        ScribenginRemoteCluster cluster = (ScribenginRemoteCluster)ScribenginCluster.getCurrentInstance();
         cluster.disconnect();
       } catch (Throwable error) {
         MessageUtil.handleError(error);

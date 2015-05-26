@@ -24,7 +24,7 @@ import com.neverwinterdp.registry.Node;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
@@ -49,7 +49,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if (registry == null) {
       addRow("No Registry Connection");
     } else {
@@ -152,7 +152,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
       if (selectedWorkerInfo == null) {
         addRow("Select one of the workers above to view its details. ");
       } else {
-        Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+        Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
         addRow(indent,"Worker id: ", selectedWorkerInfo.getWorkerId());
         addRow(indent,"Worker path: ", selectedWorkerInfo.getDataflowWorkerPath());
         addRow(indent,"Status:", selectedWorkerInfo.getStatus());
@@ -212,7 +212,7 @@ public class UIDataflowWorkerView extends SpringLayoutGridJPanel implements UILi
     }
 
     List<DataflowWorkerInfo> loadWorkerInfos() throws Exception {
-      Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+      Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
       List<DataflowWorkerInfo> workerInfos = new ArrayList<>();
       for (String workerId : registry.getChildren(workerListPath)) {
         String status = new String(registry.getData(workerAllPath + "/" + workerId + "/status"));

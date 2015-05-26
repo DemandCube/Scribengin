@@ -19,7 +19,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
@@ -43,7 +43,7 @@ public class UIDataflowListView extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       addRow("No Registry Connection");
     } else {

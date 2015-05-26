@@ -20,7 +20,7 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.scribengin.ScribenginEmbeddedCluster;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.util.text.StringUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
@@ -34,7 +34,7 @@ public class UIVMListView extends SpringLayoutGridJPanel implements UILifecycle 
   
   public UIVMListView(String path) {
     this.path = path ;
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       initNoConnection() ;
     } else {
@@ -94,7 +94,7 @@ public class UIVMListView extends SpringLayoutGridJPanel implements UILifecycle 
     }
     
     void loadData() throws Exception {
-      VMClient vmClient = ScribnginCluster.getCurrentInstance().getVMClient() ;
+      VMClient vmClient = ScribenginCluster.getCurrentInstance().getVMClient() ;
       
       List<VMDescriptor> vmDescriptors = null ;
       if(path.endsWith("active")) vmDescriptors = vmClient.getActiveVMDescriptors();

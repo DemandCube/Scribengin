@@ -1,14 +1,11 @@
 package com.neverwinterdp.swing.scribengin.dataflow;
 
 import com.neverwinterdp.scribengin.service.ScribenginService;
-import com.neverwinterdp.swing.registry.UIActivityListView;
-import com.neverwinterdp.swing.registry.UIActivityQueueView;
 import com.neverwinterdp.swing.registry.UIActivityStepsView;
 import com.neverwinterdp.swing.registry.UIActivityView;
 import com.neverwinterdp.swing.registry.UINotificationView;
 import com.neverwinterdp.swing.registry.UIRegistryNodeView;
 import com.neverwinterdp.swing.registry.UIRegistryTree;
-import com.neverwinterdp.swing.registry.UIRegistryTree.RegistryTreeNodePathMatcher;
 
 @SuppressWarnings("serial")
 public class UIDataflowTree extends UIRegistryTree {
@@ -60,27 +57,25 @@ public class UIDataflowTree extends UIRegistryTree {
     } else if(dataflowNodeMatcher.matches(node)) {
       String dataflowRootPath = ScribenginService.DATAFLOWS_ALL_PATH+"/"+node.getNodeName();
       view.addView("Descriptor", new UIDataflowDescriptorView(dataflowRootPath), false) ;
-      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath), false) ;
-      view.addView("Task Report", new UIDataflowTaskReportView(dataflowRootPath), false) ;
+      view.addView("Tasks", new UIDataflowTaskView(dataflowRootPath + "/tasks"), false) ;
       view.addView("Workers", new UIDataflowWorkerView(dataflowRootPath + "/workers"), false) ;
       
     } else if(activityNodeMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
-      view.addView("Activity", new UIActivityView(activitiesRootPath, node.getNodeName()), false) ;
       view.addView("Activity Steps", new UIActivityStepsView(activitiesRootPath, node.getNodeName()), false) ;
     } else if(activityListMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
       System.out.println("on custom list activities node: " + activitiesRootPath);
-      view.addView("Activities", new UIActivityListView(activitiesRootPath, node.getNodePath()), false) ;
+      view.addView("Activities", new UIActivityView(activitiesRootPath), false) ;
     } else if(activityQueueMatcher.matches(node)) {
       String activitiesRootPath = getActivitiesRootPath(node.getNodePath());
-      view.addView("Queue Activities", new UIActivityQueueView(activitiesRootPath, node.getNodePath()), false) ;
+      view.addView("Queue Activities", new UIActivityView(activitiesRootPath), false) ;
     } else  if(notificationNodeMatcher.matches(node)) {
       view.addView("Notifications", new UINotificationView(node.getNodePath()), false) ;
     }
     view.setSelectedView(0);
   }
-  
+
   public RegistryTreeNode onCustomTreeNode(RegistryTreeNode node) {
     if(ignoreNodeMatcher.matches(node)) {
       return null ;
@@ -89,7 +84,7 @@ public class UIDataflowTree extends UIRegistryTree {
     }
     return node ;
   }
-  
+
   private String getActivitiesRootPath(String path) {
     int idx = path.lastIndexOf("/activities") ;
     return path.substring(0, idx + "/activities".length());

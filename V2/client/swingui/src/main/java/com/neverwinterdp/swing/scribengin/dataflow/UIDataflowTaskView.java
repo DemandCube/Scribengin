@@ -25,7 +25,7 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.scribengin.ScribnginCluster;
+import com.neverwinterdp.swing.scribengin.ScribenginCluster;
 import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowWorkerView.DataflowWorkersTableModel;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
@@ -52,7 +52,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
     if (registry == null) {
       addRow("No Registry Connection");
     } else {
@@ -161,7 +161,7 @@ public class UIDataflowTaskView extends SpringLayoutGridJPanel implements UILife
     }
 
     public void onRefresh() throws Exception {
-      Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
+      Registry registry = ScribenginCluster.getCurrentInstance().getRegistry();
       taskDescriptors = DataflowRegistry.getDataflowTaskDescriptors(registry, dataflowPath);
       getDataVector().clear();
       loadData();
