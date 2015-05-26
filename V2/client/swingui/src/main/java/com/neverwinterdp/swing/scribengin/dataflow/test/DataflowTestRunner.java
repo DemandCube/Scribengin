@@ -11,7 +11,7 @@ import com.neverwinterdp.scribengin.dataflow.test.DataflowCommandStartStopResume
 import com.neverwinterdp.scribengin.dataflow.test.DataflowRandomServerFailureTest;
 import com.neverwinterdp.scribengin.dataflow.test.HDFSDataflowTest;
 import com.neverwinterdp.scribengin.dataflow.test.KafkaDataflowTest;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 
 public class DataflowTestRunner extends Thread {
   private String label;
@@ -67,7 +67,7 @@ public class DataflowTestRunner extends Thread {
 
     public DataflowKafkaToKakaTestRunner() {
       super("Kafka To Kafka Dataflow Test", "Kafka To Kafka Dataflow Test");
-      ScribenginShell shell = Cluster.getCurrentInstance().getScribenginShell() ;
+      ScribenginShell shell = ScribnginCluster.getCurrentInstance().getScribenginShell() ;
       String command =
           "dataflow-test " + KafkaDataflowTest.TEST_NAME +
           " --dataflow-id    kafka-to-kafka-1" +
@@ -96,7 +96,7 @@ public class DataflowTestRunner extends Thread {
 
     public DataflowHDFSToHDFSTestRunner() {
       super("HDFS To HDFS Dataflow Test", "HDFS To HDFS Dataflow Test");
-      ScribenginShell shell = Cluster.getCurrentInstance().getScribenginShell();
+      ScribenginShell shell = ScribnginCluster.getCurrentInstance().getScribenginShell();
       String command =
           "dataflow-test " + HDFSDataflowTest.TEST_NAME +
           " --dataflow-name  hdfs-to-hdfs" +
@@ -125,7 +125,7 @@ public class DataflowTestRunner extends Thread {
 
     public DataflowWorkerFailureTestRunner() {
       super("Server failure Dataflow Test", "Server failure Dataflow Test");
-      ScribenginShell shell = Cluster.getCurrentInstance().getScribenginShell();
+      ScribenginShell shell = ScribnginCluster.getCurrentInstance().getScribenginShell();
       String dataflowWorkerFailureSimulationCommand = 
           "dataflow-test " + DataflowRandomServerFailureTest.TEST_NAME + 
           "  --dataflow-id dataflow-kafka-to-kafka-worker-failure-test " + 
@@ -159,7 +159,7 @@ public class DataflowTestRunner extends Thread {
     public DataflowStartStopResumtTestRunner() {
       super("Dataflow Start/Stop/Resumt Test", "Dataflow Start/Stop/Resumt Test");
 
-      ScribenginShell shell = Cluster.getCurrentInstance().getScribenginShell();
+      ScribenginShell shell = ScribnginCluster.getCurrentInstance().getScribenginShell();
 
       String dataflowStartStopResumeCommand = 
           "dataflow-test " + DataflowCommandStartStopResumeTest.TEST_NAME +

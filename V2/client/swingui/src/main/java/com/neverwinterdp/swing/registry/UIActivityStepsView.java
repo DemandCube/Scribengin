@@ -14,7 +14,7 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.activity.ActivityStep;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 //TODO: add a toolbar on top with the table view and detail view button. The detail view button is the current view 
@@ -42,7 +42,7 @@ public class UIActivityStepsView extends JPanel implements UILifecycle {
   @Override
   public void onActivate() throws Exception {
     removeAll() ;
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
     }

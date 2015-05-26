@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.tool;
+package com.neverwinterdp.swing;
 
 import java.awt.BorderLayout;
 
@@ -6,15 +6,17 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import com.neverwinterdp.swing.UILifecycle;
+import com.neverwinterdp.swing.es.UIESCluster;
+import com.neverwinterdp.swing.scribengin.UIScribenginCluster;
+import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowTests;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.JAccordionPanel;
 
 @SuppressWarnings("serial")
-public class UITools extends JPanel implements UILifecycle {
+public class UIClusters extends JPanel implements UILifecycle {
   private ToolsJAccordionPanel accordionPanel ;
  
-  public UITools() {
+  public UIClusters() {
     setLayout(new BorderLayout()) ;
     setOpaque(false);
     setBorder(new EmptyBorder(0, 0, 5, 0) );
@@ -44,11 +46,11 @@ public class UITools extends JPanel implements UILifecycle {
     private UILifecycle currentSelectPanel = null ;
 
     public ToolsJAccordionPanel() {
-      UIEmbeddedCluster embeddedCluster = new UIEmbeddedCluster();
-      addBar("Embedded Cluster", embeddedCluster);
-      addBar("Cluster Connection",  new UIClusterConnection());
-      addBar("Dataflow Tests",      new UIDataflowTests());
-      embeddedCluster.onActivate();
+      UIESCluster esCluster = new UIESCluster();
+      addBar("ElasticSearch Cluster", esCluster);
+      addBar("Scribengin Cluster", new UIScribenginCluster());
+      addBar("Dataflow Tests",  new UIDataflowTests());
+      onSelectBarInfo(esCluster);
     }
     
     @Override

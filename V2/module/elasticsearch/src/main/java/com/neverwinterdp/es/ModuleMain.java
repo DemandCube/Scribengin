@@ -3,9 +3,7 @@ package com.neverwinterdp.es;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -18,14 +16,6 @@ import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.util.LoggerFactory;
 
 public class ModuleMain {
-  static public class Configuration {
-    @ParametersDelegate
-    private RegistryConfig      registryConfig = RegistryConfig.getDefault();
-
-    @DynamicParameter(names = "--es", description = "Elasticsearch properties configuration")
-    private Map<String, String> esProperties   = new HashMap<>() ;
-  }
-  
   static public void main(String[] args) throws Exception {
     if(args == null || args.length == 0) {
       args = new String[] {

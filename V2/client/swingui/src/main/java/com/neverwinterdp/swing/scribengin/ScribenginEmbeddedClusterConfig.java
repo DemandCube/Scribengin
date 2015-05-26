@@ -1,6 +1,6 @@
-package com.neverwinterdp.swing.tool;
+package com.neverwinterdp.swing.scribengin;
 
-public class EmbeddedClusterConfig {
+public class ScribenginEmbeddedClusterConfig {
   private ZookeeperConfig zookeeperConfig = new ZookeeperConfig();
   private KafkaConfig     kafkaConfig = new KafkaConfig();
   

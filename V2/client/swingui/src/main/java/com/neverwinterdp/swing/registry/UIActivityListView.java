@@ -20,7 +20,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 //TODO: Rename to UIActivityView. Merge this view and step view into one.  We should have a table that list all the activity
@@ -52,7 +52,7 @@ public class UIActivityListView extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       addRow("No Registry Connection");
     } else {

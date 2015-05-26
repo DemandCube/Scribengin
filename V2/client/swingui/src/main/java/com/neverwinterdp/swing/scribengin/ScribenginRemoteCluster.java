@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.tool;
+package com.neverwinterdp.swing.scribengin;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
@@ -6,8 +6,8 @@ import com.neverwinterdp.registry.zk.RegistryImpl;
 import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class RemoteCluster extends Cluster {
-  static public RemoteCluster INSTANCE = new RemoteCluster() ;
+public class ScribenginRemoteCluster extends ScribnginCluster {
+  static public ScribenginRemoteCluster INSTANCE = new ScribenginRemoteCluster() ;
 
   private ScribenginShell shell;
   

@@ -11,7 +11,6 @@ import javax.swing.event.ChangeListener;
 import com.neverwinterdp.swing.registry.UIRegistryTree;
 import com.neverwinterdp.swing.scribengin.UIScribengin;
 import com.neverwinterdp.swing.server.UIServers;
-import com.neverwinterdp.swing.tool.UITools;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.vm.UIVM;
 import com.neverwinterdp.swing.widget.JTabbedPaneUI;
@@ -25,7 +24,7 @@ public class UIControl extends JPanel {
     setLayout(new BorderLayout());
     
     tabbedPaneUI = new JTabbedPaneUI() ;
-    tabbedPaneUI.addTab("Tools", new UITools(), false);
+    tabbedPaneUI.addTab("Clusters", new UIClusters(), false);
     tabbedPaneUI.addTab("Registry", new UIRegistryTree("/", "/"), false);
     tabbedPaneUI.addTab("VM", new UIVM(), false);
     tabbedPaneUI.addTab("Scribengin", new UIScribengin(), false);

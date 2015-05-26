@@ -20,7 +20,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.UIMain;
 import com.neverwinterdp.swing.UIWorkspace;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.util.SwingUtil;
 import com.neverwinterdp.swing.widget.LazyLoadJTree;
 import com.neverwinterdp.swing.widget.LazyLoadJTree.LazyLoadTreeNode;
@@ -112,7 +112,7 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
     public String getNodeName() { return this.nodeName ; }
     
     protected void loadChildren(final DefaultTreeModel model, final PropertyChangeListener progressListener) {
-      final Registry registry = Cluster.getCurrentInstance().getRegistry();
+      final Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
       if(registry == null || !registry.isConnect()) {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;

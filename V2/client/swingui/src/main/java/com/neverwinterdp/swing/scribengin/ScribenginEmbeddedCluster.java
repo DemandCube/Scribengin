@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.tool;
+package com.neverwinterdp.swing.scribengin;
 
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.builder.ScribenginClusterBuilder;
@@ -6,20 +6,20 @@ import com.neverwinterdp.scribengin.client.shell.ScribenginShell;
 import com.neverwinterdp.scribengin.tool.EmbededVMClusterBuilder;
 import com.neverwinterdp.vm.client.VMClient;
 
-public class EmbeddedCluster extends Cluster {
+public class ScribenginEmbeddedCluster extends ScribnginCluster {
   private ScribenginClusterBuilder clusterBuilder;
-  private EmbeddedClusterConfig    config;
+  private ScribenginEmbeddedClusterConfig    config;
   private ScribenginShell          shell;
 
-  public EmbeddedCluster(EmbeddedClusterConfig config) {
+  public ScribenginEmbeddedCluster(ScribenginEmbeddedClusterConfig config) {
     this.config = config ;
   }
   
-  public EmbeddedClusterConfig getClusterConfig() { return this.config ; }
+  public ScribenginEmbeddedClusterConfig getClusterConfig() { return this.config ; }
   
   public ScribenginClusterBuilder getClusterBuilder() { return clusterBuilder; }
 
-  public EmbeddedClusterConfig getConfig() { return config; }
+  public ScribenginEmbeddedClusterConfig getConfig() { return config; }
 
   @Override
   public VMClient getVMClient() {

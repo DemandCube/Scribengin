@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.activity.Activity;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
@@ -33,7 +33,7 @@ public class UIActivityView extends JPanel implements UILifecycle {
   @Override
   public void onActivate() throws Exception {
     removeAll() ;
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
     }

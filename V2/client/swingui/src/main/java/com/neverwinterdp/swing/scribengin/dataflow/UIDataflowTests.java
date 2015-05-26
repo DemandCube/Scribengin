@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.tool;
+package com.neverwinterdp.swing.scribengin.dataflow;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

@@ -16,6 +16,7 @@ test {
 }
 
 dependencies {
+  compile project(':module/elasticsearch')
   compile project(':scribengin/core')
 
   compile group: 'org.swinglabs.swingx', name: 'swingx-all', version: '1.6.5'

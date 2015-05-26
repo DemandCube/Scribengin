@@ -1,6 +1,7 @@
 package com.neverwinterdp.tool.server;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.neverwinterdp.util.FileUtil;
@@ -12,7 +13,7 @@ abstract public class ServerSet<T extends Server> {
   private int    idTracker = 0;
   private int    numOfServers ;
   private Map<String, String> serverProperties = new HashMap<>() ;
-  private Map<String, T> servers = new HashMap<>() ;
+  private Map<String, T>      servers = new LinkedHashMap<>() ;
   
   public ServerSet(String serverType, String baseDir, int basePort, int numOfServers, Map<String, String> serverProperties) {
     this.serverType = serverType;
@@ -47,7 +48,7 @@ abstract public class ServerSet<T extends Server> {
   
   synchronized public T addNewServer() {
     int id = ++idTracker;
-    String serverName = serverType + id ;
+    String serverName = serverType + "-" + id ;
     String serverDir  = baseDir + "/" + serverName;
     T server = newServer(id, serverName, serverDir, basePort + (id - 1), serverProperties) ;
     servers.put(serverName, server);

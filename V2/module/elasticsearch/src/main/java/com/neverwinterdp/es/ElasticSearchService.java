@@ -35,9 +35,10 @@ public class ElasticSearchService {
   public void init(LoggerFactory factory) {
     logger = factory.getLogger(getClass()) ;
   }
+
+  public Logger getLogger() { return this.logger; }
   
   public void start() throws Exception {
-    
     Map<String, String> properties = new HashMap<String, String>() ;
     properties.put("cluster.name", "neverwinterdp");
     properties.put("path.data",    "./build/elasticsearch");

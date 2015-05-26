@@ -39,13 +39,21 @@ public class ESObjectClientUnitTest {
   
   @Before
   public void setup() throws Exception {
-    FileUtil.removeIfExist("build/data", false);
+    FileUtil.removeIfExist("build/elasticsearch", false);
     NodeBuilder nb = nodeBuilder();
-    nb.getSettings().put("cluster.name", "neverwinterdp");
-    nb.getSettings().put("path.data", "build/data");
+    nb.getSettings().put("cluster.name",       "neverwinterdp");
+    nb.getSettings().put("path.data",          "build/elasticsearch/data");
+    nb.getSettings().put("node.name",          "elasticsearch-1");
+    nb.getSettings().put("transport.tcp.port", "9300");
+
     node = nb.node();
     esclient = new ESClient(new String[] { "127.0.0.1:9300" });
     esObjecclient = new ESObjectClient<Map<String, Object>>(esclient, "index", Record.class) ;
+    System.out.println("Node Name: " + node.settings().get("node.name"));
+    System.out.println("Port     : " + node.settings().get("transport.tcp.port"));
+    
+    System.out.println("Client Node Name: " + node.client().admin().cluster());
+    System.out.println("Client Port     : " + node.settings().get("transport.tcp.port"));
   }
   
   @After

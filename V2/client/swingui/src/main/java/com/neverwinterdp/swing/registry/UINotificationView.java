@@ -23,7 +23,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.notification.NotificationEvent;
 import com.neverwinterdp.registry.notification.Notifier;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.widget.Fonts;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.text.DateUtil;
@@ -49,7 +49,7 @@ public class UINotificationView extends SpringLayoutGridJPanel implements UILife
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
     if(registry == null) {
       addRow("No Registry Connection");
     } else {
@@ -138,7 +138,7 @@ public class UINotificationView extends SpringLayoutGridJPanel implements UILife
     }
     
     List<NotificationEvent> loadNotificationEvents() throws Exception{
-      Registry registry = Cluster.getCurrentInstance().getRegistry();
+      Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
       return Notifier.getNotificationEvents(registry, notificationPath);
     }
   }

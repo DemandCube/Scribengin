@@ -22,7 +22,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskReport;
 import com.neverwinterdp.swing.UILifecycle;
-import com.neverwinterdp.swing.tool.Cluster;
+import com.neverwinterdp.swing.scribengin.ScribnginCluster;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 import com.neverwinterdp.util.text.DateUtil;
@@ -47,7 +47,7 @@ public class UIDataflowTaskReportView extends SpringLayoutGridJPanel implements 
   @Override
   public void onActivate() throws Exception {
     clear();
-    Registry registry = Cluster.getCurrentInstance().getRegistry();
+    Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
     if (registry == null) {
       addRow("No Registry Connection");
     } else {
@@ -119,7 +119,7 @@ public class UIDataflowTaskReportView extends SpringLayoutGridJPanel implements 
     }
 
     public void onRefresh() throws Exception {
-      Registry registry = Cluster.getCurrentInstance().getRegistry();
+      Registry registry = ScribnginCluster.getCurrentInstance().getRegistry();
       reports = DataflowRegistry.getDataflowTaskReports(registry, dataflowPath);
       Collections.sort(reports, DataflowTaskReport.COMPARATOR);
       getDataVector().clear();
