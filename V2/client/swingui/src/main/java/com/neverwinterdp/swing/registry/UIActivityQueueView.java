@@ -1,22 +1,12 @@
 package com.neverwinterdp.swing.registry;
 
-import java.util.List;
 
-import com.neverwinterdp.registry.Registry;
-import com.neverwinterdp.registry.RegistryException;
-import com.neverwinterdp.registry.activity.Activity;
-
+//TODO(anthony) sort the queue exception
 @SuppressWarnings("serial")
-public class UIActivityQueueView extends UIActivityListView {
+public class UIActivityQueueView extends UIActivityStepsView {
 
-  public UIActivityQueueView(String activityRootPath, String path) {
-    super(activityRootPath, path);
-  }
+   public UIActivityQueueView(String activityRootPath, String nodePath) {  
+    super(activityRootPath, nodePath);
+     }
   
-  
-  @Override
-  protected List<Activity> getActivities(Registry registry) throws RegistryException {
-    List<Activity> activities = registry.getChildrenAs(getListPath(), Activity.class) ;
-    return activities ;
-  }
 }
