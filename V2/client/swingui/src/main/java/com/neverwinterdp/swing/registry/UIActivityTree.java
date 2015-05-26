@@ -24,12 +24,11 @@ public class UIActivityTree extends UIRegistryTree {
   
   protected void onCustomNodeView(RegistryTreeNode node, UIRegistryNodeView view) {
     if(activityNodeMatcher.matches(node)) {
-      view.addView("Activty", new UIActivityView(getRootPath()), false) ;
-//      view.addView("Activity Steps", new UIActivityStepsView(getRootPath(), node.getNodeName()), false) ;
+      view.addView("Activity", new UIActivityView(getRootPath()), false) ;
     } else if(activityListMatcher.matches(node)) {
       view.addView("Activities", new UIActivityView(getRootPath()), false) ;
     } else if(activityQueueMatcher.matches(node)) {
-      view.addView("Queue Activities", new UIActivityQueueView(getRootPath(), node.getNodePath()), false) ;
+      view.addView("Queue Activities", new UIActivityView(getRootPath()), false) ;
     }
   }
   

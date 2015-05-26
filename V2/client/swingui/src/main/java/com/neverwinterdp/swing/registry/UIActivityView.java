@@ -36,8 +36,9 @@ public class UIActivityView extends SpringLayoutGridJPanel implements UILifecycl
   private DataflowActivityJXTable activityTable;
   private DataflowActivityInfoPanel activityInfo;
 
-  public UIActivityView(String tasksPath) {
-    this.activityPath = tasksPath;
+  //This should take a nodepath to filter the type of activity?
+  public UIActivityView(String activityPath) {
+    this.activityPath = activityPath;
   }
 
   @Override
@@ -101,9 +102,9 @@ public class UIActivityView extends SpringLayoutGridJPanel implements UILifecycl
   }
 
   public class DataflowActivityJXTable extends JXTable {
-    public DataflowActivityJXTable(List<ActivityAndSteps> tasksAndReports) throws Exception {
+    public DataflowActivityJXTable(List<ActivityAndSteps> activitiesAndSteps) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      DataflowActivityTableModel model = new DataflowActivityTableModel(tasksAndReports);
+      DataflowActivityTableModel model = new DataflowActivityTableModel(activitiesAndSteps);
       setModel(model);
       model.loadData();
 
@@ -214,7 +215,7 @@ public class UIActivityView extends SpringLayoutGridJPanel implements UILifecycl
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder();
-      builder.append("TaskAndReport [activity=");
+      builder.append("ActivityAndSteps [activity=");
       builder.append(activity);
       builder.append(", activitySteps=");
       builder.append(activitySteps);
