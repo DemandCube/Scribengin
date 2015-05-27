@@ -426,4 +426,28 @@ class DataflowWorkerProcess(ScribenginProcess):
   
   def kill(self):
     pass
+ 
+class ElasticSearchProcess(Process): 
+  def __init__(self, role, hostname):
+    Process.__init__(self, role, hostname, "/opt/scribengin/scribengin/bin/", "Elasticsearch")
   
+  def setupClusterEnv(self, paramDict = {}):
+    pass
+  
+  def getReportDict(self):
+    pass
+
+  def getRunningPid(self):
+    pass
+  
+  def start(self):
+    pass
+    
+  def shutdown(self):
+    pass
+  
+  def clean(self):
+    pass 
+  
+  def kill(self):
+    pass
