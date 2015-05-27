@@ -156,8 +156,7 @@ public class UIActivityView extends SpringLayoutGridJPanel implements UILifecycl
   }
 
   static class DataflowActivityTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {
-        "Id", "description", "type" };
+    static String[] COLUMNS = { "Id", "description", "type" };
 
     List<ActivityAndSteps> activityAndSteps;
 

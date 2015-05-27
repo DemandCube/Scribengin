@@ -30,17 +30,11 @@ public class ESObjectClient<T> {
 
   public ESClient getESClient() { return this.esclient ; }
   
-  public String getIndex() {
-    return this.index;
-  }
+  public String getIndex() { return this.index; }
 
-  public Class<T> getIDocumentType() {
-    return this.mappingType;
-  }
+  public Class<T> getIDocumentType() { return this.mappingType; }
   
-  public boolean isCreated() {
-    return esclient.hasIndex(index) ;
-  }
+  public boolean isCreated() { return esclient.hasIndex(index) ; }
 
   public void createIndexWith(String settings, String mapping) throws Exception {
     CreateIndexRequestBuilder req = esclient.client.admin().indices().prepareCreate(index);

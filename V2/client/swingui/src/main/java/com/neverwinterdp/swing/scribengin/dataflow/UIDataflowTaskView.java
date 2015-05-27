@@ -26,7 +26,6 @@ import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.scribengin.storage.StreamDescriptor;
 import com.neverwinterdp.swing.UILifecycle;
 import com.neverwinterdp.swing.scribengin.ScribenginCluster;
-import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowWorkerView.DataflowWorkersTableModel;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 

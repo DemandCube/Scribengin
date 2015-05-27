@@ -17,9 +17,9 @@ import org.elasticsearch.action.admin.indices.optimize.OptimizeRequestBuilder;
 import org.elasticsearch.action.admin.indices.optimize.OptimizeResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsResponse;
-import org.elasticsearch.action.admin.indices.status.IndexStatus;
-import org.elasticsearch.action.admin.indices.status.IndicesStatusRequestBuilder;
-import org.elasticsearch.action.admin.indices.status.IndicesStatusResponse;
+import org.elasticsearch.action.admin.indices.stats.IndexStats;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequestBuilder;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.node.DiscoveryNode;
@@ -122,19 +122,13 @@ public class ESClient {
     return false;
   }
 
-  public IndexStatus[] getIndexStatus() {
-    String[] indices = this.getClusterState().metaData().getConcreteAllIndices();
-    IndicesStatusRequestBuilder builder = client.admin().indices().prepareStatus(indices);
-    IndicesStatusResponse response = builder.execute().actionGet();
-    Map<String, IndexStatus> map = response.getIndices();
-    return map.values().toArray(new IndexStatus[map.size()]);
+  public Map<String, IndexStats> getIndexStats() {
+    String[] indices = getClusterState().metaData().getConcreteAllIndices();
+    IndicesStatsRequestBuilder builder = client.admin().indices().prepareStats(indices);
+    IndicesStatsResponse response = builder.execute().actionGet(); 
+    Map<String, IndexStats> stats = response.getIndices() ;
+    return stats;
   }
-
-  public IndexStatus getIndexStatus(String name) {
-    IndicesStatusRequestBuilder builder = client.admin().indices().prepareStatus(name);
-    IndicesStatusResponse response = builder.execute().actionGet();
-    return response.getIndex(name);
-  }
-
+  
   public void close() { client.close(); }
 }

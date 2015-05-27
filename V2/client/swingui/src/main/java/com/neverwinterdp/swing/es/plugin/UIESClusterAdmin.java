@@ -2,22 +2,30 @@ package com.neverwinterdp.swing.es.plugin;
 
 import java.awt.BorderLayout;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import org.elasticsearch.action.admin.indices.status.IndexStatus;
+import org.elasticsearch.action.admin.indices.stats.IndexShardStats;
+import org.elasticsearch.action.admin.indices.stats.IndexStats;
 import org.elasticsearch.cluster.ClusterState;
+import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodes;
 
 import com.neverwinterdp.es.ESClient;
 import com.neverwinterdp.swing.UILifecycle;
+import com.neverwinterdp.swing.UIMain;
+import com.neverwinterdp.swing.UIWorkspace;
 import com.neverwinterdp.swing.es.ESCluster;
-import com.neverwinterdp.swing.widget.LazyLoadJTree;
-import com.neverwinterdp.swing.widget.LazyLoadJTree.LazyLoadTreeNode;
+import com.neverwinterdp.swing.es.UIClusterInfo;
+import com.neverwinterdp.swing.es.UIIndexInfo;
+import com.neverwinterdp.swing.util.SwingUtil;
 
 @SuppressWarnings("serial")
 public class UIESClusterAdmin extends JPanel implements UILifecycle {
@@ -36,29 +44,11 @@ public class UIESClusterAdmin extends JPanel implements UILifecycle {
   @Override
   public void onActivate() throws Exception {
     removeAll();
-    ESCluster esCluster = ESCluster.getInstance();
-    ESClient esClient = esCluster.getESClient();
-    ClusterState clusterState = esClient.getClusterState();
-    DiscoveryNodes nodes = clusterState.getNodes() ;
-
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("/");
-    DefaultMutableTreeNode servers = new DefaultMutableTreeNode("servers");
-    root.add(servers);
-    Iterator<String> keyIterator = nodes.getNodes().keysIt();
-    while(keyIterator.hasNext()) {
-      servers.add(new ServerNode(keyIterator.next()));
-    }
     
-    DefaultMutableTreeNode indices = new DefaultMutableTreeNode("indices");
-    for(IndexStatus sel : esClient.getIndexStatus()) {
-      indices.add(new IndexNode(sel.getIndex()));
-    }
-    root.add(indices);
-    
-    DefaultTreeModel model = new DefaultTreeModel(root);
-    RegistryNodeSelector registryTree = new RegistryNodeSelector(model);
-    registryTree.setShowsRootHandles(true);
-    add(new JScrollPane(registryTree), BorderLayout.CENTER);
+    NavigationNode navigationNode = new NavigationNode();
+   
+    navigationNode.setShowsRootHandles(true);
+    add(new JScrollPane(navigationNode), BorderLayout.CENTER);
   }
 
   @Override
@@ -66,37 +56,118 @@ public class UIESClusterAdmin extends JPanel implements UILifecycle {
     removeAll();
   }
   
-  public class RegistryNodeSelector extends JTree {
-    public RegistryNodeSelector(final DefaultTreeModel model) throws Exception {
-      super(model);
+  public class NavigationNode extends JTree {
+    public NavigationNode() throws Exception {
+      addTreeSelectionListener(new  TreeSelectionListener() {
+        public void valueChanged(TreeSelectionEvent evt) {
+          DefaultMutableTreeNode node = (DefaultMutableTreeNode) NavigationNode.this.getLastSelectedPathComponent();
+          if (node == null) return;
+          onSelect(node) ;
+        }
+      }) ;
+      setModel(new DefaultTreeModel(new ClusterNode()));
     }
     
     public void onSelect(DefaultMutableTreeNode node) {
+      SelectableNode selectableNode = (SelectableNode)node;
+      UIMain uiScribengin = SwingUtil.findAncestorOfType(UIESClusterAdmin.this, UIMain.class) ;
+      UIWorkspace uiWorkspace = uiScribengin.getUiWorkspace();
+      selectableNode.onSelect(uiWorkspace);
     }
   }
   
-  public class ServerNode extends DefaultMutableTreeNode {
-    private static final long serialVersionUID = 1L;
-    private String nodeId;
-    
-    public ServerNode(String id) {
-      super(id) ;
-      this.nodeId = id;
+  static public class SelectableNode extends DefaultMutableTreeNode {
+    public void onSelect(UIWorkspace uiWorkspace) {
+      System.out.println("On select node: " + getClass());
     }
-
-    public String getNodeId() { return this.nodeId ; }
   }
   
-  public class IndexNode extends DefaultMutableTreeNode {
+  public class ClusterNode extends SelectableNode {
     private static final long serialVersionUID = 1L;
     
-    String name ;
+    private ClusterState clusterState;
     
-    public IndexNode(String name) {
-      super(name);
-      this.name = name ;
+    public ClusterNode() {
+      setUserObject("ElasticSearch Cluster") ;
+      ESCluster esCluster = ESCluster.getInstance();
+      ESClient esClient = esCluster.getESClient();
+      clusterState = esClient.getClusterState();
+      
+      add(new ServersNode(clusterState));
+      add(new IndicesNode(esClient.getIndexStats()));
+    }
+    
+    public void onSelect(UIWorkspace uiWorkspace) {
+      uiWorkspace.addTab("ElasticSearch Cluster Info", new UIClusterInfo(clusterState), true);
+    }
+  }
+  
+  public class ServersNode extends SelectableNode {
+    ClusterState clusterState;
+    
+    public ServersNode(ClusterState clusterState) {
+      setUserObject("Servers") ;
+      this.clusterState = clusterState;
+      DiscoveryNodes nodes = clusterState.getNodes() ;
+      Iterator<String> keyIterator = nodes.getNodes().keysIt();
+      while(keyIterator.hasNext()) {
+        String nodeId  = keyIterator.next();
+        add(new ServerNode(nodes.get(nodeId)));
+      }
+    }
+    
+    public void onSelect(UIWorkspace uiWorkspace) {
+    }
+  }
+  
+  public class ServerNode extends SelectableNode {
+    private static final long serialVersionUID = 1L;
+    private DiscoveryNode discoveryNode ;
+    
+    public ServerNode(DiscoveryNode discoveryNode) {
+      setUserObject(discoveryNode.address().toString()) ;
+      this.discoveryNode = discoveryNode;
     }
 
-    public String getName() { return this.name ; }
   }
+  
+  public class IndicesNode extends SelectableNode {
+    Map<String, IndexStats> indicesStats;
+    
+    public IndicesNode( Map<String, IndexStats> indicesStats) {
+      setUserObject("Indices") ;
+      this.indicesStats = indicesStats;
+      for(IndexStats  indexStats : indicesStats.values()) {
+        add(new IndexNode(indexStats));
+      }
+    }
+  }
+  
+  public class IndexNode extends SelectableNode {
+    private static final long serialVersionUID = 1L;
+    String index;
+    
+    public IndexNode(IndexStats indexStats) {
+      index = indexStats.getIndex();
+      setUserObject(index);
+      Map<Integer, IndexShardStats> shardsStats = indexStats.getIndexShards() ;
+      for(IndexShardStats shardStats : shardsStats.values()) {
+        add(new ShardNode(shardStats));
+      }
+    }
+
+    public void onSelect(UIWorkspace uiWorkspace) {
+      uiWorkspace.addTab("ES Index " + index, new UIIndexInfo(index), true);
+    }
+  }
+  
+  public class ShardNode extends SelectableNode {
+    private static final long serialVersionUID = 1L;
+    
+    private IndexShardStats indexShardStats;
+    
+    public ShardNode(IndexShardStats indexShardStats) {
+      setUserObject(indexShardStats.getShardId().getId());
+    }
+  }  
 }

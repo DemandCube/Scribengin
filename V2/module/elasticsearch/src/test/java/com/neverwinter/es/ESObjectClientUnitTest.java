@@ -3,6 +3,7 @@ package com.neverwinter.es;
 import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+import static org.elasticsearch.index.query.QueryBuilders.queryString;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
 import java.util.Date;
@@ -108,6 +109,7 @@ public class ESObjectClientUnitTest {
     }
 
     Assert.assertEquals(20, esObjecclient.count(termQuery("primitive.string", "string")));
+    Assert.assertEquals(20, esObjecclient.count(queryString("primitive.string:string")));
     Assert.assertEquals(20, esObjecclient.count(termQuery("primitive.tag", "tag1")));
     Assert.assertEquals(20, esObjecclient.count(termQuery("primitive.tag", "tag2")));
     Assert.assertEquals(20, esObjecclient.count(termQuery("primitive.tag", "colon:colon")));

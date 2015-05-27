@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.apache.log4j.spi.LoggingEvent;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Log4jRecord implements Serializable {
   private long   timestamp;
   private String threadName ;
@@ -22,6 +24,7 @@ public class Log4jRecord implements Serializable {
     this.message = event.getRenderedMessage();
   }
 
+  @JsonIgnore
   public String getId() {
     return this.loggerName + "-"  + this.timestamp + "-" + message.hashCode() ;
   }
