@@ -24,7 +24,7 @@ public class UIActivityTree extends UIRegistryTree {
   
   protected void onCustomNodeView(RegistryTreeNode node, UIRegistryNodeView view) {
     if(activityNodeMatcher.matches(node)) {
-      view.addView("Activity", new UIActivityView(getRootPath()), false) ;
+      view.addView("Activity Steps", new UIActivityStepsView(getRootPath(), node.getNodeName()), false) ;
     } else if(activityListMatcher.matches(node)) {
       view.addView("Activities", new UIActivityView(getRootPath()), false) ;
     } else if(activityQueueMatcher.matches(node)) {

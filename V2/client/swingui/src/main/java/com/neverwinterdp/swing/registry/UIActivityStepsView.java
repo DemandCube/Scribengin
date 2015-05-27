@@ -46,6 +46,8 @@ public class UIActivityStepsView extends JPanel implements UILifecycle {
     if(registry == null || !registry.isConnect()) {
       add(new JLabel("No Registry Connection"), BorderLayout.CENTER);
     }
+    System.err.println("rootpath "+ activitiesRootPath);
+    System.err.println("activity id "+ activityId);
     List<ActivityStep> activitySteps = 
       registry.getChildrenAs(activitiesRootPath + "/all/" + activityId + "/activity-steps", ActivityStep.class);
     
