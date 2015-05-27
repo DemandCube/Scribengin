@@ -120,6 +120,8 @@ function launch_containers() {
   NUM_SPARE_ZOOKEEPER_SERVER=$(get_opt --spare-zookeeper 0 $@)
   NUM_SPARE_HADOOP_WORKER=$(get_opt --spare-hadoop 0 $@)
   
+  NUM_ELASTICSEARCH_SERVER=$(get_opt --elasticsearch-server 1 $@)
+  
   h1 "Launch hadoop-worker containers"
   for (( i=1; i<="$NUM_HADOOP_WORKER"; i++ ))
   do
@@ -167,7 +169,13 @@ function launch_containers() {
     docker run -d -p 22 -p 9092 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
   done
   
-
+  h1 "Launch elasticsearch containers"
+  for (( i=1; i<="$NUM_ELASTICSEARCH_SERVER"; i++ ))
+  do
+    NAME="elasticsearch-"$i
+    docker run -d -p 22 -p 9300 --privileged -h "$NAME" --name "$NAME"  ubuntu:scribengin
+  done
+  
   docker ps
 }
 
