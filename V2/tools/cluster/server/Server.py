@@ -3,7 +3,7 @@ from sys import path
 from os.path import join, dirname, abspath, expanduser
 #Make sure the cluster package is on the path correctly
 path.insert(0, dirname(dirname(abspath(__file__))))
-from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginMasterProcess, DataflowMasterProcess, DataflowWorkerProcess  #@UnresolvedImport
+from process.Process import KafkaProcess,ZookeeperProcess,HadoopDaemonProcess, VmMasterProcess, ScribenginMasterProcess, DataflowMasterProcess, DataflowWorkerProcess, ElasticSearchProcess  #@UnresolvedImport
 #from yarnRestApi.YarnRestApi import YarnRestApi #@UnresolvedImport
 
 class Server(object):
@@ -121,5 +121,8 @@ class HadoopMasterServer(Server):
     Server.addProcess(self, HadoopDaemonProcess('secondarynamenode',hostname, 'SecondaryNameNode', "sbin/hadoop-daemon.sh"))
     Server.addProcess(self, HadoopDaemonProcess('resourcemanager',hostname, 'ResourceManager', "sbin/yarn-daemon.sh"))
 
-
+class ElasticSearchServer(Server):
+  def __init__(self, hostname, role):
+    Server.__init__(self, hostname, role)
+    Server.addProcess(self, ElasticSearchProcess(role, hostname))
     
