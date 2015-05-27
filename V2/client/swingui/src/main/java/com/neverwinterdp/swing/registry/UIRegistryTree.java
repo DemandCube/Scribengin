@@ -117,10 +117,11 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
         System.out.println("INFO: The client is not connected to any registry server");
         return ;
       }
+      
       try {
-      if(!registry.exists(nodePath)) {
-        return ;
-      }
+        if(!registry.exists(nodePath)) {
+          return ;
+        }
       } catch(Exception ex) {
         ex.printStackTrace();
         return;
@@ -158,7 +159,7 @@ public class UIRegistryTree extends JPanel implements UILifecycle {
         }
       };
       
-      if (progressListener != null) {
+      if(progressListener != null) {
         worker.getPropertyChangeSupport().addPropertyChangeListener("progress", progressListener);
       }
       worker.execute();

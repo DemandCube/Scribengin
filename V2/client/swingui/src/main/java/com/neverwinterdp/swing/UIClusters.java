@@ -6,7 +6,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import com.neverwinterdp.swing.es.UIESCluster;
+import com.neverwinterdp.swing.es.plugin.UIESClusterControl;
+import com.neverwinterdp.swing.es.plugin.UIESClusterSetting;
 import com.neverwinterdp.swing.scribengin.UIScribenginCluster;
 import com.neverwinterdp.swing.scribengin.dataflow.UIDataflowTests;
 import com.neverwinterdp.swing.util.MessageUtil;
@@ -46,11 +47,11 @@ public class UIClusters extends JPanel implements UILifecycle {
     private UILifecycle currentSelectPanel = null ;
 
     public ToolsJAccordionPanel() {
-      UIESCluster esCluster = new UIESCluster();
-      addBar("ElasticSearch Cluster", esCluster);
+      UIESClusterControl uiESClusterControl = new UIESClusterControl();
+      addBar("ElasticSearch Cluster", uiESClusterControl);
       addBar("Scribengin Cluster", new UIScribenginCluster());
       addBar("Dataflow Tests",  new UIDataflowTests());
-      onSelectBarInfo(esCluster);
+      onSelectBarInfo(uiESClusterControl);
     }
     
     @Override

@@ -1,4 +1,4 @@
-package com.neverwinterdp.swing.es;
+package com.neverwinterdp.swing.es.plugin;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -9,14 +9,17 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import com.neverwinterdp.swing.UILifecycle;
+import com.neverwinterdp.swing.es.ESCluster;
+import com.neverwinterdp.swing.es.ESClusterConfiguration;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.widget.BeanBindingJComboBox;
 import com.neverwinterdp.swing.widget.BeanBindingJTextField;
 import com.neverwinterdp.swing.widget.SpringLayoutGridJPanel;
 
 @SuppressWarnings("serial")
-public class UIESCluster extends SpringLayoutGridJPanel  implements UILifecycle {
-  public UIESCluster() {
+public class UIESClusterSetting extends JPanel  implements UILifecycle {
+  public UIESClusterSetting() {
+    setLayout(new BorderLayout()) ;
   }
   
   @Override
@@ -29,18 +32,17 @@ public class UIESCluster extends SpringLayoutGridJPanel  implements UILifecycle 
 
   @Override
   public void onActivate() {
-    clear();
+    removeAll();
     ElasticSearchConfigPanel configPanel = new ElasticSearchConfigPanel() ;
-    addRow(configPanel);
+    add(configPanel, BorderLayout.CENTER);
     
     ESClusterConnectionPanel connectionPanel = new ESClusterConnectionPanel();
-    addRow(connectionPanel);
-    makeCompactGrid();
+    add(connectionPanel, BorderLayout.SOUTH);
   }
 
   @Override
   public void onDeactivate() throws Exception {
-    clear();
+    removeAll();
   }
   
   static  public class ESClusterConnectionPanel extends SpringLayoutGridJPanel {
@@ -101,17 +103,24 @@ public class UIESCluster extends SpringLayoutGridJPanel  implements UILifecycle 
   }
   
   
-  public class ElasticSearchConfigPanel extends JPanel {
+  public class ElasticSearchConfigPanel extends SpringLayoutGridJPanel {
     private ESClusterConfiguration configuration = new ESClusterConfiguration() ;
     
     public ElasticSearchConfigPanel() {
-      setLayout(new BorderLayout());
+      createBorder("Embedded ElasticSearch Configuration");
       
-      SpringLayoutGridJPanel configPanel = new SpringLayoutGridJPanel() ;
-      configPanel.createBorder("ElasticSearch Configuration");
-      configPanel.addRow("Num Of Instances", new BeanBindingJTextField<>(configuration, "numOfInstances", true));
-      configPanel.addRow("Start Port", new BeanBindingJTextField<>(configuration, "basePort", true));
-      configPanel.makeCompactGrid();
+      BeanBindingJTextField<ESClusterConfiguration> numOfInstances = new BeanBindingJTextField<>(configuration, "numOfInstances"); 
+      numOfInstances.setTypeConverter(BeanBindingJTextField.INTERGER);
+      addRow("Num Of Instances");
+      addRow(numOfInstances);
+      
+      BeanBindingJTextField<ESClusterConfiguration> basePort = new BeanBindingJTextField<>(configuration, "basePort");
+      basePort.setTypeConverter(BeanBindingJTextField.INTERGER);
+      addRow("Start Port");
+      addRow(new BeanBindingJTextField<>(configuration, "basePort"));
+      
+      addRow("Base Dir");
+      addRow(new BeanBindingJTextField<>(configuration, "baseDir"));
       
       Action connectBtn = new AbstractAction("Start") {
         @Override
@@ -138,8 +147,8 @@ public class UIESCluster extends SpringLayoutGridJPanel  implements UILifecycle 
       btnPanel.add(new JButton(connectBtn));
       btnPanel.add(new JButton(disconnectBtn));
       
-      add(configPanel, BorderLayout.NORTH);
-      add(btnPanel, BorderLayout.CENTER);
+      addRow(btnPanel);
+      makeCompactGrid();
     }
   }
 }

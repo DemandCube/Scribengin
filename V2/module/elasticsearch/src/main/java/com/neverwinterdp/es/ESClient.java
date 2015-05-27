@@ -50,9 +50,7 @@ public class ESClient {
     }
   }
 
-  public String[] getAddress() {
-    return this.address;
-  }
+  public String[] getAddress() { return this.address; }
 
   public boolean waitForConnected(long timeout) throws InterruptedException {
     long stopTime = System.currentTimeMillis() + timeout ;

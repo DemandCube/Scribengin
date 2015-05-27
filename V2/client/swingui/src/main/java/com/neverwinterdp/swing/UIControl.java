@@ -10,7 +10,6 @@ import javax.swing.event.ChangeListener;
 
 import com.neverwinterdp.swing.registry.UIRegistryTree;
 import com.neverwinterdp.swing.scribengin.UIScribengin;
-import com.neverwinterdp.swing.server.UIServers;
 import com.neverwinterdp.swing.util.MessageUtil;
 import com.neverwinterdp.swing.vm.UIVM;
 import com.neverwinterdp.swing.widget.JTabbedPaneUI;
@@ -28,7 +27,6 @@ public class UIControl extends JPanel {
     tabbedPaneUI.addTab("Registry", new UIRegistryTree("/", "/"), false);
     tabbedPaneUI.addTab("VM", new UIVM(), false);
     tabbedPaneUI.addTab("Scribengin", new UIScribengin(), false);
-    tabbedPaneUI.addTab("Servers", new UIServers(), false);
     
     tabbedPaneUI.withVerticalTabPlacement();
     
