@@ -33,7 +33,7 @@ public class UIIndexInfo extends JPanel {
       tabbedPaneUI = new JTabbedPaneUI() ;
       tabbedPaneUI.addTab("Primaries", new JScrollPane(new PrimariesPanel(indexStats)), false);
       tabbedPaneUI.addTab("Routing Table", new JScrollPane(new RoutingTablePanel(clusterState)), false);
-      tabbedPaneUI.addTab("Search", new UISearchQuery(indexStats), false);
+      tabbedPaneUI.addTab("Search", new UISearchQuery(indexStats.getIndex(), new UISearchQueryLog4jPlugin()), false);
       tabbedPaneUI.setSelectedTab(0);
       add(tabbedPaneUI, BorderLayout.CENTER);
     } catch(Exception ex) {

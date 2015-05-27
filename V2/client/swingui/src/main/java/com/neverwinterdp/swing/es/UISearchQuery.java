@@ -12,10 +12,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
-import org.elasticsearch.action.admin.indices.stats.IndexStats;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -33,16 +33,25 @@ import com.neverwinterdp.swing.widget.BeanBindingJTextField;
 
 @SuppressWarnings("serial")
 public class UISearchQuery extends JPanel {
-  private QueryPanel queryPanel ;
-  private QueryResultPanel resultPanel ;
+  String index;
+  UISearchQueryPlugin plugin ;
+  QueryPanel queryPanel ;
+  UISearchQueryResult queryResultPanel ;
   
-  public UISearchQuery(IndexStats indexStats) throws Exception {
+  public UISearchQuery(String index, UISearchQueryPlugin plugin) throws Exception {
+    this.index  = index ;
+    this.plugin = plugin;
+    
+    queryPanel       = new QueryPanel() ;
+    queryResultPanel = new UISearchQueryResult(plugin) ;
+    
     setLayout(new BorderLayout());
-    queryPanel = new QueryPanel() ;
-    resultPanel = new QueryResultPanel(indexStats) ;
     add(queryPanel, BorderLayout.NORTH) ;
-    add(resultPanel, BorderLayout.CENTER) ;
+    add(new JScrollPane(queryResultPanel), BorderLayout.CENTER) ;
+    plugin.onInit(this);
   }
+  
+  public JXTable getUISearchQueryResult() { return this.queryResultPanel; }
   
   public class QueryPanel extends JPanel {
     private String query ;
@@ -53,7 +62,7 @@ public class UISearchQuery extends JPanel {
       Action action = new AbstractAction("Search") {
         @Override
         public void actionPerformed(ActionEvent e) {
-          resultPanel.update(query);
+          queryResultPanel.update(query);
         }
       };
       BeanBindingJTextField<QueryPanel> queryField = new BeanBindingJTextField<>(this, "query", true);
@@ -65,10 +74,10 @@ public class UISearchQuery extends JPanel {
     public void setQuery(String query) { this.query = query; }
   }
   
-  public class QueryResultPanel extends JXTable {
-    public QueryResultPanel(IndexStats indexStats) throws Exception {
+  public class UISearchQueryResult extends JXTable {
+    public UISearchQueryResult(UISearchQueryPlugin plugin) throws Exception {
       setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-      SearchResultTableModel model = new SearchResultTableModel();
+      SearchResultTableModel model = new SearchResultTableModel(plugin);
       setModel(model);
       model.loadData();
 
@@ -88,45 +97,33 @@ public class UISearchQuery extends JPanel {
     public void update(String query) {
       SearchResultTableModel model = (SearchResultTableModel) getModel();
       try {
-        model.update(query);
+        model.update(plugin, index, query);
       } catch (Exception e) {
         MessageUtil.handleError(e);;
       }
     }
   }
   
-  static class SearchResultTableModel extends DefaultTableModel {
-    static String[] COLUMNS = {"Id", "Timestamp", "Level", "Thread", "Name", "Message" };
-
-    private List<Log4jRecord> records ;
+  @SuppressWarnings("serial")
+  static public class SearchResultTableModel extends DefaultTableModel {
+    private List<Object[]> rows ;
     
-    public SearchResultTableModel() {
-      super(COLUMNS, 0);
+    public SearchResultTableModel(UISearchQueryPlugin plugin) {
+      super(plugin.getColumNames(), 0);
     }
 
-    public void update(String query) throws Exception {
+    public void update(UISearchQueryPlugin plugin, String index, String query) throws Exception {
       ESClient esclient = ESCluster.getInstance().getESClient();
-      ESObjectClient<Log4jRecord> esObjectClient = new ESObjectClient<Log4jRecord>(esclient, "log4j", Log4jRecord.class) ;
-      SearchResponse response = esObjectClient.search(QueryBuilders.queryString(query));
-      List<Log4jRecord> records = new ArrayList<>();
-      SearchHits hits = response.getHits();
-      for(SearchHit hit : hits.getHits()) {
-        records.add(esObjectClient.getIDocument(hit));
-      }
-      this.records = records;
+      this.rows = plugin.query(esclient, index, query);
       getDataVector().clear();
       loadData();
       fireTableDataChanged();
     }
     
     void loadData() throws Exception {
-      if(records == null) return;
-      for(int i = 0; i < records.size(); i++) {
-        Log4jRecord record = records.get(i);
-        Object[] cells = {
-          i, record.getTimestamp(), record.getLevel(), record.getThreadName(), record.getLoggerName(), record.getMessage() 
-        };
-        addRow(cells);
+      if(rows == null) return;
+      for(int i = 0; i < rows.size(); i++) {
+        addRow(rows.get(i));
       }
     }
   }
