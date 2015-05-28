@@ -8,7 +8,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
@@ -23,6 +22,7 @@ import com.neverwinterdp.util.IOUtil;
 import com.neverwinterdp.vm.HadoopProperties;
 import com.neverwinterdp.vm.client.YarnVMClient;
 import com.neverwinterdp.vm.environment.yarn.HDFSUtil;
+import com.neverwinterdp.vm.environment.yarn.MiniClusterUtil;
 import com.neverwinterdp.vm.tool.VMClusterBuilder;
 
 public class DataflowSubmitIntegrationTest {

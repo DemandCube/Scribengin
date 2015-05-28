@@ -18,6 +18,7 @@ configurations.all {
 
 dependencies {
   compile project(':lib/utils')
+  compile project(':lib/yara')
   compile project(':registry/core')
   compile project(':registry/vm')
   compile project(':module/kafka')

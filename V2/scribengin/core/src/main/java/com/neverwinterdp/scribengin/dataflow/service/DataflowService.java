@@ -30,6 +30,7 @@ import com.neverwinterdp.vm.VMDescriptor;
 @JmxBean("role=dataflow-master, type=DataflowService, dataflowName=DataflowService")
 public class DataflowService {
   private Logger logger ;
+  
   @Inject
   private VMConfig vmConfig;
  

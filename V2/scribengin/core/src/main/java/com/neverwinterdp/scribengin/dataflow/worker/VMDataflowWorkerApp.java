@@ -23,6 +23,8 @@ import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.yara.MetricPrinter;
+import com.neverwinterdp.yara.MetricRegistry;
 
 
 public class VMDataflowWorkerApp extends VMApp {
@@ -34,12 +36,12 @@ public class VMDataflowWorkerApp extends VMApp {
   @Override
   public void run() throws Exception {
     final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
-    final LoggerFactory lfactory = new LoggerFactory("[" + vmConfig.getName() + "][NeverwinterDP] ") ;
-    logger = lfactory.getLogger(VMDataflowWorkerApp.class);
+    logger = getVM().getLoggerFactory().getLogger(VMDataflowWorkerApp.class);
     AppModule module = new AppModule(vmConfig.getProperties()) {
       @Override
       protected void configure(Map<String, String> properties) {
-        bindInstance(LoggerFactory.class, lfactory);
+        bindInstance(MetricRegistry.class, new MetricRegistry(vmConfig.getName()));
+        bindInstance(LoggerFactory.class, getVM().getLoggerFactory());
         Registry registry = getVM().getVMRegistry().getRegistry();
         bindInstance(RegistryConfig.class, registry.getRegistryConfig());
         bindType(Registry.class, registry.getClass());
@@ -88,6 +90,9 @@ public class VMDataflowWorkerApp extends VMApp {
       dataflowTaskExecutorService.waitForTerminated(500);
     } catch(InterruptedException ex) {
     } finally {
+      MetricPrinter metricPrinter = new MetricPrinter(System.out) ;
+      MetricRegistry mRegistry = container.getInstance(MetricRegistry.class);
+      metricPrinter.print(mRegistry);
       container.getInstance(CloseableInjector.class).close();
     }
   }

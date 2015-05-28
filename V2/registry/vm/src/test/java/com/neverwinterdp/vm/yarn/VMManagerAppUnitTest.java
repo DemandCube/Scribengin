@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.beust.jcommander.JCommander;
-import com.neverwinterdp.hadoop.MiniClusterUtil;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.zk.RegistryImpl;
@@ -23,6 +22,7 @@ import com.neverwinterdp.vm.client.shell.Shell;
 import com.neverwinterdp.vm.command.CommandResult;
 import com.neverwinterdp.vm.command.VMCommand;
 import com.neverwinterdp.vm.environment.yarn.AppClient;
+import com.neverwinterdp.vm.environment.yarn.MiniClusterUtil;
 import com.neverwinterdp.vm.environment.yarn.YarnVMServicePlugin;
 import com.neverwinterdp.vm.service.VMServiceApp;
 import com.neverwinterdp.vm.service.VMServiceCommand;

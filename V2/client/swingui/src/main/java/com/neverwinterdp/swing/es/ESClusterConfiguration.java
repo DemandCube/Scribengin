@@ -1,7 +1,7 @@
 package com.neverwinterdp.swing.es;
 
 public class ESClusterConfiguration {
-  private int    numOfInstances = 2;
+  private int    numOfInstances = 1;
   private int    basePort       = 9300;
   private String baseDir        = "build/elasticsearch";
 

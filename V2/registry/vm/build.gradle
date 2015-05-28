@@ -16,6 +16,7 @@ configurations.all {
 
 dependencies {
   compile project(':registry/core')
-  compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
+  //compile group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
   compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+  compile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: '2.4.0'
 }

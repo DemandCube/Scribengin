@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.slf4j.Logger;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -25,17 +26,20 @@ import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.yara.MetricRegistry;
 
 public class VMDataflowServiceApp extends VMApp {
-  private String         dataflowRegistryPath;
-  private LeaderElection election;
-  private DataflowService dataflowService;
-  private Injector       appContainer;
+  private Logger              logger;
+  private String              dataflowRegistryPath;
+  private LeaderElection      election;
+  private DataflowService     dataflowService;
+  private Injector            appContainer;
   private ServiceRunnerThread serviceRunnerThread;
-  
+
   @Override
   public void run() throws Exception {
-    System.err.println("VMDataflowServiceApp: run().....................");
+    logger = getVM().getLoggerFactory().getLogger(VMDataflowServiceApp.class);
+    logger.info("Start run()");
     VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
     dataflowRegistryPath = vmConfig.getProperties().get("dataflow.registry.path");
     election = new LeaderElection(getVM().getVMRegistry().getRegistry(), dataflowRegistryPath + "/master/leader") ;
@@ -43,7 +47,7 @@ public class VMDataflowServiceApp extends VMApp {
     election.start();
     try {
       waitForTerminate();
-      System.err.println("finish waitForShutdown()");
+      logger.info("Finish waitForTerminate()()");
     } catch(InterruptedException ex) {
     } finally {
       if(appContainer != null) {
@@ -58,7 +62,6 @@ public class VMDataflowServiceApp extends VMApp {
   class MasterLeaderElectionListener implements LeaderElectionListener {
     @Override
     public void onElected() {
-      System.err.println("VMDataflowServiceApp: onElected().....................");
       try {
         final Registry registry = getVM().getVMRegistry().getRegistry();
         if(registry.exists(dataflowRegistryPath + "/status") && DataflowLifecycleStatus.FINISH == DataflowRegistry.getStatus(registry, dataflowRegistryPath)) {
@@ -71,8 +74,8 @@ public class VMDataflowServiceApp extends VMApp {
           @Override
           protected void configure(Map<String, String> properties) {
             try {
-              LoggerFactory lfactory = new LoggerFactory("[" + vmConfig.getName() + "][NeverwinterDP] ") ;
-              bindInstance(LoggerFactory.class, lfactory);
+              bindInstance(LoggerFactory.class, getVM().getLoggerFactory());
+              bindInstance(MetricRegistry.class, new MetricRegistry(vmConfig.getName()));
               bindInstance(VMConfig.class, vmConfig);
               bindInstance(RegistryConfig.class, registry.getRegistryConfig());
               bindInstance(VMDescriptor.class, getVM().getDescriptor());
@@ -82,8 +85,7 @@ public class VMDataflowServiceApp extends VMApp {
               FileSystem fs = FileSystem.get(conf);
               bindInstance(FileSystem.class, fs);
             } catch (Exception e) {
-              //TODO: use logger
-              e.printStackTrace();
+              logger.error("Intialize AppModule Error", e);
             }
           };
         };
@@ -119,7 +121,6 @@ public class VMDataflowServiceApp extends VMApp {
       } catch (Exception e) {
         e.printStackTrace();
       } finally {
-        System.err.println("ServiceRunnerThread: notifyShutdown()");
         terminate(TerminateEvent.Shutdown);
       }
     }

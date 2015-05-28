@@ -7,8 +7,6 @@ import java.util.Map.Entry;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.storage.StorageDescriptor;
@@ -88,13 +86,13 @@ public class UIDataflowDescriptorView extends JPanel implements UILifecycle {
       for (Entry<String, StorageDescriptor> entry : sinkDescriptors.entrySet()) {
         String sinkName = entry.getKey();
         StorageDescriptor sinkDescriptor = entry.getValue();
-        addRow(indent+sinkName+" Sink:","");
+        addRow(indent + sinkName + " Sink:","");
         
         //TODO: code convention , format.
-        addRow(StringUtils.repeat(indent, 2)+"Sink Type",     sinkDescriptor.getType());
-        addRow(StringUtils.repeat(indent, 2)+"Sink Location", sinkDescriptor.getLocation());
+        addRow(indent + "Sink Type",     sinkDescriptor.getType());
+        addRow(indent + "Sink Location", sinkDescriptor.getLocation());
         for (Entry<String, String> entrySet : sinkDescriptor.entrySet()) {
-          addRow(StringUtils.repeat(indent, 2)+entrySet.getKey(), entrySet.getValue());
+          addRow(indent + entrySet.getKey(), entrySet.getValue());
         }
       }
       makeCompactGrid();

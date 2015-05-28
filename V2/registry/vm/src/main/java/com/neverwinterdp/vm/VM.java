@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.google.inject.Guice;
@@ -19,6 +18,7 @@ import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.registry.RegistryException;
 import com.neverwinterdp.util.JSONSerializer;
+import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMApp.TerminateEvent;
 import com.neverwinterdp.vm.command.VMCommandWatcher;
 import com.neverwinterdp.vm.service.VMService;
@@ -30,7 +30,8 @@ public class VM {
   
   static private Map<String, VM> vms = new ConcurrentHashMap<String, VM>() ;
   
-  private Logger                 logger   = LoggerFactory.getLogger(VM.class);
+  private LoggerFactory          loggerFactory ;
+  private Logger                 logger  ;
 
   private VMDescriptor           descriptor;
   private VMStatus               vmStatus = VMStatus.INIT;
@@ -40,6 +41,8 @@ public class VM {
   private VMApplicationRunner    vmApplicationRunner;
   
   public VM(VMConfig vmConfig) throws Exception {
+    loggerFactory = new LoggerFactory("[" + vmConfig.getName() + "][NeverwinterDP] ") ;
+    logger = loggerFactory.getLogger(VM.class) ;
     logger.info("Create VM with VMConfig:");
     logger.info(JSONSerializer.INSTANCE.toString(vmConfig));
     vmContainer = createVMContainer(vmConfig);
@@ -58,12 +61,16 @@ public class VM {
   }
   
   public VM(VMDescriptor vmDescriptor) throws RegistryException {
+    loggerFactory = new LoggerFactory("[" + vmDescriptor.getId() + "][NeverwinterDP] ") ;
+    logger = loggerFactory.getLogger(VM.class) ;
     descriptor = vmDescriptor ;
     vmContainer = createVMContainer(vmDescriptor.getVmConfig());
     vmRegistry = vmContainer.getInstance(VMRegistry.class);
     
     init();
   }
+  
+  public LoggerFactory getLoggerFactory() { return this.loggerFactory; }
   
   public Injector getVMContainer() { return this.vmContainer ; }
   

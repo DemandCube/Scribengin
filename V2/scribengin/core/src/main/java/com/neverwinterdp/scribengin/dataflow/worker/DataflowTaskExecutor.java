@@ -7,21 +7,25 @@ import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.DataflowTask;
 import com.neverwinterdp.scribengin.dataflow.DataflowTaskDescriptor;
 import com.neverwinterdp.vm.VMDescriptor;
+import com.neverwinterdp.yara.MetricRegistry;
+import com.neverwinterdp.yara.Timer;
 
 public class DataflowTaskExecutor {
   private DataflowTaskExecutorDescriptor executorDescriptor;
-  private DataflowContainer dataflowContainer ;
-  private ExecutorManagerThread executorManagerThread ;
-  private DataflowTaskExecutorThread executorThread ;
-  private DataflowTask currentDataflowTask = null;
-  private boolean interrupt = false;
-  private boolean kill = false ;
-  
+  private DataflowContainer              dataflowContainer;
+  private ExecutorManagerThread          executorManagerThread;
+  private DataflowTaskExecutorThread     executorThread;
+  private MetricRegistry                 metricRegistry;
+  private DataflowTask                   currentDataflowTask = null;
+  private boolean                        interrupt           = false;
+  private boolean                        kill                = false;
+
   public DataflowTaskExecutor(DataflowTaskExecutorDescriptor  descriptor, DataflowContainer container) throws RegistryException {
     executorDescriptor = descriptor;
     dataflowContainer = container;
     DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry() ;
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
+    metricRegistry = dataflowContainer.getInstance(MetricRegistry.class);
     dataflowRegistry.createWorkerTaskExecutor(vmDescriptor, descriptor);
   }
   
@@ -49,12 +53,19 @@ public class DataflowTaskExecutor {
     executorDescriptor.setStatus(DataflowTaskExecutorDescriptor.Status.RUNNING);
     DataflowRegistry dataflowRegistry = dataflowContainer.getDataflowRegistry();
     VMDescriptor vmDescriptor = dataflowContainer.getVMDescriptor() ;
+    Timer dataflowTaskTimerGrab = metricRegistry.getTimer("dataflow-task.timer.grab") ;
+    Timer dataflowTaskTimerProcess = metricRegistry.getTimer("dataflow-task.timer.process") ;
     try {
       while(!interrupt) {
+        Timer.Context dataflowTaskTimerGrabCtx = dataflowTaskTimerGrab.time() ;
+        
         TaskContext<DataflowTaskDescriptor> taskContext= dataflowRegistry.assignDataflowTask(vmDescriptor);
+        dataflowTaskTimerGrabCtx.stop();
+        
         if(interrupt) return ;
         if(taskContext == null) return;
         
+        Timer.Context dataflowTaskTimerProcessCtx = dataflowTaskTimerProcess.time() ;
         executorDescriptor.addAssignedTask(taskContext.getTaskTransactionId().getTaskId());
         dataflowRegistry.updateWorkerTaskExecutor(vmDescriptor, executorDescriptor);
         currentDataflowTask = new DataflowTask(dataflowContainer, taskContext);
@@ -64,6 +75,7 @@ public class DataflowTaskExecutor {
         executorThread.waitForTimeout(10000);
         if(currentDataflowTask.isComplete()) currentDataflowTask.finish();
         else currentDataflowTask.suspend();
+        dataflowTaskTimerProcessCtx.stop();
       }
     } catch (InterruptedException e) {
       System.err.println("detect shutdown interrupt for task " + currentDataflowTask.getDescriptor().getTaskId());
