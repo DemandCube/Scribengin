@@ -33,8 +33,8 @@ function build(){
   cd "$pwd"
   
   #Release the project
-  cd $DOCKERSCRIBEDIR/../../release
-  ../../gradlew clean release
+  cd $DOCKERSCRIBEDIR/../../scribengin/release
+  ./gradlew clean release
   cd "$pwd"
 }
 
@@ -53,7 +53,7 @@ function deploy(){
   #Copy
   ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/scribengin\""
   ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --execute \"rm -rf /opt/cluster\""
-  scp -q -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../release/build/release neverwinterdp@hadoop-master:/opt/scribengin
+  scp -q -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../scribengin/release/build/release neverwinterdp@hadoop-master:/opt/scribengin
   scp -q -o StrictHostKeyChecking=no -r $DOCKERSCRIBEDIR/../../tools/cluster         neverwinterdp@hadoop-master:/opt/cluster
   ssh -o StrictHostKeyChecking=no neverwinterdp@hadoop-master -C "/opt/cluster/clusterCommander.py cluster --sync hadoop-master"
 }

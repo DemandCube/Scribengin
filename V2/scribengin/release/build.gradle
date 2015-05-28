@@ -50,16 +50,14 @@ dependencies {
 
   /*************************Scribengin runtime deploy jars***************************/
   scribenginDeployJars project(':lib/utils')
+  scribenginDeployJars project(':lib/buffer')
+  scribenginDeployJars project(':lib/yara')
   scribenginDeployJars project(':module/commons')
   scribenginDeployJars project(':module/kafka')
+  scribenginDeployJars project(':module/elasticsearch')
   scribenginDeployJars project(':registry/core')
   scribenginDeployJars project(':registry/vm')
   scribenginDeployJars project(':scribengin/core')
-
-  scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.api', version: '1.0-SNAPSHOT'
-  scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.hadoop-framework', version: '1.0-SNAPSHOT'
-  scribenginDeployJars group: 'com.neverwinterdp', name: 'commons.yara.core', version: '1.0-SNAPSHOT'
-
 
   scribenginDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
   scribenginDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
@@ -110,11 +108,11 @@ dependencies {
   scribenginDeployJars group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '3.2'
   scribenginDeployJars group: 'org.xerial.snappy', name: 'snappy-java', version: '1.1.1.6'
   scribenginDeployJars group: 'joda-time', name: 'joda-time', version: '2.7'
-  
+  scribenginDeployJars group: 'net.openhft', name: 'chronicle', version: '3.2.2'
+  scribenginDeployJars group: 'org.elasticsearch', name: 'elasticsearch', version: '1.2.2'
 
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
   scribenginDeployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
-
 
   /*************************jvmagent runtime deploy jars***************************/
   scribenginDeployJars project(':lib/utils')
