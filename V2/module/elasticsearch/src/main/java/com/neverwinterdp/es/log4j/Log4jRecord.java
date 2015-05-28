@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.neverwinterdp.util.ExceptionUtil;
 
 public class Log4jRecord implements Serializable {
   private long   timestamp;
@@ -12,6 +13,7 @@ public class Log4jRecord implements Serializable {
   private String loggerName;
   private String level;
   private String message;
+  private String stacktrace ;
 
   public Log4jRecord() {
   }
@@ -22,6 +24,9 @@ public class Log4jRecord implements Serializable {
     this.loggerName = event.getLoggerName();
     this.level = event.getLevel().toString();
     this.message = event.getRenderedMessage();
+    if(event.getThrowableInformation() != null) {
+      stacktrace = ExceptionUtil.getStackTrace(event.getThrowableInformation().getThrowable());
+    }
   }
 
   @JsonIgnore
@@ -29,43 +34,21 @@ public class Log4jRecord implements Serializable {
     return this.loggerName + "-"  + this.timestamp + "-" + message.hashCode() ;
   }
   
-  public long getTimestamp() {
-    return timestamp;
-  }
+  public long getTimestamp() { return timestamp; }
+  public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
-  public void setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-  }
+  public String getThreadName() { return threadName; }
+  public void setThreadName(String threadName) { this.threadName = threadName; }
 
-  public String getThreadName() {
-    return threadName;
-  }
+  public String getLoggerName() { return loggerName; }
+  public void setLoggerName(String loggerName) { this.loggerName = loggerName; }
 
-  public void setThreadName(String threadName) {
-    this.threadName = threadName;
-  }
+  public String getLevel() { return level; }
+  public void setLevel(String level) { this.level = level; }
 
-  public String getLoggerName() {
-    return loggerName;
-  }
+  public String getMessage() { return message; }
+  public void setMessage(String message) { this.message = message; }
 
-  public void setLoggerName(String loggerName) {
-    this.loggerName = loggerName;
-  }
-
-  public String getLevel() {
-    return level;
-  }
-
-  public void setLevel(String level) {
-    this.level = level;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
+  public String getStacktrace() { return stacktrace; }
+  public void setStacktrace(String stacktrace) { this.stacktrace = stacktrace; }
 }

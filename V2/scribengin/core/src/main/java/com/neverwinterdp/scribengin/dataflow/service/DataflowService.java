@@ -1,5 +1,7 @@
 package com.neverwinterdp.scribengin.dataflow.service;
 
+import org.slf4j.Logger;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mycila.jmx.annotation.JmxBean;
@@ -20,12 +22,14 @@ import com.neverwinterdp.scribengin.dataflow.activity.DataflowStopActivityBuilde
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.storage.sink.SinkFactory;
 import com.neverwinterdp.scribengin.storage.source.SourceFactory;
+import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 
 @Singleton
 @JmxBean("role=dataflow-master, type=DataflowService, dataflowName=DataflowService")
 public class DataflowService {
+  private Logger logger ;
   @Inject
   private VMConfig vmConfig;
  
@@ -61,6 +65,11 @@ public class DataflowService {
 
   public SinkFactory getSinkFactory() { return sinkFactory; }
   
+  @Inject
+  public void onInject(LoggerFactory lfactory) {
+    logger = lfactory.getLogger(DataflowService.class);
+  }
+  
   public void addAvailableTask(DataflowTaskDescriptor taskDescriptor) throws RegistryException {
     dataflowRegistry.addAvailableTask(taskDescriptor);
   }
@@ -85,12 +94,9 @@ public class DataflowService {
   
   public void waitForTermination(Thread waitForTerminationThread) throws Exception {
     this.waitForTerminationThread = waitForTerminationThread ;
-    System.err.println("DataflowService: waitForTermination()");
     dataflowTaskMonitor.waitForAllTaskFinish();
-    System.err.println("Wait for all task finish done");
     dataflowWorkerMonitor.waitForAllWorkerTerminated();
     //finish
-    System.err.println("DataflowService: FINISH");
     dataflowRegistry.setStatus(DataflowLifecycleStatus.FINISH);
   }
   
@@ -109,29 +115,28 @@ public class DataflowService {
 
     @Override
     public void processNodeEvent(NodeEvent event) throws Exception {
-      System.err.println("Dataflow event = " + event.getType() + ", path = " + event.getPath());
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
           Activity activity = new DataflowPauseActivityBuilder().build();
           activityService.queue(activity);
+          logger.info("Queue a pause activity");
         } else if(taskEvent == DataflowEvent.STOP) {
           activityService.queue(new DataflowStopActivityBuilder().build());
+          logger.info("Queue a stop activity");
         } else if(taskEvent == DataflowEvent.RESUME) {
           DataflowLifecycleStatus currentStatus = dataflowRegistry.getStatus();
-          System.err.println("Detect the resume event, current status = " + currentStatus);
           if(currentStatus == DataflowLifecycleStatus.PAUSE) {
-            System.err.println("  Run resume activity");
             Activity activity = new DataflowResumeActivityBuilder().build();
             activityService.queue(activity);
+            logger.info("Queue a resume pause activity");
           } else if(currentStatus == DataflowLifecycleStatus.STOP) {
-            System.err.println("  Run run activity...");
             activityService.queue(new DataflowRunActivityBuilder().build());
+            logger.info("Queue a run activity");
           }
           
         }
       }
-      System.out.println("event = " + event.getType() + ", path = " + event.getPath());
     }
   }
 }

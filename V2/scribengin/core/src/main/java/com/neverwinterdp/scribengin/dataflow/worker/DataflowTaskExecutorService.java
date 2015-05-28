@@ -6,7 +6,6 @@ import java.util.List;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -20,12 +19,13 @@ import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
 import com.neverwinterdp.scribengin.dataflow.DataflowDescriptor;
 import com.neverwinterdp.scribengin.dataflow.DataflowRegistry;
 import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
+import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMDescriptor;
 
 @Singleton
 @JmxBean("role=dataflow-worker, type=DataflowTaskExecutorService, dataflowName=DataflowTaskExecutorService")
 public class DataflowTaskExecutorService {
-  private Logger logger = LoggerFactory.getLogger(DataflowTaskExecutorService.class);
+  private Logger logger ;
 
   @Inject
   private DataflowContainer container;
@@ -41,7 +41,8 @@ public class DataflowTaskExecutorService {
   private boolean kill = false ;
   
   @Inject
-  public void onInit(DataflowRegistry dflRegistry) throws Exception {
+  public void onInject(LoggerFactory lfactory, DataflowRegistry dflRegistry) throws Exception {
+    logger = lfactory.getLogger(DataflowTaskExecutorService.class) ;
     logger.info("Start onInit()");
     Node workerNode = dflRegistry.getWorkerNode(vmDescriptor.getId()) ;
     notifier = new Notifier(dflRegistry.getRegistry(),  workerNode.getPath() + "/notification", "dataflow-executor-service");
@@ -74,15 +75,14 @@ public class DataflowTaskExecutorService {
   
   
   void interrupt() throws Exception {
-    System.err.println("  DataflowTaskExecutorService: Interrupt dataflow worker executor");
     for(DataflowTaskExecutor sel : taskExecutors) {
       if(sel.isAlive()) sel.interrupt();
     }
     waitForExecutorTermination(500);
-    System.err.println("  DataflowTaskExecutorService: Interrupt dataflow worker executor done!!!!!!!!!!!!!");
   }
   
   public void pause() throws Exception {
+    logger.info("DataflowTaskExecutorService: start pause()");
     notifier.info("start-pause", "DataflowTaskExecutorService: start pause()");
     workerStatus = DataflowWorkerStatus.PAUSING;
     container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
@@ -90,8 +90,9 @@ public class DataflowTaskExecutorService {
     workerStatus = DataflowWorkerStatus.PAUSE;
     container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     notifier.info("finish-pause", "DataflowTaskExecutorService: finish pause()");
+    logger.info("DataflowTaskExecutorService: finish pause()");
   }
-  
+ 
   @PreDestroy
   public void shutdown() throws Exception {
     if(kill) return;

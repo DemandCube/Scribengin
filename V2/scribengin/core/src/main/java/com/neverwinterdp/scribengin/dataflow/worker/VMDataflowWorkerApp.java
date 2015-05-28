@@ -6,7 +6,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -20,13 +19,14 @@ import com.neverwinterdp.module.MycilaJmxModuleExt;
 import com.neverwinterdp.registry.Registry;
 import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.scribengin.dataflow.DataflowContainer;
+import com.neverwinterdp.util.LoggerFactory;
 import com.neverwinterdp.vm.VMApp;
 import com.neverwinterdp.vm.VMConfig;
 import com.neverwinterdp.vm.VMDescriptor;
 
 
 public class VMDataflowWorkerApp extends VMApp {
-  private Logger logger = LoggerFactory.getLogger(VMDataflowWorkerApp.class) ;
+  private Logger logger  ;
   
   private DataflowContainer container;
   private DataflowTaskExecutorService dataflowTaskExecutorService;
@@ -34,9 +34,12 @@ public class VMDataflowWorkerApp extends VMApp {
   @Override
   public void run() throws Exception {
     final VMConfig vmConfig = getVM().getDescriptor().getVmConfig();
+    final LoggerFactory lfactory = new LoggerFactory("[" + vmConfig.getName() + "][NeverwinterDP] ") ;
+    logger = lfactory.getLogger(VMDataflowWorkerApp.class);
     AppModule module = new AppModule(vmConfig.getProperties()) {
       @Override
       protected void configure(Map<String, String> properties) {
+        bindInstance(LoggerFactory.class, lfactory);
         Registry registry = getVM().getVMRegistry().getRegistry();
         bindInstance(RegistryConfig.class, registry.getRegistryConfig());
         bindType(Registry.class, registry.getClass());
