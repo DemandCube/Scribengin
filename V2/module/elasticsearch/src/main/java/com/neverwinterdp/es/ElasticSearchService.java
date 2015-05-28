@@ -26,9 +26,6 @@ public class ElasticSearchService {
   @Inject @Named("esProperties")
   private Map<String, String> esProperties ;
   
-  @Inject
-  private RegistryConfig registryConfig ;
-  
   private Node server ;
   
   @Inject

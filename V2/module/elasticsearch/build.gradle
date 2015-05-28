@@ -6,10 +6,89 @@ eclipse {
   }
 }
 
+configurations {
+  esDeployJars {
+    transitive = false
+  }
+}
+
 dependencies {
   compile project(':lib/yara')
   compile project(':lib/buffer')
   compile project(':module/commons')
   compile project(':registry/core')
   compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.2.2'
+
+  /*************************ES runtime deploy jars***************************/
+  esDeployJars project(':lib/utils')
+  esDeployJars project(':lib/yara')
+  esDeployJars project(':lib/buffer')
+  esDeployJars project(':module/elasticsearch')
+  esDeployJars project(':module/commons')
+  esDeployJars group: 'org.elasticsearch', name: 'elasticsearch', version: '1.2.2'
+  
+  esDeployJars group: 'com.beust', name: 'jcommander', version: '1.35'
+
+  esDeployJars group: 'javax.inject', name: 'javax.inject', version: '1'
+  esDeployJars group: 'com.google.guava', name: 'guava', version: '18.0'
+  esDeployJars group: 'com.google.inject', name: 'guice', version: '3.0'
+  esDeployJars group: 'com.google.inject.extensions', name: 'guice-multibindings', version: '3.0'
+  esDeployJars group: 'com.google.inject.extensions', name: 'guice-servlet', version: '3.0'
+  esDeployJars group: 'com.mycila.guice', name: 'mycila-guice-all', version: '3.2.ga'
+  esDeployJars group: 'com.mycila', name: 'mycila-jmx', version: '1.1.ga'
+  esDeployJars group: 'aopalliance', name: 'aopalliance', version: '1.0'
+
+  esDeployJars group: 'net.openhft', name: 'chronicle', version: '3.2.2'
+  esDeployJars group: 'net.openhft', name: 'compiler', version: '2.2.0'
+  esDeployJars group: 'net.openhft', name: 'lang', version: '6.4.6'
+
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-core', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-queries', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-join', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-queryparser', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-sandbox', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-highlighter', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-memory', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-suggest', version: '4.8.1'
+  esDeployJars group: 'org.apache.lucene', name: 'lucene-codecs', version: '4.8.1'
+
+  esDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.3'
+  esDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.3'
+  esDeployJars group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.3'
+
+  esDeployJars group: 'log4j', name: 'log4j', version: '1.2.17'
+  esDeployJars group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
+  esDeployJars group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
+}
+
+task release (dependsOn: 'build') << {
+  def releaseDir = "${buildDir}/release"
+  doReleaseES("${releaseDir}/elasticsearch");
+}
+
+def doReleaseES(String releaseDir) {
+  println "\n\n"
+  println "*************************************************"
+  println "Build release elasticsearch ${releaseDir}"
+  println "*************************************************"
+
+  println "Copy the dependency library"
+  configurations.esDeployJars.each { File file -> 
+    copy {
+      from file
+      into "${releaseDir}/libs"
+    }
+  }
+
+  copy {
+    from "${buildDir}/libs"
+    into "${releaseDir}/libs"
+  }
+
+  println "Copy and override app"
+  copy {
+    from "src/app"
+    into "${releaseDir}"
+  }
 }

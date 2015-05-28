@@ -12,10 +12,9 @@ import com.mycila.guice.ext.closeable.CloseableModule;
 import com.mycila.guice.ext.jsr250.Jsr250Module;
 import com.neverwinterdp.module.AppModule;
 import com.neverwinterdp.module.MycilaJmxModuleExt;
-import com.neverwinterdp.registry.RegistryConfig;
 import com.neverwinterdp.util.LoggerFactory;
 
-public class ModuleMain {
+public class Main {
   static public void main(String[] args) throws Exception {
     if(args == null || args.length == 0) {
       args = new String[] {
@@ -28,7 +27,6 @@ public class ModuleMain {
     AppModule module = new AppModule(new HashMap<String, String>()) {
       @Override
       protected void configure(Map<String, String> properties) {
-        bindInstance(RegistryConfig.class, conf.registryConfig) ;
         bindMapProperties("esProperties", conf.esProperties) ;
         bindInstance(LoggerFactory.class, new LoggerFactory("elasticsearch")) ;
       };
