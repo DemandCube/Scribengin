@@ -82,7 +82,7 @@ public class DataflowTaskExecutorService {
   }
   
   public void pause() throws Exception {
-    logger.info("DataflowTaskExecutorService: start pause()");
+    logger.info("start pause()");
     notifier.info("start-pause", "DataflowTaskExecutorService: start pause()");
     workerStatus = DataflowWorkerStatus.PAUSING;
     container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
@@ -90,7 +90,7 @@ public class DataflowTaskExecutorService {
     workerStatus = DataflowWorkerStatus.PAUSE;
     container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
     notifier.info("finish-pause", "DataflowTaskExecutorService: finish pause()");
-    logger.info("DataflowTaskExecutorService: finish pause()");
+    logger.info("finish pause()");
   }
  
   @PreDestroy
@@ -108,7 +108,6 @@ public class DataflowTaskExecutorService {
       container.getDataflowRegistry().setWorkerStatus(container.getVMDescriptor(), workerStatus);
       System.err.println("DataflowTaskExecutorService: shutdown() done!");
     }
-    System.err.println("DataflowTaskExecutorService: Finish shutdown()");
     notifier.info("finish-shutdown", "DataflowTaskExecutorService: finish shutdown()");
     logger.info("Finish shutdown()");
   }
@@ -163,13 +162,13 @@ public class DataflowTaskExecutorService {
       if(event.getType() == NodeEvent.Type.MODIFY) {
         DataflowEvent taskEvent = getRegistry().getDataAs(event.getPath(), DataflowEvent.class);
         if(taskEvent == DataflowEvent.PAUSE) {
-          System.err.println("DataflowTaskExecutorService: Dataflow worker detect pause event!");
+          logger.info("Dataflow worker detect pause event!");
           pause() ;
         } else if(taskEvent == DataflowEvent.STOP) {
-          System.err.println("DataflowTaskExecutorService: Dataflow worker detect stop event!");
+          logger.info("Dataflow worker detect stop event!");
           shutdown() ;
         } else if(taskEvent == DataflowEvent.RESUME) {
-          System.err.println("DataflowTaskExecutorService: Dataflow worker detect resume event!");
+          logger.info("Dataflow worker detect resume event!");
           start() ;
         }
       }

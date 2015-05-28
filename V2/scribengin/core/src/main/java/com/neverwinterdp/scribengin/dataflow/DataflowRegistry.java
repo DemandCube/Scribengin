@@ -23,7 +23,6 @@ import com.neverwinterdp.scribengin.dataflow.event.DataflowEvent;
 import com.neverwinterdp.scribengin.dataflow.simulation.FailureConfig;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowTaskExecutorDescriptor;
 import com.neverwinterdp.scribengin.dataflow.worker.DataflowWorkerStatus;
-import com.neverwinterdp.scribengin.service.ScribenginService;
 import com.neverwinterdp.util.JSONSerializer;
 import com.neverwinterdp.vm.VMDescriptor;
 
