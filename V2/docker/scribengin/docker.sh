@@ -57,6 +57,8 @@ function build_image() {
   h1 "Build the os image with the preinstalled requirements"
   echo "Prepare the temporary configuration files"
   DOCKERSCRIBEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+  ROOTDIR=`cd "$DOCKERSCRIBEDIR/../../"; pwd` 
+  
   mkdir $DOCKERSCRIBEDIR/tmp
   
   #Check .aws path exists
@@ -69,13 +71,13 @@ function build_image() {
     echo "AWS credentials $aws_path  does not exists. Skipping to copy .aws directory"  
   fi
 
-  if [ ! -d $DOCKERSCRIBEDIR/../../release/build/release ] ; then
-    $DOCKERSCRIBEDIR/../../tools/cluster/clusterCommander.py scribengin --build
+  if [ ! -d $ROOTDIR/scribengin/release/build/release ] ; then
+    $ROOTDIR/tools/cluster/clusterCommander.py scribengin --build
   fi
   
   #Move release/build/release to $DOCKERSCRIBEDIR/tmp
-  cp -R -f $DOCKERSCRIBEDIR/../../release/build/release $DOCKERSCRIBEDIR/tmp/release
-  cp -R -f $DOCKERSCRIBEDIR/../../tools/cluster $DOCKERSCRIBEDIR/tmp/cluster
+  cp -R -f $ROOTDIR/scribengin/release/build/release $DOCKERSCRIBEDIR/tmp/release
+  cp -R -f $ROOTDIR/tools/cluster $DOCKERSCRIBEDIR/tmp/cluster
   
   #Use existing key if it already exists
   if [ -e ~/.ssh/id_rsa ] && [ -e ~/.ssh/id_rsa.pub ]; then
