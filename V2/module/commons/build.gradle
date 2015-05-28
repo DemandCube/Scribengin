@@ -1,10 +1,10 @@
 apply plugin: 'maven-publish'
 
-archivesBaseName = 'scribengin.commons'
+archivesBaseName = 'module.commons'
 
 eclipse {
   project {
-    name = 'scribengin.commons'
+    name = 'module.commons'
   }
 }
 

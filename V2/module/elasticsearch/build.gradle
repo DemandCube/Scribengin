@@ -9,7 +9,7 @@ eclipse {
 dependencies {
   compile project(':lib/yara')
   compile project(':lib/buffer')
-  compile project(':commons')
+  compile project(':module/commons')
   compile project(':registry/core')
   compile group: 'org.elasticsearch', name: 'elasticsearch', version: '1.2.2'
 }
