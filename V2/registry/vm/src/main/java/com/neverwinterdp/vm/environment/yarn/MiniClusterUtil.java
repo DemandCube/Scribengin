@@ -12,7 +12,6 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.MiniYARNCluster;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
-import org.junit.Assert;
 
 public class MiniClusterUtil {
   
@@ -52,7 +51,6 @@ public class MiniClusterUtil {
     String hdfsURI = "hdfs://localhost:" + hdfsCluster.getNameNodePort() + "/";
     System.out.println("hdfs uri: " + hdfsURI) ;
     FileSystem fs = hdfsCluster.getFileSystem();
-    Assert.assertTrue("Not a HDFS: "+ fs.getUri(), fs instanceof DistributedFileSystem);
     //final DistributedFileSystem dfs = (DistributedFileSystem)fs;
     //dfs.copyFromLocalFile(false, false, new Path("target/hadoop-samples-1.0.jar"), new Path("/tmp/hadoop-samples-1.0.jar"));
     return hdfsCluster ;
